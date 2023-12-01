@@ -21,8 +21,38 @@ from verticapy._utils._sql._format import list_strip
 
 def get_header_names(path: str, sep: str) -> list[str]:
     """
-    Returns the input CSV file's header columns'
-    names.
+    Returns the input CSV file's
+    header columns' names.
+
+    Parameters
+    ----------
+    path: str
+        File's path.
+    sep: str
+        CSV separator.
+
+    Returns
+    -------
+    list
+        header columns' names.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._parsers import get_header_names
+
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     with open(path, "r", encoding="utf-8") as f:
         file_header = f.readline().replace("\n", "").replace('"', "")
@@ -56,6 +86,38 @@ def get_header_names(path: str, sep: str) -> list[str]:
 def guess_sep(file_str: str) -> str:
     """
     Guesses the file's separator.
+
+    Parameters
+    ----------
+    file_str: str
+        Any lines of the CSV file.
+
+    Returns
+    -------
+    str
+        the separator.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._parsers import guess_sep
+
+        # ',' separator.
+        guess_sep('col1, col2,col3,  col4')
+
+        # ';' separator.
+        guess_sep('col1; col2;col3;  col4')
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     sep = ","
     max_occur = file_str.count(",")

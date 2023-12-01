@@ -67,68 +67,96 @@ from verticapy.sql.flex import (
 
 class vDataFrame(vDFAnimatedPlot):
     """
-    An  object that  records  all  user modifications, allowing
-    users to  manipulate  the  relation  without  mutating  the
-    underlying  data in  Vertica.  When  changes are  made, the
-    vDataFrame queries the Vertica database,  which  aggregates
-    and returns  the final result. The vDataFrame  creates, for
-    each column of the relation, a Virtual Column (vDataColumn)
-    that stores the column alias an all user transformations.
+    An  object that records all user
+    modifications, allowing users to
+    manipulate  the  relation  without
+    mutating the underlying data in
+    Vertica. When changes are made,
+    the :py:class:`vDataFrame` queries
+    the Vertica database, which aggregates
+    and returns the final result. The
+    :py:class:`vDataFrame` creates, for
+    each column of the relation, a Virtual
+    Column (:py:class:`vDataColumn`) that
+    stores the column alias an all
+    user transformations.
 
     Parameters
     ----------
 
     input_relation: str | TableSample | pandas.DataFrame | list | numpy.ndarray | dict, optional
-        If the input_relation is of type str, it must represent
-        the relation  (view, table, or temporary table) used to
-        create the object.
-        To  get a  specific  schema relation,  your string must
-        include both the relation and schema: 'schema.relation'
-        or '"schema"."relation"'.
-        Alternatively, you can use  the  'schema' parameter, in
-        which  case the input_relation must exclude the  schema
-        name.  It can also be the SQL query used to create  the
-        vDataFrame.
-        If it is a pandas.DataFrame, a temporary local table is
-        created. Otherwise, the vDataFrame is created using the
-        generated SQL code of multiple UNIONs.
+        If the input_relation is of type
+        ``str``, it must represent the
+        relation (view, table, or
+        temporary table) used to create
+        the object.
+        To get a specific ``schema`` relation,
+        your string must include both the
+        relation and schema: ``'schema.relation'``
+        or ``'"schema"."relation"'``.
+        Alternatively, you can use  the
+        'schema' parameter, in which case
+        the ``input_relation`` must exclude
+        the ``schema`` name. It can also be
+        the SQL query used to create the
+        :py:class:`vDataFrame`.
+        If it is a ``pandas.DataFrame``, a
+        temporary local table is created.
+        Otherwise, the vDataFrame is created
+        using the generated SQL code of multiple
+        UNIONs.
 
     usecols: SQLColumns, optional
-        When input_relation is not an array-like type:
-        List of columns used to create the object. As Vertica
-        is  a  columnar DB, including  less columns  makes  the
-        process faster.  Do not hesitate to exclude useless
-        columns.
-        Otherwise:
-        List of column names.
+        When ``input_relation`` is not an
+        array-like type:
+        List of columns used to create the
+        object. As Vertica is a columnar DB,
+        including  less columns  makes  the
+        process faster. Do not hesitate to
+        exclude useless columns.
+        Otherwise: List of column names.
     schema: str, optional
-        The  schema of the relation. Specifying a schema  allows
-        you to specify a table within a particular schema, or to
-        specify  a schema and relation name that contain  period
-        '.' characters. If specified, the input_relation  cannot
-        include a schema.
+        The  schema of the relation.
+        Specifying a schema  allows
+        you to specify a table within
+        a particular schema, or to
+        specify  a ``schema`` and
+        ``relation`` name that contain
+        period '.' characters. If
+        specified, the ``input_relation``
+        cannot include a ``schema``.
     external: bool, optional
-        A  boolean  to indicate whether it is an external table.
-        If set to True, a Connection Identifier Database must be
+        A  boolean  to indicate whether
+        it is an external table.
+        If set to ``True``, a Connection
+        Identifier Database must be
         defined.
     symbol: str, optional
-        Symbol used to identify the external connection.
+        Symbol used to identify the
+        external connection.
         One of the following:
-        "$", "€", "£", "%", "@", "&", "§", "?", "!"
+        ``"$", "€", "£", "%", "@", "&", "§", "?", "!"``
     sql_push_ext: bool, optional
-        If  set to True, the  external vDataFrame attempts to  push
-        the entire query to the external table (only DQL statements
-        - SELECT;  for other statements,  use SQL Magic  directly).
-        This can increase performance  but might increase the error
-        rate. For instance, some DBs might not support the same SQL
-        as Vertica.
+        If  set to ``True``, the  external
+        :py:class:`vDataFrame` attempts to
+        push the entire query to the external
+        table (only DQL statements
+        - SELECT;  for other statements,
+        use SQL Magic  directly).
+        This can increase performance but
+        might increase the error rate.
+        For instance, some DBs might not
+        support the same SQL as Vertica.
 
     Attributes
     ----------
-    vDataColumns : vDataColumn
-        Each   vDataColumn  of  the  vDataFrame  is  accessible   by
-        specifying its name between brackets. For example, to access
-        the vDataColumn "myVC": ``vDataFrame["myVC"]``.
+    vDataColumns : :py:class:`vDataColumn`
+        Each :py:class:`vDataColumn` of the
+        :py:class:`vDataFrame` is accessible
+        by specifying its name between
+        brackets. For example, to access
+        the :py:class:`vDataColumn` "myVC":
+        ``vDataFrame["myVC"]``.
 
     Examples
     ---------
@@ -162,18 +190,21 @@ class vDataFrame(vDFAnimatedPlot):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-        of code collisions with other libraries. This precaution is
-        necessary because verticapy uses commonly known function names
-        like "average" and "median", which can potentially lead to naming
-        conflicts. The use of an alias ensures that the functions from
-        verticapy are used as intended without interfering with functions
-        from other libraries.
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended without
+        interfering with functions from other libraries.
 
     Dictionary
     ^^^^^^^^^^^
 
-    This is the most direct way to create a ``vDataFrame``:
+    This is the most direct way to create a
+    :py:class:`vDataFrame`:
 
     .. ipython:: python
 

@@ -26,7 +26,40 @@ from verticapy.connection.connect import current_cursor
 
 def gen_name(L: list) -> str:
     """
-    Generates a name using the input list.
+    Generates a name using the input ``list``.
+
+    Parameters
+    ----------
+    L: list
+        List of elements to use in the
+        generated name.
+
+    Returns
+    -------
+    str
+        generated name.
+
+    Examples
+    --------
+    The following code demonstrates the
+    usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._gen import gen_name
+
+        # only strs
+        gen_name(['How', 'are', 'you'])
+
+        # different data types
+        gen_name(['A', None, 666])
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     return "_".join(
         [
@@ -38,15 +71,84 @@ def gen_name(L: list) -> str:
 
 def gen_col_name(n: int = 5) -> str:
     """
-    Generate a name using n character
+    Generate a name using ``n`` characters.
+
+    Parameters
+    ----------
+    n: int, optional
+        Number of characters.
+
+    Returns
+    -------
+    str
+        generated name.
+
+    Examples
+    --------
+    The following code demonstrates the
+    usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._gen import gen_col_name
+
+        # n = 10
+        gen_col_name(n = 10)
+
+        # n = 20
+        gen_col_name(n = 10)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     return "".join(secrets.choice(string.ascii_letters) for _ in range(n)).lower()
 
 
 def gen_tmp_name(schema: Optional[str] = None, name: Optional[str] = None) -> str:
     """
-    Generates a temporary name using the input schema
-    and name.
+    Generates a temporary name using the
+    input ``schema`` and name``.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema name.
+    name: str, optional
+        Relation name.
+
+    Returns
+    -------
+    str
+        generated name.
+
+    Examples
+    --------
+    The following code demonstrates the
+    usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._gen import gen_tmp_name
+
+        # only name
+        gen_tmp_name(name = 'tmp_name')
+
+        # name and schema
+        gen_tmp_name(
+            schema = 'my_schema',
+            name = 'tmp_name',
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     current_cursor().execute("SELECT CURRENT_SESSION(), USERNAME();")
     current_session, username = current_cursor().fetchone()

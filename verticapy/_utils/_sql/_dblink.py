@@ -25,6 +25,57 @@ from verticapy.connection.connect import current_cursor
 def get_dblink_fun(query: str, symbol: str = "$") -> str:
     """
     Returns the SQL needed to deploy the DBLINK UDTF.
+
+    Parameters
+    ----------
+    query: str
+        SQL Query.
+    symbol: str
+        A special character to identify the connection.
+        One of the following:
+        "$", "€", "£", "%", "@", "&", "§", "?", "!"
+
+        For example, if the symbol is '$', you can call
+        external tables with the input cid by writing
+        $$$QUERY$$$, where QUERY represents a custom
+        query.
+
+    Returns
+    -------
+    str
+        Formatted SQL Query.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import verticapy.
+        import verticapy as vp
+
+        # Set an external connection
+        vp.set_external_connection(
+            cid = "pgdb",
+            rowset = 500,
+            symbol = "$",
+        )
+
+        # Import the function.
+        from verticapy._utils._sql._dblink import get_dblink_fun
+
+        # Generating a query.
+        query = "SELECT COUNT(*) FROM postgres_schema.external_table;"
+
+        # Function example.
+        get_dblink_fun(query, symbol = "$")
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     gb_conn = get_global_connection()
     external_connections = gb_conn.get_external_connections()
@@ -49,9 +100,53 @@ def get_dblink_fun(query: str, symbol: str = "$") -> str:
 
 def replace_external_queries(query: str) -> str:
     """
-    Replaces the external queries in the input query using
-    the DBLINK UDTF. If many external queries are used,
-    they are materialised using local temporary tables.
+    Replaces the external queries in the
+    input query using the DBLINK UDTF.
+    If many external queries are used,
+    they are materialised using local
+    temporary tables.
+
+    Parameters
+    ----------
+    query: str
+        SQL Query.
+
+    Returns
+    -------
+    str
+        Formatted SQL Query.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import verticapy.
+        import verticapy as vp
+
+        # Set an external connection
+        vp.set_external_connection(
+            cid = "pgdb",
+            rowset = 500,
+            symbol = "$",
+        )
+
+        # Import the function.
+        from verticapy._utils._sql._dblink import replace_external_queries
+
+        # Generating a query.
+        query = "SELECT * FROM $$$postgres_schema.external_table$$$;"
+
+        # Function example.
+        replace_external_queries(query, symbol = "$")
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     gb_conn = get_global_connection()
     external_connections = gb_conn.get_external_connections()

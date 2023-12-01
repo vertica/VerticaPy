@@ -27,7 +27,15 @@ if TYPE_CHECKING:
 
 def create_new_vdc(*args, **kwargs) -> "vDataColumn":
     """
-    Creates a vDataColumn.
+    Creates a :py:class:`vDataColumn`.
+
+    .. note::
+
+        This function is used to bring main features
+        across different files and avoid import errors.
+        It is the only file where we use imports inside
+        the function. For more information about the object,
+        please refer to the link above.
     """
     from verticapy.core.vdataframe.base import vDataColumn
 
@@ -36,7 +44,15 @@ def create_new_vdc(*args, **kwargs) -> "vDataColumn":
 
 def create_new_vdf(*args, **kwargs) -> "vDataFrame":
     """
-    Creates a vDataFrame.
+    Creates a :py:class:`vDataFrame`.
+
+    .. note::
+
+        This function is used to bring main features
+        across different files and avoid import errors.
+        It is the only file where we use imports inside
+        the function. For more information about the object,
+        please refer to the link above.
     """
     from verticapy.core.vdataframe.base import vDataFrame
 
@@ -45,7 +61,16 @@ def create_new_vdf(*args, **kwargs) -> "vDataFrame":
 
 def get_vertica_mllib() -> Literal["vml"]:
     """
-    Gets the Vertica machine learning module.
+    Gets the Vertica machine learning module:
+    :py:mod:`verticapy.machine_learning.vertica`.
+
+    .. note::
+
+        This function is used to bring main features
+        across different files and avoid import errors.
+        It is the only file where we use imports inside
+        the function. For more information about the object,
+        please refer to the link above.
     """
     import verticapy.machine_learning.vertica as vml
 
@@ -55,7 +80,17 @@ def get_vertica_mllib() -> Literal["vml"]:
 def read_pd(*args, **kwargs) -> "vDataFrame":
     """
     Reads a Pandas DataFrame into a VerticaPy
-    vDataFrame.
+    vDataFrame. It uses the
+    :py:func:`verticapy.core.parsers.pandas.read_pandas`
+    function.
+
+    .. note::
+
+        This function is used to bring main features
+        across different files and avoid import errors.
+        It is the only file where we use imports inside
+        the function. For more information about the object,
+        please refer to the link above.
     """
     from verticapy.core.parsers.pandas import read_pandas
 

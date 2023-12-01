@@ -22,8 +22,39 @@ from verticapy._utils._sql._vertica_version import vertica_version
 
 def _seeded_random_function(random_seed: int) -> str:
     """
-    Returns the text of an appropriate seeded random function based on
-    the version of the connected Vertica server.
+    Returns the text of an appropriate seeded
+    random function based on the version of
+    the connected Vertica server.
+
+    Parameters
+    ----------
+    random_seed: int
+        Integer used to generate the seed.
+
+    Returns
+    -------
+    str
+        Representation of the seeded
+        random function.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._random import _seeded_random_function
+
+        # function example
+        _seeded_random_function(666)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     version = vertica_version()
     if version[0] > 23:
@@ -36,10 +67,42 @@ def _seeded_random_function(random_seed: int) -> str:
 
 def _current_random(rand_int: Optional[int] = None) -> str:
     """
-    Returns the 'random' function to be used in the
-    query. The returned function depends on the input
-    parameter 'rand_int' and whether the random state has
-    been changed.
+    Returns the 'random' function to be
+    used in the query. The returned
+    function depends on the input
+    parameter ``rand_int`` and whether
+    the random state has been changed.
+
+    Parameters
+    ----------
+    rand_int: int
+        Integer used to generate the
+        random function.
+
+    Returns
+    -------
+    str
+        Representation of the random
+        function.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._random import _current_random
+
+        # function example
+        _current_random(666)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     random_state = conf.get_option("random_state")
     if isinstance(rand_int, int):

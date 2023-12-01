@@ -17,9 +17,51 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 
 
-def verticapy_agg_name(key: str, method: Optional[Literal["vertica"]] = "") -> str:
+def verticapy_agg_name(key: str, method: Optional[Literal["vertica"]] = None) -> str:
     """
-    Returns the VerticaPy name of the input key.
+    Returns the VerticaPy correctly formatted key.
+    This function is used to normalize aggregation
+    names throughout the entire API.
+
+    Parameters
+    ----------
+    key: str
+        aggregation key.
+    method: str, optional
+        Can be ``None`` or ``vertica``.
+        If ``None``, the output will represent
+        the VerticaPy aggregations. Otherwise
+        it will represent Vertica aggregations.
+
+    Returns
+    -------
+    str
+        Correctly Formatted Aggregation.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._map import verticapy_agg_name
+
+        # median
+        verticapy_agg_name('median')
+
+        # variance
+        verticapy_agg_name('variance')
+
+        # using 'vertica' method
+        verticapy_agg_name('std', method='vertica')
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     key = key.lower()
     if key in ("median", "med"):
@@ -78,15 +120,28 @@ def verticapy_agg_name(key: str, method: Optional[Literal["vertica"]] = "") -> s
 
 def param_docstring(*args):
     """
-    Constructs and inserts a parameter docstring into the decorated function's existing docstring.
-    The decorator accepts a dictionary of parameter descriptions and then the keys to the parameters
+    Constructs and inserts a parameter docstring
+    into the decorated function's existing docstring.
+    The decorator accepts a dictionary of parameter
+    descriptions and then the keys to the parameters
     of the decorated function. For example:
 
-    @param_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'pos_label')
+    .. code-block:: python
 
-    The decorator inserts the supplied parameter descriptions inbetween the function's description
-    and the Returns section. For instance, in the following docstring, the above decorator would
-    insert the parameter descriptions inbetween 'Computes the Confusion Matrix' and 'Returns':
+        @param_docstring(
+            PARAMETER_DESCRIPTIONS,
+            'y_true',
+            'y_score',
+            'input_relation',
+            'pos_label',
+        )
+
+    The decorator inserts the supplied parameter
+    descriptions inbetween the function's description
+    and the Returns section. For instance, in the
+    following docstring, the above decorator would
+    insert the parameter descriptions inbetween
+    'Computes the Confusion Matrix' and 'Returns':
 
     Computes the Confusion Matrix.
 
@@ -95,11 +150,15 @@ def param_docstring(*args):
     Array
         confusion matrix.
 
-    When several functions share the same parameters, this decorator can be used to improve code
+    When several functions share the same parameters,
+    this decorator can be used to improve code
     readability and doc consistency.
 
-    Note: To preserve correct spacing, add four spaces before the parameter name in the
-    dictionary value and for each following line. For example:
+    .. note::
+
+        To preserve correct spacing, add four spaces
+        before the parameter name in the ``dictionary``
+        value and for each following line. For example:
 
     ...
     'y_true': '''    y_true: str

@@ -75,13 +75,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame`
         with multiple columns:
@@ -227,13 +230,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame`
         with multiple columns:
@@ -413,13 +419,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can conveniently get the CHAID tree:
 
@@ -626,13 +635,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can conveniently get the CHAID columns:
 
@@ -729,13 +741,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame`
         that has some outliers:
@@ -892,13 +907,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can conveniently get the chi-squared
         term using the pivot table:
@@ -1025,13 +1043,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame`
         with multiple columns:
@@ -1193,13 +1214,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame` which has
         some purchase transaction data:
@@ -1569,13 +1593,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         You can easily divide your dataset into training
         and testing subsets using the
@@ -1766,13 +1793,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame`
         with multiple columns:
@@ -1912,13 +1942,16 @@ class vDFMachineLearning(vDFScaler):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         Let us check the size of the dataset:
 
