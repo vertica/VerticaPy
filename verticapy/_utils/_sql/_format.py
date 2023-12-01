@@ -528,8 +528,40 @@ def _format_keys(
         # Import the function.
         from verticapy._utils._sql._format import _format_keys
 
-        #
-        ...
+        # Generating some variables.
+
+        # Key words to consider.
+        # "l" represents left authorized characters
+        # "r" represents right authorized characters
+        # Example: if "r" includes " ", spaced are
+        # authorized at the left side.
+        SQL_KEYWORDS = {
+            "FROM": {"l": (" ",), "r": (" ",)},
+            "GROUP BY": {"l": (" ",), "r": (" ",)},
+            "SELECT": {"l": ("", " "), "r": (" ",)},
+        }
+        # Tags: Only used to generate the final markdown.
+        KEYWORDS_TAG_L = '<b style="color: #C695C6;">'
+        KEYWORDS_TAG_R = "</b>"
+
+        # incorrectly formatted SQL query.
+        sql = "selecT col1, SUM(col2) fRoM my_table group BY 1;"
+
+        # incorrectly formatted SQL query including a <b> tag.
+        html_sql = "selecT col1, <b>SUM(col2)</b> fRoM my_table group BY 1;"
+
+        # Example
+        sql, html_sql = _format_keys(
+            SQL_KEYWORDS, sql, html_sql, KEYWORDS_TAG_L, KEYWORDS_TAG_R
+        )
+        print(sql)
+        print(html_sql)
+
+    .. note::
+
+        This function is used to create
+        well-formatted SQL queries and
+        markdowns.
 
     .. note::
 
@@ -1019,8 +1051,20 @@ def format_magic(
         # Import the function.
         from verticapy._utils._sql._format import format_magic
 
-        #
-        ...
+        # None.
+        format_magic(None)
+
+        # float.
+        format_magic(55.5)
+
+        # str.
+        format_magic('verticapy_test')
+
+        # float & cast_float_int_to_str = True.
+        format_magic(55.5, cast_float_int_to_str = True)
+
+        # return_cat = True
+        format_magic(55.5, return_cat = True)
 
     .. note::
 
@@ -1132,8 +1176,17 @@ def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None)
         # Import the function.
         from verticapy._utils._sql._format import format_type
 
-        #
-        ...
+        # Generating some variables
+        x = 'column_name'
+
+        # list
+        format_type(x, dtype = list, na_out = 'null')
+
+        # None
+        format_type(None, dtype = list,)
+
+        # Multiple arguments
+        format_type(x, None, 1, dtype = list, na_out = 'null')
 
     .. note::
 
