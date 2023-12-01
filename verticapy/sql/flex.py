@@ -80,12 +80,15 @@ def compute_flextable_keys(
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     We create a temporary schema:
@@ -222,12 +225,15 @@ def compute_vmap_keys(
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     We create a temporary schema:
@@ -349,12 +355,15 @@ def isflextable(table_name: str, schema: str) -> bool:
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     We create a temporary schema:
@@ -474,12 +483,15 @@ def isvmap(
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     We create a temporary schema:

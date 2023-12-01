@@ -47,53 +47,193 @@ def best_k(
     **kwargs,
 ) -> int:
     """
-    Finds the k-means  /  k-prototypes  k based on a score.
+    Finds the :py:class:`verticapy.machine_learning.vertica.KMeans`
+    / :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+    ``k`` based on a score.
 
     Parameters
     ----------
     input_relation: SQLRelation
-        Relation used to train the model.
+        Relation used to train the
+        model.
     X: SQLColumns, optional
-        List  of  the  predictor  columns.  If  empty,  all
+        ``list`` of the predictor
+        columns. If empty, all
         numerical columns are used.
-    n_cluster: tuple/list, optional
-        Tuple representing  the number  of clusters to start
-        and end with. This can also be a customized list with
-        various k values to test.
-    init: str / list, optional
-        The method used to  find the initial cluster centers.
-                kmeanspp : [Only available when use_kprototype is
-                       set to False]
-                       Use the k-means++ method to initialize
-                       the centers.
-            random   : Randomly  subsamples the data to  find
-                       initial centers.
-        Default  value  is  'kmeanspp' if  use_kprototype  is
-        False; otherwise, 'random'.
+    n_cluster: tuple | list, optional
+        Tuple representing the number
+        of clusters to start and end
+        with. This can also be a
+        customized list with various
+        ``k`` values to test.
+    init: str | list, optional
+        The method used to  find the
+        initial cluster centers.
+
+         - kmeanspp:
+            Only available when
+            ``use_kprototype = False``
+            Use the ``k-means++`` method
+            to initialize the centers.
+         - random:
+            Randomly subsamples the data
+            to find initial centers.
+        Default  value  is  ``kmeanspp`` if
+        ``use_kprototype = False``; otherwise,
+        ``random``.
     max_iter: int, optional
-        The  maximum  number of iterations for the  algorithm.
+        The maximum number of iterations
+        for the algorithm.
     tol: float, optional
-        Determines  whether  the algorithm has converged.  The
-        algorithm is considered  converged after no center has
-        moved more than a  distance of 'tol' from the previous
-        iteration.
+        Determines whether the algorithm
+        has converged. The algorithm is
+        considered  converged after no
+        center has moved more than a
+        distance of ``tol`` from the
+        previous iteration.
     use_kprototype: bool, optional
-        If  set  to True, the  function uses the  k-prototypes
-        algorithm instead of k-means.  k-prototypes can handle
-        categorical features.
+        If set to ``True``, the function
+        uses the
+        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        algorithm instead of
+        :py:class:`verticapy.machine_learning.vertica.KMeans`.
+        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        can handle categorical features.
     gamma: float, optional
-        [Only if use_kprototype is set to True]
-        Weighting factor for categorical columns. It determines
-        the  relative  importance of numerical and  categorical
-        attributes.
+        Only if ``use_kprototype = True``.
+        Weighting factor for categorical
+        columns. It determines the relative
+        importance of numerical and
+        categorical attributes.
     elbow_score_stop: float, optional
-        Stops searching for parameters when the specified elbow
-        score is reached.
+        Stops searching for parameters when
+        the specified elbow score is reached.
 
     Returns
     -------
     int
-        the k-means / k-prototypes k
+        the k-means / k-prototypes ``k``.
+
+    Examples
+    --------
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the: :ref:`chart_gallery.elbow`
+    page.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will
+    use the iris dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_iris()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_iris()
+
+    Data Exploration
+    ^^^^^^^^^^^^^^^^^
+
+    Through a quick scatter plot, we can
+    observe that the data has three main
+    clusters.
+
+    .. code-block:: python
+
+        data.scatter(
+            columns = ["PetalLengthCm", "SepalLengthCm"],
+            by = "Species",
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = data.scatter(
+            columns = ["PetalLengthCm", "SepalLengthCm"],
+            by = "Species",
+        )
+        fig.write_html("SPHINX_DIRECTORY/figures/core_machine_learning_best_k.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_machine_learning_best_k.html
+
+    Elbow Score
+    ^^^^^^^^^^^^
+
+    Let's compute the optimal ``k`` for our
+    :py:class:`verticapy.machine_learning.vertica.KMeans`
+    algorithm and check if it aligns with
+    the three clusters we observed earlier.
+
+    .. ipython:: python
+
+        best_k(
+            input_relation = data,
+            X = None, # All numerical columns will be used
+            n_cluster = (1, 100),
+            init = "kmeanspp",
+            elbow_score_stop = 0.9,
+        )
+
+    .. note::
+
+        You can experiment with the Elbow score to
+        determine the optimal number of clusters.
+        The score is based on the ratio of Between
+        -Cluster Sum of Squares to Total Sum of
+        Squares, providing a way to assess the
+        clustering accuracy. A score of 1 indicates
+        a perfect clustering.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.kmeans.elbow` :
+            Draws an Elbow curve.
     """
     X = format_type(X, dtype=list)
     if not init and (use_kprototype):
@@ -165,58 +305,221 @@ def elbow(
     **style_kwargs,
 ) -> TableSample:
     """
-    Draws an elbow curve.
+    Draws an Elbow curve.
 
     Parameters
     ----------
     input_relation: SQLRelation
-        Relation used to train the model.
+        Relation used to train the
+        model.
     X: SQLColumns, optional
-        List  of  the  predictor  columns.  If  empty,  all
+        ``list`` of the predictor
+        columns. If empty, all
         numerical columns are used.
-    n_cluster: tuple/list, optional
-        Tuple representing  the number  of clusters to start
-        and end with. This can also be a customized list with
-        various k values to test.
-    init: str / list, optional
-        The method used to  find the initial cluster centers.
-            kmeanspp : [Only available when use_kprototype is
-                       set to False]
-                       Use the k-means++ method to initialize
-                       the centers.
-            random   : Randomly  subsamples the data to  find
-                       initial centers.
-        Default  value  is  'kmeanspp' if  use_kprototype  is
-        False; otherwise, 'random'.
+    n_cluster: tuple | list, optional
+        Tuple representing the number
+        of clusters to start and end
+        with. This can also be a
+        customized list with various
+        ``k`` values to test.
+    init: str | list, optional
+        The method used to  find the
+        initial cluster centers.
+
+         - kmeanspp:
+            Only available when
+            ``use_kprototype = False``
+            Use the ``k-means++`` method
+            to initialize the centers.
+         - random:
+            Randomly subsamples the data
+            to find initial centers.
+        Default  value  is  ``kmeanspp`` if
+        ``use_kprototype = False``; otherwise,
+        ``random``.
     max_iter: int, optional
-        The  maximum  number of iterations for the  algorithm.
+        The maximum number of iterations
+        for the algorithm.
     tol: float, optional
-        Determines  whether  the algorithm has converged.  The
-        algorithm is considered  converged after no center has
-        moved more than a  distance of 'tol' from the previous
-        iteration.
+        Determines whether the algorithm
+        has converged. The algorithm is
+        considered  converged after no
+        center has moved more than a
+        distance of ``tol`` from the
+        previous iteration.
     use_kprototype: bool, optional
-        If  set  to True, the  function uses the  k-prototypes
-        algorithm instead of k-means.  k-prototypes can handle
-        categorical features.
+        If set to ``True``, the function
+        uses the
+        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        algorithm instead of
+        :py:class:`verticapy.machine_learning.vertica.KMeans`.
+        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        can handle categorical features.
     gamma: float, optional
-        [Only if use_kprototype is set to True]
-        Weighting factor for categorical columns. It determines
-        the  relative  importance of numerical and  categorical
-        attributes.
+        Only if ``use_kprototype = True``.
+        Weighting factor for categorical
+        columns. It determines the relative
+        importance of numerical and
+        categorical attributes.
     show: bool, optional
-        If set to True, the  Plotting object is returned.
+        If set to ``True``, the  Plotting
+        object is returned.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs
-        Any  optional  parameter  to  pass  to  the  Plotting
-        functions.
+        Any optional parameter to pass to
+        the Plotting functions.
 
     Returns
     -------
     TableSample
-        nb_clusters,total_within_cluster_ss,between_cluster_ss,
-        total_ss, elbow_score
+        ``nb_clusters,total_within_cluster_ss,between_cluster_ss,total_ss, elbow_score``
+
+    Examples
+    --------
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the: :ref:`chart_gallery.elbow`
+    page.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will
+    use the iris dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_iris()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_iris()
+
+    Data Exploration
+    ^^^^^^^^^^^^^^^^^
+
+    Through a quick scatter plot, we can
+    observe that the data has three main
+    clusters.
+
+    .. code-block:: python
+
+        data.scatter(
+            columns = ["PetalLengthCm", "SepalLengthCm"],
+            by = "Species",
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = data.scatter(
+            columns = ["PetalLengthCm", "SepalLengthCm"],
+            by = "Species",
+        )
+        fig.write_html("SPHINX_DIRECTORY/figures/core_machine_learning_best_k.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_machine_learning_best_k.html
+
+    Elbow Curve
+    ^^^^^^^^^^^^
+
+    Let's compute the optimal ``k`` for our
+    :py:class:`verticapy.machine_learning.vertica.KMeans`
+    algorithm and check if it aligns with the three
+    clusters we observed earlier.
+
+    To achieve this, let's create the Elbow curve.
+
+    .. code-block:: python
+
+        elbow(
+            input_relation = data,
+            X = None, # All numerical columns will be used
+            n_cluster = (1, 100),
+            init = "kmeanspp",
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = elbow(
+            input_relation = data,
+            X = None, # All numerical columns will be used
+            n_cluster = (1, 100),
+            init = "kmeanspp",
+        )
+        fig.write_html("SPHINX_DIRECTORY/figures/core_machine_learning_elbow.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_machine_learning_elbow.html
+
+    .. note::
+
+        You can experiment with the Elbow score to
+        determine the optimal number of clusters.
+        The score is based on the ratio of Between
+        -Cluster Sum of Squares to Total Sum of
+        Squares, providing a way to assess the
+        clustering accuracy. A score of 1 indicates
+        a perfect clustering.
+
+    .. note::
+
+        It's evident from the Elbow curve that
+        ``k=3`` is a suitable choice, indicating
+        the optimal number of clusters for the
+        KMeans algorithm.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.kmeans.best_k` :
+            Finds the :py:class:`verticapy.machine_learning.vertica.KMeans` /
+            :py:class:`verticapy.machine_learning.vertica.KPrototypes` ``k``
+            based on a score.
     """
     X = format_type(X, dtype=list)
     if not init and (use_kprototype):

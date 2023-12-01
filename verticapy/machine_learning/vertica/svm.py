@@ -147,7 +147,8 @@ class LinearSVR(LinearModel, Regressor):
         :py:mod:`verticapy` are used as intended without
         interfering with functions from other libraries.
 
-    For this example, we will use the winequality dataset.
+    For this example, we will
+    use the winequality dataset.
 
     .. code-block:: python
 
@@ -160,13 +161,16 @@ class LinearSVR(LinearModel, Regressor):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
     using the :py:meth:`vDataFrame.train_test_split` method. This is a
@@ -219,16 +223,18 @@ class LinearSVR(LinearModel, Regressor):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     .. ipython:: python
         :suppress:
@@ -266,11 +272,14 @@ class LinearSVR(LinearModel, Regressor):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
@@ -677,15 +686,19 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
-    For this example, we will use the winequality dataset.
+    For this example, we will
+    use the winequality dataset.
 
     .. code-block:: python
 
@@ -698,13 +711,16 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
     using the :py:meth:`vDataFrame.train_test_split` method. This is a
@@ -762,16 +778,18 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
 
 
@@ -798,11 +816,14 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^

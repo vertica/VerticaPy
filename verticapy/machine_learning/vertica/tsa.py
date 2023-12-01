@@ -1171,13 +1171,16 @@ class ARIMA(TimeSeriesModelBase):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
@@ -1249,16 +1252,18 @@ class ARIMA(TimeSeriesModelBase):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Fitting
     ^^^^^^^^^^^^^^^
@@ -1272,11 +1277,14 @@ class ARIMA(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
@@ -1885,13 +1893,16 @@ class ARMA(TimeSeriesModelBase):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
@@ -1963,16 +1974,18 @@ class ARMA(TimeSeriesModelBase):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Fitting
     ^^^^^^^^^^^^^^^
@@ -1986,11 +1999,14 @@ class ARMA(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
@@ -2597,13 +2613,16 @@ class AR(TimeSeriesModelBase):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     We can plot the data to visually inspect it for the
     presence of any trends:
@@ -2669,16 +2688,18 @@ class AR(TimeSeriesModelBase):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Fitting
     ^^^^^^^^^^^^^^^
@@ -2692,11 +2713,14 @@ class AR(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
@@ -3278,13 +3302,16 @@ class MA(TimeSeriesModelBase):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     We can plot the data to visually inspect it for the
     presence of any trends:
@@ -3351,16 +3378,18 @@ class MA(TimeSeriesModelBase):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Fitting
     ^^^^^^^^^^^^^^^
@@ -3374,11 +3403,14 @@ class MA(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
 
     Model Register

@@ -118,12 +118,15 @@ def balance(
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     For this example, we will use the Titanic dataset.
@@ -145,13 +148,16 @@ def balance(
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     Function Application
     ^^^^^^^^^^^^^^^^^^^^^
@@ -861,12 +867,15 @@ class Scaler(Preprocessing):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     For this example, we will use a dummy dataset.
@@ -877,13 +886,16 @@ class Scaler(Preprocessing):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
@@ -903,16 +915,18 @@ class Scaler(Preprocessing):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Fitting
     ^^^^^^^^^^^^^^
@@ -1269,12 +1283,15 @@ class OneHotEncoder(Preprocessing):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     For this example, we will use the Titanic dataset.
@@ -1290,13 +1307,16 @@ class OneHotEncoder(Preprocessing):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
@@ -1325,16 +1345,18 @@ class OneHotEncoder(Preprocessing):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Training
     ^^^^^^^^^^^^^^^
