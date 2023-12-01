@@ -47,34 +47,107 @@ if TYPE_CHECKING:
 
 class TableSample:
     """
-    TableSample sits at the transition from 'Big Data'
-    to 'Small Data'.
-    This object allows you to  conveniently  display your
-    results without dependencies on any other modules.
-    It stores the aggregated  result in-memory and can
-    then be transformed   into  a  pandas.DataFrame  or
-    vDataFrame.
+    :py:class:`TableSample` sits at the
+    transition from 'Big Data' to 'Small
+    Data'. This object allows you to
+    conveniently  display your results
+    without dependencies on any other
+    modules. It stores the aggregated
+    result in-memory and can then be
+    transformed into a ``pandas.DataFrame``
+    or :py:class:`vDataFrame`.
 
     Parameters
     ----------
     values: dict, optional
-        Dictionary of columns (keys) and their values. The
-        dictionary must be in the following format:
-        {"column1": [val1, ..., valm], ...
-         "columnk": [val1, ..., valm]}
+        Dictionary of columns (keys)
+        and their values. The ``dictionary``
+        must be in the following format:
+        ``{"column1": [val1, ..., valm], ... "columnk": [val1, ..., valm]}``
     dtype: dict, optional
         Columns data types.
     count: int, optional
-        Number of elements to render when loading the entire
-        dataset. This is used only for rendering purposes.
+        Number of elements to render when
+        loading the entire dataset. This
+        is used only for rendering purposes.
     offset: int, optional
-        Number of  elements to skip when loading the entire
-        dataset. This is used only for rendering purposes.
+        Number of  elements to skip when
+        loading the entire dataset. This
+        is used only for rendering purposes.
     percent: dict, optional
-        Dictionary  of missing values  (Used to display the
-        percent bars)
+        Dictionary of missing values (Used to
+        display the percent bars)
     max_columns: int, optional
         Maximum number of columns to display.
+
+    Attributes
+    ----------
+    The object attributes are the
+    same as the input parameters.
+
+    Examples
+    --------
+    Let's import the :py:class:`TableSample`
+    object:
+
+    .. ipython:: python
+
+        from verticapy import TableSample
+
+    Let's build an example object.
+
+    .. ipython:: python
+
+        # dict with all the data.
+        d = {
+            "customer_ID": [0, 1, 2, 3],
+            "age": [40, 30, 22, 55],
+            "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+        }
+
+        # creating the object.
+        tb = TableSample(d)
+
+    .. ipython:: python
+        :suppress:
+
+        result = tb
+        html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+    Let's use multiple functions.
+
+    .. ipython:: python
+
+        # Shape.
+        tb.shape()
+
+        # TableSample columns.
+        tb.get_columns()
+
+        # Exporting to list.
+        tb.to_list()
+
+        # Exporting to pandas.DataFrame.
+        tb.to_pandas()
+
+        # Exporting to SQL.
+        print(tb.to_sql())
+
+    .. note::
+
+        Explore :py:class:`TableSample`
+        different methods to see more
+        examples.
+
+    .. seealso::
+
+        | :py:class:`vDataFrame` :
+            Main VerticaPy dataset object.
     """
 
     @property
@@ -243,8 +316,70 @@ class TableSample:
 
     def _get_correct_format_and_cast(self, val: Any) -> str:
         """
-        Casts the input value to the correct SQL data
-        types.
+        Casts the input value to the
+        correct SQL data types.
+
+        Parameters
+        ----------
+        val: Any
+            The value to format.
+
+        Returns
+        -------
+        str
+            Formatted ``str``
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            # str
+            tb._get_correct_format_and_cast('test')
+
+            # list
+            tb._get_correct_format_and_cast([1, 2, 3])
+
+            # none
+            tb._get_correct_format_and_cast(None)
+
+        .. note::
+
+            This function is used only for
+            formatting some elements.
         """
         if isinstance(val, str):
             val = "'" + val.replace("'", "''") + "'"
@@ -285,17 +420,106 @@ class TableSample:
 
     def append(self, tbs: "TableSample") -> "TableSample":
         """
-        Appends the input TableSample to a target TableSample.
+        Appends the input :py:class:`TableSample`
+        to a target :py:class:`TableSample`.
 
         Parameters
         ----------
         tbs: TableSample
-            Tablesample to append.
+            :py:class:`TableSample` to append.
 
         Returns
         -------
         TableSample
             self
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's build a second object example.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [4, 5],
+                "age": [33, 66],
+                "name": ['Vanesa', 'Antony'],
+            }
+
+            # creating the object.
+            tb2 = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb2
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_2.html
+
+        Let's use the function.
+
+        .. code-block:: python
+
+            tb.append(tb2)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb.append(tb2)
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_3.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_3.html
+
+        .. warning::
+
+            This will modify the main object, and
+            the input :py:class:`TableSample` will
+            be appended to it.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.merge` :
+                Merges the input :py:class:`TableSample`
+                to a target :py:class:`TableSample`.
         """
         assert isinstance(tbs, TableSample), ValueError(
             "TableSamples can only be appended to another TableSample."
@@ -314,18 +538,68 @@ class TableSample:
         self, column: str
     ) -> Literal["bool", "date", "float", "int", "undefined", "text",]:
         """
-        Returns the category of data in a specified
-        TableSample column.
+        Returns the category of data in a
+        specified :py:class:`TableSample`
+        column.
 
         Parameters
         ----------
         column: str
-            Tablesample column.
+            :py:class:`TableSample` column.
 
         Returns
         -------
         Literal
             Category of the specified column.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            # Example1.
+            tb.category('name')
+
+            # Example2.
+            tb.category('age')
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.get_columns` :
+                Returns the :py:class:`TableSample` columns.
         """
         x = np.array(self[column])
         for xi in x:
@@ -343,12 +617,84 @@ class TableSample:
 
     def decimal_to_float(self) -> "TableSample":
         """
-        Converts all the TableSample's decimals to floats.
+        Converts all the :py:class:`TableSample`
+        ``decimals`` to ``floats``.
 
         Returns
         -------
         TableSample
             self.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # Importing decimals
+            import decimal
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [
+                    decimal.Decimal('40'),
+                    decimal.Decimal('30'),
+                    decimal.Decimal('22'),
+                    decimal.Decimal('55'),
+                ],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_decimal_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_decimal_1.html
+
+        Let's use the function.
+
+        .. code-block:: python
+
+            tb.decimal_to_float()
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb.decimal_to_float()
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_decimal_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_decimal_2.html
+
+        .. note::
+
+            All the ``Decimal`` are now
+            converted to ``float``.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.category` :
+                Returns the category of data in a
+                specified :py:class:`TableSample`
+                column.
         """
         for elem in self.values:
             if elem != "index":
@@ -365,22 +711,154 @@ class TableSample:
         -------
         list
             columns.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            tb.get_columns()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.shape` :
+                Returns the :py:class:`TableSample` shape.
         """
         return list(self.values)
 
     def merge(self, tbs: "TableSample") -> "TableSample":
         """
-        Merges the input TableSample to a target TableSample.
+        Merges the input :py:class:`TableSample`
+        to a target :py:class:`TableSample`.
 
         Parameters
         ----------
         tbs: TableSample
-            Tablesample to merge.
+            :py:class:`TableSample` to merge.
 
         Returns
         -------
         TableSample
             self.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's build a second object example.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "location": ['Romania', 'Sofia', 'Istanbul', 'Chicago'],
+            }
+
+            # creating the object.
+            tb2 = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb2
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_4.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_4.html
+
+        Let's use the function.
+
+        .. code-block:: python
+
+            tb.merge(tb2)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb.merge(tb2)
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_merge.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_merge.html
+
+        .. warning::
+
+            This will modify the main object, and
+            the input :py:class:`TableSample` will
+            be merged to it.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.append` :
+                Appends the input :py:class:`TableSample`
+                to a target :py:class:`TableSample`.
         """
         assert isinstance(tbs, TableSample), ValueError(
             "TableSamples can only be merged with other TableSamples."
@@ -399,8 +877,65 @@ class TableSample:
 
     def narrow(self, use_number_as_category: bool = False) -> Union[tuple, list]:
         """
-        Returns the narrow representation of the
-        TableSample.
+        Returns the narrow representation
+        of the :py:class:`TableSample`.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. code-block:: python
+
+            tb.narrow()
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb.narrow()
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_narrow.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_narrow.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.merge` :
+                Merges the input :py:class:`TableSample`
+                to a target :py:class:`TableSample`.
         """
         res = []
         d = copy.deepcopy(self.values)
@@ -445,33 +980,75 @@ class TableSample:
         symbol: str = "$",
     ) -> "TableSample":
         """
-        Returns the result of a SQL query as a TableSample
-        object.
+        Returns the result of a SQL query
+        as a :py:class:`TableSample` object.
 
         Parameters
         ----------
         query: str, optional
             SQL Query.
         title: str, optional
-            Query title when the query is displayed.
+            Query title when the query is
+            displayed.
         max_columns: int, optional
-            Maximum number of columns to display.
+            Maximum number of columns to
+            display.
         sql_push_ext: bool, optional
-            If set to True, the entire query is pushed to the
-            external table.
-            This can increase  performance but might increase
-            the error rate.
-            For instance, some DBs might not support the same
-            SQL as Vertica.
+            If set to True, the entire query
+            is pushed to the external table.
+            This can increase  performance
+            but might increase the error rate.
+            For instance, some DBs might not
+            support the same SQL as Vertica.
         symbol: str, optional
-            Symbol used to identify the external connection.
-            One of the following:
-            "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
+            Symbol used to identify the external
+            connection. One of the following:
+            ``"$", "€", "£", "%", "@", "&", "§", "%", "?", "!"``
 
         Returns
         -------
         TableSample
             Result of the query.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # SQL query.
+            sql = "SELECT 30 AS age, 'Vanesa' AS name, 'Sofia' AS city;"
+
+            # creating the object from the SQL query.
+            tb = TableSample.read_sql(
+                query = sql,
+                title = 'Building a TableSample for testing',
+                max_columns = 2, # Maximum number of columns to display.
+                sql_push_ext = False, # No external DB.
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_read_sql.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_read_sql.html
+
+        .. seealso::
+
+            | :py:class:`vDataFrame` :
+                Main VerticaPy dataset object.
         """
         query = clean_query(query)
         if conf.get_option("sql_on"):
@@ -509,12 +1086,58 @@ class TableSample:
 
     def shape(self) -> tuple[int, int]:
         """
-        Computes the TableSample shape.
+        Computes the :py:class:`TableSample`
+        ``shape``.
 
         Returns
         -------
         tuple
-            (number of columns, number of rows)
+            ``(number of columns, number of rows)``
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            tb.shape()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.get_columns` :
+                Returns the :py:class:`TableSample` columns.
         """
         cols = list(self.values)
         n, m = len(cols), len(self.values[cols[0]])
@@ -536,6 +1159,64 @@ class TableSample:
         -------
         TableSample
             self.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function. We will sort in
+        descending order using the "age" column.
+
+        .. code-block:: python
+
+            tb.sort("age", desc = True)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb.sort("age", desc = True)
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_sort.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_sort.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.merge` :
+                Merges the input :py:class:`TableSample`
+                to a target :py:class:`TableSample`.
         """
         column = column.replace('"', "").lower()
         columns = [col for col in self.values]
@@ -560,12 +1241,75 @@ class TableSample:
 
     def transpose(self) -> "TableSample":
         """
-        Transposes the TableSample.
+        Transposes the :py:class:`TableSample`.
 
         Returns
         -------
         TableSample
-                transposed TableSample.
+            transposed :py:class:`TableSample`.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. code-block:: python
+
+            tb.transpose()
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb.transpose()
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_transpose.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_transpose.html
+
+        .. warning::
+
+            This will modify the main object, and
+            the input :py:class:`TableSample` will
+            be appended to it.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.narrow` :
+                Returns the narrow representation of the
+                :py:class:`TableSample`.
         """
         index = [column for column in self.values]
         first_item = list(self.values.keys())[0]
@@ -584,12 +1328,59 @@ class TableSample:
 
     def to_list(self) -> list:
         """
-        Converts the TableSample to a list.
+        Converts the :py:class:`TableSample`
+        to a ``list``.
 
         Returns
         -------
         list
-            Python list.
+            Python ``list``.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            tb.to_list()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.to_numpy` :
+                Converts the :py:class:`TableSample`
+                to a ``numpy.array``.
         """
         res = []
         all_cols = list(self.values)
@@ -605,23 +1396,118 @@ class TableSample:
 
     def to_numpy(self) -> np.ndarray:
         """
-        Converts the TableSample to a Numpy array.
+        Converts the :py:class:`TableSample`
+        to a Numpy array.
 
         Returns
         -------
         numpy.array
             Numpy Array.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            tb.to_numpy()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.to_list` :
+                Converts the :py:class:`TableSample`
+                to a Python ``list``.
         """
         return np.array(self.to_list())
 
     def to_pandas(self) -> pd.DataFrame:
         """
-        Converts the TableSample to a pandas DataFrame.
+        Converts the :py:class:`TableSample`
+        to a ``pandas.DataFrame``.
 
         Returns
         -------
         pandas.DataFrame
-                pandas DataFrame of the TableSample.
+            ``pandas.DataFrame`` of the
+            :py:class:`TableSample`.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            tb.to_pandas()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.to_numpy` :
+                Converts the :py:class:`TableSample`
+                to a ``numpy.array``.
         """
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
@@ -631,12 +1517,60 @@ class TableSample:
 
     def to_sql(self) -> str:
         """
-        Generates the SQL query associated to the TableSample.
+        Generates the SQL query associated
+        to the :py:class:`TableSample`.
 
         Returns
         -------
         str
-            SQL query associated to the TableSample.
+            SQL query associated to
+            the :py:class:`TableSample`.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. ipython:: python
+
+            print(tb.to_sql())
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.to_vdf` :
+                Converts the :py:class:`TableSample`
+                to a :py:class:`vDataFrame`.
         """
         sql = []
         n = len(self.values[list(self.values.keys())[0]])
@@ -652,11 +1586,70 @@ class TableSample:
 
     def to_vdf(self) -> "vDataFrame":
         """
-        Converts the TableSample to a vDataFrame.
+        Converts the :py:class:`TableSample`
+        to a :py:class:`vDataFrame`.
 
         Returns
         -------
         vDataFrame
-                vDataFrame of the TableSample.
+            :py:class:`vDataFrame` of the
+            :py:class:`TableSample`.
+
+        Examples
+        --------
+        Let's import the :py:class:`TableSample`
+        object:
+
+        .. ipython:: python
+
+            from verticapy import TableSample
+
+        Let's build an example object.
+
+        .. ipython:: python
+
+            # dict with all the data.
+            d = {
+                "customer_ID": [0, 1, 2, 3],
+                "age": [40, 30, 22, 55],
+                "name": ['Roger', 'Maria', 'Alisia', 'Costi'],
+            }
+
+            # creating the object.
+            tb = TableSample(d)
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_1.html
+
+        Let's use the function.
+
+        .. code-block:: python
+
+            tb.to_vdf()
+
+        .. ipython:: python
+            :suppress:
+
+            result = tb.to_vdf()
+            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_to_vdf.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_tb_base_to_vdf.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.TableSample.to_sql` :
+                Generates the SQL query associated
+                to the :py:class:`TableSample`.
         """
         return create_new_vdf(self.to_sql())
