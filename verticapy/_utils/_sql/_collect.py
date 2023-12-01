@@ -31,6 +31,59 @@ def _dict_to_json_string(
     json_dict: Optional[dict] = None,
     add_identifier: bool = False,
 ) -> str:
+    """
+    Returns a JSON representation of a
+    Python ``dictionary``. It will add
+    some extra elements to be able to
+    identify each record.
+
+    Parameters
+    ----------
+    name: str, optional
+        Function Name. It will be added
+        to the final JSON ``str``.
+    path: str, optional
+        Function Path. It will be added
+        to the final JSON ``str``.
+    json_dict: dict, optional
+        JSON ``dictionary``.
+    add_identifier: bool, optional
+        If set to ``True``, a unique
+        identifier will be added to
+        the JSON.
+
+    Returns
+    -------
+    str
+        JSON ``string``
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._collect import _dict_to_json_string
+
+        # Generating a dictionary.
+        d = {"param1": 1, "param2": True, "param3": "A"}
+
+        # Example.
+        _dict_to_json_string(
+            name = "my_fun",
+            path = "verticapy.my_fun_path",
+            json_dict = d,
+            add_identifier = True,
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
+    """
     gb_conn = get_global_connection()
     json = "{"
     if name:
@@ -77,11 +130,12 @@ def save_to_query_profile(
     add_identifier: bool = True,
 ) -> bool:
     """
-    Saves information about the specified VerticaPy
-    method to the QUERY_PROFILES table in the Vertica
-    database. It is used to collect usage statistics
-    on methods and their parameters. This function
-    generates a JSON string.
+    Saves information about the specified
+    VerticaPy method to the QUERY_PROFILES
+    table in the Vertica database. It is
+    used to collect usage statistics on
+    methods and their parameters. This
+    function generates a JSON string.
 
     Parameters
     ----------
@@ -90,22 +144,33 @@ def save_to_query_profile(
     path: str, optional
         Path to the function or method.
     json_dict: dict, optional
-        Dictionary of the different parameters to
-        store.
+        Dictionary of the different
+        parameters to store.
     query_label: str, optional
-        Name to give to the identifier in the query
-        profile table. If unspecified, the name of the
-        method is used.
+        Name to give to the identifier
+        in the query profile table.
+        If unspecified, the name of
+        the method is used.
     return_query: bool, optional
-        If set to True, the query is returned.
+        If set to ``True``, the query
+        is returned.
     add_identifier: bool, optional
-        If set to True, the VerticaPy identifier is
-        added to the generated json.
+        If set to ``True``, the VerticaPy
+        identifier is added to the generated
+        json.
 
     Returns
     -------
     bool
-        True if the operation succeeded, False otherwise.
+        ``True`` if the operation succeeded,
+        ``False`` otherwise.
+
+    Examples
+    --------
+    Refer to the decorator to understand
+    how to use this function:
+
+    :py:func:`verticapy._utils._sql._collect.save_verticapy_logs`
     """
     json_dict = format_type(json_dict, dtype=dict)
     value = conf.get_option("save_query_profile")
@@ -127,9 +192,28 @@ def save_to_query_profile(
 
 def save_verticapy_logs(func: Callable) -> Callable:
     """
-    save_verticapy_logs decorator. It simplifies the code
-    and automatically identifies which function to save to
+    save_verticapy_logs decorator. It
+    simplifies the code and automatically
+    identifies which function to save to
     the QUERY_PROFILES table.
+
+    You can utilize the decorator as
+    follows.
+
+    .. code-block:: python
+
+        from verticapy._utils._sql._collect import save_verticapy_logs
+
+        @save_verticapy_logs
+        def function(...):
+            ...
+
+    .. note::
+
+        This decorator allows saving the
+        function to the Vertica meta tables,
+        making it possible to analyze VerticaPy
+        usage.
     """
 
     @wraps(func)
