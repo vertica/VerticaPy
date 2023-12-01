@@ -1439,31 +1439,42 @@ class vDFMachineLearning(vDFScaler):
 
             - accuracy:
                 Accuracy.
+
+                .. math::
+
+                    \\frac{TP + TN}{TP + TN + FP + FN}
+
             - auc:
                 Area Under the Curve (ROC).
+
+                .. math::
+
+                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
             - ba:
                 Balanced Accuracy.
 
                 .. math::
 
-                    (tpr + tnr) / 2
+                    \\frac{TPR + TNR}{2}
 
             - best_cutoff:
                 Cutoff  which  optimised
                 the ROC Curve prediction.
+
             - bm:
                 Informedness.
 
                 .. math::
 
-                    tpr + tnr - 1
+                    TPR + TNR - 1
 
             - csi:
                 Critical  Success  Index.
 
                 .. math::
 
-                    tp / (tp + fn + fp)
+                    \\frac{TP}{TP + FN + FP}
 
             - f1:
                 F1 Score
@@ -1472,67 +1483,85 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    1 - ppv
+                    1 - PPV
 
             - fm:
                 Fowlkes–Mallows index.
+
                 .. math::
 
-                    sqrt(ppv * tpr)
+                    \\sqrt{PPV * TPR}
 
             - fnr:
                 False Negative Rate.
+
                 .. math::
 
-                    fn / (fn + tp)
+                    \\frac{FN}{FN + TP}
 
             - for:
                 False Omission Rate.
 
                 .. math::
 
-                    1 - npv
+                    1 - NPV
 
             - fpr:
                 False Positive Rate.
 
                 .. math::
 
-                    fp / (fp + tn)
+                    \\frac{FP}{FP + TN}
 
             - logloss:
                 Log Loss.
+
+                .. math::
+
+                    -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
             - lr+:
                 Positive Likelihood Ratio.
 
                 .. math::
 
-                    tpr / fpr
+                    \\frac{TPR}{FPR}
 
             - lr-:
                 Negative Likelihood Ratio.
 
                 .. math::
 
-                    fnr / tnr
+                    \\frac{FNR}{TNR}
 
             - dor:
                 Diagnostic Odds Ratio.
+
+                .. math::
+
+                    \\frac{TP \\times TN}{FP \\times FN}
+
             - mcc:
                 Matthews Correlation Coefficient.
+
+                .. math::
+
+                    \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+
             - mk:
                 Markedness.
 
                 .. math::
 
-                    ppv + npv - 1
+                    PPV + NPV - 1
 
             - npv:
                 Negative Predictive Value.
 
                 .. math::
 
-                    tn / (tn + fn)
+                    \\frac{TN}{TN + FN}
 
             - prc_auc:
                 Area Under the Curve (PRC).
@@ -1541,37 +1570,80 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    tp / (tp + fp)
+                    TP / (TP + FP)
 
             - pt:
                 Prevalence Threshold.
 
                 .. math::
 
-                    sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+                    \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+
 
             - recall:
                 Recall.
 
                 .. math::
-                    tp / (tp + fn)
+                    TP / (TP + FN)
 
             - specificity:
                 Specificity.
 
                 .. math::
 
-                    tn / (tn + fp)
+                    TN / (TN + FP)
 
             **For Regression**
 
-            - max: Max Error.
-            - mae: Mean Absolute Error.
-            - median: Median Absolute Error.
-            - mse: Mean Squared Error.
-            - msle: Mean Squared Log Error.
-            - r2: R squared coefficient.
-            - var: Explained Variance.
+            - max:
+                Max Error.
+
+                .. math::
+
+                    \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mae:
+                Mean Absolute Error.
+
+                .. math::
+
+                    \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+
+            - median:
+                Median Absolute Error.
+
+                .. math::
+
+                    \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mse:
+                Mean Squared Error.
+
+                .. math::
+
+                    \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+            - msle:
+                Mean Squared Log Error.
+
+                .. math::
+
+                    \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+            - r2:
+                R squared coefficient.
+
+                .. math::
+
+                    1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+            - var:
+                Explained Variance.
+
+                .. math::
+
+                    1 - \\frac{Var(y - \hat{y})}{Var(y)}
 
         Returns
         -------

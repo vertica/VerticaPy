@@ -1108,29 +1108,65 @@ def regression_report(
         - aic:
             Akaike's Information Criterion
 
+            .. math::
+
+                2k - 2\ln(\hat{L})
+
         - bic:
             Bayesian Information Criterion
 
+            .. math::
+
+                -2\ln(\hat{L}) + k \ln(n)
+
         - max:
-            Max Error
+            Max Error.
+
+            .. math::
+
+                \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
         - mae:
-            Mean Absolute Error
+            Mean Absolute Error.
+
+            .. math::
+
+                \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
         - median:
-            Median Absolute Error
+            Median Absolute Error.
+
+            .. math::
+
+                \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
         - mse:
-            Mean Squared Error
+            Mean Squared Error.
+
+            .. math::
+
+                \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
 
         - msle:
-            Mean Squared Log Error
+            Mean Squared Log Error.
+
+            .. math::
+
+                \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
 
         - r2:
-            R squared coefficient
+            R squared coefficient.
+
+            .. math::
+
+                1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
         - r2a:
             R2 adjusted
+
+            .. math::
+
+                1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
 
         - qe:
             quantile error, the quantile must be
@@ -1138,8 +1174,19 @@ def regression_report(
             qe50.1% will  return the quantile
             error using q=0.501.
 
-        - rmse   : Root Mean Squared Error
-        - var    : Explained Variance
+        - rmse:
+            Root-mean-squared error
+
+            .. math::
+
+                \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
+        - var:
+            Explained Variance
+
+            .. math::
+
+                1 - \\frac{Var(y - \hat{y})}{Var(y)}
 
     k: int, optional
         Number  of predictors. Used  to compute the adjusted
