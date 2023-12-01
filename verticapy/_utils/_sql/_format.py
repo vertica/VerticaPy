@@ -952,8 +952,14 @@ def extract_precision_scale(ctype: str) -> tuple:
         # Import the function.
         from verticapy._utils._sql._format import extract_precision_scale
 
-        #
-        ...
+        # varchar
+        extract_precision_scale('varchar')
+
+        # varchar(80)
+        extract_precision_scale('varchar(80)')
+
+        # numeric(4, 6)
+        extract_precision_scale('numeric(4, 6)')
 
     .. note::
 
@@ -1074,8 +1080,13 @@ def format_schema_table(schema: str, table_name: str) -> str:
         # Import the function.
         from verticapy._utils._sql._format import format_schema_table
 
-        #
-        ...
+        # Example
+        format_schema_table('my verticapy schema', 'table-test')
+
+    .. note::
+
+        This function uses double quotes
+        to format the final relation.
 
     .. note::
 
@@ -1266,8 +1277,8 @@ def list_strip(L: list) -> list:
         # Import the function.
         from verticapy._utils._sql._format import list_strip
 
-        #
-        ...
+        # Example
+        list_strip([' A ', ' B', ' C    '])
 
     .. note::
 
@@ -1304,8 +1315,14 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
         # Import the function.
         from verticapy._utils._sql._format import quote_ident
 
-        #
-        ...
+        # str
+        quote_ident('my table test')
+
+        # str - lower = True
+        quote_ident('My TABLE test', lower = True)
+
+        # list
+        quote_ident(['my table test', 'my column-test'])
 
     .. note::
 
@@ -1552,8 +1569,18 @@ def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
         # Import the function.
         from verticapy._utils._sql._format import schema_relation
 
-        #
-        ...
+        # usual formatting
+        schema_relation('my_schema.my_table')
+
+        # weird formatting
+        schema_relation('"my table"."test..verticapy"')
+
+    .. note::
+
+        This function is used to extract the
+        table and the schema from the input
+        relation. It is one of the mostly
+        used function.
 
     .. note::
 
