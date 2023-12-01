@@ -133,11 +133,26 @@ class vDataFrame(vDFAnimatedPlot):
     Examples
     ---------
 
-    Though there are many ways to create a ``vDataFrame``,
-    but here we will only look at creating ``vDataFrame``:
+    In this example, we will look at some of the
+    ways how we can create a ``vDataFrame``.
 
     - From ``dictionary``
     - From ``numpy.array``
+    - From ``pandas.DataFrame``
+    - From SQL Query
+    - From a table
+
+    After that we will also look at the mathematical
+    operators that are available:
+
+    - Pandas-Like
+    - SQL-Like
+
+    Lastly, we will look at some examples
+    of applications of functions that be applied
+    directly on the :py:class:`vDataFrame`.
+
+    ----
 
     Let's begin by importing `VerticaPy`.
 
@@ -204,6 +219,265 @@ class vDataFrame(vDFAnimatedPlot):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_2.html
+
+    Pandas DataFrame
+    ^^^^^^^^^^^^^^^^^
+
+    We can also use a ``pandas.DataFrame`` object:
+
+    .. ipython:: python
+
+        # Import Pandas library
+        import pandas as pd
+
+        # Create the data dictionary
+        data = {'Name': ['John', 'Ali', 'Pheona'],
+                'Age': [25, 30, 22],
+                'City': ['New York', 'Gaza', 'Los Angeles']}
+
+        # Create the Pandas DataFrame object
+        df = pd.DataFrame(data)
+
+        # Create a vDataFrame
+        vdf = vp.vDataFrame(df)
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_3.html
+
+    SQL Query
+    ^^^^^^^^^^
+
+    We can also use a SQL Query:
+
+    .. ipython:: python
+
+        # Write a SQL Query to fetch three rows from the Titanic table
+        sql_query = "SELECT age, sex FROM public.titanic LIMIT 3;"
+
+        # Create a vDataFrame
+        vdf = vp.vDataFrame(sql_query)
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html
+
+    Table
+    ^^^^^^
+
+    A table can also be directly ingested:
+
+    .. ipython:: python
+
+        # Create a vDataFrame from the titanic table in public schema
+        vdf = vp.vDataFrame("public.titanic")
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html
+
+    Mathermatical Opeartors
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    We can use all the common mathematical
+    operators on the :py:class:`vDataFrame`.
+
+    Pandas-Like
+    ^^^^^^^^^^^^
+
+    First let us re-create a simple :py:class:`vDataFrame`:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "cats": ["A", "B", "C"],
+                "reps": [2, 4, 8],
+            },
+        )
+
+    In order to search for a specific string value of
+    a specific column:
+
+    .. ipython:: python
+
+        result = vdf[vdf["cats"] == "A"]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html
+
+    Similarly we can perform a mathermatical operation
+    as well for numerical columns:
+
+    .. ipython:: python
+
+        result = vdf[vdf["reps"] > 2]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html
+
+    Both opeartors could also be combined:
+
+    .. ipython:: python
+
+        result = vdf[vdf["reps"] > 2][vdf["cats"] == "C"]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_5_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5_2.html
+
+    We can also perform mathematical claculations
+    on the elements inside the :py:class:`vDataFrame`
+    quite conveniently:
+
+    .. ipython:: python
+
+        vdf["new"] = abs(vdf["reps"] * 4 - 100)
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_6.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_6.html
+
+    SQL-Like
+    ^^^^^^^^^
+
+    SQL queries can be directly applied
+    on the :py:class:`vDataFrame` using
+    :py:class:`StringSQL`. This adds a new
+    level of flexibility to the :py:class:`vDataFrame`.
+    :py:class:`StringSQL` allows the user to generate
+    formatted SQL queries in a string form. Since any
+    SQL query in string format can be passed to the
+    :py:class:`vDataFrame`, you can seamlessly pass the output
+    of :py:class:`StringSQL` directly to the `vDataFrame`.
+
+    .. ipython:: python
+
+        # Create the SQL Query using StringSQL
+        sql_query = vp.StringSQL("reps > 2 ")
+
+        # Get the output as a vDataFrame
+        result = vdf[sql_query]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html
+
+    .. note::
+
+        Have a look at :py:class:`StringSQL`
+        for more details.
+
+    Another example of a slightly advanced SQL Query could be:
+
+    .. ipython:: python
+
+        # Create the SQL Query using StringSQL
+        sql_query = vp.StringSQL("reps BETWEEN 3 AND 8 AND cats = 'B'")
+
+        # Get the output as a vDataFrame
+        result = vdf[sql_query]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_8.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_8.html
+
+    ----
+
+    Direct Functions
+    ~~~~~~~~~~~~~~~~~
+
+    There are many methods that can be directly
+    used by :py:class:`vDataFrame`. Let us look
+    at how conveiently we can call them. Here is
+    an example of the :py:meth:`vDataFrame.describe`
+    method:
+
+    .. ipython:: python
+
+        # Import the dataset
+        from verticapy.datasets import load_titanic
+
+        # Create vDataFrame
+        vdf = load_titanic()
+
+        # Sumamrize the vDataFrame
+        vdf.describe()
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf.describe()
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html
+
+    .. seealso::
+
+        :py:class:`vDataColumn`
     """
 
     @property

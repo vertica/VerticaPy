@@ -1262,6 +1262,66 @@ class vDFMachineLearning(vDFScaler):
             This function is highly useful for basket analysis
             and can be employed to derive valuable recommendations.
 
+        Let's look at another example involving timestamp
+        values:
+
+        .. ipython:: python
+
+            # Create a vDataFrame with the transaction data
+            vdf = vp.vDataFrame(
+                {
+                    "transaction_id": [1, 1, 1, 2, 2, 3, 3, 3],
+                    "item_id": ["A", "B", "C", "B", "C", "A", "B", "C"],
+                    "rating": [8, 5, 1, 6, 2, 9, 4, 3],
+                    "date": [
+                        "2021-1-1",
+                        "2021-1-1",
+                        "2021-1-1",
+                        "2021-1-4",
+                        "2021-1-4",
+                        "2021-1-21",
+                        "2021-1-21",
+                        "2021-1-21"]
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_2.html
+
+        hen we can use the timestamp column to
+        filter the recommendation results:
+
+        .. ipython:: python
+
+            recommendations = vdf.recommend(
+                unique_id="transaction_id",
+                item_id="item_id",
+                method="avg",
+                rating="rating",
+                ts = "date",
+                start_date = "2021-1-1",
+                end_date = "2021-1-5",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = recommendations
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_result_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_result_2.html
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.add_duplicates` :
