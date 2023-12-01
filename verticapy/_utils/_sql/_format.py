@@ -488,10 +488,38 @@ Main function
 
 
 def _format_keys(
-    d: dict, sql: str, mkd: str, tag_l: str, tag_r: str
-) -> tuple[str, str]:
+    d: dict, sql: SQLExpression, mkd: str, tag_l: str, tag_r: str
+) -> tuple[SQLExpression, str]:
     """
-    Function to simplify the code.
+    Format the input SQL query and
+    its Markdown representation by
+    using the input tags and rules.
+
+    Parameters
+    ----------
+    d: dict
+        ``dictionary`` including
+        the different rules to
+        format the input SQL
+        query.
+    sql: SQLExpression
+        SQL Query.
+    mkd: str
+        Markdown Representation
+        of the SQL Query.
+    tag_l: str
+        HTML left TAG.
+    tag_r: str
+        HTML right TAG.
+
+    Returns
+    -------
+    SQLExpression
+        Correctly Formatted
+        SQL query.
+
+    Examples
+    --------
     """
     for key in d:
         for l in d[key]["l"]:
@@ -512,7 +540,30 @@ def format_query(
     query: SQLExpression, indent_sql: bool = True, print_sql: bool = True
 ) -> SQLExpression:
     """
-    Query Formatter.
+    Query Formatter. It is used
+    to display nicely a SQL query
+    using different colors for all
+    the different SQL elements.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    indent_sql: bool, optional
+        If set to ``True`` the SQL
+        Query will be formatted.
+    print_sql: bool, optional
+        If set to ``True`` the SQL
+        Query will be printed.
+
+    Returns
+    -------
+    SQLExpression
+        Correctly Formatted
+        SQL query.
+
+    Examples
+    --------
     """
     display_success = print_sql and conf.get_import_success("IPython")
     res = clean_query(query)
@@ -589,9 +640,25 @@ Utils
 
 def clean_query(query: SQLExpression) -> SQLExpression:
     """
-    Cleans the input query by erasing comments, spaces,
+    Cleans the input query by
+    erasing comments, spaces,
     and other unnecessary characters.
-    Comments using '/*' and '*/' are left in the query.
+    Comments using '/*' and '*/'
+    are left in the query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        Correctly Formatted
+        SQL query.
+
+    Examples
+    --------
     """
     if isinstance(query, list):
         return [clean_query(q) for q in query]
@@ -609,18 +676,46 @@ def clean_query(query: SQLExpression) -> SQLExpression:
         return query.strip().replace("\xa0", " ")
 
 
-def erase_comment(query: str) -> str:
+def erase_comment(query: SQLExpression) -> SQLExpression:
     """
-    Removes comments from the input query.
+    Removes comments from the input
+    SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query without comments.
+
+    Examples
+    --------
     """
     query = re.sub(r"--.+(\n|\Z)", "", query)
     query = re.sub(r"/\*(.+?)\*/", "", query)
     return query.strip()
 
 
-def erase_label(query: str) -> str:
+def erase_label(query: SQLExpression) -> SQLExpression:
     """
-    Removes labels from the input query.
+    Removes labels from the input
+    SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query without labels.
+
+    Examples
+    --------
     """
     labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
@@ -628,9 +723,23 @@ def erase_label(query: str) -> str:
     return query.strip()
 
 
-def extract_subquery(query: str) -> str:
+def extract_subquery(query: SQLExpression) -> SQLExpression:
     """
-    Extracts the SQL subquery from the input query.
+    Extracts the SQL subquery from
+    the input SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query subquery.
+
+    Examples
+    --------
     """
     query_tmp = clean_query(query)
     query_tmp = erase_comment(query_tmp)
@@ -639,10 +748,26 @@ def extract_subquery(query: str) -> str:
     return query.strip()
 
 
-def extract_and_rename_subquery(query: str, alias: str) -> str:
+def extract_and_rename_subquery(query: SQLExpression, alias: str) -> SQLExpression:
     """
-    Extracts the SQL subquery from the input query
-    and renames it.
+    Extracts the SQL subquery from
+    the input SQL query and renames
+    it.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    alias: str
+        New alias.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query with new alias.
+
+    Examples
+    --------
     """
     query_tmp = extract_subquery(query)
     query_clean = clean_query(query)
@@ -654,8 +779,21 @@ def extract_and_rename_subquery(query: str, alias: str) -> str:
 
 def extract_precision_scale(ctype: str) -> tuple:
     """
-    Extracts the precision and scale from the
-    input SQL type.
+    Extracts the precision and
+    scale from the input SQL type.
+
+    Parameters
+    ----------
+    ctype: str
+        SQL data type.
+
+    Returns
+    -------
+    tuple
+        ``(precision, scale)``.
+
+    Examples
+    --------
     """
     if "(" not in ctype:
         return (0, 0)
@@ -672,9 +810,35 @@ def format_magic(
     x: Any, return_cat: bool = False, cast_float_int_to_str: bool = False
 ) -> Any:
     """
-    Formats  the input element using SQL rules.
-    Ex: None values are represented by NULL and
-        string are enclosed by single quotes "'"
+    Formats  the input element using
+    SQL rules.
+
+    .. note::
+
+        For example: ``None`` values
+        are represented by ``NULL``
+        and ``string`` are enclosed
+        by single quotes "'".
+
+    Parameters
+    ----------
+    x: Any
+        Element to format.
+    return_cat: bool, optional
+        If set to ``True``, the category
+        is also returned.
+    cast_float_int_to_str: bool, optional
+        If set to ``True``, ``float``
+        and ``int`` will be treated
+        as ``str``.
+
+    Returns
+    -------
+    Any
+        Formatted Element.
+
+    Examples
+    --------
     """
     object_type = None
     if hasattr(x, "object_type"):
@@ -700,8 +864,26 @@ def format_magic(
 
 def format_schema_table(schema: str, table_name: str) -> str:
     """
-    Returns the formatted relation. If the schema is not
-    defined, the 'public' schema is used.
+    Returns the formatted relation.
+    If the schema is not defined,
+    the 'public' ``schema`` is
+    used.
+
+    Parameters
+    ----------
+    schema: str
+        Input ``schema``.
+    table_name: str
+        Input relation name.
+
+    Returns
+    -------
+    str
+        Final Formatted
+        Relation Name.
+
+    Examples
+    --------
     """
     if not schema:
         schema = conf.get_option("temp_schema")
@@ -710,9 +892,29 @@ def format_schema_table(schema: str, table_name: str) -> str:
 
 def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None) -> Any:
     """
-    Format the input objects by using the input type. This
-    simplifies the code because many functions check
-    types and instantiate the corresponding object.
+    Format the input objects by using
+    the input type. This simplifies the
+    code because many functions check
+    types and instantiate the corresponding
+    object.
+
+    Parameters
+    ----------
+    *args
+        Element to format.
+    dtype: type
+        The type used for the formatting.
+    na_out: Any, optional
+        How ``None`` values should be
+        formatted.
+
+    Returns
+    -------
+    Any
+        Formatted Element.
+
+    Examples
+    --------
     """
     res = ()
     for arg in args:
@@ -739,9 +941,22 @@ def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None)
         return res
 
 
-def indent_vpy_sql(query: str) -> str:
+def indent_vpy_sql(query: SQLExpression) -> SQLExpression:
     """
     Indents the input SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        Indented SQL query.
+
+    Examples
+    --------
     """
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
@@ -793,8 +1008,21 @@ def indent_vpy_sql(query: str) -> str:
 
 def list_strip(L: list) -> list:
     """
-    Erases all the start / end spaces from the
-    input list.
+    Erases all the start / end
+    spaces from the input ``list``.
+
+    Parameters
+    ----------
+    L: list
+        Input ``list``.
+
+    Returns
+    -------
+    list
+        Stripped ``list``.
+
+    Examples
+    --------
     """
     return [val.strip() for val in L]
 
@@ -814,6 +1042,9 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
     -------
     str
         Formatted column name.
+
+    Examples
+    --------
     """
     if isinstance(column, str):
         tmp_column = str(column)
@@ -841,7 +1072,27 @@ def replace_label(
     suffix: Optional[str] = None,
 ) -> str:
     """
-    Replace the current query's label by a new one.
+    Replace the current query's
+    label by a new one.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    new_label: str, optional
+        New Label.
+    separator: str, optional
+        Label separator.
+    suffix: str, optional
+        Label suffix.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query with the new label.
+
+    Examples
+    --------
     """
     if isinstance(separator, NoneType):
         separator = ""
@@ -859,12 +1110,33 @@ def replace_label(
     return query.strip()
 
 
-def replace_vars_in_query(query: str, locals_dict: dict) -> str:
+def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpression:
     """
-    Replaces the input variables with their respective SQL
-    representations. If a input variable does not have a
-    SQL representation, it is materialised by a temporary
-    local table.
+    Replaces the input variables with
+    their respective SQL representations.
+    If a input variable does not have a
+    SQL representation, it is materialised
+    by a temporary local table.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    locals_dict: dict
+        Dictionary which includes all
+        the elements to include in the
+        final query. It can be ``lists``,
+        ``numpy.array`` or even
+        ``pandas.DataFrame``.
+
+    Returns
+    -------
+    SQLExpression
+        Formatted SQL query with
+        all the replaced elements.
+
+    Examples
+    --------
     """
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -912,9 +1184,27 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
 
 def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
     """
-    Extracts the schema and the table from the input
-    relation. If the input relation does not have a schema,
-    the temporary schema is used.
+    Extracts the schema and the
+    table from the input ``relation``.
+    If the input ``relation`` does
+    not have a schema, the temporary
+    schema is used.
+
+    Parameters
+    ----------
+    relation: str
+        Input relation.
+    do_quote: bool, optional
+        Adds quote to the output
+        to be correctly formatted.
+
+    Returns
+    -------
+    tuple
+        ``(schema, relation_name)``.
+
+    Examples
+    --------
     """
     if isinstance(relation, str):
         rel_transf = relation.replace('""', "__verticapy_doublequotes_")
