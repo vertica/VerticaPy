@@ -92,6 +92,176 @@ def read_pandas(
     -------
     vDataFrame
         vDataFrame of the new relation.
+
+    Examples
+    ---------
+
+    In this example, we will first create a ``pandas.DataFrame``
+    using :py:meth:`verticapy.vDataFrame.to_pandas` and ingest
+    it into Vertica database.
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    We will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    Let's convert the :py:class:`vDataFrame`
+    to a ``pandas.DataFrame``.
+
+    .. code-block:: python
+
+        pandas_df = data.to_pandas()
+
+        pandas_df
+
+    .. ipython:: python
+        :suppress:
+
+        pandas_df = data.to_pandas()
+        res = pandas_df
+        html_file = open("figures/core_parsers_pandas_1.html", "w")
+        html_file.write(res.to_html(max_rows = 6, justify = "center"))
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_pandas_1.html
+
+    Now, we will ingest the pandas dataframe
+    into the Vertica database
+
+    .. code-block:: python
+
+        from verticapy.utilities import *
+
+        read_pandas(
+            df = pandas_df,
+            name = "titanic_pandas",
+            schema = "public",
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        from verticapy.utilities import *
+        res = read_pandas(
+            df = pandas_df,
+            name = "titanic_pandas",
+            schema = "public",
+        )
+        html_file = open("figures/core_parsers_pandas_2.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_pandas_2.html
+
+    Let's specify data types using "dtypes"
+    parameter.
+
+    .. code-block:: python
+
+        from verticapy.utilities import *
+
+        read_pandas(
+            df = pandas_df,
+            name = "titanic_pandas_dtypes",
+            schema = "public",
+            dtype = {"pclass": "Integer",
+                    "survived": "Integer",
+                    "name": "Varchar(164)",
+                    "sex": "Varchar(20)",
+                    "age": "Numeric(6,3)",
+                    "sibsp": "Integer",
+                    "parch": "Integer",
+                    "ticket": "Varchar(36)",
+                    "fare": "Numeric(10,5)",
+                    "cabin": "Varchar(30)",
+                    "embarked": "Varchar(20)",
+                    "boat": "Varchar(100)",
+                    "body": "Integer",
+                    "home.dest": "Varchar(100)"})
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        res = read_pandas(
+                df = pandas_df,
+                name = "titanic_pandas_dtypes",
+                schema = "public",
+                dtype = {"pclass": "Integer",
+                        "survived": "Integer",
+                        "name": "Varchar(164)",
+                        "sex": "Varchar(20)",
+                        "age": "Numeric(6,3)",
+                        "sibsp": "Integer",
+                        "parch": "Integer",
+                        "ticket": "Varchar(36)",
+                        "fare": "Numeric(10,5)",
+                        "cabin": "Varchar(30)",
+                        "embarked": "Varchar(20)",
+                        "boat": "Varchar(100)",
+                        "body": "Integer",
+                        "home.dest": "Varchar(100)"})
+        html_file = open("figures/core_parsers_pandas_3.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_pandas_3.html
+
+    .. seealso::
+
+        | :py:meth:`verticapy.utilities.read_csv` :
+            Ingests a CSV file into the Vertica DB.
+        | :py:meth:`verticapy.utilities.read_json` :
+            Ingests a JSON file into the Vertica DB.
     """
     dtype = format_type(dtype, dtype=dict)
     if not schema:
