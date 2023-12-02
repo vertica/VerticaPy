@@ -36,7 +36,7 @@ if TYPE_CHECKING and conf.get_import_success("graphviz"):
 
 class Ensemble(InMemoryModel):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ensemble
     algorithms.
     """
@@ -96,7 +96,7 @@ class Ensemble(InMemoryModel):
 
 class RandomForestRegressor(Ensemble):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the random
     forest regressor algorithm.
 
@@ -295,7 +295,7 @@ class RandomForestRegressor(Ensemble):
 
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     random forest classifier
     algorithm.
@@ -564,7 +564,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
 class XGBRegressor(Ensemble):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``XGBoost`` regressor
     algorithm.
@@ -787,7 +787,7 @@ class XGBRegressor(Ensemble):
 
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``XGBoost`` classifier
     algorithm.
@@ -1078,7 +1078,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
 class IsolationForest(Ensemble):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     isolation forest algorithm.
 
