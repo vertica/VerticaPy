@@ -34,14 +34,17 @@ class Scaler(InMemoryModel):
     Parameters
     ----------
     sub: ArrayLike
-        Model's features first aggregation.
+        Model's features
+        first aggregation.
     den: ArrayLike
-        Model's features second aggregation.
+        Model's features
+        second aggregation.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
     """
 
     # Properties.
@@ -60,17 +63,19 @@ class Scaler(InMemoryModel):
         self.sub_ = np.array(sub)
         self.den_ = np.array(den)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms  and applies the scaler model to  the
-        input matrix.
+        Transforms and applies
+        the ``Scaler`` model
+        to the input matrix.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the transformation.
+            The data on which to
+            make the transformation.
 
         Returns
         -------
@@ -79,17 +84,19 @@ class Scaler(InMemoryModel):
         """
         return (np.array(X) - self.sub_) / self.den_
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy
-        the Scaler.
+        Transforms and returns
+        the SQL needed to deploy
+        the ``Scaler``.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -107,21 +114,25 @@ class Scaler(InMemoryModel):
 class StandardScaler(Scaler):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of standard scaler.
+    implementation of
+    standard ``Scaler``.
 
     Parameters
     ----------
     mean: ArrayLike
-        Model's features averages.
+        Model's features
+        averages.
     std: ArrayLike
-        Model's features standard deviations.
+        Model's features
+        standard deviations.
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are defined
-        entirely by their attributes. For example, 'mean', and
-        'standard deviation' of feature(S) define a StandardScaler
-        model.
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their
+        attributes. For example, ``mean``,
+        and ``std`` of feature(s) define
+        a ``StandardScaler`` model.
 
     Attributes
     ----------
@@ -139,8 +150,10 @@ class StandardScaler(Scaler):
 
         from verticapy.machine_learning.memmodel.preprocessing import StandardScaler
 
-    A StandardScaler model is defined by mean and standard deviation
-    values. In this example, we will use the following:
+    A StandardScaler model is defined
+    by ``mean`` and ``std``values.
+    In this example, we will use the
+    following:
 
     .. ipython:: python
 
@@ -181,7 +194,9 @@ class StandardScaler(Scaler):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform_sql`
-    method to get the SQL code needed to deploy the model using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -189,8 +204,11 @@ class StandardScaler(Scaler):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -209,7 +227,8 @@ class StandardScaler(Scaler):
 class MinMaxScaler(Scaler):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of MinMax scaler.
+    implementation of
+    ``MinMax`` scaler.
 
     Parameters
     ----------
@@ -221,10 +240,12 @@ class MinMaxScaler(Scaler):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are defined
-        entirely by their attributes. For example, 'minimum',
-        and 'maximum' values of the input features define a
-        MinMaxScaler model.
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their
+        attributes. For example, ``minimum``,
+        and ``maximum`` values of the input
+        features define a ``MinMaxScaler``
+        model.
 
     Attributes
     ----------
@@ -242,8 +263,10 @@ class MinMaxScaler(Scaler):
 
         from verticapy.machine_learning.memmodel.preprocessing import MinMaxScaler
 
-    A MinMaxScaler model is defined by minimum and maximum values.
-    In this example, we will use the following:
+    A MinMaxScaler model is defined
+    by minimum and maximum values.
+    In this example, we will use the
+    following:
 
     .. ipython:: python
 
@@ -284,7 +307,9 @@ class MinMaxScaler(Scaler):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform_sql`
-    method to get the SQL code needed to deploy the model using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -292,8 +317,11 @@ class MinMaxScaler(Scaler):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -318,35 +346,50 @@ class OneHotEncoder(InMemoryModel):
     ----------
 
     categories: ArrayLike
-        ArrayLike  of the categories of  the different  features.
+        ArrayLike of the categories
+        of the different features.
     column_naming: str, optional
-        Appends  categorical  levels  to column  names  according
+        Appends categorical levels
+        to column names according
         to the specified method:
 
-        - indices              : Uses integer  indices to represent
-            categorical levels.
+        - indices:
+            Uses integer  indices to
+            represent categorical
+            levels.
 
-        - values/values_relaxed: Both methods use categorical level names.
-            If duplicate column  names occur,  the  function attempts  to
-            disambiguate them by appending _n, where  n  is a zero-based
-            integer index (_0, _1,…).
-
+        - values | values_relaxed:
+            Both methods use categorical
+            level names. If duplicate
+            column  names occur, the
+            function attempts to
+            disambiguate them by
+            appending _n, where n is a
+            zero-based integer index
+            (_0, _1,…).
     drop_first: bool, optional
-        If set to False, the first dummy of each category is
-        dropped.
+        If set to ``False``, the first
+        dummy of each category is dropped.
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are defined
-        entirely by their attributes. For example, 'categories' to
-        encode defines a OneHotEncoder model. You can optionally
-        provide 'column naming' criteria and a 'drop_first' flag to
-        denote whether to drop first dummy of each category.
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their
+        attributes. For example,
+        ``categories`` to encode
+        defines a ``OneHotEncoder``
+        model. You can optionally
+        provide ``column_naming``
+        criteria and a ``drop_first``
+        flag to denote whether to
+        drop first dummy of each
+        category.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -359,8 +402,10 @@ class OneHotEncoder(InMemoryModel):
 
         from verticapy.machine_learning.memmodel.preprocessing import OneHotEncoder
 
-    A OneHotEncoder model is defined by categories, column naming
-    criteria and drop_first flag.
+    A OneHotEncoder model is defined
+    by categories, column naming
+    criteria and ``drop_first``
+    flag.
 
     Let's create a
     :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
@@ -400,7 +445,9 @@ class OneHotEncoder(InMemoryModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform_sql`
-    method to get the SQL code needed to deploy the model using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -408,8 +455,11 @@ class OneHotEncoder(InMemoryModel):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -434,12 +484,13 @@ class OneHotEncoder(InMemoryModel):
         self.column_naming_ = column_naming
         self.drop_first_ = drop_first
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _transform_row(self, X: ArrayLike) -> list:
         """
-        Transforms and applies the OneHotEncoder model to the
-        input row.
+        Transforms and applies the
+        ``OneHotEncoder`` model to
+        the input row.
         """
         X_trans = []
         for i, x in enumerate(X):
@@ -453,13 +504,15 @@ class OneHotEncoder(InMemoryModel):
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and applies the OneHotEncoder model to the
-        input matrix.
+        Transforms and applies the
+        ``OneHotEncoder`` model to
+        the input matrix.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the transformation.
+            The data on which to
+            make the transformation.
 
         Returns
         -------
@@ -468,16 +521,18 @@ class OneHotEncoder(InMemoryModel):
         """
         return np.apply_along_axis(self._transform_row, 1, X)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy the Scaler.
+        Transforms and returns the SQL
+        needed to deploy the ``Scaler``.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------

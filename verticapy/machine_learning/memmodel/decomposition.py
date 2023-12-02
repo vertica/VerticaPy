@@ -27,25 +27,31 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 class PCA(InMemoryModel):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the PCA algorithm.
+    implementation of the
+    ``PCA`` algorithm.
 
     Parameters
     ----------
     principal_components: ArrayLike
-        Matrix   of   the   principal   components.
+        Matrix of the principal
+        components.
     mean: ArrayLike
-        List of the averages of each input feature.
+        List of the averages of
+        each input feature.
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are defined entirely
-        by their attributes. For example, ``principal components`` and
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their
+        attributes. For example,
+        ``principal_components`` and
         ``mean`` define a PCA model.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -58,12 +64,18 @@ class PCA(InMemoryModel):
 
         from verticapy.machine_learning.memmodel.decomposition import PCA
 
-    A PCA model is defined by its principal components and mean value.
-    In this example, we will use the following:
+    A PCA model is defined by
+    its ``principal_components``
+    and ``mean`` value.
+    In this example, we will use
+    the following:
 
     .. ipython:: python
 
-        principal_components = [[0.4, 0.5], [0.3, 0.2]]
+        principal_components = [
+            [0.4, 0.5],
+            [0.3, 0.2],
+        ]
         mean = [0.1, 0.3]
 
     Let's create a
@@ -92,7 +104,8 @@ class PCA(InMemoryModel):
 
     **Deploy SQL Code**
 
-    Let's use the following column names:
+    Let's use the following column
+    names:
 
     .. ipython:: python
 
@@ -100,7 +113,8 @@ class PCA(InMemoryModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.transform_sql`
-    method to get the SQL code needed to deploy the model
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -111,8 +125,8 @@ class PCA(InMemoryModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
-    method to perform Oblimin (Varimax, Quartimax) rotation on
-    PCA matrix.
+    method to perform Oblimin (Varimax,
+    Quartimax) rotation on PCA matrix.
 
     .. ipython:: python
 
@@ -120,19 +134,23 @@ class PCA(InMemoryModel):
 
     .. note::
 
-        You can determine the type of rotation by adjusting value
+        You can determine the type of
+        rotation by adjusting value
         of gamma in
         :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
-        method. It must be between 0.0 and 1.0.
+        method. It must be between
+        ``0.0`` and ``1.0``.
 
-    Use gamma = 0.0, for Quartimax rotation:
+    Use ``gamma = 0.0``, for
+    Quartimax rotation:
 
     .. ipython:: python
 
         gamma = 0.0
         model_pca.rotate(gamma)
 
-    Use gamma = 1.0, for Varimax rotation:
+    Use ``gamma = 1.0``, for
+    Varimax rotation:
 
     .. ipython:: python
 
@@ -141,15 +159,19 @@ class PCA(InMemoryModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.get_attributes`
-    method to check the attributes of the rotated model.
+    method to check the attributes
+    of the rotated model.
 
     .. ipython:: python
 
         model_pca.get_attributes()
 
     .. hint::
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -168,17 +190,19 @@ class PCA(InMemoryModel):
         self.principal_components_ = np.array(principal_components)
         self.mean_ = np.array(mean)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and applies the PCA model to the input
+        Transforms and applies the
+        ``PCA`` model to the input
         matrix.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the transformation.
+            The data on which to
+            make the transformation.
 
         Returns
         -------
@@ -193,17 +217,19 @@ class PCA(InMemoryModel):
             ]
         return np.column_stack(X_trans)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy
-        the PCA.
+        Transforms and returns the
+        SQL needed to deploy the
+        ``PCA``.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -233,8 +259,9 @@ class PCA(InMemoryModel):
         Phi: ArrayLike, gamma: float = 1.0, q: int = 20, tol: float = 1e-6
     ) -> None:
         """
-        Performs an Oblimin  (Varimax, Quartimax) rotation on
-        the input matrix.
+        Performs an Oblimin (Varimax,
+        Quartimax) rotation on the
+        input matrix.
         """
         # This piece of code was taken from
         # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
@@ -261,24 +288,31 @@ class PCA(InMemoryModel):
 
     def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6) -> None:
         """
-        Performs an Oblimin (Varimax, Quartimax) rotation on the  PCA
+        Performs an Oblimin (Varimax,
+        Quartimax) rotation on the PCA
         matrix.
 
         Parameters
         ----------
         gamma: float, optional
-            Oblimin rotation factor, determines the type of rotation.
-            It must be between 0.0 and 1.0.
+            Oblimin rotation factor,
+            determines the type of
+            rotation.
+            It must be between ``0.0``
+            and ``1.0``.
 
-            - gamma = 0.0 results in a Quartimax rotation.
+            - ``gamma = 0.0`` results in
+                a Quartimax rotation.
 
-            - gamma = 1.0 results in a Varimax rotation.
+            - ``gamma = 1.0`` results in
+                a Varimax rotation.
 
         q: int, optional
             Maximum number of iterations.
         tol: float, optional
-            The  algorithm stops when the Frobenius norm of  gradient
-            is less than tol.
+            The  algorithm stops when the
+            Frobenius norm of gradient is
+            less than ``tol``.
         """
         res = self.matrix_rotation(self.principal_components_, gamma, q, tol)
         self.principal_components_ = res
@@ -287,26 +321,31 @@ class PCA(InMemoryModel):
 class SVD(InMemoryModel):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the SVD Algorithm.
+    implementation of the
+    ``SVD`` Algorithm.
 
     Parameters
     ----------
     vectors: ArrayLike
-        Matrix of the right singular vectors.
+        Matrix of the right
+        singular vectors.
     values: ArrayLike
-        List of the singular values for each input
+        List of the singular
+        values for each input
         feature.
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are defined
-        entirely by their attributes. For example, ``vectors``
-        and 'values' define a SVD model.
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their
+        attributes. For example, ``vectors``
+        and ``values`` define a SVD model.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -319,12 +358,17 @@ class SVD(InMemoryModel):
 
         from verticapy.machine_learning.memmodel.decomposition import SVD
 
-    A SVD model is defined by its vectors and values.
-    In this example, we will use the following:
+    A SVD model is defined by
+    its vectors and values.
+    In this example, we will
+    use the following:
 
     .. ipython:: python
 
-        vectors = [[0.4, 0.5], [0.3, 0.2]]
+        vectors = [
+            [0.4, 0.5],
+            [0.3, 0.2],
+        ]
         values = [0.1, 0.3]
 
     Let's create a
@@ -361,7 +405,8 @@ class SVD(InMemoryModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.transform_sql`
-    method to get the SQL code needed to deploy the model.
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -370,7 +415,9 @@ class SVD(InMemoryModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.get_attributes`
-    method to check the attributes of the rotated model.
+    method to check the
+    attributes of the
+    rotated model.
 
     .. ipython:: python
 
@@ -378,8 +425,11 @@ class SVD(InMemoryModel):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -398,7 +448,7 @@ class SVD(InMemoryModel):
         self.vectors_ = np.array(vectors)
         self.values_ = np.array(values)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
@@ -407,7 +457,8 @@ class SVD(InMemoryModel):
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the transformation.
+            The data on which to
+            make the transformation.
 
         Returns
         -------
@@ -420,17 +471,19 @@ class SVD(InMemoryModel):
             X_trans += [np.sum(X * self.vectors_[:, i] / self.values_[i], axis=1)]
         return np.column_stack(X_trans)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy
-        the PCA.
+        Transforms and returns
+        the SQL needed to deploy
+        the ``PCA``.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------

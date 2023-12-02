@@ -37,22 +37,25 @@ if TYPE_CHECKING and conf.get_import_success("graphviz"):
 class Ensemble(InMemoryModel):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of ensemble algorithms.
+    implementation of ensemble
+    algorithms.
     """
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _predict_trees(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using all the model trees.
+        Predicts using all
+        the model trees.
         """
         return np.column_stack([tree.predict(X) for tree in self.trees_])
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def _predict_trees_sql(self, X: ArrayLike) -> list[str]:
         """
-        Predicts using all the model trees.
+        Predicts using all
+        the model trees.
         """
         return [str(tree.predict_sql(X)) for tree in self.trees_]
 
@@ -66,17 +69,22 @@ class Ensemble(InMemoryModel):
         **kwargs,
     ) -> "Source":
         """
-        Draws the input tree. Requires the Graphviz module.
+        Draws the input tree. Requires
+        the Graphviz module.
 
         Parameters
         ----------
         pic_path: str, optional
-            Absolute  path to  save the image of the  tree.
+            Absolute path to save
+            the image of the tree.
         tree_id: int, optional
-            Unique  tree identifier,   an  integer  in  the
-            range [0, n_estimators - 1].
+            Unique tree identifier,
+            an integer in the range
+            ``[0, n_estimators - 1]``.
         *args, **kwargs: Any, optional
-            Arguments to pass to the 'to_graphviz'  method.
+            Arguments to pass to
+            the ``to_graphviz``
+            method.
 
         Returns
         -------
@@ -89,25 +97,30 @@ class Ensemble(InMemoryModel):
 class RandomForestRegressor(Ensemble):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the random forest regressor algorithm.
+    implementation of the random
+    forest regressor algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        list of BinaryTrees for regression.
+        list of ``BinaryTrees``
+        for regression.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
 
     **Initalization**
 
-    A Random Forest Regressor model is an ensemble of multiple binary
-    tree regressor models. In this example, we will create three
+    A Random Forest Regressor model
+    is an ensemble of multiple binary
+    tree regressor models. In this
+    example, we will create three
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models:
 
@@ -173,8 +186,9 @@ class RandomForestRegressor(Ensemble):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict_sql`
-    method to get the SQL code needed to deploy the model using
-    its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -182,8 +196,10 @@ class RandomForestRegressor(Ensemble):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -211,9 +227,12 @@ class RandomForestRegressor(Ensemble):
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -231,16 +250,18 @@ class RandomForestRegressor(Ensemble):
     def __init__(self, trees: list[BinaryTreeRegressor]) -> None:
         self.trees_ = copy.deepcopy(trees)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the Random Forest regressor model.
+        Predicts using the Random
+        Forest regressor model.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -249,16 +270,19 @@ class RandomForestRegressor(Ensemble):
         """
         return np.average(self._predict_trees(X), axis=1)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code
+        needed to deploy the
+        model.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -272,27 +296,33 @@ class RandomForestRegressor(Ensemble):
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the random forest classifier algorithm.
+    implementation of the
+    random forest classifier
+    algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeClassifier]
-        List of BinaryTrees for classification.
+        ``list`` of ``BinaryTree``
+        for classification.
     classes: ArrayLike, optional
         The model's classes.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
 
     **Initalization**
 
-    A Random Forest Classifier model is an ensemble of multiple binary
-    tree classifier models. In this example, we will create three
+    A Random Forest Classifier model
+    is an ensemble of multiple binary
+    tree classifier models. In this
+    example, we will create three
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
@@ -356,7 +386,9 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba`
-    method to compute the predicted probabilities for each class.
+    method to compute the
+    predicted probabilities
+    for each class.
 
     .. ipython:: python
 
@@ -372,8 +404,10 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model using
-    its attributes.
+    method to get the SQL
+    code needed to deploy
+    the model using its
+    attributes.
 
     .. ipython:: python
 
@@ -381,8 +415,10 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba_sql`
-    method to get the SQL code needed to deploy the model probabilities
-    using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    probabilities using its
+    attributes.
 
     .. ipython:: python
 
@@ -390,8 +426,10 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -419,9 +457,12 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -446,17 +487,19 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         else:
             self.classes_ = np.array(classes)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes  the model's probabilites using  the
+        Computes  the model's
+        probabilites using the
         input matrix.
 
         Parameters
         ----------
-        X: list / numpy.array
-            The data on which to make the prediction.
+        X: list | numpy.array
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -471,17 +514,20 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
             trees_prob_sum += tree_prob_i_arg
         return trees_prob_sum / n
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model
-        using its attributes.
+        Returns the SQL code
+        needed to deploy the
+        model using its
+        attributes.
 
         Parameters
         ----------
-        X: list / numpy.array
-            The names or values of the input predictors.
+        X: list | numpy.array
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -519,28 +565,34 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 class XGBRegressor(Ensemble):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the XGBoost regressor algorithm.
+    implementation of the
+    ``XGBoost`` regressor
+    algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        List  of  BinaryTrees  for  regression.
+        ``list`` of ``BinaryTrees``
+        for regression.
     mean: float, optional
-        Average   of   the   response   column.
+        Average of the response
+        column.
     eta: float, optional
         Learning rate.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
 
     **Initalization**
 
-    A  model is an ensemble of multiple binary tree regressors.
+    A  model is an ensemble of
+    multiple binary tree regressors.
     In this example, we will create three
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models.
@@ -571,7 +623,8 @@ class XGBRegressor(Ensemble):
             value = [None, None, 1, 3, 6],
         )
 
-    Now we will use above models to create
+    Now we will use above
+    models to create
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
     model.
 
@@ -587,8 +640,10 @@ class XGBRegressor(Ensemble):
 
     .. note::
 
-        We have used *mean* that represents average of the response column
-        and *eta* that represents learning rate of XG Boost regressor model.
+        We have used ``mean`` that represents
+        average of the response column and
+        ``eta`` that represents learning
+        rate of ``XGBoost`` regressor model.
         Both are optional parameters.
 
     Create a dataset.
@@ -617,8 +672,9 @@ class XGBRegressor(Ensemble):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict_sql`
-    method to get the SQL code needed to deploy the model using
-    its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -626,8 +682,10 @@ class XGBRegressor(Ensemble):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -655,9 +713,12 @@ class XGBRegressor(Ensemble):
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -682,16 +743,18 @@ class XGBRegressor(Ensemble):
         self.mean_ = mean
         self.eta_ = eta
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the Random Forest Regressor model.
+        Predicts using the Random
+        Forest Regressor model.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -701,7 +764,7 @@ class XGBRegressor(Ensemble):
         trees_pred_sum = np.sum(self._predict_trees(X), axis=1)
         return trees_pred_sum * self.eta_ + self.mean_
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
@@ -710,7 +773,8 @@ class XGBRegressor(Ensemble):
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -724,15 +788,18 @@ class XGBRegressor(Ensemble):
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the XGBoost classifier algorithm.
+    implementation of the
+    ``XGBoost`` classifier
+    algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        List  of   BinaryTrees  for  regression.
+        ``list`` of ``BinaryTree``
+        for regression.
     logodds: ArrayLike[float], optional
-        ArrayLike of the logodds of the response
-        classes.
+        ArrayLike of the logodds
+        of the response classes.
     classes: ArrayLike, optional
         The model's classes.
     learning_rate: float, optional
@@ -740,16 +807,19 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
 
     **Initalization**
 
-    A XGBoost Classifier model is an ensemble of multiple binary
-    tree classifier models. In this example, we will create three
+    A XGBoost Classifier model is
+    an ensemble of multiple binary
+    tree classifier models. In this
+    example, we will create three
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
@@ -762,7 +832,13 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
             children_right = [2, 4, None, None, None],
             feature = [0, 1, None, None, None],
             threshold = ["female", 30, None, None, None],
-            value = [None, None, [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.6]],
+            value = [
+                None,
+                None,
+                [0.8, 0.1, 0.1],
+                [0.1, 0.8, 0.1],
+                [0.2, 0.2, 0.6],
+            ],
             classes = ["a", "b", "c"]
         )
         model2 = BinaryTreeClassifier(
@@ -770,7 +846,13 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
             children_right = [2, 4, None, None, None],
             feature = [0, 1, None, None, None],
             threshold = ["female", 30, None, None, None],
-            value = [None, None, [0.7, 0.2, 0.1], [0.3, 0.5, 0.2], [0.2, 0.2, 0.6]],
+            value = [
+                None,
+                None,
+                [0.7, 0.2, 0.1],
+                [0.3, 0.5, 0.2],
+                [0.2, 0.2, 0.6],
+            ],
             classes = ["a", "b", "c"],
         )
         model3 = BinaryTreeClassifier(
@@ -778,7 +860,13 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
             children_right = [2, 4, None, None, None],
             feature = [0, 1, None, None, None],
             threshold = ["female", 30, None, None, None],
-            value = [None, None, [0.4, 0.4, 0.2], [0.2, 0.2, 0.6], [0.2, 0.5, 0.3]],
+            value = [
+                None,
+                None,
+                [0.4, 0.4, 0.2],
+                [0.2, 0.2, 0.6],
+                [0.2, 0.5, 0.3],
+            ],
             classes = ["a", "b", "c"],
         )
 
@@ -799,9 +887,12 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     .. note::
 
-        We have used *logodds* that represents logodds of the response
-        column and *learning_rate* that represents learning rate of
-        XGBoost regressor model. Both are optional parameters.
+        We have used ``logodds`` that
+        represents logodds of the response
+        column and ``learning_rate`` that
+        represents learning rate of ``XGBoost``
+        regressor model. Both are optional
+        parameters.
 
     Create a dataset.
 
@@ -821,7 +912,8 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba`
-    method to compute the predicted probabilities for each class.
+    method to compute the predicted
+    probabilities for each class.
 
     .. ipython:: python
 
@@ -837,8 +929,9 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model using
-    its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -846,8 +939,10 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba_sql`
-    method to get the SQL code needed to deploy the model probabilities
-    using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    probabilities using its
+    attributes.
 
     .. ipython:: python
 
@@ -855,8 +950,10 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -880,13 +977,18 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -917,17 +1019,18 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
             self.classes_ = np.array(classes)
         self.eta_ = learning_rate
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's probabilites using the input
-        matrix.
+        Computes the model's probabilites
+        using the input matrix.
 
         Parameters
         ----------
-        X: list / numpy.array
-            The data on which to make the prediction.
+        X: list | numpy.array
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -941,17 +1044,19 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         logit = 1 / (1 + np.exp(-trees_prob))
         return logit / np.sum(logit, axis=1)[:, None]
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model using its
-        attributes.
+        Returns the SQL code needed
+        to deploy the model using
+        its attributes.
 
         Parameters
         ----------
-        X: list / numpy.array
-            The names or values of the input predictors.
+        X: list | numpy.array
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -974,25 +1079,30 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 class IsolationForest(Ensemble):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the isolation forest algorithm.
+    implementation of the
+    isolation forest algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeAnomaly]
-        list of BinaryTrees for anomaly detection.
+        ``list`` of ``BinaryTree``
+        for anomaly detection.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
 
     **Initalization**
 
-    An Isolation Forest model is an ensemble of multiple binary tree
-    anomaly models. In this example, we will create three
+    An Isolation Forest model is
+    an ensemble of multiple binary
+    tree anomaly models. In this
+    example, we will create three
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     models:
 
@@ -1061,8 +1171,9 @@ class IsolationForest(Ensemble):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict_sql`
-    method to get the SQL code needed to deploy the model using
-    its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -1070,8 +1181,10 @@ class IsolationForest(Ensemble):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -1099,9 +1212,12 @@ class IsolationForest(Ensemble):
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -1119,7 +1235,7 @@ class IsolationForest(Ensemble):
     def __init__(self, trees: list[BinaryTreeAnomaly]) -> None:
         self.trees_ = copy.deepcopy(trees)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -1128,7 +1244,8 @@ class IsolationForest(Ensemble):
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -1137,7 +1254,7 @@ class IsolationForest(Ensemble):
         """
         return 2 ** (-np.average(self._predict_trees(X), axis=1))
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
@@ -1146,7 +1263,8 @@ class IsolationForest(Ensemble):
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------

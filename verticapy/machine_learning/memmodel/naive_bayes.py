@@ -28,80 +28,131 @@ from verticapy.machine_learning.memmodel.base import MulticlassClassifier
 class NaiveBayes(MulticlassClassifier):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of the naive Bayes algorithm.
+    implementation of the
+    ``NaiveBayes`` algorithm.
 
     Parameters
     ----------
     attributes: list
-        List  of the model's attributes. Each feature  must
-        be represented by a dictionary, which differs based
-        on the distribution.
+        List of the model's attributes.
+        Each feature  must be represented
+        by a ``dictionary``, which differs
+        based on the distribution.
 
         - For 'gaussian':
-            Key "type"  must have 'gaussian' as value.
-            Each of the model's classes must include a
-            dictionary with two keys:
-            sigma_sq: Square  root of  the  standard deviation.
-            mu: Average.
+            Key "type"  must have 'gaussian'
+            as value. Each of the model's
+            classes must include a ``dictionary``
+            with two keys:
 
-            Example:
-                {'type': 'gaussian',
-                'C': {'mu': 63.9878308300395,
-                'sigma_sq': 7281.87598377196},
-                'Q': {'mu': 13.0217386792453,
-                'sigma_sq': 211.626862330204},
-                'S': {'mu': 27.6928120412844,
-                'sigma_sq': 1428.57067393938}}
+            **sigma_sq:**
+                Square root of the standard
+                deviation.
+
+            **mu:**
+                Average.
+
+            **Example:**
+
+            .. code-block:: python
+
+                {
+                    'type': 'gaussian',
+                    'C': {
+                        'mu': 63.9878308300395,
+                        'sigma_sq': 7281.87598377196
+                    },
+                    'Q': {
+                        'mu': 13.0217386792453,
+                        'sigma_sq': 211.626862330204
+                    },
+                    'S': {
+                        'mu': 27.6928120412844,
+                        'sigma_sq': 1428.57067393938,
+                    },
+                }
         - For 'multinomial':
-            Key "type" must have 'multinomial' as value.
-            Each of the model's classes must be represented
-            by a key with its probability as the value.
+            Key "type" must have 'multinomial'
+            as value. Each of the model's
+            classes must be represented by a
+            key with its probability as the
+            value.
 
-            Example:
-                {'type': 'multinomial',
-                'C': 0.771666666666667,
-                'Q': 0.910714285714286,
-                'S': 0.878216123499142}
+            **Example:**
+
+            .. code-block:: python
+
+                {
+                    'type': 'multinomial',
+                    'C': 0.771666666666667,
+                    'Q': 0.910714285714286,
+                    'S': 0.878216123499142,
+                }
         - For 'bernoulli':
-            Key "type" must have 'bernoulli' as value.
-            Each of the model's classes must be represented
-            by a key with its probability as the value.
+            Key "type" must have 'bernoulli'
+            as value. Each of the model's
+            classes must be represented by
+            a key with its probability as
+            the value.
 
-            Example:
-                {'type': 'bernoulli',
-                'C': 0.537254901960784,
-                'Q': 0.277777777777778,
-                'S': 0.324942791762014}
+            **Example:**
+
+            .. code-block:: python
+
+                {
+                    'type': 'bernoulli',
+                    'C': 0.537254901960784,
+                    'Q': 0.277777777777778,
+                    'S': 0.324942791762014,
+                }
         - For 'categorical':
-            Key "type" must have 'categorical' as value.
-            Each  of  the  model's  classes  must  include
-            a dictionary with all the feature categories.
+            Key "type" must have 'categorical'
+            as value. Each  of  the  model's
+            classes must include a ``dictionary``
+            with all the feature categories.
 
-            Example:
-                {'type': 'categorical',
-                'C': {'female': 0.407843137254902,
-                'male': 0.592156862745098},
-                'Q': {'female': 0.416666666666667,
-                'male': 0.583333333333333},
-                'S': {'female': 0.311212814645309,
-                'male': 0.688787185354691}}
+            **Example:**
+
+            .. code-block:: python
+
+                {
+                    'type': 'categorical',
+                    'C': {
+                        'female': 0.407843137254902,
+                        'male': 0.592156862745098
+                    },
+                    'Q': {
+                        'female': 0.416666666666667,
+                        'male': 0.583333333333333,
+                    },
+                    'S': {
+                        'female': 0.311212814645309,
+                        'male': 0.688787185354691,
+                    },
+                }
 
         prior: ArrayLike
-            The model's classes probabilities.
+            The model's classes
+            probabilities.
         classes: ArrayLike
             The model's classes.
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are defined
-        entirely by their attributes. For example, 'prior probabilities',
-        'classes' and 'input feature attributes' specific to the type of
-        distribution, defines a NaiveBayes model.
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their
+        attributes. For example, ``prior``
+        probabilities, ``classes`` and
+        input feature ``attributes``
+        specific to the type of
+        distribution, defines a
+        ``NaiveBayes`` model.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -114,12 +165,15 @@ class NaiveBayes(MulticlassClassifier):
 
         from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
 
-    Here we will be using attributes of model trained on well known
+    Here we will be using attributes
+    of model trained on well known
     `titanic dataset <https://github.com/vertica/VerticaPy/blob/master/verticapy/datasets/data/titanic.csv>`_.
 
-    It tries to predict the port of embarkation (C = Cherbourg,
-    Q = Queenstown, S = Southampton), using *age* (continous),
-    *pclass* (discrete), *survived* (boolean) and
+    It tries to predict the port
+    of embarkation (C = Cherbourg,
+    Q = Queenstown, S = Southampton),
+    using *age* (continous), *pclass*
+    (discrete), *survived* (boolean) and
     *sex* (categorical) as input features.
 
     Let's define attributes representing each input feature:
@@ -162,7 +216,8 @@ class NaiveBayes(MulticlassClassifier):
             },
         ]
 
-    We also need to provide class names and their prior probabilities.
+    We also need to provide class names
+    and their prior probabilities.
 
     .. ipython:: python
 
@@ -199,7 +254,8 @@ class NaiveBayes(MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba`
-    method to calculate the predicted probabilities
+    method to calculate the
+    predicted probabilities
     for each class.
 
     .. ipython:: python
@@ -208,7 +264,8 @@ class NaiveBayes(MulticlassClassifier):
 
     **Deploy SQL Code**
 
-    Let's use the following column names:
+    Let's use the following
+    column names:
 
     .. ipython:: python
 
@@ -216,8 +273,9 @@ class NaiveBayes(MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_sql`
-    method to get the SQL code needed to deploy the
-    model using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -225,8 +283,10 @@ class NaiveBayes(MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba_sql`
-    method to get the SQL code needed to deploy the
-    model that computes predicted probabilities.
+    method to get the SQL code
+    needed to deploy the model
+    that computes predicted
+    probabilities.
 
     .. ipython:: python
 
@@ -234,8 +294,11 @@ class NaiveBayes(MulticlassClassifier):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -260,7 +323,7 @@ class NaiveBayes(MulticlassClassifier):
         self.prior_ = np.array(prior)
         self.classes_ = np.array(classes)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _predict_row(self, X: ArrayLike, return_proba: bool = False) -> np.ndarray:
         """
@@ -302,8 +365,9 @@ class NaiveBayes(MulticlassClassifier):
 
         Parameters
         ----------
-        X: list / numpy.array
-            The data on which to make the prediction.
+        X: list | numpy.array
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -320,12 +384,14 @@ class NaiveBayes(MulticlassClassifier):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's probabilites using the input matrix.
+        Computes the model's probabilites
+        using the input matrix.
 
         Parameters
         ----------
-        X: list / numpy.array
-            The data on which to make the prediction.
+        X: list | numpy.array
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -334,12 +400,15 @@ class NaiveBayes(MulticlassClassifier):
         """
         return np.apply_along_axis(self._predict_proba_row, 1, X)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def _predict_score_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the final score for each class. The score
-        divided to the total corresponds to the probability.
+        Returns the final score
+        for each class. The score
+        divided to the total
+        corresponds to the
+        probability.
         """
         score = []
         for idx, c in enumerate(self.classes_):
@@ -366,13 +435,15 @@ class NaiveBayes(MulticlassClassifier):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model probabilities
+        Returns the SQL code needed
+        to deploy the model probabilities
         using its attributes.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
