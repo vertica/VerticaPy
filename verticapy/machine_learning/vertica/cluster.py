@@ -215,7 +215,7 @@ class KMeans(Clustering):
         existing model.
     n_cluster: int, optional
         Number of clusters
-    init: str / list, optional
+    init: str | list, optional
         The  method  used to find the initial  cluster
         centers.
 
@@ -787,7 +787,7 @@ class KPrototypes(KMeans):
         existing model.
     n_cluster: int, optional
         Number of clusters.
-    init: str / list, optional
+    init: str | list, optional
         The  method  used  to  find the  initial  cluster
         centers.
 
@@ -1317,7 +1317,7 @@ class BisectingKMeans(KMeans, Tree):
         The  distance measure between two  data
         points. Only Euclidean distance is supported
         at this time.
-    init: str / list, optional
+    init: str | list, optional
         The method used to find the initial KMeans
         cluster centers.
 

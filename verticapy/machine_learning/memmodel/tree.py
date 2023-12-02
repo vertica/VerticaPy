@@ -130,6 +130,68 @@ class Tree(InMemoryModel):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            # Different Attributes
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+            feature = [0, 1, None, None, None]
+            threshold = ["female", 30, None, None, None]
+            value = [
+                None,
+                None,
+                [0.8, 0.1, 0.1],
+                [0.1, 0.8, 0.1],
+                [0.2, 0.2, 0.6],
+            ]
+            classes = ["a", "b", "c"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            # Building the Model
+            model_btc = BinaryTreeClassifier(
+                children_left = children_left,
+                children_right = children_right,
+                feature = feature,
+                threshold = threshold,
+                value = value,
+                classes = classes,
+            )
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_btc.predict(data)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return np.apply_along_axis(self._predict_row, 1, np.array(X))
 
@@ -147,6 +209,68 @@ class Tree(InMemoryModel):
         -------
         numpy.array
             Probabilities.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            # Different Attributes
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+            feature = [0, 1, None, None, None]
+            threshold = ["female", 30, None, None, None]
+            value = [
+                None,
+                None,
+                [0.8, 0.1, 0.1],
+                [0.1, 0.8, 0.1],
+                [0.2, 0.2, 0.6],
+            ]
+            classes = ["a", "b", "c"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            # Building the Model
+            model_btc = BinaryTreeClassifier(
+                children_left = children_left,
+                children_right = children_right,
+                feature = feature,
+                threshold = threshold,
+                value = value,
+                classes = classes,
+            )
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_btc.predict_proba(data)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return np.apply_along_axis(self._predict_row_proba, 1, np.array(X))
 
@@ -204,6 +328,69 @@ class Tree(InMemoryModel):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            # Different Attributes
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+            feature = [0, 1, None, None, None]
+            threshold = ["female", 30, None, None, None]
+            value = [
+                None,
+                None,
+                [0.8, 0.1, 0.1],
+                [0.1, 0.8, 0.1],
+                [0.2, 0.2, 0.6],
+            ]
+            classes = ["a", "b", "c"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            # Building the Model
+            model_btc = BinaryTreeClassifier(
+                children_left = children_left,
+                children_right = children_right,
+                feature = feature,
+                threshold = threshold,
+                value = value,
+                classes = classes,
+            )
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_btc.predict_sql(cnames)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return self._predict_tree_sql(X)
 
@@ -223,6 +410,69 @@ class Tree(InMemoryModel):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            # Different Attributes
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+            feature = [0, 1, None, None, None]
+            threshold = ["female", 30, None, None, None]
+            value = [
+                None,
+                None,
+                [0.8, 0.1, 0.1],
+                [0.1, 0.8, 0.1],
+                [0.2, 0.2, 0.6],
+            ]
+            classes = ["a", "b", "c"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            # Building the Model
+            model_btc = BinaryTreeClassifier(
+                children_left = children_left,
+                children_right = children_right,
+                feature = feature,
+                threshold = threshold,
+                value = value,
+                classes = classes,
+            )
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_btc.predict_proba_sql(cnames)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         n = max(len(val) if not isinstance(val, NoneType) else 0 for val in self.value_)
         return [self._predict_tree_sql(X, 0, True, i) for i in range(n)]
@@ -346,6 +596,62 @@ class Tree(InMemoryModel):
         -------
         str
             Graphviz code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            # Different Attributes
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+            feature = [0, 1, None, None, None]
+            threshold = ["female", 30, None, None, None]
+            value = [
+                None,
+                None,
+                [0.8, 0.1, 0.1],
+                [0.1, 0.8, 0.1],
+                [0.2, 0.2, 0.6],
+            ]
+            classes = ["a", "b", "c"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            # Building the Model
+            model_btc = BinaryTreeClassifier(
+                children_left = children_left,
+                children_right = children_right,
+                feature = feature,
+                threshold = threshold,
+                value = value,
+                classes = classes,
+            )
+
+        Get the model Graphviz representation.
+
+        .. ipython:: python
+
+            model_btc.to_graphviz()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         feature_names, classes_color = format_type(
             feature_names, classes_color, dtype=list
@@ -467,6 +773,70 @@ class Tree(InMemoryModel):
         -------
         graphviz.Source
             graphviz object.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            # Different Attributes
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+            feature = [0, 1, None, None, None]
+            threshold = ["female", 30, None, None, None]
+            value = [
+                None,
+                None,
+                [0.8, 0.1, 0.1],
+                [0.1, 0.8, 0.1],
+                [0.2, 0.2, 0.6],
+            ]
+            classes = ["a", "b", "c"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            # Building the Model
+            model_btc = BinaryTreeClassifier(
+                children_left = children_left,
+                children_right = children_right,
+                feature = feature,
+                threshold = threshold,
+                value = value,
+                classes = classes,
+            )
+
+        Let's draw the input tree.
+
+        .. code-block:: python
+
+            model_btc.plot_tree()
+
+        .. ipython:: python
+            :suppress:
+
+            res = model_btc.plot_tree()
+            res.render(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier', format='png')
+
+        .. image:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.png
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if not conf.get_import_success("graphviz"):
             raise ImportError(
@@ -546,7 +916,7 @@ class BinaryTreeRegressor(Tree):
     at leaf nodes are also required.
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     model:
 
     .. ipython:: python
@@ -642,7 +1012,9 @@ class BinaryTreeRegressor(Tree):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
@@ -755,7 +1127,7 @@ class BinaryTreeAnomaly(Tree):
     split a node. Final values at
     leaf nodes are also required.
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     model:
 
     .. ipython:: python
@@ -996,7 +1368,7 @@ class BinaryTreeClassifier(Tree):
     a node. Final values at leaf nodes
     and name of classes are also required.
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     model.
 
     .. ipython:: python
@@ -1120,7 +1492,9 @@ class BinaryTreeClassifier(Tree):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
@@ -1270,7 +1644,7 @@ class NonBinaryTree(Tree):
     Our non-binary tree is ready,
     we will now provide information
     about classes and create a
-    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
+    :py:class:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
     model.
 
     .. ipython:: python
@@ -1370,7 +1744,9 @@ class NonBinaryTree(Tree):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
@@ -1456,6 +1832,68 @@ class NonBinaryTree(Tree):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import NonBinaryTree
+
+        Let's generate a
+        non-binary tree by using
+        :py:meth:`verticapy.vDataFrame.chaid`
+        method. For this example,
+        we will use the Titanic
+        dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        Lets create a non-binary tree.
+
+        .. ipython:: python
+
+            tree = data.chaid("survived", ["sex", "fare"]).tree_
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            classes = ["a", "b"]
+            model_nbt = NonBinaryTree(tree, classes)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_nbt.predict(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
+            for more information about the
+            different methods and usages.
         """
         return np.apply_along_axis(self._predict_row, 1, np.array(X))
 
@@ -1474,6 +1912,68 @@ class NonBinaryTree(Tree):
         -------
         numpy.array
             Probabilities.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import NonBinaryTree
+
+        Let's generate a
+        non-binary tree by using
+        :py:meth:`verticapy.vDataFrame.chaid`
+        method. For this example,
+        we will use the Titanic
+        dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        Lets create a non-binary tree.
+
+        .. ipython:: python
+
+            tree = data.chaid("survived", ["sex", "fare"]).tree_
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            classes = ["a", "b"]
+            model_nbt = NonBinaryTree(tree, classes)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_nbt.predict_proba(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
+            for more information about the
+            different methods and usages.
         """
         return np.apply_along_axis(self._predict_proba_row, 1, np.array(X))
 
@@ -1525,6 +2025,69 @@ class NonBinaryTree(Tree):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import NonBinaryTree
+
+        Let's generate a
+        non-binary tree by using
+        :py:meth:`verticapy.vDataFrame.chaid`
+        method. For this example,
+        we will use the Titanic
+        dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        Lets create a non-binary tree.
+
+        .. ipython:: python
+
+            tree = data.chaid("survived", ["sex", "fare"]).tree_
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            classes = ["a", "b"]
+            model_nbt = NonBinaryTree(tree, classes)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_nbt.predict_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
+            for more information about the
+            different methods and usages.
         """
         return self._predict_tree_sql(X, self.tree_)
 
@@ -1544,6 +2107,69 @@ class NonBinaryTree(Tree):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import NonBinaryTree
+
+        Let's generate a
+        non-binary tree by using
+        :py:meth:`verticapy.vDataFrame.chaid`
+        method. For this example,
+        we will use the Titanic
+        dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        Lets create a non-binary tree.
+
+        .. ipython:: python
+
+            tree = data.chaid("survived", ["sex", "fare"]).tree_
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            classes = ["a", "b"]
+            model_nbt = NonBinaryTree(tree, classes)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_nbt.predict_proba_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
+            for more information about the
+            different methods and usages.
         """
         n = len(self.classes_)
         return [self._predict_tree_sql(X, self.tree_, i, True) for i in range(n)]
@@ -1685,6 +2311,62 @@ class NonBinaryTree(Tree):
         -------
         str
           Graphviz code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import NonBinaryTree
+
+        Let's generate a
+        non-binary tree by using
+        :py:meth:`verticapy.vDataFrame.chaid`
+        method. For this example,
+        we will use the Titanic
+        dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        Lets create a non-binary tree.
+
+        .. ipython:: python
+
+            tree = data.chaid("survived", ["sex", "fare"]).tree_
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            classes = ["a", "b"]
+            model_nbt = NonBinaryTree(tree, classes)
+
+        Get the model Graphviz representation.
+
+        .. ipython:: python
+
+            model_nbt.to_graphviz()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
+            for more information about the
+            different methods and usages.
         """
         return self._to_graphviz_tree(
             self.tree_,

@@ -2190,7 +2190,7 @@ class MulticlassClassifier(Supervised):
             are  merged  into  the   negatives.  The  cutoff
             represents the classes  threshold.  If  it  is  empty,
             the  regular  cutoff (1 / number of classes) is used.
-        labels: str / list, optional
+        labels: str | list, optional
             List  of the  different  labels to be used during  the
             computation.
         nbins: int, optional
