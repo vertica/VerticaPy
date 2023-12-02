@@ -70,14 +70,15 @@ def best_k(
         The method used to  find the
         initial cluster centers.
 
-         - kmeanspp:
+        - kmeanspp:
             Only available when
             ``use_kprototype = False``
             Use the ``k-means++`` method
             to initialize the centers.
-         - random:
+        - random:
             Randomly subsamples the data
             to find initial centers.
+
         Default  value  is  ``kmeanspp`` if
         ``use_kprototype = False``; otherwise,
         ``random``.
@@ -212,9 +213,11 @@ def best_k(
 
     .. ipython:: python
 
+        from verticapy.machine_learning.model_selection import best_k
+
         best_k(
             input_relation = data,
-            X = None, # All numerical columns will be used
+            X = data.get_columns(exclude_columns= "Species"), # All columns except Species
             n_cluster = (1, 100),
             init = "kmeanspp",
             elbow_score_stop = 0.9,
@@ -326,14 +329,15 @@ def elbow(
         The method used to  find the
         initial cluster centers.
 
-         - kmeanspp:
+        - kmeanspp:
             Only available when
             ``use_kprototype = False``
             Use the ``k-means++`` method
             to initialize the centers.
-         - random:
+        - random:
             Randomly subsamples the data
             to find initial centers.
+
         Default  value  is  ``kmeanspp`` if
         ``use_kprototype = False``; otherwise,
         ``random``.
@@ -475,9 +479,11 @@ def elbow(
 
     .. code-block:: python
 
+        from verticapy.machine_learning.model_selection import elbow
+
         elbow(
             input_relation = data,
-            X = None, # All numerical columns will be used
+            X = data.get_columns(exclude_columns= "Species"), # All columns except Species
             n_cluster = (1, 100),
             init = "kmeanspp",
         )
@@ -486,9 +492,10 @@ def elbow(
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
+        from verticapy.machine_learning.model_selection import elbow
         fig = elbow(
             input_relation = data,
-            X = None, # All numerical columns will be used
+            X = data.get_columns(exclude_columns= "Species"), # All columns except Species
             n_cluster = (1, 100),
             init = "kmeanspp",
         )
