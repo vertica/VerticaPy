@@ -1670,7 +1670,8 @@ class vDFMachineLearning(vDFScaler):
         Load data for machine learning
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        For this example, we will use the winequality dataset.
+        For this example, we will
+        use the winequality dataset.
 
         .. code-block:: python
 

@@ -82,13 +82,16 @@ def insert_into(
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:

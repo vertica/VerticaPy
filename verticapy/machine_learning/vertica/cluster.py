@@ -301,15 +301,19 @@ class KMeans(Clustering):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
-    For this example, we will use the winequality dataset.
+    For this example, we will
+    use the winequality dataset.
 
     .. code-block:: python
 
@@ -322,13 +326,16 @@ class KMeans(Clustering):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
@@ -356,24 +363,26 @@ class KMeans(Clustering):
         :okwarning:
 
         model = KMeans(
-               n_cluster = 8,
-               init = "kmeanspp",
-               max_iter = 300,
-               tol = 1e-4,
+            n_cluster = 8,
+            init = "kmeanspp",
+            max_iter = 300,
+            tol = 1e-4,
         )
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -387,19 +396,23 @@ class KMeans(Clustering):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     .. hint::
 
-        For clustering and anomaly detection, the use of predictors is
-        optional. In such cases, all available predictors are considered,
-        which can include solely numerical variables or a combination of
-        numerical and categorical variables, depending on the model's
-        capabilities.
+        For clustering and anomaly detection, the
+        use of predictors is optional. In such cases,
+        all available predictors are considered, which
+        can include solely numerical variables or a
+        combination of numerical and categorical variables,
+        depending on the model's capabilities.
 
     Metrics
     ^^^^^^^^
@@ -861,15 +874,19 @@ class KPrototypes(KMeans):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
-    For this example, we will use the winequality dataset.
+    For this example, we will
+    use the winequality dataset.
 
     .. code-block:: python
 
@@ -882,13 +899,16 @@ class KPrototypes(KMeans):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
@@ -925,16 +945,18 @@ class KPrototypes(KMeans):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -959,11 +981,12 @@ class KPrototypes(KMeans):
 
     .. hint::
 
-        For clustering and anomaly detection, the use of predictors is
-        optional. In such cases, all available predictors are considered,
-        which can include solely numerical variables or a combination of
-        numerical and categorical variables, depending on the model's
-        capabilities.
+        For clustering and anomaly detection, the
+        use of predictors is optional. In such cases,
+        all available predictors are considered, which
+        can include solely numerical variables or a
+        combination of numerical and categorical variables,
+        depending on the model's capabilities.
 
     Metrics
     ^^^^^^^^
@@ -1407,15 +1430,19 @@ class BisectingKMeans(KMeans, Tree):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
-    For this example, we will use the winequality dataset.
+    For this example, we will
+    use the winequality dataset.
 
     .. code-block:: python
 
@@ -1428,13 +1455,16 @@ class BisectingKMeans(KMeans, Tree):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
@@ -1474,16 +1504,18 @@ class BisectingKMeans(KMeans, Tree):
 
     .. hint::
 
-        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -1497,19 +1529,23 @@ class BisectingKMeans(KMeans, Tree):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     .. hint::
 
-        For clustering and anomaly detection, the use of predictors is
-        optional. In such cases, all available predictors are considered,
-        which can include solely numerical variables or a combination of
-        numerical and categorical variables, depending on the model's
-        capabilities.
+        For clustering and anomaly detection, the
+        use of predictors is optional. In such cases,
+        all available predictors are considered, which
+        can include solely numerical variables or a
+        combination of numerical and categorical variables,
+        depending on the model's capabilities.
 
     Metrics
     ^^^^^^^^
@@ -2036,12 +2072,15 @@ class DBSCAN(VerticaModel):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     For this example, we will create a small dataset.
@@ -2052,13 +2091,16 @@ class DBSCAN(VerticaModel):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
@@ -2108,11 +2150,12 @@ class DBSCAN(VerticaModel):
 
     .. hint::
 
-        For clustering and anomaly detection, the use of predictors is
-        optional. In such cases, all available predictors are considered,
-        which can include solely numerical variables or a combination of
-        numerical and categorical variables, depending on the model's
-        capabilities.
+        For clustering and anomaly detection, the
+        use of predictors is optional. In such cases,
+        all available predictors are considered, which
+        can include solely numerical variables or a
+        combination of numerical and categorical variables,
+        depending on the model's capabilities.
 
     .. important::
 
@@ -2539,12 +2582,15 @@ class NearestCentroid(MulticlassClassifier):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
         libraries.
 
     For this example, we will use the iris dataset.
@@ -2560,13 +2606,16 @@ class NearestCentroid(MulticlassClassifier):
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
     using the :py:meth:`vDataFrame.train_test_split` method. This is a
@@ -2684,11 +2733,14 @@ class NearestCentroid(MulticlassClassifier):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
-        directly with lists of predictors and the response name.
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
 
     .. important::
 
