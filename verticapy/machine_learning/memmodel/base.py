@@ -26,8 +26,9 @@ from verticapy._utils._sql._format import clean_query, format_magic
 
 class InMemoryModel:
     """
-    Base Class for In-Memory models. They can be used
-    to score in other DBs or in-memory.
+    Base Class for In-Memory models.
+    They can be used to score in
+    other DBs or in-memory.
     """
 
     # Properties.
@@ -74,7 +75,7 @@ class MulticlassClassifier(InMemoryModel):
     def object_type(self) -> Literal["MulticlassClassifier"]:
         return "MulticlassClassifier"
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -83,7 +84,8 @@ class MulticlassClassifier(InMemoryModel):
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -95,7 +97,7 @@ class MulticlassClassifier(InMemoryModel):
             res = np.array([self.classes_[i] for i in res])
         return res
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
@@ -104,7 +106,8 @@ class MulticlassClassifier(InMemoryModel):
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------

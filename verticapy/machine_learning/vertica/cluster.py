@@ -1334,11 +1334,15 @@ class BisectingKMeans(KMeans, Tree):
     p_: int
         The p of the p-distances.
     children_left_: numpy.array
-        A list  of node IDs, where  children_left[i] is
-        the node ID of the left child of node i.
+        A list of node IDs, where
+        ``children_left[i]`` is
+        the node ID of the left
+        child of node i.
     children_right_: numpy.array
-        A list of node IDs, where  children_right[i] is
-        the node ID of the right child of node i.
+        A list of node IDs, where
+        ``children_right[i]`` is
+        the node ID of the right
+        child of node i.
     cluster_score_: numpy.array
         The array containing the sizes for each cluster
         in a clustering analysis.

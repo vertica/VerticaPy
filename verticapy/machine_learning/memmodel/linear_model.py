@@ -26,25 +26,31 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 class LinearModel(InMemoryModel):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of linear algorithms.
+    implementation of linear
+    algorithms.
 
     Parameters
     ----------
     coef: ArrayLike
-        ArrayLike of the model's coefficients.
+        ArrayLike of the
+        model's coefficients.
     intercept: float, optional
-        The intercept or constant value.
+        The intercept or constant
+        value.
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are defined entirely
-        by their attributes. For example, ``coefficients`` and ``intercept``
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their
+        attributes. For example,
+        ``coefficients`` and ``intercept``
         define a linear regression model.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -57,8 +63,11 @@ class LinearModel(InMemoryModel):
 
         from verticapy.machine_learning.memmodel.linear_model import LinearModel
 
-    A linear model is defined by its coefficients and an intercept
-    value. In this example, we will use the following:
+    A linear model is defined by its
+    ``coefficients`` and an
+    ``intercept`` value. In
+    this example, we will use
+    the following:
 
     .. ipython:: python
 
@@ -97,7 +106,8 @@ class LinearModel(InMemoryModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql`
-    method to get the SQL code needed to deploy the model
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -106,8 +116,11 @@ class LinearModel(InMemoryModel):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -126,17 +139,19 @@ class LinearModel(InMemoryModel):
         self.coef_ = np.array(coef)
         self.intercept_ = intercept
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _predict_regression(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's score using the input Matrix.
+        Computes the model's score
+        using the input Matrix.
         """
         return self.intercept_ + np.sum(self.coef_ * np.array(X), axis=1)
 
     def _predict_logit(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's logit score using the input Matrix.
+        Computes the model's logit
+        score using the input Matrix.
         """
         return 1 / (1 + np.exp(-(self._predict_regression(X))))
 
@@ -147,7 +162,8 @@ class LinearModel(InMemoryModel):
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -158,12 +174,14 @@ class LinearModel(InMemoryModel):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's probabilites using the input matrix.
+        Computes the model's probabilites
+        using the input matrix.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -173,11 +191,12 @@ class LinearModel(InMemoryModel):
         probability_1 = self._predict_logit(X)
         return np.column_stack((1 - probability_1, probability_1))
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def _predict_regression_sql(self, X: ArrayLike) -> str:
         """
-        Returns the model's SQL score using the input
+        Returns the model's SQL
+        score using the input
         matrix.
         """
         if len(X) != len(self.coef_):
@@ -191,20 +210,23 @@ class LinearModel(InMemoryModel):
 
     def _predict_logit_sql(self, X: ArrayLike) -> str:
         """
-        Returns the model's SQL logit score using the
+        Returns the model's SQL
+        logit score using the
         input Matrix.
         """
         return f"1 / (1 + EXP(- ({self._predict_regression_sql(X)})))"
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model
+        Returns the SQL code
+        needed to deploy the model
         using its attributes.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -215,13 +237,16 @@ class LinearModel(InMemoryModel):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model
-        probabilities using its attributes.
+        Returns the SQL code
+        needed to deploy the
+        model probabilities
+        using its attributes.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -235,19 +260,23 @@ class LinearModel(InMemoryModel):
 class LinearModelClassifier(LinearModel):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    Implementation of linear algorithms for classification.
+    Implementation of linear
+    algorithms for classification.
 
     Parameters
     ----------
     coefficients: ArrayLike
-        ArrayLike of the model's coefficients.
+        ArrayLike of the
+        model's coefficients.
     intercept: float, optional
-        The intercept or constant value.
+        The intercept or
+        constant value.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -260,8 +289,11 @@ class LinearModelClassifier(LinearModel):
 
         from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
 
-    A linear classifier model is defined by its coefficients and
-    an intercept value. In this example, we will use the following:
+    A linear classifier model is
+    defined by its coefficients
+    and an intercept value. In
+    this example, we will use
+    the following:
 
     .. ipython:: python
 
@@ -292,8 +324,9 @@ class LinearModelClassifier(LinearModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba`
-    method to calculate the predicted probabilities for
-    each class.
+    method to calculate the
+    predicted probabilities
+    for each class.
 
     .. ipython:: python
 
@@ -301,7 +334,8 @@ class LinearModelClassifier(LinearModel):
 
     **Deploy SQL Code**
 
-    Let's use the following column names:
+    Let's use the following
+    column names:
 
     .. ipython:: python
 
@@ -309,7 +343,8 @@ class LinearModelClassifier(LinearModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -318,8 +353,10 @@ class LinearModelClassifier(LinearModel):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba_sql`
-    method to get the SQL code needed to deploy the model
-    that computes predicted probabilities.
+    method to get the SQL code
+    needed to deploy the model
+    that computes predicted
+    probabilities.
 
     .. ipython:: python
 
@@ -327,8 +364,11 @@ class LinearModelClassifier(LinearModel):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -337,7 +377,7 @@ class LinearModelClassifier(LinearModel):
     def object_type(self) -> Literal["LinearModelClassifier"]:
         return "LinearModelClassifier"
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
@@ -346,7 +386,8 @@ class LinearModelClassifier(LinearModel):
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -355,17 +396,20 @@ class LinearModelClassifier(LinearModel):
         """
         return np.where(self._predict_logit(X) > 0.5, 1, 0)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model
-        using its attributes.
+        Returns the SQL code
+        needed to deploy the
+        model using its
+        attributes.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------

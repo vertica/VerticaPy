@@ -44,7 +44,8 @@ class Tree(InMemoryModel):
     @staticmethod
     def _heuristic_length(i: int) -> float:
         """
-        Returns the heuristic length of the input integer.
+        Returns the heuristic length
+        of the input integer.
         """
         GAMMA = 0.5772156649
         if i == 2:
@@ -58,8 +59,8 @@ class Tree(InMemoryModel):
 
     def _go_left(self, X: ArrayLike, node_id: int) -> bool:
         """
-        Function used to decide either to go left
-        or not.
+        Function used to decide
+        either to go left or not.
         """
         th = self.threshold_[node_id]
         c = self.feature_[node_id]
@@ -73,24 +74,26 @@ class Tree(InMemoryModel):
 
     def _scoring_function(self, node_id: int = 0) -> float:
         """
-        Must be implemented in the child class.
+        Must be implemented
+        in the child class.
         """
         raise NotImplementedError
 
     def _scoring_function_proba(self, node_id: int = 0) -> float:
         """
-        Must be implemented in the child class.
+        Must be implemented
+        in the child class.
         """
         raise NotImplementedError
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _predict_row(
         self, X: ArrayLike, node_id: int = 0, return_proba: bool = False
     ) -> float:
         """
-        Function used recursively to get the tree
-        prediction.
+        Function used recursively
+        to get the tree prediction.
         """
         if self.children_left_[node_id] == self.children_right_[node_id]:
             if return_proba:
@@ -106,19 +109,22 @@ class Tree(InMemoryModel):
 
     def _predict_row_proba(self, X: ArrayLike, node_id: int = 0) -> ArrayLike:
         """
-        Function used  recursively to get the Tree
+        Function used recursively
+        to get the ``Tree``
         prediction.
         """
         return self._predict_row(X, node_id, True)
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the Binary Tree model.
+        Predicts using the
+        ``BinaryTree`` model.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -134,7 +140,8 @@ class Tree(InMemoryModel):
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -143,7 +150,7 @@ class Tree(InMemoryModel):
         """
         return np.apply_along_axis(self._predict_row_proba, 1, np.array(X))
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def _predict_tree_sql(
         self,
@@ -153,7 +160,8 @@ class Tree(InMemoryModel):
         class_id: int = 0,
     ) -> str:
         """
-        Function used recursively to do the final SQL code generation.
+        Function used recursively to
+        do the final SQL code generation.
         """
         if self.children_left_[node_id] == self.children_right_[node_id]:
             if return_proba:
@@ -182,12 +190,15 @@ class Tree(InMemoryModel):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code
+        needed to deploy the
+        model.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -198,13 +209,15 @@ class Tree(InMemoryModel):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model
-        probabilities.
+        Returns the SQL code
+        needed to deploy the
+        model probabilities.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -245,8 +258,10 @@ class Tree(InMemoryModel):
     @staticmethod
     def _flat_dict(d: dict) -> str:
         """
-        Converts dictionary to string with a specific
-        format used  during the Graphviz  convertion.
+        Converts dictionary to
+        string with a specific
+        format used  during the
+        Graphviz convertion.
         """
         res = []
         for key in d:
@@ -290,30 +305,42 @@ class Tree(InMemoryModel):
         Parameters
         ----------
         feature_names: ArrayLike, optional
-            List of the names of each feature.
+            List of the names of
+            each feature.
         classes_color: ArrayLike, optional
-            Colors that represent the different classes.
+            Colors that represent
+            the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to.
-            0 rounds to an integer.
+            The number of decimals
+            to round the prediction
+            to. ``0`` rounds to an
+            ``integer``.
         percent: bool, optional
-            If set to True, the probabilities are returned as
-            percents.
+            If set to ``True``, the
+            probabilities are returned
+            as percents.
         vertical: bool, optional
-            If set to True, the function generates a vertical
-            tree.
+            If set to ``True``, the
+            function generates a
+            vertical tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node  of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each node of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         arrow_style: dict, optional
-            Dictionary  of options to customize each arrow of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each arrow of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf  of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each leaf of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
 
         Returns
         -------
@@ -423,14 +450,18 @@ class Tree(InMemoryModel):
         **kwargs,
     ) -> "Source":
         """
-        Draws the input tree. Requires the graphviz module.
+        Draws the input tree.
+        Requires the graphviz
+        module.
 
         Parameters
         ----------
         pic_path: str, optional
-            Absolute  path to  save the image of the  tree.
+            Absolute path to save
+            the image of the tree.
         *args, **kwargs: Any, optional
-            Arguments to pass to  the 'to_graphviz' method.
+            Arguments to pass to the
+            ``to_graphviz`` method.
 
         Returns
         -------
@@ -455,33 +486,47 @@ class Tree(InMemoryModel):
 class BinaryTreeRegressor(Tree):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation  of  binary  trees  for regression.
+    implementation of binary
+    trees for regression.
 
     Parameters
     ----------
     children_left: ArrayLike
-        A list of node IDs, where children_left[i] is the
-        node id of the left child of node i.
+        A list of node IDs, where
+        ``children_left[i]`` is
+        the node id of the left
+        child of node i.
     children_right: ArrayLike
-        A list of node IDs, children_right[i] is the node
-        id of the right child of node i.
+        A list of node IDs, where
+        ``children_right[i]`` is
+        the node id of the right
+        child of node i.
     feature: ArrayLike
-        A  list  of features,  where  feature[i]  is  the
-        feature to split on for the internal node i.
+        A list of features, where
+        ``feature[i]`` is the
+        feature to split on for
+        the internal node i.
     threshold: ArrayLike
-        A  list of thresholds, where threshold[i] is  the
-        threshold for the internal node i.
+        A list of thresholds,
+        where ``threshold[i]``
+        is the ``threshold``
+        for the internal node i.
     value: ArrayLike
-        Contains  the  constant  prediction value of each
-        node.   If  used  for   classification   and
-        return_proba is set to True,  each element of the
-        list must be a sublist  with the probabilities of
-        each class.
+        Contains the constant
+        prediction value of each
+        node. If used for
+        classification and
+        ``return_proba`` is set
+        to ``True``, each element
+        of the ``list`` must be a
+        sublist with the probabilities
+        of each class.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -494,9 +539,11 @@ class BinaryTreeRegressor(Tree):
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeRegressor
 
-    A BinaryTreeRegressor model is defined by its left and right
-    child node id's, feature and threshold value to split a node.
-    Final values at leaf nodes are also required.
+    A ``BinaryTreeRegressor`` model is
+    defined by its left and right child
+    node id's, ``feature`` and ``threshold``
+    value to split a node. Final values
+    at leaf nodes are also required.
 
     Let's create a
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
@@ -548,7 +595,9 @@ class BinaryTreeRegressor(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -556,15 +605,19 @@ class BinaryTreeRegressor(Tree):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
 
     **Drawing Tree**
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.to_graphviz`
     method to generate code for a
-    `Graphviz <https://graphviz.org/>`_ tree.
+    `Graphviz <https://graphviz.org/>`_
+    tree.
 
     .. ipython:: python
 
@@ -593,9 +646,12 @@ class BinaryTreeRegressor(Tree):
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -624,7 +680,7 @@ class BinaryTreeRegressor(Tree):
         self.threshold_ = np.array(threshold)
         self.value_ = np.array(value, dtype=object)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _scoring_function(self, node_id: int = 0) -> float:
         """
@@ -636,34 +692,50 @@ class BinaryTreeRegressor(Tree):
 class BinaryTreeAnomaly(Tree):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation  of  binary  trees  for anomaly detection.
+    implementation of binary
+    trees for anomaly detection.
 
     Parameters
     ----------
     children_left: ArrayLike
-        A list of node IDs, where children_left[i] is the
-        node id of the left child of node i.
+        A list of node IDs, where
+        ``children_left[i]`` is
+        the node id of the left
+        child of node i.
     children_right: ArrayLike
-        A list of node IDs, children_right[i] is the node
-        id of the right child of node i.
+        A list of node IDs, where
+        ``children_right[i]`` is
+        the node id of the right
+        child of node i.
     feature: ArrayLike
-        A  list  of features,  where  feature[i]  is  the
-        feature to split on for the internal node i.
+        A list of features, where
+        ``feature[i]`` is the
+        feature to split on for
+        the internal node i.
     threshold: ArrayLike
-        A  list of thresholds, where threshold[i] is  the
-        threshold for the internal node i.
+        A list of thresholds,
+        where ``threshold[i]``
+        is the ``threshold``
+        for the internal node i.
     value: ArrayLike
-        List of elements,  which are  null except for the
-        leaves,  where each  leaf contains a list of  two
-        elements   representing  the  number  of   points
-        classified as outliers and those that are not.
+        Contains the constant
+        prediction value of each
+        node. If used for
+        classification and
+        ``return_proba`` is set
+        to ``True``, each element
+        of the ``list`` must be a
+        sublist with the probabilities
+        of each class.
     psy: int, optional
-        Sampling  size used to  compute the final  score.
+        Sampling size used to compute
+        the final score.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -676,9 +748,12 @@ class BinaryTreeAnomaly(Tree):
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeAnomaly
 
-    A BinaryTreeAnomaly model is defined by its left and right
-    child node id's, feature and threshold value to split a node.
-    Final values at leaf nodes are also required.
+    A BinaryTreeAnomaly model is
+    defined by its left and right
+    child node id's, ``feature``
+    and ``threshold`` value to
+    split a node. Final values at
+    leaf nodes are also required.
     Let's create a
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     model:
@@ -706,17 +781,21 @@ class BinaryTreeAnomaly(Tree):
 
     .. important::
 
-        The parameter ``psy`` corresponds to the sampling
-        size used to compute the final  score. This parameter
-        is needed to compute the final score. A wrong parameter
-        can lead to a wrong computation.
+        The parameter ``psy`` corresponds
+        to the sampling size used to compute
+        the final  score. This parameter is
+        needed to compute the final score.
+        A wrong parameter can lead to a
+        wrong computation.
 
     .. note::
 
-        For ``BinaryTreeAnomaly``, the parameter ``value``
-        represent the number of points classified as outliers
-        and those that are not. Leaves are then a list of
-        two elements.
+        For ``BinaryTreeAnomaly``, the
+        parameter ``value`` represent
+        the number of points classified
+        as outliers and those that are not.
+        Leaves are then a ``list`` of two
+        elements.
 
     Create a dataset.
 
@@ -744,7 +823,8 @@ class BinaryTreeAnomaly(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.predict_sql`
-    method to get the SQL code needed to deploy the model
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -753,15 +833,19 @@ class BinaryTreeAnomaly(Tree):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
 
     **Drawing Tree**
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.to_graphviz`
     method to generate code for a
-    `Graphviz <https://graphviz.org/>`_ tree.
+    `Graphviz <https://graphviz.org/>`_
+    tree.
 
     .. ipython:: python
 
@@ -786,13 +870,18 @@ class BinaryTreeAnomaly(Tree):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -830,11 +919,12 @@ class BinaryTreeAnomaly(Tree):
         self.value_ = np.array(value, dtype=object)
         self.psy = psy
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _scoring_function(self, node_id: int = 0) -> float:
         """
-        Function used to take the final decision.
+        Function used to take
+        the final decision.
         """
         res = self.value_[node_id][0] + self._heuristic_length(self.value_[node_id][1])
         return res / self._heuristic_length(self.psy)
@@ -843,35 +933,50 @@ class BinaryTreeAnomaly(Tree):
 class BinaryTreeClassifier(Tree):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation  of  binary  trees  for classification.
+    implementation of binary
+    trees for classification.
 
     Parameters
     ----------
     children_left: ArrayLike
-        A list of node IDs, where children_left[i] is the
-        node id of the left child of node i.
+        A list of node IDs, where
+        ``children_left[i]`` is
+        the node id of the left
+        child of node i.
     children_right: ArrayLike
-        A list of node IDs, children_right[i] is the node
-        id of the right child of node i.
+        A list of node IDs, where
+        ``children_right[i]`` is
+        the node id of the right
+        child of node i.
     feature: ArrayLike
-        A  list  of features,  where  feature[i]  is  the
-        feature to split on for the internal node i.
+        A list of features, where
+        ``feature[i]`` is the
+        feature to split on for
+        the internal node i.
     threshold: ArrayLike
-        A  list of thresholds, where threshold[i] is  the
-        threshold for the internal node i.
+        A list of thresholds,
+        where ``threshold[i]``
+        is the ``threshold``
+        for the internal node i.
     value: ArrayLike
-        Contains  the  constant  prediction value of each
-        node.   If  used  for   classification   and
-        return_proba is set to True,  each element of the
-        list must be a sublist  with the probabilities of
-        each class.
+        Contains the constant
+        prediction value of each
+        node. If used for
+        classification and
+        ``return_proba`` is set
+        to ``True``, each element
+        of the ``list`` must be a
+        sublist with the probabilities
+        of each class.
     classes: ArrayLike, optional
-        The classes for the binary tree model.
+        The classes for the binary
+        tree model.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -884,10 +989,13 @@ class BinaryTreeClassifier(Tree):
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
 
-    A BinaryTreeClassifier tree model is defined by its left
-    and right child node id's, feature and threshold value to
-    split a node. Final values at leaf nodes and name of classes
-    are also required. Let's create a
+    A ``BinaryTreeClassifier`` tree
+    model is defined by its left and
+    right child node id's, ``feature``
+    and ``threshold`` value to split
+    a node. Final values at leaf nodes
+    and name of classes are also required.
+    Let's create a
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     model.
 
@@ -898,7 +1006,13 @@ class BinaryTreeClassifier(Tree):
         children_right = [2, 4, None, None, None]
         feature = [0, 1, None, None, None]
         threshold = ["female", 30, None, None, None]
-        value = [None, None, [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.6]]
+        value = [
+            None,
+            None,
+            [0.8, 0.1, 0.1],
+            [0.1, 0.8, 0.1],
+            [0.2, 0.2, 0.6],
+        ]
         classes = ["a", "b", "c"]
 
         # Building the Model
@@ -930,7 +1044,9 @@ class BinaryTreeClassifier(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba`
-    method to compute the predicted probabilities for each class.
+    method to compute the
+    predicted probabilities
+    for each class.
 
     .. ipython:: python
 
@@ -946,8 +1062,10 @@ class BinaryTreeClassifier(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model
-    using its attributes.
+    method to get the SQL
+    code needed to deploy
+    the model using its
+    attributes.
 
     .. ipython:: python
 
@@ -955,8 +1073,10 @@ class BinaryTreeClassifier(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that
-    computes predicted probabilities.
+    method to get the SQL code
+    needed to deploy the model
+    that computes predicted
+    probabilities.
 
     .. ipython:: python
 
@@ -964,8 +1084,11 @@ class BinaryTreeClassifier(Tree):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
 
     **Drawing Tree**
 
@@ -1001,9 +1124,12 @@ class BinaryTreeClassifier(Tree):
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -1042,7 +1168,7 @@ class BinaryTreeClassifier(Tree):
         self.value_ = copy.deepcopy(value)
         self.classes_ = np.array(classes)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _scoring_function(self, node_id: int = 0) -> float:
         """
@@ -1068,15 +1194,20 @@ class NonBinaryTree(Tree):
     Parameters
     ----------
     tree: dict
-        A  NonBinaryTree  tree.  NonBinaryTrees  can
-        be generated with the vDataFrame.chaid method.
+        A ``NonBinaryTree`` tree.
+        ``NonBinaryTree`` can be
+        generated with the
+        :py:meth:`vDataFrame.chaid`
+        method.
     classes: ArrayLike, optional
-        The classes for the non-binary tree model.
+        The classes for the
+        non-binary tree model.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -1089,12 +1220,16 @@ class NonBinaryTree(Tree):
 
         from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 
-    A NonBinaryTree tree model is defined by the non-binary
+    A NonBinaryTree tree model
+    is defined by the non-binary
     decision tree and name of classes.
 
-    We will first generate a non-binary tree using
-    :py:meth:`verticapy.vDataFrame.chaid` method.
-    For this example, we will use the Titanic dataset.
+    We will first generate a
+    non-binary tree using
+    :py:meth:`verticapy.vDataFrame.chaid`
+    method. For this example,
+    we will use the Titanic
+    dataset.
 
     .. code-block:: python
 
@@ -1106,13 +1241,17 @@ class NonBinaryTree(Tree):
         :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
     .. note::
-        VerticaPy offers a wide range of sample datasets that are
-        ideal for training and testing purposes. You can explore
-        the full list of available datasets in the :ref:`api.datasets`,
-        which provides detailed information on each dataset
-        and how to use them effectively. These datasets are invaluable
-        resources for honing your data analysis and machine learning
-        skills within the VerticaPy environment.
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
@@ -1121,14 +1260,16 @@ class NonBinaryTree(Tree):
         data = vpd.load_titanic()
 
     Lets create a non-binary tree using
-    :py:meth:`verticapy.vDataFrame.chaid` method.
+    :py:meth:`verticapy.vDataFrame.chaid`
+    method.
 
     .. ipython:: python
 
         tree = data.chaid("survived", ["sex", "fare"]).tree_
 
-    Our non-binary tree is ready, we will now provide
-    information about classes and create a
+    Our non-binary tree is ready,
+    we will now provide information
+    about classes and create a
     :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
     model.
 
@@ -1155,7 +1296,8 @@ class NonBinaryTree(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba`
-    method to compute the predicted probabilities for each class.
+    method to compute the predicted
+    probabilities for each class.
 
     .. ipython:: python
 
@@ -1171,7 +1313,8 @@ class NonBinaryTree(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_sql`
-    method to get the SQL code needed to deploy the model
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -1180,8 +1323,10 @@ class NonBinaryTree(Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba_sql`
-    method to get the SQL code needed to deploy the
-    model that computes predicted probabilities.
+    method to get the SQL code
+    needed to deploy the model
+    that computes predicted
+    probabilities.
 
     .. ipython:: python
 
@@ -1189,8 +1334,11 @@ class NonBinaryTree(Tree):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
 
     **Drawing Tree**
 
@@ -1226,9 +1374,12 @@ class NonBinaryTree(Tree):
 
     .. note::
 
-        The above example is a very basic one. For
-        other more detailed examples and customization
-        options, please see :ref:`chart_gallery.tree`_
+        The above example is a very
+        basic one. For other more
+        detailed examples and
+        customization options,
+        please see
+        :ref:`chart_gallery.tree`_
     """
 
     # Properties.
@@ -1248,14 +1399,14 @@ class NonBinaryTree(Tree):
         self.tree_ = copy.deepcopy(tree)
         self.classes_ = np.array(classes)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _predict_tree(
         self, X: ArrayLike, tree: dict, return_proba: bool = False
     ) -> Union[ArrayLike, str, int]:
         """
-        Function used recursively to get the tree
-        prediction.
+        Function used recursively
+        to get the tree prediction.
         """
         if tree["is_leaf"]:
             if return_proba:
@@ -1277,15 +1428,17 @@ class NonBinaryTree(Tree):
 
     def _predict_row(self, X: ArrayLike) -> Union[ArrayLike, str, int]:
         """
-        Function used recursively to get the Tree
-        prediction for one row.
+        Function used recursively
+        to get the Tree prediction
+        for one row.
         """
         return self._predict_tree(X, self.tree_, False)
 
     def _predict_proba_row(self, X: ArrayLike) -> ArrayLike:
         """
-        Function used recursively to get the Tree
-        probabilities for one row.
+        Function used recursively
+        to get the Tree probabilities
+        for one row.
         """
         return self._predict_tree(X, self.tree_, True)
 
@@ -1296,7 +1449,8 @@ class NonBinaryTree(Tree):
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -1307,12 +1461,14 @@ class NonBinaryTree(Tree):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Returns probabilities  using the CHAID model.
+        Returns probabilities
+        using the CHAID model.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -1321,14 +1477,15 @@ class NonBinaryTree(Tree):
         """
         return np.apply_along_axis(self._predict_proba_row, 1, np.array(X))
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def _predict_tree_sql(
         self, X: ArrayLike, tree: dict, class_id: int = 0, return_proba: bool = False
     ) -> str:
         """
-        Function used recursively to do the final SQL
-        code generation.
+        Function used recursively
+        to do the final SQL code
+        generation.
         """
         if tree["is_leaf"]:
             if return_proba:
@@ -1353,13 +1510,16 @@ class NonBinaryTree(Tree):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model
-        using its attributes.
+        Returns the SQL code
+        needed to deploy the
+        model using its
+        attributes.
 
         Parameters
         ----------
-        X: list / numpy.array
-            The names or values of the input predictors.
+        X: list | numpy.array
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -1370,13 +1530,15 @@ class NonBinaryTree(Tree):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model
-        probabilities.
+        Returns the SQL code
+        needed to deploy the
+        model probabilities.
 
         Parameters
         ----------
-        X: list / numpy.array
-            The names or values of the input predictors.
+        X: list | numpy.array
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -1401,7 +1563,8 @@ class NonBinaryTree(Tree):
         process: bool = True,
     ) -> str:
         """
-        Returns the code for a Graphviz tree.
+        Returns the code for
+        a Graphviz tree.
         """
         node_style, arrow_style, leaf_style = format_type(
             node_style, arrow_style, leaf_style, dtype=dict
@@ -1478,33 +1641,45 @@ class NonBinaryTree(Tree):
         leaf_style: Optional[dict] = None,
     ) -> str:
         """
-        Returns the code for a Graphviz tree.
+        Returns the code for
+        a Graphviz tree.
 
         Parameters
         ----------
         classes_color: ArrayLike, optional
-            Colors that represent the different classes.
+            Colors that represent
+            the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to.
-            0 rounds to an integer.
+            The number of decimals
+            to round the prediction
+            to. ``0`` rounds to an
+            ``integer``.
         percent: bool, optional
-            If set to True, the probabilities are returned as
-            percents.
+            If set to ``True``, the
+            probabilities are returned
+            as percents.
         vertical: bool, optional
-            If set to True, the function generates a vertical
-            tree.
+            If set to ``True``, the
+            function generates a
+            vertical tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node  of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each node of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         arrow_style: dict, optional
-            Dictionary  of options to customize each arrow of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each arrow of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf  of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each leaf of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
 
         Returns
         -------

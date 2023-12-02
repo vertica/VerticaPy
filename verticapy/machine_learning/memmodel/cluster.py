@@ -33,8 +33,8 @@ class Clustering(InMemoryModel):
 
     .. note::
 
-        This is base class for all in-memory implementations of
-        clustering algorithms viz.
+        This is base class for all in-memory
+        implementations of clustering algorithms viz.
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`,
         :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
         , :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
@@ -43,9 +43,11 @@ class Clustering(InMemoryModel):
     Parameters
     ----------
     clusters: ArrayLike
-        ArrayLike   of   the   model's  cluster   centers.
+        ArrayLike of the model's
+        cluster centers.
     p: int, optional
-        The p corresponding to one of the p-distances.
+        The ``p`` corresponding to
+        one of the ``p``-distances.
     clusters_names: ArrayLike, optional
         Names of the clusters.
     """
@@ -73,16 +75,18 @@ class Clustering(InMemoryModel):
         self.classes_ = np.array(clusters_names)
         self.p_ = p
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts  clusters  using  the input  matrix.
+        Predicts clusters using the
+        input matrix.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -98,13 +102,15 @@ class Clustering(InMemoryModel):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts the probability of each input to belong
-        to the model clusters.
+        Predicts the probability of
+        each input to belong to the
+        model clusters.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -118,12 +124,14 @@ class Clustering(InMemoryModel):
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and returns the distance to each cluster.
+        Transforms and returns the
+        distance to each cluster.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the transformation.
+            The data on which to
+            make the transformation.
 
         Returns
         -------
@@ -137,17 +145,19 @@ class Clustering(InMemoryModel):
             ]
         return np.column_stack(result)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model using
+        Returns the SQL code needed
+        to deploy the model using
         its attributes.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -185,13 +195,14 @@ class Clustering(InMemoryModel):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns  the SQL code needed to deploy the model
-        probabilities.
+        Returns  the SQL code needed
+        to deploy the model probabilities.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -214,13 +225,14 @@ class Clustering(InMemoryModel):
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms  and returns the SQL distance to each
-        cluster.
+        Transforms  and returns the
+        SQL distance to each cluster.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -245,25 +257,29 @@ class Clustering(InMemoryModel):
 class KMeans(Clustering):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of KMeans.
+    implementation of ``KMeans``.
 
     Parameters
     ----------
     clusters: ArrayLike
-        List of the model's cluster centers.
+        ``list`` of the model's
+        cluster centers.
     p: int, optional
-        The p corresponding to one of the p-distances.
+        The ``p`` corresponding to
+        one of the ``p``-distances.
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel` are
-        defined entirely by their attributes. For example,
-        'cluster centroids' and 'p value' define a KMeans model.
+        :py:meth:`verticapy.machine_learning.memmodel`
+        are defined entirely by their attributes.
+        For example, ``clusters`` centroids and
+        ``p`` value define a KMeans model.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -276,8 +292,10 @@ class KMeans(Clustering):
 
         from verticapy.machine_learning.memmodel.cluster import KMeans
 
-    A KMeans model is defined by its cluster centroids and the p value.
-    In this example, we will use the following:
+    A ``KMeans`` model is defined by its
+    cluster centroids and the p value.
+    In this example, we will use the
+    following:
 
     .. ipython:: python
 
@@ -285,7 +303,8 @@ class KMeans(Clustering):
         p = 2
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans` model.
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`
+    model.
 
     .. ipython:: python
 
@@ -299,7 +318,8 @@ class KMeans(Clustering):
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict`
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict`
     method to do predictions
 
     .. ipython:: python
@@ -309,21 +329,28 @@ class KMeans(Clustering):
     .. note::
 
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`
-        assigns a cluster id to identify each cluster.
-        In this example, cluster with centroid [0.5, 0.6] will have id = 0,
-        with centroid [1,2] will have id = 1 and so on.
+        assigns a cluster id to identify each
+        cluster. In this example, cluster with
+        centroid ``[0.5, 0.6]`` will have
+        ``id = 0``, with centroid ``[1,2]``
+        will have ``id = 1`` and so on.
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict`
-        method returns the id of the predicted cluster.
+        method returns the id of the predicted
+        cluster.
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_proba`
-    method to compute the predicted probabilities for each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_proba`
+    method to compute the predicted
+    probabilities for each cluster.
 
     .. ipython:: python
 
         model_km.predict_proba(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.transform`
-    method to compute the distance from each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.transform`
+    method to compute the distance
+    from each cluster.
 
     .. ipython:: python
 
@@ -339,8 +366,9 @@ class KMeans(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_sql`
-    method to get the SQL code needed to deploy the model
-    using its attributes.
+    method to get the SQL code needed
+    to deploy the model using its
+    attributes.
 
     .. ipython:: python
 
@@ -348,8 +376,9 @@ class KMeans(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that
-    computes predicted probabilities.
+    method to get the SQL code needed
+    to deploy the model that computes
+    predicted probabilities.
 
     .. ipython:: python
 
@@ -357,8 +386,9 @@ class KMeans(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.transform_sql`
-    method to get the SQL code needed to deploy the model that
-    computes distance from each cluster.
+    method to get the SQL code needed
+    to deploy the model that computes
+    distance from each cluster.
 
     .. ipython:: python
 
@@ -366,8 +396,11 @@ class KMeans(Clustering):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -386,21 +419,25 @@ class KMeans(Clustering):
 class NearestCentroid(Clustering):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation  of NearestCentroid algorithm.
+    implementation of ``NearestCentroid``
+    algorithm.
 
     Parameters
     ----------
     clusters: ArrayLike
-        List of the model's cluster centers.
+        ``list`` of the model's
+        cluster centers.
     classes: ArrayLike
         Names of the classes.
     p: int, optional
-        The p corresponding to  one of the p-distances.
+        The ``p`` corresponding to
+        one of the ``p``-distances.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -413,9 +450,10 @@ class NearestCentroid(Clustering):
 
         from verticapy.machine_learning.memmodel.cluster import NearestCentroid
 
-    A NearestCentroid model is defined by its cluster centroids,
-    classes and the p value. In this example, we will use the
-    following:
+    A ``NearestCentroid`` model is defined
+    by its ``clusters`` centroids, ``classes``
+    and the ``p`` value. In this example, we
+    will use the following:
 
     .. ipython:: python
 
@@ -449,8 +487,8 @@ class NearestCentroid(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_proba`
-    method to compute the predicted probabilities for
-    each cluster.
+    method to compute the predicted
+    probabilities for each cluster.
 
     .. ipython:: python
 
@@ -458,7 +496,8 @@ class NearestCentroid(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.transform`
-    method to compute the distance from each cluster.
+    method to compute the distance
+    from each cluster.
 
     .. ipython:: python
 
@@ -466,7 +505,8 @@ class NearestCentroid(Clustering):
 
     **Deploy SQL Code**
 
-    Let's use the following column names:
+    Let's use the following
+    column names:
 
     .. ipython:: python
 
@@ -474,7 +514,8 @@ class NearestCentroid(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_sql`
-    method to get the SQL code needed to deploy the model
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -483,8 +524,10 @@ class NearestCentroid(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_proba_sql`
-    method to get the SQL code needed to deploy the model
-    that computes predicted probabilities.
+    method to get the SQL code
+    needed to deploy the model
+    that computes predicted
+    probabilities.
 
     .. ipython:: python
 
@@ -492,8 +535,10 @@ class NearestCentroid(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.transform_sql`
-    method to get the SQL code needed to deploy the model
-    that computes distance from each cluster.
+    method to get the SQL code
+    needed to deploy the model
+    that computes distance from
+    each cluster.
 
     .. ipython:: python
 
@@ -501,8 +546,11 @@ class NearestCentroid(Clustering):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -531,34 +579,47 @@ class NearestCentroid(Clustering):
 class BisectingKMeans(Clustering, Tree):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of BisectingKMeans.
+    implementation of ``BisectingKMeans``.
 
     Parameters
     ----------
     clusters: ArrayLike
-        List of the model's cluster centers.
+        ``list`` of the model's
+        cluster centers.
     children_left: ArrayLike
-        A list  of node IDs, where  children_left[i] is
-        the node ID of the left child of node i.
+        A list of node IDs, where
+        ``children_left[i]`` is
+        the node ID of the left
+        child of node i.
     children_right: ArrayLike
-        A list of node IDs, where  children_right[i] is
-        the node ID of the right child of node i.
+        A list of node IDs, where
+        ``children_right[i]`` is
+        the node ID of the right
+        child of node i.
     cluster_size: ArrayLike
-        A list of sizes,  where  cluster_size[i] is the
-        number of elements in node i.
+        A list of sizes, where
+        ``cluster_size[i]`` is
+        the number of elements
+        in node i.
     cluster_score: ArrayLike
-        A list of scores, where cluster_score[i] is the
-        score  for internal  node i.  The score is  the
-        ratio between the within-cluster sum of squares
-        of the node and the total within-cluster sum of
+        A list of scores, where
+        ``cluster_score[i]`` is
+        the score  for internal
+        node i. The score is the
+        ratio between the within
+        -cluster sum of squares
+        of the node and the total
+        within-cluster sum of
         squares.
     p: int, optional
-        The p corresponding to one of the p-distances.
+        The ``p`` corresponding to
+        one of the ``p``-distances.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -571,13 +632,22 @@ class BisectingKMeans(Clustering, Tree):
 
         from verticapy.machine_learning.memmodel.cluster import BisectingKMeans
 
-    A BisectingKMeans model is defined by its cluster centroids,
-    left and right child node id's of given node. In this example,
+    A ``BisectingKMeans`` model is
+    defined by its ``clusters``
+    centroids, left and right
+    child node id's of given
+    node. In this example,
     we will use the following:
 
     .. ipython:: python
 
-        clusters = [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200]]
+        clusters = [
+            [0.5, 0.6],
+            [1, 2],
+            [100, 200],
+            [10, 700],
+            [-100, -200],
+        ]
         children_left = [1, 3, None, None, None]
         children_right = [2, 4, None, None, None]
 
@@ -607,8 +677,8 @@ class BisectingKMeans(Clustering, Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_proba`
-    method to compute the predicted probabilities for
-    each cluster.
+    method to compute the predicted
+    probabilities for each cluster.
 
     .. ipython:: python
 
@@ -616,7 +686,8 @@ class BisectingKMeans(Clustering, Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.transform`
-    method to compute the distance from each cluster.
+    method to compute the distance
+    from each cluster.
 
     .. ipython:: python
 
@@ -663,7 +734,8 @@ class BisectingKMeans(Clustering, Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_sql`
-    method to get the SQL code needed to deploy the model
+    method to get the SQL code
+    needed to deploy the model
     using its attributes.
 
     .. ipython:: python
@@ -672,8 +744,10 @@ class BisectingKMeans(Clustering, Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_proba_sql`
-    method to get the SQL code needed to deploy the model
-    that computes predicted probabilities.
+    method to get the SQL code
+    needed to deploy the model
+    that computes predicted
+    probabilities.
 
     .. ipython:: python
 
@@ -681,8 +755,10 @@ class BisectingKMeans(Clustering, Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.transform_sql`
-    method to get the SQL code needed to deploy the model
-    that computes distance from each cluster.
+    method to get the SQL code
+    needed to deploy the model
+    that computes distance from
+    each cluster.
 
     .. ipython:: python
 
@@ -690,8 +766,11 @@ class BisectingKMeans(Clustering, Tree):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -743,7 +822,7 @@ class BisectingKMeans(Clustering, Tree):
         self.cluster_score_ = np.array(cluster_score)
         self.p_ = p
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _predict_tree(
         self,
@@ -751,7 +830,8 @@ class BisectingKMeans(Clustering, Tree):
         node_id: int,
     ) -> int:
         """
-        Function used recursively to get the tree prediction
+        Function used recursively
+        to get the tree prediction
         starting at the input node.
         """
         if isinstance(self.children_left_[node_id], NoneType) and isinstance(
@@ -770,18 +850,21 @@ class BisectingKMeans(Clustering, Tree):
 
     def _predict_row(self, X: ArrayLike) -> int:
         """
-        Function used recursively to get the tree prediction.
+        Function used recursively
+        to get the tree prediction.
         """
         return self._predict_tree(X, 0)
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the bisecting k-means model.
+        Predicts using the bisecting
+        ``KMeans`` model.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the prediction.
+            The data on which to
+            make the prediction.
 
         Returns
         -------
@@ -790,7 +873,7 @@ class BisectingKMeans(Clustering, Tree):
         """
         return np.apply_along_axis(self._predict_row, 1, X)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def _predict_tree_sql(
         self,
@@ -800,7 +883,8 @@ class BisectingKMeans(Clustering, Tree):
         clusters_distance: ArrayLike,
     ) -> Union[int, str]:
         """
-        Function used recursively to do the final SQL code
+        Function used recursively
+        to do the final SQL code
         generation.
         """
         if isinstance(children_left[node_id], NoneType) and isinstance(
@@ -822,13 +906,16 @@ class BisectingKMeans(Clustering, Tree):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the bisecting
-        k-means model using its attributes.
+        Returns the SQL code needed
+        to deploy the bisecting
+        ``KMeans`` model using
+        its attributes.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
@@ -871,30 +958,40 @@ class BisectingKMeans(Clustering, Tree):
         leaf_style: Optional[dict] = None,
     ) -> str:
         """
-        Returns the code for a Graphviz tree.
+        Returns the code for a
+        Graphviz tree.
 
         Parameters
         ----------
         round_score: int, optional
-            The number of decimals to round the node's score to 0
-            rounds to an integer.
+            The number of decimals to
+            round the node's score to
+            0 rounds to an integer.
         percent: bool, optional
-            If set to True, the scores are returned as a percent.
+            If set to True, the scores
+            are returned as a percent.
         vertical: bool, optional
-            If  set to True,  the function  generates a  vertical
-            tree.
+            If set to ``True``, the
+            function generates a
+            vertical tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node of  the
-            tree. For a list of options, see the Graphviz API:
-            https://graphviz.org/doc/info/attrs.html
+            Dictionary  of options to
+            customize each node of the
+            tree. For a list of options,
+            see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         arrow_style: dict, optional
-            Dictionary  of options to customize each arrow of the
-            tree. For a list of options, see the Graphviz API:
-            https://graphviz.org/doc/info/attrs.html
+            Dictionary  of options to
+            customize each arrow of the
+            tree. For a list of options,
+            see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf of  the
-            tree. For a list of options, see the Graphviz API:
-            https://graphviz.org/doc/info/attrs.html
+            Dictionary  of options to
+            customize each leaf of the
+            tree. For a list of options,
+            see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
 
         Returns
         -------
@@ -962,34 +1059,43 @@ class BisectingKMeans(Clustering, Tree):
 class KPrototypes(Clustering):
     """
     :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
-    implementation of KPrototypes.
+    implementation of ``KPrototypes``.
 
     Parameters
     ----------
     clusters: ArrayLike
-        List of the model's cluster centers.
+        ``list`` of the model's
+        cluster centers.
     p: int, optional
-        The p corresponding to  one of the p-distances.
+        The p corresponding to one
+        of the ``p``-distances.
     gamma: float, optional
-        Weighting  factor  for  categorical columns.  This
-        determines  relative  importance of numerical  and
+        Weighting factor for categorical
+        columns. This determines relative
+        importance of numerical and
         categorical attributes.
-    is_categorical: list / numpy.array, optional
-        ArrayLike  of booleans to indicate whether  X[idx]
-        is  a categorical  variable, where True  indicates
-        categorical  and  False numerical.  If empty,  all
-        the variables are considered categorical.
+    is_categorical: list | numpy.array, optional
+        ArrayLike of ``booleans`` to
+        indicate whether ``X[idx]``
+        is a categorical variable,
+        where ``True`` indicates
+        categorical and ``False``
+        numerical. If empty, all
+        the variables are
+        considered categorical.
 
     .. note::
 
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
-        algorithm allows you to use categorical variables directly
+        algorithm allows you to use
+        categorical variables directly
         without the need to encode them.
 
     Attributes
     ----------
-    Attributes are identical to the input parameters, followed by an
-    underscore ('_').
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
 
     Examples
     --------
@@ -1002,13 +1108,20 @@ class KPrototypes(Clustering):
 
         from verticapy.machine_learning.memmodel.cluster import KPrototypes
 
-    A KPrototypes model is defined by its cluster centroids. Optionally
-    you can also provide p value, gamma and provide information about
-    categorical variables. In this example, we will use the following:
+    A ``KPrototypes`` model is defined
+    by its cluster centroids. Optionally
+    you can also provide ``p`` value,
+    gamma and provide information about
+    categorical variables. In this example,
+    we will use the following:
 
     .. ipython:: python
 
-        clusters = [[0.5, 'high'], [1, 'low'], [100, 'high']]
+        clusters = [
+            [0.5, 'high'],
+            [1, 'low'],
+            [100, 'high'],
+        ]
         p = 2
         gamma = 1.0
         is_categorical = [0, 1]
@@ -1040,16 +1153,19 @@ class KPrototypes(Clustering):
     .. note::
 
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
-        assigns a cluster id to identify each cluster.
-        In this example, cluster with centroid [0.5, 'high'] will have
-        id = 0, with centroid [1,'low'] will have id = 1 and so on.
+        assigns a cluster id to identify each
+        cluster. In this example, cluster with
+        centroid ``[0.5, 'high']`` will have
+        ``id = 0``, with centroid ``[1,'low']``
+        will have ``id = 1`` and so on.
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict`
-        method returns the id of the predicted cluster.
+        method returns the id of the
+        predicted cluster.
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_proba`
-    method to compute the predicted probabilities
-    for each cluster.
+    method to compute the predicted
+    probabilities for each cluster.
 
     .. ipython:: python
 
@@ -1057,7 +1173,8 @@ class KPrototypes(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.transform`
-    method to compute the distance from each cluster.
+    method to compute the distance
+    from each cluster.
 
     .. ipython:: python
 
@@ -1073,8 +1190,9 @@ class KPrototypes(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_sql`
-    method to get the SQL code needed to deploy the
-    model using its attributes.
+    method to get the SQL code
+    needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
 
@@ -1082,8 +1200,10 @@ class KPrototypes(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_proba_sql`
-    method to get the SQL code needed to deploy the
-    model that computes predicted probabilities.
+    method to get the SQL code
+    needed to deploy the model
+    that computes predicted
+    probabilities.
 
     .. ipython:: python
 
@@ -1091,8 +1211,10 @@ class KPrototypes(Clustering):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.transform_sql`
-    method to get the SQL code needed to deploy the
-    model that computes distance from each cluster.
+    method to get the SQL code
+    needed to deploy the model
+    that computes distance from
+    each cluster.
 
     .. ipython:: python
 
@@ -1100,8 +1222,11 @@ class KPrototypes(Clustering):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment,
-        just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled
+        and used in any in-memory
+        environment, just like
+        `SKLEARN <https://scikit-learn.org/>`_
+        models.
     """
 
     # Properties.
@@ -1129,11 +1254,12 @@ class KPrototypes(Clustering):
         self.gamma_ = gamma
         self.is_categorical_ = np.array(is_categorical)
 
-    # Prediction / Transformation Methods - IN MEMORY.
+    # Prediction | Transformation Methods - IN MEMORY.
 
     def _transform_row(self, X: ArrayLike) -> list:
         """
-        Transforms and returns the distance to each cluster
+        Transforms and returns the
+        distance to each cluster
         for one row.
         """
         distance = []
@@ -1156,12 +1282,14 @@ class KPrototypes(Clustering):
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and returns the distance to each cluster.
+        Transforms and returns the
+        distance to each cluster.
 
         Parameters
         ----------
         X: ArrayLike
-            The data on which to make the transformation.
+            The data on which to
+            make the transformation.
 
         Returns
         -------
@@ -1170,16 +1298,18 @@ class KPrototypes(Clustering):
         """
         return np.apply_along_axis(self._transform_row, 1, X)
 
-    # Prediction / Transformation Methods - IN DATABASE.
+    # Prediction | Transformation Methods - IN DATABASE.
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL distance to each cluster.
+        Transforms and returns the
+        SQL distance to each cluster.
 
         Parameters
         ----------
         X: ArrayLike
-            The names or values of the input predictors.
+            The names or values of
+            the input predictors.
 
         Returns
         -------
