@@ -4669,10 +4669,14 @@ def classification_report(
 
             .. math::
 
-                \\frac{TP + TN}{TP + TN + FP + FN}
+                Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
 
         - aic:
             Akaike's  Information  Criterion
+
+            .. math::
+
+                AIC = = 2k - 2\ln(\hat{L})
 
         - auc:
             Area Under the Curve (ROC).
@@ -4686,7 +4690,7 @@ def classification_report(
 
             .. math::
 
-                \\frac{TPR + TNR}{2}
+                BA = \\frac{TPR + TNR}{2}
 
         - best_cutoff:
             Cutoff  which optimised the  ROC
@@ -4695,64 +4699,72 @@ def classification_report(
         - bic:
             Bayesian  Information  Criterion
 
+            .. math::
+
+                BIC = = -2\ln(\hat{L}) + k \ln(n)
+
         - bm:
             Informedness
 
             .. math::
 
-                TPR + TNR - 1
+                BM = TPR + TNR - 1
 
         - csi:
             Critical Success Index
 
             .. math::
 
-                \\frac{TP}{TP + FN + FP}
+                index = \\frac{TP}{TP + FN + FP}
 
         - f1:
             F1 Score
+
+            .. math::
+
+                F_1 Score = 2 \\times \\frac{Precision \\times Recall}{Precision + Recall}
 
         - fdr:
             False Discovery Rate
 
             .. math::
 
-                1 - PPV
+                FDR = 1 - PPV
 
         - fm:
             Fowlkes-Mallows index
 
             .. math::
 
-                \\sqrt{PPV * TPR}
+                FM = \\sqrt{PPV * TPR}
 
         - fnr:
             False Negative Rate
 
             .. math::
 
-                \\frac{FN}{FN + TP}
+                FNR = \\frac{FN}{FN + TP}
 
         - for:
             False Omission Rate
 
             .. math::
 
-                1 - NPV
+                FOR = 1 - NPV
 
         - fpr:
             False Positive Rate
 
             .. math::
 
-                \\frac{FP}{FP + TN}
+                FPR = \\frac{FP}{FP + TN}
 
         - logloss:
             Log Loss.
 
             .. math::
 
-                -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
 
         - lr+:
@@ -4760,68 +4772,75 @@ def classification_report(
 
             .. math::
 
-                \\frac{TPR}{FPR}
+                LR+ = \\frac{TPR}{FPR}
 
         - lr-:
             Negative Likelihood Ratio.
 
             .. math::
 
-                \\frac{FNR}{TNR}
+                LR- = \\frac{FNR}{TNR}
 
         - dor:
             Diagnostic Odds Ratio.
 
             .. math::
 
-                \\frac{TP \\times TN}{FP \\times FN}
+                DOR = \\frac{TP \\times TN}{FP \\times FN}
 
         - mc:
             Matthews Correlation Coefficient
+            .. math::
+
+                MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
         - mk:
             Markedness
 
             .. math::
 
-                PPV + NPV - 1
+                MK = PPV + NPV - 1
 
         - npv:
             Negative Predictive Value
 
             .. math::
 
-                \\frac{TN}{TN + FN}
+                NPV = \\frac{TN}{TN + FN}
 
         - prc_auc:
             Area Under the Curve (PRC)
+
+            .. math::
+
+                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
 
         - precision:
             Precision
 
             .. math::
 
-                TP / (TP + FP)
+                Precision = TP / (TP + FP)
 
         - pt:
             Prevalence Threshold.
 
             .. math::
 
-                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+                threshold = \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
         - recall:
             Recall.
 
             .. math::
-                TP / (TP + FN)
+                Recall = TP / (TP + FN)
 
         - specificity:
             Specificity.
 
             .. math::
 
-                TN / (TN + FP)
+                Specificity = TN / (TN + FP)
 
     labels: ArrayLike, optional
         List of the response column categories to use.

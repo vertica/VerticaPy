@@ -1110,63 +1110,63 @@ def regression_report(
 
             .. math::
 
-                2k - 2\ln(\hat{L})
+                AIC = 2k - 2\ln(\hat{L})
 
         - bic:
             Bayesian Information Criterion
 
             .. math::
 
-                -2\ln(\hat{L}) + k \ln(n)
+                BIC = -2\ln(\hat{L}) + k \ln(n)
 
         - max:
             Max Error.
 
             .. math::
 
-                \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
         - mae:
             Mean Absolute Error.
 
             .. math::
 
-                \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
         - median:
             Median Absolute Error.
 
             .. math::
 
-                \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
         - mse:
             Mean Squared Error.
 
             .. math::
 
-                \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
 
         - msle:
             Mean Squared Log Error.
 
             .. math::
 
-                \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
 
         - r2:
             R squared coefficient.
 
             .. math::
 
-                1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
         - r2a:
             R2 adjusted
 
             .. math::
 
-                1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+                \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
 
         - qe:
             quantile error, the quantile must be
@@ -1179,14 +1179,14 @@ def regression_report(
 
             .. math::
 
-                \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
 
         - var:
             Explained Variance
 
             .. math::
 
-                1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
 
     k: int, optional
         Number  of predictors. Used  to compute the adjusted

@@ -1442,7 +1442,7 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    \\frac{TP + TN}{TP + TN + FP + FN}
+                    Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
 
             - auc:
                 Area Under the Curve (ROC).
@@ -1456,7 +1456,7 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    \\frac{TPR + TNR}{2}
+                    BA = \\frac{TPR + TNR}{2}
 
             - best_cutoff:
                 Cutoff  which  optimised
@@ -1467,44 +1467,49 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    TPR + TNR - 1
+                    BA = TPR + TNR - 1
 
             - csi:
                 Critical  Success  Index.
 
                 .. math::
 
-                    \\frac{TP}{TP + FN + FP}
+                    index  = \\frac{TP}{TP + FN + FP}
 
             - f1:
                 F1 Score
+
+                .. math::
+
+                    F_1 Score = 2 \\times \\frac{Precision \\times Recall}{Precision + Recall}
+
             - fdr:
                 False Discovery Rate.
 
                 .. math::
 
-                    1 - PPV
+                    FDR = 1 - PPV
 
             - fm:
-                Fowlkes–Mallows index.
+                Fowlkes-Mallows index.
 
                 .. math::
 
-                    \\sqrt{PPV * TPR}
+                    FM = \\sqrt{PPV * TPR}
 
             - fnr:
                 False Negative Rate.
 
                 .. math::
 
-                    \\frac{FN}{FN + TP}
+                    FNR = \\frac{FN}{FN + TP}
 
             - for:
                 False Omission Rate.
 
                 .. math::
 
-                    1 - NPV
+                    FOR = 1 - NPV
 
             - fpr:
                 False Positive Rate.
@@ -1518,7 +1523,7 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
 
             - lr+:
@@ -1526,72 +1531,78 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    \\frac{TPR}{FPR}
+                    LR+ = \\frac{TPR}{FPR}
 
             - lr-:
                 Negative Likelihood Ratio.
 
                 .. math::
 
-                    \\frac{FNR}{TNR}
+                    LR- = \\frac{FNR}{TNR}
 
             - dor:
                 Diagnostic Odds Ratio.
 
                 .. math::
 
-                    \\frac{TP \\times TN}{FP \\times FN}
+                    DOR = \\frac{TP \\times TN}{FP \\times FN}
 
             - mcc:
                 Matthews Correlation Coefficient.
 
                 .. math::
 
-                    \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
             - mk:
                 Markedness.
 
                 .. math::
 
-                    PPV + NPV - 1
+                    MK = PPV + NPV - 1
 
             - npv:
                 Negative Predictive Value.
 
                 .. math::
 
-                    \\frac{TN}{TN + FN}
+                    NPV = \\frac{TN}{TN + FN}
 
             - prc_auc:
                 Area Under the Curve (PRC).
+
+                .. math::
+
+                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
             - precision:
                 Precision.
 
                 .. math::
 
-                    TP / (TP + FP)
+                    Precision = TP / (TP + FP)
 
             - pt:
                 Prevalence Threshold.
 
                 .. math::
 
-                    \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+                    threshold = \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
 
             - recall:
                 Recall.
 
                 .. math::
-                    TP / (TP + FN)
+
+                    Recall = TP / (TP + FN)
 
             - specificity:
                 Specificity.
 
                 .. math::
 
-                    TN / (TN + FP)
+                    Specificity = TN / (TN + FP)
 
             **For Regression**
 
@@ -1600,14 +1611,14 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
             - mae:
                 Mean Absolute Error.
 
                 .. math::
 
-                    \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
 
             - median:
@@ -1615,35 +1626,35 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
             - mse:
                 Mean Squared Error.
 
                 .. math::
 
-                    \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                    MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
 
             - msle:
                 Mean Squared Log Error.
 
                 .. math::
 
-                    \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
 
             - r2:
                 R squared coefficient.
 
                 .. math::
 
-                    1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
             - var:
                 Explained Variance.
 
                 .. math::
 
-                    1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                    \\text{Explained Variance} = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
 
         Returns
         -------
