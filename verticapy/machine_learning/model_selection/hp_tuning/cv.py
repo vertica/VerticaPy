@@ -302,7 +302,7 @@ def randomized_search_cv(
 
         - weighted:
             weighted average of the score of each class.
-        
+
     pos_label: PythonScalar, optional
         The main class to be considered as positive
         (classification only).
