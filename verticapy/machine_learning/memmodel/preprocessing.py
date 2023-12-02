@@ -28,7 +28,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class Scaler(InMemoryModel):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of scalers.
 
     Parameters
@@ -45,6 +45,12 @@ class Scaler(InMemoryModel):
     Attributes are identical to the input
     parameters, followed by an underscore
     ('_').
+
+    Examples
+    --------
+    This is a base class. To see a comprehensive
+    example specific to your class of interest,
+    please refer to that particular class.
     """
 
     # Properties.
@@ -81,6 +87,49 @@ class Scaler(InMemoryModel):
         -------
         numpy.array
             Transformed values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.preprocessing import StandardScaler
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            mean = [0.4, 0.1]
+            std = [0.5, 0.2]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_sts = StandardScaler(mean, std)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[0.45, 0.17]]
+
+        Transform the data.
+
+        .. ipython:: python
+
+            model_sts.transform(data)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return (np.array(X) - self.sub_) / self.den_
 
@@ -102,6 +151,50 @@ class Scaler(InMemoryModel):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.preprocessing import StandardScaler
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            mean = [0.4, 0.1]
+            std = [0.5, 0.2]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_sts = StandardScaler(mean, std)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_sts.transform_sql(cnames)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if not len(X) == len(self.den_) == len(self.sub_):
             raise ValueError(
@@ -113,7 +206,7 @@ class Scaler(InMemoryModel):
 
 class StandardScaler(Scaler):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of
     standard ``Scaler``.
 
@@ -128,7 +221,7 @@ class StandardScaler(Scaler):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel`
+        :py:class:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
         are defined entirely by their
         attributes. For example, ``mean``,
         and ``std`` of feature(s) define
@@ -137,7 +230,7 @@ class StandardScaler(Scaler):
     Attributes
     ----------
     Attributes are identical to
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
+    :py:class:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
 
     Examples
     --------
@@ -161,7 +254,7 @@ class StandardScaler(Scaler):
         std = [0.5, 0.2]
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
+    :py:class:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
     model.
 
     .. ipython:: python
@@ -200,7 +293,7 @@ class StandardScaler(Scaler):
 
     .. ipython:: python
 
-        model_mms.transform_sql(cnames)
+        model_sts.transform_sql(cnames)
 
     .. hint::
 
@@ -226,7 +319,7 @@ class StandardScaler(Scaler):
 
 class MinMaxScaler(Scaler):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of
     ``MinMax`` scaler.
 
@@ -240,7 +333,7 @@ class MinMaxScaler(Scaler):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel`
+        :py:class:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
         are defined entirely by their
         attributes. For example, ``minimum``,
         and ``maximum`` values of the input
@@ -250,7 +343,7 @@ class MinMaxScaler(Scaler):
     Attributes
     ----------
     Attributes are identical to
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
+    :py:class:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
 
     Examples
     --------
@@ -274,7 +367,7 @@ class MinMaxScaler(Scaler):
         max = [0.5, 0.2]
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
+    :py:class:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
     model.
 
     .. ipython:: python
@@ -339,7 +432,7 @@ class MinMaxScaler(Scaler):
 
 class OneHotEncoder(InMemoryModel):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of one-hot encoder.
 
     Parameters
@@ -373,7 +466,7 @@ class OneHotEncoder(InMemoryModel):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel`
+        :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
         are defined entirely by their
         attributes. For example,
         ``categories`` to encode
@@ -408,7 +501,7 @@ class OneHotEncoder(InMemoryModel):
     flag.
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+    :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
     model.
 
     .. ipython:: python
@@ -518,6 +611,43 @@ class OneHotEncoder(InMemoryModel):
         -------
         numpy.array
             Transformed values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.preprocessing import OneHotEncoder
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_ohe = OneHotEncoder(
+                categories = [["male", "female"], [1, 2, 3]],
+                drop_first = False,
+                column_naming = None,
+            )
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 1], ["female", 3]]
+
+        Transform the data.
+
+        .. ipython:: python
+
+            model_ohe.transform(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+            for more information about the
+            different methods and usages.
         """
         return np.apply_along_axis(self._transform_row, 1, X)
 
@@ -538,6 +668,44 @@ class OneHotEncoder(InMemoryModel):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.preprocessing import OneHotEncoder
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_ohe = OneHotEncoder(
+                categories = [["male", "female"], [1, 2, 3]],
+                drop_first = False,
+                column_naming = None,
+            )
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['sex', 'pclass']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_ohe.transform_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+            for more information about the
+            different methods and usages.
         """
         if len(X) != len(self.categories_):
             raise ValueError(

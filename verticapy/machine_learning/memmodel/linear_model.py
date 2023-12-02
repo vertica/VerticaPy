@@ -25,7 +25,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class LinearModel(InMemoryModel):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of linear
     algorithms.
 
@@ -74,7 +74,7 @@ class LinearModel(InMemoryModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :py:meth:`verticapy.machine_learning.memmodel.linear_model`.
+    Let's create a :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModel`.
 
     .. ipython:: python
 
@@ -169,6 +169,47 @@ class LinearModel(InMemoryModel):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.linear_model import LinearModel
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            coefficients = [0.5, 1.2]
+            intercept = 2.0
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_lm = LinearModel(coefficients, intercept)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[1.0, 0.3], [2.0, -0.6]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_lm.predict(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModel`
+            for more information about the
+            different methods and usages.
         """
         return self._predict_regression(X)
 
@@ -187,6 +228,47 @@ class LinearModel(InMemoryModel):
         -------
         numpy.array
             Probabilities.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            coefficients = [0.5, 1.2]
+            intercept = 2.0
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_lm = LinearModelClassifier(coefficients, intercept)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[1.0, 0.3], [2.0, -0.6]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_lm.predict_proba(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            for more information about the
+            different methods and usages.
         """
         probability_1 = self._predict_logit(X)
         return np.column_stack((1 - probability_1, probability_1))
@@ -232,6 +314,48 @@ class LinearModel(InMemoryModel):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.linear_model import LinearModel
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            coefficients = [0.5, 1.2]
+            intercept = 2.0
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_lm = LinearModel(coefficients, intercept)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_lmc.predict_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModel`
+            for more information about the
+            different methods and usages.
         """
         return self._predict_regression_sql(X)
 
@@ -252,6 +376,48 @@ class LinearModel(InMemoryModel):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            coefficients = [0.5, 1.2]
+            intercept = 2.0
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_lm = LinearModelClassifier(coefficients, intercept)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_lmc.predict_proba_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            for more information about the
+            different methods and usages.
         """
         probability_1 = self._predict_logit_sql(X)
         return [f"1 - ({probability_1})", probability_1]
@@ -259,7 +425,7 @@ class LinearModel(InMemoryModel):
 
 class LinearModelClassifier(LinearModel):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     Implementation of linear
     algorithms for classification.
 
@@ -300,7 +466,7 @@ class LinearModelClassifier(LinearModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :py:meth:`verticapy.machine_learning.memmodel.linear_model`.
+    Let's create a :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`.
 
     .. ipython:: python
 
@@ -393,6 +559,47 @@ class LinearModelClassifier(LinearModel):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            coefficients = [0.5, 1.2]
+            intercept = 2.0
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_lm = LinearModelClassifier(coefficients, intercept)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[1.0, 0.3], [2.0, -0.6]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_lm.predict(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            for more information about the
+            different methods and usages.
         """
         return np.where(self._predict_logit(X) > 0.5, 1, 0)
 
@@ -415,5 +622,47 @@ class LinearModelClassifier(LinearModel):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            coefficients = [0.5, 1.2]
+            intercept = 2.0
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_lm = LinearModelClassifier(coefficients, intercept)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_lmc.predict_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            for more information about the
+            different methods and usages.
         """
         return f"(({self._predict_logit_sql(X)}) > 0.5)::int"

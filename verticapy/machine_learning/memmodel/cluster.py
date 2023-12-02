@@ -28,17 +28,17 @@ from verticapy.machine_learning.memmodel.tree import Tree
 
 class Clustering(InMemoryModel):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of clustering algorithms.
 
     .. note::
 
         This is base class for all in-memory
         implementations of clustering algorithms viz.
-        :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`,
-        :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
-        , :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
-        and :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+        :py:class:`verticapy.machine_learning.memmodel.cluster.KMeans`,
+        :py:class:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
+        , :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+        and :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
 
     Parameters
     ----------
@@ -50,6 +50,18 @@ class Clustering(InMemoryModel):
         one of the ``p``-distances.
     clusters_names: ArrayLike, optional
         Names of the clusters.
+
+    Attributes
+    ----------
+    Attributes are identical to the input
+    parameters, followed by an underscore
+    ('_').
+
+    Examples
+    --------
+    This is a base class. To see a comprehensive
+    example specific to your class of interest,
+    please refer to that particular class.
     """
 
     # Properties.
@@ -92,6 +104,49 @@ class Clustering(InMemoryModel):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [[0.5, 0.6], [1, 2], [100, 200]]
+            p = 2
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_km = KMeans(clusters, p)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[2, 3]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_km.predict(data)[0]
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         distances = self.transform(X)
         clusters_pred_id = np.argmin(distances, axis=1).astype(object)
@@ -116,6 +171,49 @@ class Clustering(InMemoryModel):
         -------
         numpy.array
             Probabilities.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [[0.5, 0.6], [1, 2], [100, 200]]
+            p = 2
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_km = KMeans(clusters, p)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[2, 3]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_km.predict_proba(data)[0]
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         distances = self.transform(X)
         return (
@@ -137,6 +235,49 @@ class Clustering(InMemoryModel):
         -------
         numpy.array
             Transformed values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [[0.5, 0.6], [1, 2], [100, 200]]
+            p = 2
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_km = KMeans(clusters, p)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[2, 3]]
+
+        Transform the data.
+
+        .. ipython:: python
+
+            model_km.transform(data)[0]
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         result = []
         for centroid in self.clusters_:
@@ -163,6 +304,50 @@ class Clustering(InMemoryModel):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [[0.5, 0.6], [1, 2], [100, 200]]
+            p = 2
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_km = KMeans(clusters, p)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_km.predict_sql(cnames)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if hasattr(self, "classes_"):
             n = len(self.classes_)
@@ -208,6 +393,50 @@ class Clustering(InMemoryModel):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [[0.5, 0.6], [1, 2], [100, 200]]
+            p = 2
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_km = KMeans(clusters, p)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_km.predict_proba_sql(cnames)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         clusters_distance = self.transform_sql(X)
         sum_distance = " + ".join([f"1 / ({d})" for d in clusters_distance])
@@ -238,6 +467,50 @@ class Clustering(InMemoryModel):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [[0.5, 0.6], [1, 2], [100, 200]]
+            p = 2
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_km = KMeans(clusters, p)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_km.transform_sql(cnames)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         for c in self.clusters_:
             if len(X) != len(c):
@@ -256,7 +529,7 @@ class Clustering(InMemoryModel):
 
 class KMeans(Clustering):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ``KMeans``.
 
     Parameters
@@ -303,7 +576,7 @@ class KMeans(Clustering):
         p = 2
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`
+    :py:class:`verticapy.machine_learning.memmodel.cluster.KMeans`
     model.
 
     .. ipython:: python
@@ -328,7 +601,7 @@ class KMeans(Clustering):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`
+        :py:class:`verticapy.machine_learning.memmodel.cluster.KMeans`
         assigns a cluster id to identify each
         cluster. In this example, cluster with
         centroid ``[0.5, 0.6]`` will have
@@ -418,7 +691,7 @@ class KMeans(Clustering):
 
 class NearestCentroid(Clustering):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ``NearestCentroid``
     algorithm.
 
@@ -462,7 +735,7 @@ class NearestCentroid(Clustering):
         classes = ['class_a', 'class_b', 'class_c']
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
+    :py:class:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
     model.
 
     .. ipython:: python
@@ -578,7 +851,7 @@ class NearestCentroid(Clustering):
 
 class BisectingKMeans(Clustering, Tree):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ``BisectingKMeans``.
 
     Parameters
@@ -652,7 +925,7 @@ class BisectingKMeans(Clustering, Tree):
         children_right = [2, 4, None, None, None]
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+    :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
     model.
 
     .. ipython:: python
@@ -857,8 +1130,9 @@ class BisectingKMeans(Clustering, Tree):
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the bisecting
-        ``KMeans`` model.
+        Predicts using the
+        :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+        model.
 
         Parameters
         ----------
@@ -870,6 +1144,54 @@ class BisectingKMeans(Clustering, Tree):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import BisectingKMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [
+                [0.5, 0.6],
+                [1, 2],
+                [100, 200],
+                [10, 700],
+                [-100, -200],
+            ]
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_bkm = BisectingKMeans(clusters, children_left, children_right)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[2, 3]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_bkm.predict(data)[0]
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+            for more information about the
+            different methods and usages.
         """
         return np.apply_along_axis(self._predict_row, 1, X)
 
@@ -907,9 +1229,9 @@ class BisectingKMeans(Clustering, Tree):
     def predict_sql(self, X: ArrayLike) -> str:
         """
         Returns the SQL code needed
-        to deploy the bisecting
-        ``KMeans`` model using
-        its attributes.
+        to deploy the
+        :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+        model using its attributes.
 
         Parameters
         ----------
@@ -921,6 +1243,55 @@ class BisectingKMeans(Clustering, Tree):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import BisectingKMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [
+                [0.5, 0.6],
+                [1, 2],
+                [100, 200],
+                [10, 700],
+                [-100, -200],
+            ]
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_bkm = BisectingKMeans(clusters, children_left, children_right)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_bkm.predict_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+            for more information about the
+            different methods and usages.
         """
         for c in self.clusters_:
             if len(X) != len(c):
@@ -997,6 +1368,48 @@ class BisectingKMeans(Clustering, Tree):
         -------
         str
             Graphviz code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import BisectingKMeans
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [
+                [0.5, 0.6],
+                [1, 2],
+                [100, 200],
+                [10, 700],
+                [-100, -200],
+            ]
+            children_left = [1, 3, None, None, None]
+            children_right = [2, 4, None, None, None]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_bkm = BisectingKMeans(clusters, children_left, children_right)
+
+        Get the model Graphviz representation.
+
+        .. ipython:: python
+
+            model_bkm.to_graphviz()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+            for more information about the
+            different methods and usages.
         """
         node_style, leaf_style = format_type(
             node_style, leaf_style, dtype=dict, na_out={"shape": "none"}
@@ -1058,7 +1471,7 @@ class BisectingKMeans(Clustering, Tree):
 
 class KPrototypes(Clustering):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ``KPrototypes``.
 
     Parameters
@@ -1086,7 +1499,7 @@ class KPrototypes(Clustering):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+        :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
         algorithm allows you to use
         categorical variables directly
         without the need to encode them.
@@ -1127,7 +1540,7 @@ class KPrototypes(Clustering):
         is_categorical = [0, 1]
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+    :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
     model.
 
     .. ipython:: python
@@ -1152,7 +1565,7 @@ class KPrototypes(Clustering):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+        :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
         assigns a cluster id to identify each
         cluster. In this example, cluster with
         centroid ``[0.5, 'high']`` will have
@@ -1295,6 +1708,53 @@ class KPrototypes(Clustering):
         -------
         numpy.array
             Transformed values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KPrototypes
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [
+                [0.5, 'high'],
+                [1, 'low'],
+                [100, 'high'],
+            ]
+            p = 2
+            gamma = 1.0
+            is_categorical = [0, 1]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_kp = KPrototypes(clusters, p, gamma, is_categorical)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [[2, 'low']]
+
+        Transform the data.
+
+        .. ipython:: python
+
+            model_kp.transform(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+            for more information about the
+            different methods and usages.
         """
         return np.apply_along_axis(self._transform_row, 1, X)
 
@@ -1315,6 +1775,54 @@ class KPrototypes(Clustering):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.cluster import KPrototypes
+
+        We will use the
+        following attributes:
+
+        .. ipython:: python
+
+            clusters = [
+                [0.5, 'high'],
+                [1, 'low'],
+                [100, 'high'],
+            ]
+            p = 2
+            gamma = 1.0
+            is_categorical = [0, 1]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_kp = KPrototypes(clusters, p, gamma, is_categorical)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ['col1', 'col2']
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_kp.transform_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+            for more information about the
+            different methods and usages.
         """
         if len(self.is_categorical_) == 0:
             is_categorical = np.array([True for i in range(len(X))])

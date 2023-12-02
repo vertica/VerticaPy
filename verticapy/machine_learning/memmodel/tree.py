@@ -485,7 +485,7 @@ class Tree(InMemoryModel):
 
 class BinaryTreeRegressor(Tree):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of binary
     trees for regression.
 
@@ -691,7 +691,7 @@ class BinaryTreeRegressor(Tree):
 
 class BinaryTreeAnomaly(Tree):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of binary
     trees for anomaly detection.
 
@@ -932,7 +932,7 @@ class BinaryTreeAnomaly(Tree):
 
 class BinaryTreeClassifier(Tree):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of binary
     trees for classification.
 
@@ -1188,7 +1188,7 @@ class BinaryTreeClassifier(Tree):
 
 class NonBinaryTree(Tree):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of non-binary trees.
 
     Parameters

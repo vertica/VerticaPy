@@ -27,7 +27,7 @@ from verticapy.machine_learning.memmodel.base import MulticlassClassifier
 
 class NaiveBayes(MulticlassClassifier):
     """
-    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``NaiveBayes`` algorithm.
 
@@ -176,7 +176,8 @@ class NaiveBayes(MulticlassClassifier):
     (discrete), *survived* (boolean) and
     *sex* (categorical) as input features.
 
-    Let's define attributes representing each input feature:
+    Let's define attributes representing
+        each input feature:
 
     .. ipython:: python
 
@@ -225,7 +226,7 @@ class NaiveBayes(MulticlassClassifier):
         classes = ["C", "Q", "S"]
 
     Let's create a
-    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes`
+    :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
     model.
 
     .. ipython:: python
@@ -373,6 +374,92 @@ class NaiveBayes(MulticlassClassifier):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
+
+        Let's define attributes representing
+        each input feature:
+
+        .. ipython:: python
+
+            attributes = [
+                {
+                    "type": "gaussian",
+                    "C": {"mu": 63.9878308300395, "sigma_sq": 7281.87598377196},
+                    "Q": {"mu": 13.0217386792453, "sigma_sq": 211.626862330204},
+                    "S": {"mu": 27.6928120412844, "sigma_sq": 1428.57067393938},
+                },
+                {
+                    "type": "multinomial",
+                    "C": 0.771666666666667,
+                    "Q": 0.910714285714286,
+                    "S": 0.878216123499142,
+                },
+                {
+                    "type": "bernoulli",
+                    "C": 0.771666666666667,
+                    "Q": 0.910714285714286,
+                    "S": 0.878216123499142,
+                },
+                {
+                    "type": "categorical",
+                    "C": {
+                        "female": 0.407843137254902,
+                        "male": 0.592156862745098,
+                    },
+                    "Q": {
+                        "female": 0.416666666666667,
+                        "male": 0.583333333333333,
+                    },
+                    "S": {
+                        "female": 0.406666666666667,
+                        "male": 0.593333333333333,
+                    },
+                },
+            ]
+
+        We also need to provide class names
+        and their prior probabilities.
+
+        .. ipython:: python
+
+            prior = [0.8, 0.1, 0.1]
+            classes = ["C", "Q", "S"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_nb = NaiveBayes(attributes, prior, classes)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [
+                [40.0, 1, True, "male"],
+                [60.0, 3, True, "male"],
+                [15.0, 2, False, "female"],
+            ]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_nb.predict(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
+            for more information about the
+            different methods and usages.
         """
         return np.apply_along_axis(self._predict_row, 1, X)
 
@@ -397,6 +484,92 @@ class NaiveBayes(MulticlassClassifier):
         -------
         numpy.array
             Probabilities.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
+
+        Let's define attributes representing
+        each input feature:
+
+        .. ipython:: python
+
+            attributes = [
+                {
+                    "type": "gaussian",
+                    "C": {"mu": 63.9878308300395, "sigma_sq": 7281.87598377196},
+                    "Q": {"mu": 13.0217386792453, "sigma_sq": 211.626862330204},
+                    "S": {"mu": 27.6928120412844, "sigma_sq": 1428.57067393938},
+                },
+                {
+                    "type": "multinomial",
+                    "C": 0.771666666666667,
+                    "Q": 0.910714285714286,
+                    "S": 0.878216123499142,
+                },
+                {
+                    "type": "bernoulli",
+                    "C": 0.771666666666667,
+                    "Q": 0.910714285714286,
+                    "S": 0.878216123499142,
+                },
+                {
+                    "type": "categorical",
+                    "C": {
+                        "female": 0.407843137254902,
+                        "male": 0.592156862745098,
+                    },
+                    "Q": {
+                        "female": 0.416666666666667,
+                        "male": 0.583333333333333,
+                    },
+                    "S": {
+                        "female": 0.406666666666667,
+                        "male": 0.593333333333333,
+                    },
+                },
+            ]
+
+        We also need to provide class names
+        and their prior probabilities.
+
+        .. ipython:: python
+
+            prior = [0.8, 0.1, 0.1]
+            classes = ["C", "Q", "S"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_nb = NaiveBayes(attributes, prior, classes)
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [
+                [40.0, 1, True, "male"],
+                [60.0, 3, True, "male"],
+                [15.0, 2, False, "female"],
+            ]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_nb.predict_proba(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
+            for more information about the
+            different methods and usages.
         """
         return np.apply_along_axis(self._predict_proba_row, 1, X)
 
@@ -449,6 +622,89 @@ class NaiveBayes(MulticlassClassifier):
         -------
         list
             SQL code.
+
+        Examples
+        --------
+        Import the required module.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
+
+        Let's define attributes representing
+        each input feature:
+
+        .. ipython:: python
+
+            attributes = [
+                {
+                    "type": "gaussian",
+                    "C": {"mu": 63.9878308300395, "sigma_sq": 7281.87598377196},
+                    "Q": {"mu": 13.0217386792453, "sigma_sq": 211.626862330204},
+                    "S": {"mu": 27.6928120412844, "sigma_sq": 1428.57067393938},
+                },
+                {
+                    "type": "multinomial",
+                    "C": 0.771666666666667,
+                    "Q": 0.910714285714286,
+                    "S": 0.878216123499142,
+                },
+                {
+                    "type": "bernoulli",
+                    "C": 0.771666666666667,
+                    "Q": 0.910714285714286,
+                    "S": 0.878216123499142,
+                },
+                {
+                    "type": "categorical",
+                    "C": {
+                        "female": 0.407843137254902,
+                        "male": 0.592156862745098,
+                    },
+                    "Q": {
+                        "female": 0.416666666666667,
+                        "male": 0.583333333333333,
+                    },
+                    "S": {
+                        "female": 0.406666666666667,
+                        "male": 0.593333333333333,
+                    },
+                },
+            ]
+
+        We also need to provide class names
+        and their prior probabilities.
+
+        .. ipython:: python
+
+            prior = [0.8, 0.1, 0.1]
+            classes = ["C", "Q", "S"]
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            model_nb = NaiveBayes(attributes, prior, classes)
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["age", "pclass", "survived", "sex"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_nb.predict_proba_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
+            for more information about the
+            different methods and usages.
         """
         score = self._predict_score_sql(X)
         score_sum = f"({' + '.join(score)})"
