@@ -172,6 +172,124 @@ def randomized_search_cv(
     -------
     TableSample
         result of the randomized search.
+
+    Examples
+    ---------
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will use the Wine Quality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    Next, we can initialize a Logistic Regression
+    model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+
+        model = LogisticRegression()
+
+    Now we can conveniently use the ``randomized_search_cv``
+    function to find the K-Fold randomized search of an
+    estimator.
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection import randomized_search_cv
+
+        result = randomized_search_cv(
+            model,
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3,
+            metric = "auc",
+            lmax = 5
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        import verticapy as vp
+        from verticapy.machine_learning.model_selection import randomized_search_cv
+
+        result = randomized_search_cv(
+            model,
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3,
+            metric = "auc",
+            lmax = 5
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_randomized_search_cv_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_randomized_search_cv_table.html
+
     """
     X = format_type(X, dtype=list)
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
@@ -232,71 +350,227 @@ def grid_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for
-                  regression.
-        For Classification:
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            ba          : Balanced Accuracy
-                          = (tpr + tnr) / 2
-            bm          : Informedness
-                          = tpr + tnr - 1
-            csi         : Critical Success Index
-                          = tp / (tp + fn + fp)
-            f1          : F1 Score
-            fdr         : False Discovery Rate = 1 - ppv
-            fm          : Fowlkes–Mallows index
-                          = sqrt(ppv * tpr)
-            fnr         : False Negative Rate
-                          = fn / (fn + tp)
-            for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate
-                          = fp / (fp + tn)
-            logloss     : Log Loss
-            lr+         : Positive Likelihood Ratio
-                          = tpr / fpr
-            lr-         : Negative Likelihood Ratio
-                          = fnr / tnr
-            dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient
-            mk          : Markedness
-                          = ppv + npv - 1
-            npv         : Negative Predictive Value
-                          = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision
-                          = tp / (tp + fp)
-            pt          : Prevalence Threshold
-                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall
-                          = tp / (tp + fn)
-            specificity : Specificity
-                          = tn / (tn + fp)
-        For Regression:
-            max    : Max error
-            mae    : Mean absolute error
-            median : Median absolute error
-            mse    : Mean squared error
-            msle   : Mean squared log error
-            r2     : R-squared coefficient
-            r2a    : R2 adjusted
-            rmse   : Root-mean-squared error
-            var    : Explained variance
+
+        - auto:
+            logloss for classification & rmse for
+            regression.
+
+        **For Classification**
+
+        - accuracy:
+            Accuracy.
+        - auc:
+            Area Under the Curve (ROC).
+        - ba:
+            Balanced Accuracy.
+
+            .. math::
+
+                (tpr + tnr) / 2
+
+        - best_cutoff:
+            Cutoff  which  optimised
+            the ROC Curve prediction.
+        - bm:
+            Informedness.
+
+            .. math::
+
+                tpr + tnr - 1
+
+        - csi:
+            Critical  Success  Index.
+
+            .. math::
+
+                tp / (tp + fn + fp)
+
+        - f1:
+            F1 Score
+        - fdr:
+            False Discovery Rate.
+
+            .. math::
+
+                1 - ppv
+
+        - fm:
+            Fowlkes–Mallows index.
+            .. math::
+
+                sqrt(ppv * tpr)
+
+        - fnr:
+            False Negative Rate.
+            .. math::
+
+                fn / (fn + tp)
+
+        - for:
+            False Omission Rate.
+
+            .. math::
+
+                1 - npv
+
+        - fpr:
+            False Positive Rate.
+
+            .. math::
+
+                fp / (fp + tn)
+
+        - logloss:
+            Log Loss.
+        - lr+:
+            Positive Likelihood Ratio.
+
+            .. math::
+
+                tpr / fpr
+
+        - lr-:
+            Negative Likelihood Ratio.
+
+            .. math::
+
+                fnr / tnr
+
+        - dor:
+            Diagnostic Odds Ratio.
+        - mcc:
+            Matthews Correlation Coefficient.
+        - mk:
+            Markedness.
+
+            .. math::
+
+                ppv + npv - 1
+
+        - npv:
+            Negative Predictive Value.
+
+            .. math::
+
+                tn / (tn + fn)
+
+        - prc_auc:
+            Area Under the Curve (PRC).
+        - precision:
+            Precision.
+
+            .. math::
+
+                tp / (tp + fp)
+
+        - pt:
+            Prevalence Threshold.
+
+            .. math::
+
+                sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+
+        - recall:
+            Recall.
+
+            .. math::
+                tp / (tp + fn)
+
+        - specificity:
+            Specificity.
+
+            .. math::
+
+                tn / (tn + fp)
+
+        **For Regression**
+
+        - max:
+            Max Error.
+
+            .. math::
+
+                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mae:
+            Mean Absolute Error.
+
+            .. math::
+
+                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+
+        - median:
+            Median Absolute Error.
+
+            .. math::
+
+                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mse:
+            Mean Squared Error.
+
+            .. math::
+
+                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+        - msle:
+            Mean Squared Log Error.
+
+            .. math::
+
+                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+        - r2:
+            R squared coefficient.
+
+            .. math::
+
+                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+        - r2a:
+            R2 adjusted
+
+            .. math::
+
+                \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+        - var:
+            Explained Variance.
+
+            .. math::
+
+                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
+        - rmse:
+            Root-mean-squared error
+
+            .. math::
+
+                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
     cv: int, optional
         Number of folds.
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values
+            globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - weighted:
+            weighted average of the score of each class.
+
     pos_label: PythonScalar, optional
         The main class to  be considered as positive
         (classification only).
@@ -316,6 +590,125 @@ def grid_search_cv(
     -------
     TableSample
         Result of the the grid search.
+
+    Examples
+    ---------
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will use the Wine Quality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    Next, we can initialize a Logistic Regression
+    model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+
+        model = LogisticRegression()
+
+    Now we can conveniently use the ``grid_search_cv``
+    to search for the estimator using k-fold grid search.
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection import grid_search_cv
+
+        result = grid_search_cv(
+            model,
+            {"tol": [1e-2, 1e-4, 1e-6],
+                "max_iter": [3, 10, 100],
+                "solver": ["Newton", "BFGS"]},
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        import verticapy as vp
+        from verticapy.machine_learning.model_selection import grid_search_cv
+
+        result = grid_search_cv(
+            model,
+            {"tol": [1e-2, 1e-4, 1e-6],
+                "max_iter": [3, 10, 100],
+                "solver": ["Newton", "BFGS"]},
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_grid_search_cv_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_grid_search_cv_table.html
+
     """
     X = format_type(X, dtype=list)
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
@@ -537,56 +930,205 @@ def bayesian_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for
-                  regression.
-        For Classification:
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            ba          : Balanced Accuracy
-                          = (tpr + tnr) / 2
-            bm          : Informedness
-                          = tpr + tnr - 1
-            csi         : Critical Success Index
-                          = tp / (tp + fn + fp)
-            f1          : F1 Score
-            fdr         : False Discovery Rate = 1 - ppv
-            fm          : Fowlkes–Mallows index
-                          = sqrt(ppv * tpr)
-            fnr         : False Negative Rate
-                          = fn / (fn + tp)
-            for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate
-                          = fp / (fp + tn)
-            logloss     : Log Loss
-            lr+         : Positive Likelihood Ratio
-                          = tpr / fpr
-            lr-         : Negative Likelihood Ratio
-                          = fnr / tnr
-            dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient
-            mk          : Markedness
-                          = ppv + npv - 1
-            npv         : Negative Predictive Value
-                          = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision
-                          = tp / (tp + fp)
-            pt          : Prevalence Threshold
-                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall
-                          = tp / (tp + fn)
-            specificity : Specificity
-                          = tn / (tn + fp)
-        For Regression:
-            max    : Max error
-            mae    : Mean absolute error
-            median : Median absolute error
-            mse    : Mean squared error
-            msle   : Mean squared log error
-            r2     : R-squared coefficient
-            r2a    : R2 adjusted
-            rmse   : Root-mean-squared error
-            var    : Explained variance
+
+        - auto:
+            logloss for classification & rmse for
+            regression.
+
+        **For Classification**
+
+        - accuracy:
+            Accuracy.
+        - auc:
+            Area Under the Curve (ROC).
+        - ba:
+            Balanced Accuracy.
+
+            .. math::
+
+                (tpr + tnr) / 2
+
+        - best_cutoff:
+            Cutoff  which  optimised
+            the ROC Curve prediction.
+        - bm:
+            Informedness.
+
+            .. math::
+
+                tpr + tnr - 1
+
+        - csi:
+            Critical  Success  Index.
+
+            .. math::
+
+                tp / (tp + fn + fp)
+
+        - f1:
+            F1 Score
+        - fdr:
+            False Discovery Rate.
+
+            .. math::
+
+                1 - ppv
+
+        - fm:
+            Fowlkes–Mallows index.
+            .. math::
+
+                sqrt(ppv * tpr)
+
+        - fnr:
+            False Negative Rate.
+            .. math::
+
+                fn / (fn + tp)
+
+        - for:
+            False Omission Rate.
+
+            .. math::
+
+                1 - npv
+
+        - fpr:
+            False Positive Rate.
+
+            .. math::
+
+                fp / (fp + tn)
+
+        - logloss:
+            Log Loss.
+        - lr+:
+            Positive Likelihood Ratio.
+
+            .. math::
+
+                tpr / fpr
+
+        - lr-:
+            Negative Likelihood Ratio.
+
+            .. math::
+
+                fnr / tnr
+
+        - dor:
+            Diagnostic Odds Ratio.
+        - mcc:
+            Matthews Correlation Coefficient.
+        - mk:
+            Markedness.
+
+            .. math::
+
+                ppv + npv - 1
+
+        - npv:
+            Negative Predictive Value.
+
+            .. math::
+
+                tn / (tn + fn)
+
+        - prc_auc:
+            Area Under the Curve (PRC).
+        - precision:
+            Precision.
+
+            .. math::
+
+                tp / (tp + fp)
+
+        - pt:
+            Prevalence Threshold.
+
+            .. math::
+
+                sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+
+        - recall:
+            Recall.
+
+            .. math::
+                tp / (tp + fn)
+
+        - specificity:
+            Specificity.
+
+            .. math::
+
+                tn / (tn + fp)
+
+        **For Regression**
+
+        - max:
+            Max Error.
+
+            .. math::
+
+                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mae:
+            Mean Absolute Error.
+
+            .. math::
+
+                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+
+        - median:
+            Median Absolute Error.
+
+            .. math::
+
+                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mse:
+            Mean Squared Error.
+
+            .. math::
+
+                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+        - msle:
+            Mean Squared Log Error.
+
+            .. math::
+
+                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+        - r2:
+            R squared coefficient.
+
+            .. math::
+
+                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+        - r2a:
+            R2 adjusted
+
+            .. math::
+
+                \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+        - var:
+            Explained Variance.
+
+            .. math::
+
+                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
+        - rmse:
+            Root-mean-squared error
+
+            .. math::
+
+                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
     cv: int, optional
         Number of folds.
     pos_label: PythonScalar, optional
@@ -633,6 +1175,119 @@ def bayesian_search_cv(
     -------
     TableSample
         result of the bayesian search.
+
+    Examples
+    ---------
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will use the Wine Quality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    Next, we can initialize a Logistic Regression
+    model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+
+        model = LogisticRegression()
+
+    Now we can conveniently use the ``bayesian_search_cv``
+    function to find an optimal set of parameters estimator.
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection import bayesian_search_cv
+
+        result = bayesian_search_cv(
+            model,
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        import verticapy as vp
+        from verticapy.machine_learning.model_selection import bayesian_search_cv
+
+        result = bayesian_search_cv(
+            model,
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_bayesian_search_cv_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_bayesian_search_cv_table.html
+
     """
     RFmodel_params, param_grid = format_type(RFmodel_params, param_grid, dtype=dict)
     X = format_type(X, dtype=list)
@@ -828,63 +1483,219 @@ def enet_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for
-                  regression.
-        For Classification:
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            ba          : Balanced Accuracy
-                          = (tpr + tnr) / 2
-            bm          : Informedness
-                          = tpr + tnr - 1
-            csi         : Critical Success Index
-                          = tp / (tp + fn + fp)
-            f1          : F1 Score
-            fdr         : False Discovery Rate = 1 - ppv
-            fm          : Fowlkes–Mallows index
-                          = sqrt(ppv * tpr)
-            fnr         : False Negative Rate
-                          = fn / (fn + tp)
-            for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate
-                          = fp / (fp + tn)
-            logloss     : Log Loss
-            lr+         : Positive Likelihood Ratio
-                          = tpr / fpr
-            lr-         : Negative Likelihood Ratio
-                          = fnr / tnr
-            mcc         : Matthews Correlation Coefficient
-            mk          : Markedness
-                          = ppv + npv - 1
-            npv         : Negative Predictive Value
-                          = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision
-                          = tp / (tp + fp)
-            pt          : Prevalence Threshold
-                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall
-                          = tp / (tp + fn)
-            specificity : Specificity
-                          = tn / (tn + fp)
-        For Regression:
-            max    : Max error
-            mae    : Mean absolute error
-            median : Median absolute error
-            mse    : Mean squared error
-            msle   : Mean squared log error
-            r2     : R-squared coefficient
-            r2a    : R2 adjusted
-            rmse   : Root-mean-squared error
-            var    : Explained variance
+
+            - auto:
+                logloss for classification & rmse for
+                regression.
+
+            **For Classification**
+
+            - accuracy:
+                Accuracy.
+            - auc:
+                Area Under the Curve (ROC).
+            - ba:
+                Balanced Accuracy.
+
+                .. math::
+
+                    (tpr + tnr) / 2
+
+            - best_cutoff:
+                Cutoff  which  optimised
+                the ROC Curve prediction.
+            - bm:
+                Informedness.
+
+                .. math::
+
+                    tpr + tnr - 1
+
+            - csi:
+                Critical  Success  Index.
+
+                .. math::
+
+                    tp / (tp + fn + fp)
+
+            - f1:
+                F1 Score
+            - fdr:
+                False Discovery Rate.
+
+                .. math::
+
+                    1 - ppv
+
+            - fm:
+                Fowlkes–Mallows index.
+                .. math::
+
+                    sqrt(ppv * tpr)
+
+            - fnr:
+                False Negative Rate.
+                .. math::
+
+                    fn / (fn + tp)
+
+            - for:
+                False Omission Rate.
+
+                .. math::
+
+                    1 - npv
+
+            - fpr:
+                False Positive Rate.
+
+                .. math::
+
+                    fp / (fp + tn)
+
+            - logloss:
+                Log Loss.
+            - lr+:
+                Positive Likelihood Ratio.
+
+                .. math::
+
+                    tpr / fpr
+
+            - lr-:
+                Negative Likelihood Ratio.
+
+                .. math::
+
+                    fnr / tnr
+
+            - dor:
+                Diagnostic Odds Ratio.
+            - mcc:
+                Matthews Correlation Coefficient.
+            - mk:
+                Markedness.
+
+                .. math::
+
+                    ppv + npv - 1
+
+            - npv:
+                Negative Predictive Value.
+
+                .. math::
+
+                    tn / (tn + fn)
+
+            - prc_auc:
+                Area Under the Curve (PRC).
+            - precision:
+                Precision.
+
+                .. math::
+
+                    tp / (tp + fp)
+
+            - pt:
+                Prevalence Threshold.
+
+                .. math::
+
+                    sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+
+            - recall:
+                Recall.
+
+                .. math::
+                    tp / (tp + fn)
+
+            - specificity:
+                Specificity.
+
+                .. math::
+
+                    tn / (tn + fp)
+
+            **For Regression**
+
+            - max:
+                Max Error.
+
+                .. math::
+
+                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mae:
+                Mean Absolute Error.
+
+                .. math::
+
+                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+
+            - median:
+                Median Absolute Error.
+
+                .. math::
+
+                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mse:
+                Mean Squared Error.
+
+                .. math::
+
+                    MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+            - msle:
+                Mean Squared Log Error.
+
+                .. math::
+
+                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+            - r2:
+                R squared coefficient.
+
+                .. math::
+
+                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+            - r2a:
+                R2 adjusted
+
+                .. math::
+
+                    \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+            - var:
+                Explained Variance.
+
+                .. math::
+
+                    VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
+            - rmse:
+                Root-mean-squared error
+
+                .. math::
+
+                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
     cv: int, optional
         Number of folds.
     estimator_type: str, optional
         Estimator Type.
-            auto : detects if it is a Logit Model
-                   or ENet.
-            logit: Logistic Regression
-            enet : ElasticNet
+
+        - auto:
+            detects if it is a Logit Model or ENet.
+
+        - logit:
+            Logistic Regression
+
+        - enet:
+            ElasticNet
+
     cutoff: float, optional
         The model cutoff (logit only).
     print_info: bool, optional
@@ -895,6 +1706,119 @@ def enet_search_cv(
     -------
     TableSample
         result of the ENET search.
+
+    Examples
+    ---------
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will use the Wine Quality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    Next, we can initialize a Logistic Regression
+    model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+
+        model = LogisticRegression()
+
+    Now we can conveniently use the ``enet_search_cv``
+    function to perform the  k-fold grid search using
+    multiple ENet models
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection import enet_search_cv
+
+        result = enet_search_cv(
+            model,
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        import verticapy as vp
+        from verticapy.machine_learning.model_selection import enet_search_cv
+
+        result = enet_search_cv(
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            y = "good",
+            cv = 3
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_enet_search_cv_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_enet_search_cv_table.html
+
     """
     X = format_type(X, dtype=list)
     param_grid = parameter_grid(

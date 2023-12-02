@@ -77,77 +77,252 @@ def cross_validate(
         be a list of metrics. If empty, most of the estimator
         metrics are computed.
         For Classification:
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            ba          : Balanced Accuracy
-                          = (tpr + tnr) / 2
-            best_cutoff : Cutoff which optimised the ROC
-                          Curve prediction.
-            bm          : Informedness
-                          = tpr + tnr - 1
-            csi         : Critical Success Index
-                          = tp / (tp + fn + fp)
-            f1          : F1 Score
-            fdr         : False Discovery Rate = 1 - ppv
-            fm          : Fowlkes–Mallows index
-                          = sqrt(ppv * tpr)
-            fnr         : False Negative Rate
-                          = fn / (fn + tp)
-            for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate
-                          = fp / (fp + tn)
-            logloss     : Log Loss
-            lr+         : Positive Likelihood Ratio
-                          = tpr / fpr
-            lr-         : Negative Likelihood Ratio
-                          = fnr / tnr
-            dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient
-            mk          : Markedness
-                          = ppv + npv - 1
-            npv         : Negative Predictive Value
-                          = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision
-                          = tp / (tp + fp)
-            pt          : Prevalence Threshold
-                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall
-                          = tp / (tp + fn)
-            specificity : Specificity
-                          = tn / (tn + fp)
+
+        - accuracy:
+            Accuracy.
+
+            .. math::
+
+                Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
+        - auc:
+            Area Under the Curve (ROC).
+
+            .. math::
+
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+        - ba:
+            Balanced Accuracy.
+
+            .. math::
+
+                BA = \\frac{TPR + TNR}{2}
+
+        - bm:
+            Informedness
+
+            .. math::
+
+                BM = TPR + TNR - 1
+
+        - csi:
+            Critical Success Index
+
+            .. math::
+
+                index = \\frac{TP}{TP + FN + FP}
+
+        - f1:
+            F1 Score
+            .. math::
+
+                F_1 Score = 2 \\times \frac{Precision \\times Recall}{Precision + Recall}
+
+        - fdr:
+            False Discovery Rate
+
+            .. math::
+
+                FDR = 1 - PPV
+
+        - fm:
+            Fowlkes-Mallows index
+
+            .. math::
+
+                FM = \\sqrt{PPV * TPR}
+
+        - fnr:
+            False Negative Rate
+
+            .. math::
+
+                FNR = \\frac{FN}{FN + TP}
+
+        - for:
+            False Omission Rate
+
+            .. math::
+
+                FOR = 1 - NPV
+
+        - fpr:
+            False Positive Rate
+
+            .. math::
+
+                FPR = \\frac{FP}{FP + TN}
+
+        - logloss:
+            Log Loss
+
+            .. math::
+
+                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
+        - lr+:
+            Positive Likelihood Ratio.
+
+            .. math::
+
+                LR+ = \\frac{TPR}{FPR}
+
+        - lr-:
+            Negative Likelihood Ratio.
+
+            .. math::
+
+                LR- = \\frac{FNR}{TNR}
+
+        - dor:
+            Diagnostic Odds Ratio.
+
+            .. math::
+
+                DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+        - mcc:
+            Matthews Correlation Coefficient
+
+        - mk:
+            Markedness
+
+            .. math::
+
+                MK = PPV + NPV - 1
+
+        - npv:
+            Negative Predictive Value
+
+            .. math::
+
+                NPV = \\frac{TN}{TN + FN}
+
+        - prc_auc:
+            Area Under the Curve (PRC)
+
+            .. math::
+
+                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+        - precision:
+            Precision
+
+            .. math::
+
+                TP / (TP + FP)
+
+        - pt:
+            Prevalence Threshold.
+
+            .. math::
+
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+
+        - recall:
+            Recall.
+
+            .. math::
+                TP / (TP + FN)
+
+        - specificity:
+            Specificity.
+
+            .. math::
+
+                TN / (TN + FP)
+
         For Regression:
-            aic    : Akaike’s Information Criterion
-            bic    : Bayesian Information Criterion
-            max    : Max Error
-            mae    : Mean Absolute Error
-            median : Median Absolute Error
-            mse    : Mean Squared Error
-            msle   : Mean Squared Log Error
-            qe     : quantile  error,  the quantile must be
-                     included in the name. Example:
-                     qe50.1% will return the quantile error
-                     using q=0.501.
-            r2     : R squared coefficient
-            r2a    : R2 adjusted
-            rmse   : Root Mean Squared Error
-            var    : Explained Variance
+
+
+        - max:
+            Max Error.
+
+            .. math::
+
+                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mae:
+            Mean Absolute Error.
+
+            .. math::
+
+                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+
+        - median:
+            Median Absolute Error.
+
+            .. math::
+
+                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mse:
+            Mean Squared Error.
+
+            .. math::
+
+                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+        - msle:
+            Mean Squared Log Error.
+
+            .. math::
+
+                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+        - r2:
+            R squared coefficient.
+
+            .. math::
+
+                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+        - r2a:
+            R2 adjusted
+
+            .. math::
+
+                \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+        - var:
+            Explained Variance.
+
+            .. math::
+
+                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
+        - rmse:
+            Root-mean-squared error
+
+            .. math::
+
+                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.
     average: str, optional
-            The method used to  compute the final score for
-            multiclass-classification.
-                binary   : considers one of the classes  as
-                           positive  and  use  the   binary
-                           confusion  matrix to compute the
-                           score.
-                micro    : positive  and   negative  values
-                           globally.
-                macro    : average  of  the  score of  each
-                           class.
-                weighted : weighted average of the score of
-                           each class.
+        The method used to  compute the final score for
+        multiclass-classification.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values
+            globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - weighted:
+            weighted average of the score of each class.
+
     pos_label: PythonScalar, optional
         The main class to be considered as positive
         (classification only).
@@ -333,69 +508,252 @@ def learning_curve(
             auto: logloss for classification & RMSE
                   for regression.
         For Classification:
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            ba          : Balanced Accuracy
-                          = (tpr + tnr) / 2
-            bm          : Informedness
-                          = tpr + tnr - 1
-            csi         : Critical Success Index
-                          = tp / (tp + fn + fp)
-            f1          : F1 Score
-            fdr         : False Discovery Rate = 1 - ppv
-            fm          : Fowlkes–Mallows index
-                          = sqrt(ppv * tpr)
-            fnr         : False Negative Rate
-                          = fn / (fn + tp)
-            for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate
-                          = fp / (fp + tn)
-            logloss     : Log Loss
-            lr+         : Positive Likelihood Ratio
-                          = tpr / fpr
-            lr-         : Negative Likelihood Ratio
-                          = fnr / tnr
-            dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient
-            mk          : Markedness
-                          = ppv + npv - 1
-            npv         : Negative Predictive Value
-                          = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision
-                          = tp / (tp + fp)
-            pt          : Prevalence Threshold
-                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall
-                          = tp / (tp + fn)
-            specificity : Specificity
-                          = tn / (tn + fp)
+
+        - accuracy:
+            Accuracy.
+
+            .. math::
+
+                Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
+        - auc:
+            Area Under the Curve (ROC).
+
+            .. math::
+
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+        - ba:
+            Balanced Accuracy.
+
+            .. math::
+
+                BA = \\frac{TPR + TNR}{2}
+
+        - bm:
+            Informedness
+
+            .. math::
+
+                BM = TPR + TNR - 1
+
+        - csi:
+            Critical Success Index
+
+            .. math::
+
+                index = \\frac{TP}{TP + FN + FP}
+
+        - f1:
+            F1 Score
+            .. math::
+
+                F_1 Score = 2 \\times \frac{Precision \\times Recall}{Precision + Recall}
+
+        - fdr:
+            False Discovery Rate
+
+            .. math::
+
+                FDR = 1 - PPV
+
+        - fm:
+            Fowlkes-Mallows index
+
+            .. math::
+
+                FM = \\sqrt{PPV * TPR}
+
+        - fnr:
+            False Negative Rate
+
+            .. math::
+
+                FNR = \\frac{FN}{FN + TP}
+
+        - for:
+            False Omission Rate
+
+            .. math::
+
+                FOR = 1 - NPV
+
+        - fpr:
+            False Positive Rate
+
+            .. math::
+
+                FPR = \\frac{FP}{FP + TN}
+
+        - logloss:
+            Log Loss
+
+            .. math::
+
+                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
+        - lr+:
+            Positive Likelihood Ratio.
+
+            .. math::
+
+                LR+ = \\frac{TPR}{FPR}
+
+        - lr-:
+            Negative Likelihood Ratio.
+
+            .. math::
+
+                LR- = \\frac{FNR}{TNR}
+
+        - dor:
+            Diagnostic Odds Ratio.
+
+            .. math::
+
+                DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+        - mcc:
+            Matthews Correlation Coefficient
+
+        - mk:
+            Markedness
+
+            .. math::
+
+                MK = PPV + NPV - 1
+
+        - npv:
+            Negative Predictive Value
+
+            .. math::
+
+                NPV = \\frac{TN}{TN + FN}
+
+        - prc_auc:
+            Area Under the Curve (PRC)
+
+            .. math::
+
+                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+        - precision:
+            Precision
+
+            .. math::
+
+                TP / (TP + FP)
+
+        - pt:
+            Prevalence Threshold.
+
+            .. math::
+
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+
+        - recall:
+            Recall.
+
+            .. math::
+                TP / (TP + FN)
+
+        - specificity:
+            Specificity.
+
+            .. math::
+
+                TN / (TN + FP)
+
         For Regression:
-            max    : Max error
-            mae    : Mean absolute error
-            median : Median absolute error
-            mse    : Mean squared error
-            msle   : Mean squared log error
-            r2     : R-squared coefficient
-            r2a    : R2 adjusted
-            rmse   : Root-mean-squared error
-            var    : Explained variance
+
+
+        - max:
+            Max Error.
+
+            .. math::
+
+                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mae:
+            Mean Absolute Error.
+
+            .. math::
+
+                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+
+        - median:
+            Median Absolute Error.
+
+            .. math::
+
+                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mse:
+            Mean Squared Error.
+
+            .. math::
+
+                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+        - msle:
+            Mean Squared Log Error.
+
+            .. math::
+
+                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+        - r2:
+            R squared coefficient.
+
+            .. math::
+
+                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+        - r2a:
+            R2 adjusted
+
+            .. math::
+
+                \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+        - var:
+            Explained Variance.
+
+            .. math::
+
+                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
+        - rmse:
+            Root-mean-squared error
+
+            .. math::
+
+                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
     cv: int, optional
         Number of folds.
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values
+            globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - weighted:
+            weighted average of the score of each class.
+
     pos_label: PythonScalar, optional
         The main class to be considered as positive
         (classification only).
