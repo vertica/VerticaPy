@@ -614,7 +614,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         - unregularized:
             Fits the  intercept  but does not  include
             it in regularization.
-    class_weight: str / list, optional
+    class_weight: str | list, optional
         Specifies how to determine weights for the two
         classes.  It can be a  list of 2 elements  or
         one of the following methods:

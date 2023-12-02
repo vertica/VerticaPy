@@ -968,7 +968,8 @@ class BisectingKMeans(Clustering, Tree):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.to_graphviz`
-    method to generate code for a `Graphviz <https://graphviz.org/>`_
+    method to generate code for a
+    `Graphviz <https://graphviz.org/>`_
     tree.
 
     .. ipython:: python

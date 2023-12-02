@@ -72,7 +72,7 @@ def cross_validate(
         List   of  the  predictor   columns.
     y: str
         Response Column.
-    metrics: str / list, optional
+    metrics: str | list, optional
         Metrics used to do the model evaluation. It can also
         be a list of metrics. If empty, most of the estimator
         metrics are computed.

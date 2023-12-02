@@ -39,6 +39,12 @@ class Ensemble(InMemoryModel):
     :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ensemble
     algorithms.
+
+    Examples
+    --------
+    This is a base class. To see a comprehensive
+    example specific to your class of interest,
+    please refer to that particular class.
     """
 
     # Prediction | Transformation Methods - IN MEMORY.
@@ -90,6 +96,74 @@ class Ensemble(InMemoryModel):
         -------
         graphviz.Source
             Graphviz object.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeClassifier``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+            model1 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.6]],
+                classes = ["a", "b", "c"],
+            )
+            model2 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.7, 0.2, 0.1], [0.3, 0.5, 0.2], [0.2, 0.2, 0.6]],
+                classes = ["a", "b", "c"],
+            )
+            model3 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.4, 0.4, 0.2], [0.2, 0.2, 0.6], [0.2, 0.5, 0.3]],
+                classes = ["a", "b", "c"],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import RandomForestClassifier
+
+            model_rfc = RandomForestClassifier(
+                trees = [model1, model2, model3],
+                classes = ["a", "b", "c"],
+            )
+
+        Let's draw the input tree.
+
+        .. code-block:: python
+
+            model_rfc.plot_tree(tree_id = 0)
+
+        .. ipython:: python
+            :suppress:
+
+            res = model_rfc.plot_tree(tree_id = 0)
+            res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier', format='png')
+
+        .. image:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.png
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return self.trees_[tree_id].plot_tree(pic_path, *args, **kwargs)
 
@@ -121,7 +195,7 @@ class RandomForestRegressor(Ensemble):
     is an ensemble of multiple binary
     tree regressor models. In this
     example, we will create three
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models:
 
     .. ipython:: python
@@ -151,7 +225,7 @@ class RandomForestRegressor(Ensemble):
         )
 
     Now we will use above models to create
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+    :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
     model.
 
     .. ipython:: python
@@ -223,7 +297,9 @@ class RandomForestRegressor(Ensemble):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
@@ -267,6 +343,64 @@ class RandomForestRegressor(Ensemble):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeRegressor``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeRegressor
+
+            model1 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 3.0, 11.0, 23.5],
+            )
+            model2 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, -3, 12, 56],
+            )
+            model3 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 1, 3, 6],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import RandomForestRegressor
+
+            model_rfr = RandomForestRegressor(trees = [model1, model2, model3])
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_rfr.predict(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+            for more information about the
+            different methods and usages.
         """
         return np.average(self._predict_trees(X), axis=1)
 
@@ -288,6 +422,65 @@ class RandomForestRegressor(Ensemble):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeRegressor``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeRegressor
+
+            model1 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 3.0, 11.0, 23.5],
+            )
+            model2 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, -3, 12, 56],
+            )
+            model3 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 1, 3, 6],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import RandomForestRegressor
+
+            model_rfr = RandomForestRegressor(trees = [model1, model2, model3])
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_rfr.predict_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+            for more information about the
+            different methods and usages.
         """
         trees_pred = self._predict_trees_sql(X)
         return f"({' + '.join(trees_pred)}) / {len(trees_pred)}"
@@ -323,7 +516,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     is an ensemble of multiple binary
     tree classifier models. In this
     example, we will create three
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
     .. ipython:: python
@@ -356,7 +549,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+    :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
     model.
 
     .. ipython:: python
@@ -453,7 +646,9 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
@@ -505,6 +700,70 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         -------
         numpy.array
             Probabilities.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeClassifier``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+            model1 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.6]],
+                classes = ["a", "b", "c"],
+            )
+            model2 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.7, 0.2, 0.1], [0.3, 0.5, 0.2], [0.2, 0.2, 0.6]],
+                classes = ["a", "b", "c"],
+            )
+            model3 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.4, 0.4, 0.2], [0.2, 0.2, 0.6], [0.2, 0.5, 0.3]],
+                classes = ["a", "b", "c"],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import RandomForestClassifier
+
+            model_rfc = RandomForestClassifier(
+                trees = [model1, model2, model3],
+                classes = ["a", "b", "c"],
+            )
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_rfc.predict_proba(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+            for more information about the
+            different methods and usages.
         """
         trees_prob_sum, n = 0, len(self.trees_)
         for i in range(n):
@@ -533,6 +792,71 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeClassifier``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+            model1 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.6]],
+                classes = ["a", "b", "c"],
+            )
+            model2 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.7, 0.2, 0.1], [0.3, 0.5, 0.2], [0.2, 0.2, 0.6]],
+                classes = ["a", "b", "c"],
+            )
+            model3 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [0.4, 0.4, 0.2], [0.2, 0.2, 0.6], [0.2, 0.5, 0.3]],
+                classes = ["a", "b", "c"],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import RandomForestClassifier
+
+            model_rfc = RandomForestClassifier(
+                trees = [model1, model2, model3],
+                classes = ["a", "b", "c"],
+            )
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_rfc.predict_proba_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+            for more information about the
+            different methods and usages.
         """
         n = len(self.trees_)
         m = len(self.classes_)
@@ -594,7 +918,7 @@ class XGBRegressor(Ensemble):
     A  model is an ensemble of
     multiple binary tree regressors.
     In this example, we will create three
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models.
 
     .. ipython:: python
@@ -625,7 +949,7 @@ class XGBRegressor(Ensemble):
 
     Now we will use above
     models to create
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+    :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
     model.
 
     .. ipython:: python
@@ -709,7 +1033,9 @@ class XGBRegressor(Ensemble):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
@@ -747,8 +1073,9 @@ class XGBRegressor(Ensemble):
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the Random
-        Forest Regressor model.
+        Predicts using the
+        :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+        model.
 
         Parameters
         ----------
@@ -760,6 +1087,68 @@ class XGBRegressor(Ensemble):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeRegressor``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeRegressor
+
+            model1 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 3, 11, 23],
+            )
+            model2 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, -3, 12, 56],
+            )
+            model3 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 1, 3, 6],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import XGBRegressor
+
+            model_xgbr = XGBRegressor(
+                trees = [model1, model2, model3],
+                mean = 2.5,
+                eta = 0.9,
+            )
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_xgbr.predict(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+            for more information about the
+            different methods and usages.
         """
         trees_pred_sum = np.sum(self._predict_trees(X), axis=1)
         return trees_pred_sum * self.eta_ + self.mean_
@@ -768,7 +1157,9 @@ class XGBRegressor(Ensemble):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code
+        needed to deploy the
+        model.
 
         Parameters
         ----------
@@ -780,6 +1171,67 @@ class XGBRegressor(Ensemble):
         -------
         str
             SQL code.
+
+        Import the required modules and
+        create many ``BinaryTreeRegressor``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeRegressor
+
+            model1 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 3, 11, 23],
+            )
+            model2 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, -3, 12, 56],
+            )
+            model3 = BinaryTreeRegressor(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, 1, 3, 6],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import XGBRegressor
+
+            model_xgbr = XGBRegressor(
+                trees = [model1, model2, model3],
+                mean = 2.5,
+                eta = 0.9,
+            )
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_xgbr.predict_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+            for more information about the
+            different methods and usages.
         """
         trees_pred = self._predict_trees_sql(X)
         return f"({' + '.join(trees_pred)}) * {self.eta_} + {self.mean_}"
@@ -816,11 +1268,11 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     **Initalization**
 
-    A XGBoost Classifier model is
+    A ``XGBoostClassifier`` model is
     an ensemble of multiple binary
     tree classifier models. In this
     example, we will create three
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
     .. ipython:: python
@@ -871,7 +1323,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+    :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
     model.
 
     .. ipython:: python
@@ -1036,6 +1488,90 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         -------
         numpy.array
             Probabilities.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeClassifier``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+            model1 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [
+                    None,
+                    None,
+                    [0.8, 0.1, 0.1],
+                    [0.1, 0.8, 0.1],
+                    [0.2, 0.2, 0.6],
+                ],
+                classes = ["a", "b", "c"]
+            )
+            model2 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [
+                    None,
+                    None,
+                    [0.7, 0.2, 0.1],
+                    [0.3, 0.5, 0.2],
+                    [0.2, 0.2, 0.6],
+                ],
+                classes = ["a", "b", "c"],
+            )
+            model3 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [
+                    None,
+                    None,
+                    [0.4, 0.4, 0.2],
+                    [0.2, 0.2, 0.6],
+                    [0.2, 0.5, 0.3],
+                ],
+                classes = ["a", "b", "c"],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import XGBClassifier
+
+            model_xgbc = XGBClassifier(
+                trees = [model1, model2, model3],
+                classes = ["a", "b", "c"],
+                logodds = [0.1, 0.12, 0.15],
+                learning_rate = 0.1,
+            )
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_xgbc.predict_proba(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+            for more information about the
+            different methods and usages.
         """
         trees_prob = 0
         for tree in self.trees_:
@@ -1062,6 +1598,91 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeClassifier``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
+
+            model1 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [
+                    None,
+                    None,
+                    [0.8, 0.1, 0.1],
+                    [0.1, 0.8, 0.1],
+                    [0.2, 0.2, 0.6],
+                ],
+                classes = ["a", "b", "c"]
+            )
+            model2 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [
+                    None,
+                    None,
+                    [0.7, 0.2, 0.1],
+                    [0.3, 0.5, 0.2],
+                    [0.2, 0.2, 0.6],
+                ],
+                classes = ["a", "b", "c"],
+            )
+            model3 = BinaryTreeClassifier(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [
+                    None,
+                    None,
+                    [0.4, 0.4, 0.2],
+                    [0.2, 0.2, 0.6],
+                    [0.2, 0.5, 0.3],
+                ],
+                classes = ["a", "b", "c"],
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import XGBClassifier
+
+            model_xgbc = XGBClassifier(
+                trees = [model1, model2, model3],
+                classes = ["a", "b", "c"],
+                logodds = [0.1, 0.12, 0.15],
+                learning_rate = 0.1,
+            )
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_xgbc.predict_proba_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+            for more information about the
+            different methods and usages.
         """
         n = len(self.trees_)
         m = len(self.classes_)
@@ -1103,7 +1724,7 @@ class IsolationForest(Ensemble):
     an ensemble of multiple binary
     tree anomaly models. In this
     example, we will create three
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
+    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     models:
 
     .. ipython:: python
@@ -1136,7 +1757,7 @@ class IsolationForest(Ensemble):
         )
 
     Now we will use above models to create
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+    :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
     model.
 
     .. ipython:: python
@@ -1208,7 +1829,9 @@ class IsolationForest(Ensemble):
     .. important::
 
         :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+        requires the
+        `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     .. note::
 
@@ -1239,7 +1862,9 @@ class IsolationForest(Ensemble):
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the isolation forest model.
+        Predicts using the
+        :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+        model.
 
         Parameters
         ----------
@@ -1251,6 +1876,67 @@ class IsolationForest(Ensemble):
         -------
         numpy.array
             Predicted values.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeAnomaly``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeAnomaly
+
+            model1 = BinaryTreeAnomaly(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [2, 10], [3, 4], [7, 8]],
+                psy = 100,
+            )
+            model2 = BinaryTreeAnomaly(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [1, 11], [2, 5], [5, 10]],
+                psy = 100,
+            )
+            model3 = BinaryTreeAnomaly(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [3, 9], [1, 6], [8, 7]],
+                psy = 100,
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import IsolationForest
+
+            model_isf = IsolationForest(trees = [model1, model2, model3])
+
+        Create a dataset.
+
+        .. ipython:: python
+
+            data = [["male", 100], ["female", 20], ["female", 50]]
+
+        Compute the predictions.
+
+        .. ipython:: python
+
+            model_isf.predict(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+            for more information about the
+            different methods and usages.
         """
         return 2 ** (-np.average(self._predict_trees(X), axis=1))
 
@@ -1258,7 +1944,9 @@ class IsolationForest(Ensemble):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code
+        needed to deploy the
+        model.
 
         Parameters
         ----------
@@ -1270,6 +1958,68 @@ class IsolationForest(Ensemble):
         -------
         str
             SQL code.
+
+        Examples
+        --------
+        Import the required modules and
+        create many ``BinaryTreeAnomaly``.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.tree import BinaryTreeAnomaly
+
+            model1 = BinaryTreeAnomaly(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [2, 10], [3, 4], [7, 8]],
+                psy = 100,
+            )
+            model2 = BinaryTreeAnomaly(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [1, 11], [2, 5], [5, 10]],
+                psy = 100,
+            )
+            model3 = BinaryTreeAnomaly(
+                children_left = [1, 3, None, None, None],
+                children_right = [2, 4, None, None, None],
+                feature = [0, 1, None, None, None],
+                threshold = ["female", 30, None, None, None],
+                value = [None, None, [3, 9], [1, 6], [8, 7]],
+                psy = 100,
+            )
+
+        Let's create a model.
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.memmodel.ensemble import IsolationForest
+
+            model_isf = IsolationForest(trees = [model1, model2, model3])
+
+        Let's use the following column names:
+
+        .. ipython:: python
+
+            cnames = ["sex", "fare"]
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model_isf.predict_sql(cnames)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+            for more information about the
+            different methods and usages.
         """
         trees_pred = self._predict_trees_sql(X)
         return f"POWER(2, - (({' + '.join(trees_pred)}) / {len(trees_pred)}))"
