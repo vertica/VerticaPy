@@ -431,18 +431,32 @@ class vDFRead(vDFUtils):
             "Reads the final relation using a limit "
             f"of {limit} and an offset of {offset}."
         )
-        result = TableSample.read_sql(
-            query=f"""
+        kwargs = {
+            "title": title,
+            "max_columns": self._vars["max_columns"],
+            "sql_push_ext": self._vars["sql_push_ext"],
+            "symbol": self._vars["symbol"],
+        }
+        if self._vars["has_dpnames"]:
+            kwargs["query"] = f"""
+                {extract_subquery(self.current_relation())}
+                {self._get_last_order_by()} 
+                LIMIT {limit} OFFSET {offset}"""
+        else:
+            kwargs["query"] = f"""
                 SELECT 
                     {', '.join(all_columns)} 
                 FROM {self}
                 {self._get_last_order_by()} 
-                LIMIT {limit} OFFSET {offset}""",
-            title=title,
-            max_columns=self._vars["max_columns"],
-            sql_push_ext=self._vars["sql_push_ext"],
-            symbol=self._vars["symbol"],
-        )
+                LIMIT {limit} OFFSET {offset}"""
+        try:
+            result = TableSample.read_sql(**kwargs)
+        except QueryError:
+            if self._vars["has_dpnames"]:
+                kwargs["query"] = extract_subquery(self.current_relation())
+                result = TableSample.read_sql(**kwargs)
+            else:
+                raise
         pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
