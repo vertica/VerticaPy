@@ -36,7 +36,7 @@ Algorithms used for classification.
 
 class NaiveBayes(MulticlassClassifier):
     """
-    Creates  a  NaiveBayes object using the Vertica
+    Creates a ``NaiveBayes`` object using the Vertica
     Naive  Bayes  algorithm.  It is a "probabilistic
     classifier"  based  on  applying Bayes' theorem
     with strong (naïve) independence assumptions
@@ -45,16 +45,18 @@ class NaiveBayes(MulticlassClassifier):
     Parameters
     ----------
     name: str, optional
-        Name  of  the  model.  The  model is stored
-        in the database.
+        Name of the model. The model is
+        stored in the database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     alpha: float, optional
-        A  float  that  specifies  use  of  Laplace
-        smoothing if the event model is categorical,
-        multinomial, or Bernoulli.
+        A ``float`` that specifies use
+        of Laplace smoothing if the event
+        model is categorical, multinomial,
+        or Bernoulli.
     nbtype: str, optional
         Naive Bayes type.
 
@@ -89,13 +91,15 @@ class NaiveBayes(MulticlassClassifier):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     prior_: numpy.array
         The model's classes probabilities.
     attributes_: list of dict
-        List  of the model's attributes. Each feature  is
-        represented by a dictionary, which differs based
+        ``list`` of the model's attributes.
+        Each feature is represented by a
+        ``dictionary``, which differs based
         on the distribution.
     classes_: numpy.array
         The classes labels.
@@ -108,7 +112,8 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        Several other attributes can be accessed by using the
+        Several other attributes can
+        be accessed by using the
         :py:meth:`verticapy.machine_learning.vertica.base.MulticlassClassifier.get_vertica_attributes``
         method.
 
@@ -167,13 +172,13 @@ class NaiveBayes(MulticlassClassifier):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset 
+    You can easily divide your dataset
     into training and testing subsets
-    using the 
-    :py:meth:`vDataFrame.train_test_split` 
-    method. This is a crucial step when 
-    preparing your data for machine learning, 
-    as it allows you to evaluate the 
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
     performance of your models accurately.
 
     .. code-block:: python
@@ -183,15 +188,15 @@ class NaiveBayes(MulticlassClassifier):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded 
-        randomization to guarantee the reproducibility 
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
         of your data split. However, please be aware
-        that this approach may lead to reduced 
-        performance. For a more efficient data split, 
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
         you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` 
-        or ``temporary tables``. This will help 
-        enhance the overall performance of the 
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
         process.
 
     .. ipython:: python
@@ -205,25 +210,25 @@ class NaiveBayes(MulticlassClassifier):
     Balancing the Dataset
     ^^^^^^^^^^^^^^^^^^^^^^
 
-    In VerticaPy, balancing a dataset to 
-    address class imbalances is made 
+    In VerticaPy, balancing a dataset to
+    address class imbalances is made
     straightforward through the
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function within the ``preprocessing`` 
-    module. This function enables users 
-    to rectify skewed class distributions 
-    efficiently. By specifying the target 
+    function within the ``preprocessing``
+    module. This function enables users
+    to rectify skewed class distributions
+    efficiently. By specifying the target
     variable and setting parameters like
-    the method for balancing, users can 
-    effortlessly achieve a more equitable 
+    the method for balancing, users can
+    effortlessly achieve a more equitable
     representation of classes in their dataset.
-    Whether opting for over-sampling, 
+    Whether opting for over-sampling,
     under-sampling, or a combination
     of both, VerticaPy's
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function streamlines the process, 
+    function streamlines the process,
     empowering users to enhance the
-    performance and fairness of their 
+    performance and fairness of their
     machine learning models trained
     on imbalanced data.
 
@@ -242,35 +247,35 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        With this code, a table named `train_balanced` 
-        is created in the `my_schema` schema. 
-        It can then be used to train the model. 
-        In the rest of the example, we will work 
+        With this code, a table named `train_balanced`
+        is created in the `my_schema` schema.
+        It can then be used to train the model.
+        In the rest of the example, we will work
         with the full dataset.
 
     .. hint::
 
-        Balancing the dataset is a crucial 
-        step in improving the accuracy of 
-        machine learning models, particularly 
-        when faced with imbalanced class 
-        distributions. By addressing disparities 
-        in the number of instances across different 
+        Balancing the dataset is a crucial
+        step in improving the accuracy of
+        machine learning models, particularly
+        when faced with imbalanced class
+        distributions. By addressing disparities
+        in the number of instances across different
         classes, the model becomes more adept at
-        learning patterns from all classes rather 
-        than being biased towards the majority 
-        class. This, in turn, enhances the model's 
-        ability to make accurate predictions for 
+        learning patterns from all classes rather
+        than being biased towards the majority
+        class. This, in turn, enhances the model's
+        ability to make accurate predictions for
         under-represented classes. The balanced
-        dataset ensures that the model is not 
-        dominated by the majority class and, as a 
-        result, leads to more robust and unbiased 
-        model performance. Therefore, by employing 
+        dataset ensures that the model is not
+        dominated by the majority class and, as a
+        result, leads to more robust and unbiased
+        model performance. Therefore, by employing
         techniques such as over-sampling, under-sampling,
-        or a combination of both during dataset 
-        preparation, practitioners can significantly 
-        contribute to achieving higher accuracy and 
-        better generalization of their machine learning 
+        or a combination of both during dataset
+        preparation, practitioners can significantly
+        contribute to achieving higher accuracy and
+        better generalization of their machine learning
         models.
 
     Model Initialization
@@ -355,16 +360,16 @@ class NaiveBayes(MulticlassClassifier):
 
     .. important::
 
-        Most metrics are computed using a 
-        single SQL query, but some of them 
-        might require multiple SQL queries. 
-        Selecting only the necessary metrics 
+        Most metrics are computed using a
+        single SQL query, but some of them
+        might require multiple SQL queries.
+        Selecting only the necessary metrics
         in the report can help optimize performance.
         E.g. ``model.report(metrics = ["auc", "accuracy"])``.
 
-    For classification models, we can 
-    easily modify the ``cutoff`` to 
-    observe the effect on different 
+    For classification models, we can
+    easily modify the ``cutoff`` to
+    observe the effect on different
     metrics:
 
     .. ipython:: python
@@ -383,8 +388,9 @@ class NaiveBayes(MulticlassClassifier):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_report_cutoff.html
 
 
-    You can also use the ``NaiveBayes.score`` function to compute any
-    classification metric. The default metric is the accuracy:
+    You can also use the ``NaiveBayes.score``
+    function to compute any classification
+    metric. The default metric is the accuracy:
 
     .. ipython:: python
 
@@ -392,9 +398,9 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        For multi-class scoring, :py:mod:`verticapy` 
-        allows the flexibility to use three averaging 
-        techniques: ``micro``, ``macro`` and ``weighted``. 
+        For multi-class scoring, :py:mod:`verticapy`
+        allows the flexibility to use three averaging
+        techniques: ``micro``, ``macro`` and ``weighted``.
         Please refer to
         `this link <https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f>`_
         for more details on how they are calculated.
@@ -439,15 +445,15 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        Predictions can be made automatically 
-        using the test set, in which case you 
-        don't need to specify the predictors. 
-        Alternatively, you can pass only the 
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
         :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -491,10 +497,10 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``, 
-        and VerticaPy uses the corresponding probability 
-        function in SQL behind the scenes. You can use 
-        the ``pos_label`` parameter to add only the 
+        Probabilities are added to the ``vDataFrame``,
+        and VerticaPy uses the corresponding probability
+        function in SQL behind the scenes. You can use
+        the ``pos_label`` parameter to add only the
         probability of the selected category.
 
     Confusion Matrix
@@ -508,15 +514,15 @@ class NaiveBayes(MulticlassClassifier):
 
     .. hint::
 
-        In the context of multi-class classification, 
-        you typically work with an overall confusion 
+        In the context of multi-class classification,
+        you typically work with an overall confusion
         matrix that summarizes the classification
-        efficiency across all classes. However, you 
-        have the flexibility to specify a ``pos_label`` 
+        efficiency across all classes. However, you
+        have the flexibility to specify a ``pos_label``
         and adjust the cutoff threshold. In this case,
-        a binary confusion matrix is computed, where 
-        the chosen class is treated as the positive 
-        class, allowing you to evaluate its efficiency 
+        a binary confusion matrix is computed, where
+        the chosen class is treated as the positive
+        class, allowing you to evaluate its efficiency
         as if it were a binary classification problem.
 
         .. ipython:: python
@@ -525,38 +531,38 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        In classification, the ``cutoff`` is a 
-        threshold value used to determine class 
-        assignment based on predicted probabilities 
-        or scores from a classification model. In 
-        binary classification, if the predicted 
+        In classification, the ``cutoff`` is a
+        threshold value used to determine class
+        assignment based on predicted probabilities
+        or scores from a classification model. In
+        binary classification, if the predicted
         probability for a specific class is greater
-        than or equal to the cutoff, the instance is 
-        assigned to the positive class; otherwise, it 
-        is assigned to the negative class. Adjusting 
-        the cutoff allows for trade-offs between true 
-        positives and false positives, enabling the 
-        model to be optimized for specific objectives 
+        than or equal to the cutoff, the instance is
+        assigned to the positive class; otherwise, it
+        is assigned to the negative class. Adjusting
+        the cutoff allows for trade-offs between true
+        positives and false positives, enabling the
+        model to be optimized for specific objectives
         or to consider the relative costs of different
-        classification errors. The choice of cutoff is 
-        critical for tailoring the model's performance 
+        classification errors. The choice of cutoff is
+        critical for tailoring the model's performance
         to meet specific needs.
 
     Main Plots (Classification Curves)
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Classification models allow for the 
-    creation of various plots that are 
-    very helpful in understanding the 
+    Classification models allow for the
+    creation of various plots that are
+    very helpful in understanding the
     model, such as the ROC Curve,
-    PRC Curve, Cutoff Curve, Gain 
+    PRC Curve, Cutoff Curve, Gain
     Curve, and more.
 
-    Most of the classification curves 
+    Most of the classification curves
     can be found in the
     :ref:`chart_gallery.classification_curve`.
 
-    For example, let's draw the 
+    For example, let's draw the
     model's ROC curve.
 
     .. code-block:: python
@@ -575,19 +581,19 @@ class NaiveBayes(MulticlassClassifier):
 
     .. important::
 
-        Most of the curves have a parameter called 
-        ``nbins``, which is essential for estimating 
-        metrics. The larger the ``nbins``, the more 
-        precise the estimation, but it can significantly 
-        impact performance. Exercise caution when 
+        Most of the curves have a parameter called
+        ``nbins``, which is essential for estimating
+        metrics. The larger the ``nbins``, the more
+        precise the estimation, but it can significantly
+        impact performance. Exercise caution when
         increasing this parameter excessively.
 
     .. hint::
 
-        In binary classification, various curves can 
-        be easily plotted. However, in multi-class 
-        classification, it's important to select the 
-        ``pos_label``, representing the class to be 
+        In binary classification, various curves can
+        be easily plotted. However, in multi-class
+        classification, it's important to select the
+        ``pos_label``, representing the class to be
         treated as positive when drawing the curve.
 
     Other Plots
@@ -602,16 +608,16 @@ class NaiveBayes(MulticlassClassifier):
 
     .. important::
 
-        Machine learning models with two 
-        predictors can usually benefit 
-        from their own contour plot. 
-        This visual representation aids 
-        in exploring predictions and 
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
         gaining a deeper understanding
-        of how these models perform in 
+        of how these models perform in
         different scenarios.
-        Please refer to  
-        :ref:`chart_gallery.contour` 
+        Please refer to
+        :ref:`chart_gallery.contour`
         for more examples.
 
     Parameter Modification
@@ -632,16 +638,16 @@ class NaiveBayes(MulticlassClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     Model Exporting
@@ -655,15 +661,15 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory 
-        representations of machine learning models. 
-        They can be used for both in-database and 
-        in-memory prediction tasks. These objects 
-        can be pickled in the same way that you 
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model 
-    use ``MemModel``, and it is recommended to use 
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
     ``MemModel`` directly.
 
     **To SQL**
@@ -676,7 +682,7 @@ class NaiveBayes(MulticlassClassifier):
 
     **To Python**
 
-    To obtain the prediction function in 
+    To obtain the prediction function in
     Python syntax, use the following code:
 
     .. ipython:: python
@@ -689,9 +695,9 @@ class NaiveBayes(MulticlassClassifier):
         The
         :py:meth:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For 
-        specific details on how to use this method 
-        for different model types, refer to the 
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
         relevant documentation for each model.
     """
 
@@ -826,7 +832,10 @@ class NaiveBayes(MulticlassClassifier):
 
 
 class BernoulliNB(NaiveBayes):
-    """NaiveBayes with parameter nbtype = 'bernoulli'"""
+    """
+    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    with parameter ``nbtype = 'bernoulli'``.
+    """
 
     def __init__(
         self, name: str = None, overwrite_model: bool = False, alpha: float = 1.0
@@ -835,7 +844,10 @@ class BernoulliNB(NaiveBayes):
 
 
 class CategoricalNB(NaiveBayes):
-    """NaiveBayes with parameter nbtype = 'categorical'"""
+    """
+    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    with parameter ``nbtype = 'categorical'``.
+    """
 
     def __init__(
         self, name: str = None, overwrite_model: bool = False, alpha: float = 1.0
@@ -844,14 +856,20 @@ class CategoricalNB(NaiveBayes):
 
 
 class GaussianNB(NaiveBayes):
-    """NaiveBayes with parameter nbtype = 'gaussian'"""
+    """
+    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    with parameter ``nbtype = 'gaussian'``.
+    """
 
     def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model, nbtype="gaussian")
 
 
 class MultinomialNB(NaiveBayes):
-    """NaiveBayes with parameter nbtype = 'multinomial'"""
+    """
+    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    with parameter ``nbtype = 'multinomial'``.
+    """
 
     def __init__(
         self, name: str = None, overwrite_model: bool = False, alpha: float = 1.0

@@ -40,8 +40,9 @@ class DecisionTreeRegressor(RandomForestRegressor):
         Name of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     max_features: str / int, optional
         The number of randomly  chosen features from which
@@ -75,7 +76,8 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     trees_: list of one BinaryTreeRegressor
         One tree model which is instance of
@@ -168,13 +170,13 @@ class DecisionTreeRegressor(RandomForestRegressor):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset 
+    You can easily divide your dataset
     into training and testing subsets
-    using the 
-    :py:meth:`vDataFrame.train_test_split` 
-    method. This is a crucial step when 
-    preparing your data for machine learning, 
-    as it allows you to evaluate the 
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
     performance of your models accurately.
 
     .. code-block:: python
@@ -184,15 +186,15 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded 
-        randomization to guarantee the reproducibility 
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
         of your data split. However, please be aware
-        that this approach may lead to reduced 
-        performance. For a more efficient data split, 
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
         you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` 
-        or ``temporary tables``. This will help 
-        enhance the overall performance of the 
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
         process.
 
     .. ipython:: python
@@ -380,15 +382,15 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        Predictions can be made automatically 
-        using the test set, in which case you 
-        don't need to specify the predictors. 
-        Alternatively, you can pass only the 
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
         :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -412,25 +414,25 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        The above example may not render 
-        properly in the doc because of the 
-        huge size of the tree. But it should 
+        The above example may not render
+        properly in the doc because of the
+        huge size of the tree. But it should
         render nicely in jupyter environment.
 
-    In order to plot graph using 
+    In order to plot graph using
     `graphviz <https://graphviz.org/>`_
-    separately, you can extract the 
+    separately, you can extract the
     graphviz DOT file code as follows:
 
     .. ipython:: python
 
         model.to_graphviz()
 
-    This string can then be copied into a 
+    This string can then be copied into a
     DOT file which can beparsed by graphviz.
 
-    **Contour plot** is another useful plot 
-    that can be produced for models with two 
+    **Contour plot** is another useful plot
+    that can be produced for models with two
     predictors.
 
     .. code-block:: python
@@ -439,31 +441,31 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-        Machine learning models with two 
-        predictors can usually benefit 
-        from their own contour plot. 
-        This visual representation aids 
-        in exploring predictions and 
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
         gaining a deeper understanding
-        of how these models perform in 
+        of how these models perform in
         different scenarios.
-        Please refer to  
-        :ref:`chart_gallery.contour` 
+        Please refer to
+        :ref:`chart_gallery.contour`
         for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     Model Exporting
@@ -477,15 +479,15 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory 
-        representations of machine learning models. 
-        They can be used for both in-database and 
-        in-memory prediction tasks. These objects 
-        can be pickled in the same way that you 
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model 
-    use ``MemModel``, and it is recommended to use 
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
     ``MemModel`` directly.
 
     **To SQL**
@@ -498,7 +500,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     **To Python**
 
-    To obtain the prediction function in 
+    To obtain the prediction function in
     Python syntax, use the following code:
 
     .. ipython:: python
@@ -511,9 +513,9 @@ class DecisionTreeRegressor(RandomForestRegressor):
         The
         :py:meth:`verticapy.machine_learning.vertica.tree.DecisionTreeRegressor.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For 
-        specific details on how to use this method 
-        for different model types, refer to the 
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
         relevant documentation for each model.
     """
 
@@ -557,13 +559,15 @@ class DummyTreeRegressor(RandomForestRegressor):
         Name of the model. The model is stored
         in the database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     trees_: list of one BinaryTreeRegressor
         One tree model which is instance of
@@ -656,13 +660,13 @@ class DummyTreeRegressor(RandomForestRegressor):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset 
+    You can easily divide your dataset
     into training and testing subsets
-    using the 
-    :py:meth:`vDataFrame.train_test_split` 
-    method. This is a crucial step when 
-    preparing your data for machine learning, 
-    as it allows you to evaluate the 
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
     performance of your models accurately.
 
     .. code-block:: python
@@ -672,15 +676,15 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded 
-        randomization to guarantee the reproducibility 
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
         of your data split. However, please be aware
-        that this approach may lead to reduced 
-        performance. For a more efficient data split, 
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
         you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` 
-        or ``temporary tables``. This will help 
-        enhance the overall performance of the 
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
         process.
 
     .. ipython:: python
@@ -859,15 +863,15 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        Predictions can be made automatically 
-        using the test set, in which case you 
-        don't need to specify the predictors. 
-        Alternatively, you can pass only the 
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
         :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -891,25 +895,25 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        The above example may not render 
-        properly in the doc because of the 
-        huge size of the tree. But it should 
+        The above example may not render
+        properly in the doc because of the
+        huge size of the tree. But it should
         render nicely in jupyter environment.
 
-    In order to plot graph using 
+    In order to plot graph using
     `graphviz <https://graphviz.org/>`_
-    separately, you can extract the 
+    separately, you can extract the
     graphviz DOT file code as follows:
 
     .. ipython:: python
 
         model.to_graphviz()
 
-    This string can then be copied into a 
+    This string can then be copied into a
     DOT file which can beparsed by graphviz.
 
-    **Contour plot** is another useful plot 
-    that can be produced for models with two 
+    **Contour plot** is another useful plot
+    that can be produced for models with two
     predictors.
 
     .. code-block:: python
@@ -918,31 +922,31 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-        Machine learning models with two 
-        predictors can usually benefit 
-        from their own contour plot. 
-        This visual representation aids 
-        in exploring predictions and 
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
         gaining a deeper understanding
-        of how these models perform in 
+        of how these models perform in
         different scenarios.
-        Please refer to  
-        :ref:`chart_gallery.contour` 
+        Please refer to
+        :ref:`chart_gallery.contour`
         for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     Model Exporting
@@ -956,15 +960,15 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory 
-        representations of machine learning models. 
-        They can be used for both in-database and 
-        in-memory prediction tasks. These objects 
-        can be pickled in the same way that you 
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model 
-    use ``MemModel``, and it is recommended to use 
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
     ``MemModel`` directly.
 
     **To SQL**
@@ -977,7 +981,7 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     **To Python**
 
-    To obtain the prediction function in 
+    To obtain the prediction function in
     Python syntax, use the following code:
 
     .. ipython:: python
@@ -990,9 +994,9 @@ class DummyTreeRegressor(RandomForestRegressor):
         The
         :py:meth:`verticapy.machine_learning.vertica.tree.DummyTreeRegressor.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For 
-        specific details on how to use this method 
-        for different model types, refer to the 
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
         relevant documentation for each model.
     """
 
@@ -1029,8 +1033,9 @@ class DecisionTreeClassifier(RandomForestClassifier):
         Name of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     max_features: str / int, optional
         The number of randomly  chosen features from which
@@ -1064,7 +1069,8 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     trees_: list of one BinaryTreeClassifier
         One tree model which is instance of
@@ -1160,13 +1166,13 @@ class DecisionTreeClassifier(RandomForestClassifier):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset 
+    You can easily divide your dataset
     into training and testing subsets
-    using the 
-    :py:meth:`vDataFrame.train_test_split` 
-    method. This is a crucial step when 
-    preparing your data for machine learning, 
-    as it allows you to evaluate the 
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
     performance of your models accurately.
 
     .. code-block:: python
@@ -1176,15 +1182,15 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded 
-        randomization to guarantee the reproducibility 
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
         of your data split. However, please be aware
-        that this approach may lead to reduced 
-        performance. For a more efficient data split, 
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
         you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` 
-        or ``temporary tables``. This will help 
-        enhance the overall performance of the 
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
         process.
 
     .. ipython:: python
@@ -1198,25 +1204,25 @@ class DecisionTreeClassifier(RandomForestClassifier):
     Balancing the Dataset
     ^^^^^^^^^^^^^^^^^^^^^^
 
-    In VerticaPy, balancing a dataset to 
-    address class imbalances is made 
+    In VerticaPy, balancing a dataset to
+    address class imbalances is made
     straightforward through the
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function within the ``preprocessing`` 
-    module. This function enables users 
-    to rectify skewed class distributions 
-    efficiently. By specifying the target 
+    function within the ``preprocessing``
+    module. This function enables users
+    to rectify skewed class distributions
+    efficiently. By specifying the target
     variable and setting parameters like
-    the method for balancing, users can 
-    effortlessly achieve a more equitable 
+    the method for balancing, users can
+    effortlessly achieve a more equitable
     representation of classes in their dataset.
-    Whether opting for over-sampling, 
+    Whether opting for over-sampling,
     under-sampling, or a combination
     of both, VerticaPy's
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function streamlines the process, 
+    function streamlines the process,
     empowering users to enhance the
-    performance and fairness of their 
+    performance and fairness of their
     machine learning models trained
     on imbalanced data.
 
@@ -1235,35 +1241,35 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        With this code, a table named `train_balanced` 
-        is created in the `my_schema` schema. 
-        It can then be used to train the model. 
-        In the rest of the example, we will work 
+        With this code, a table named `train_balanced`
+        is created in the `my_schema` schema.
+        It can then be used to train the model.
+        In the rest of the example, we will work
         with the full dataset.
 
     .. hint::
 
-        Balancing the dataset is a crucial 
-        step in improving the accuracy of 
-        machine learning models, particularly 
-        when faced with imbalanced class 
-        distributions. By addressing disparities 
-        in the number of instances across different 
+        Balancing the dataset is a crucial
+        step in improving the accuracy of
+        machine learning models, particularly
+        when faced with imbalanced class
+        distributions. By addressing disparities
+        in the number of instances across different
         classes, the model becomes more adept at
-        learning patterns from all classes rather 
-        than being biased towards the majority 
-        class. This, in turn, enhances the model's 
-        ability to make accurate predictions for 
+        learning patterns from all classes rather
+        than being biased towards the majority
+        class. This, in turn, enhances the model's
+        ability to make accurate predictions for
         under-represented classes. The balanced
-        dataset ensures that the model is not 
-        dominated by the majority class and, as a 
-        result, leads to more robust and unbiased 
-        model performance. Therefore, by employing 
+        dataset ensures that the model is not
+        dominated by the majority class and, as a
+        result, leads to more robust and unbiased
+        model performance. Therefore, by employing
         techniques such as over-sampling, under-sampling,
-        or a combination of both during dataset 
-        preparation, practitioners can significantly 
-        contribute to achieving higher accuracy and 
-        better generalization of their machine learning 
+        or a combination of both during dataset
+        preparation, practitioners can significantly
+        contribute to achieving higher accuracy and
+        better generalization of their machine learning
         models.
 
     Model Initialization
@@ -1390,10 +1396,10 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Most metrics are computed using a 
-        single SQL query, but some of them 
-        might require multiple SQL queries. 
-        Selecting only the necessary metrics 
+        Most metrics are computed using a
+        single SQL query, but some of them
+        might require multiple SQL queries.
+        Selecting only the necessary metrics
         in the report can help optimize performance.
         E.g. ``model.report(metrics = ["auc", "accuracy"])``.
 
@@ -1468,15 +1474,15 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        Predictions can be made automatically 
-        using the test set, in which case you 
-        don't need to specify the predictors. 
-        Alternatively, you can pass only the 
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
         :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -1524,10 +1530,10 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``, 
-        and VerticaPy uses the corresponding probability 
-        function in SQL behind the scenes. You can use 
-        the ``pos_label`` parameter to add only the 
+        Probabilities are added to the ``vDataFrame``,
+        and VerticaPy uses the corresponding probability
+        function in SQL behind the scenes. You can use
+        the ``pos_label`` parameter to add only the
         probability of the selected category.
 
     Confusion Matrix
@@ -1542,38 +1548,38 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        In classification, the ``cutoff`` is a 
-        threshold value used to determine class 
-        assignment based on predicted probabilities 
-        or scores from a classification model. In 
-        binary classification, if the predicted 
+        In classification, the ``cutoff`` is a
+        threshold value used to determine class
+        assignment based on predicted probabilities
+        or scores from a classification model. In
+        binary classification, if the predicted
         probability for a specific class is greater
-        than or equal to the cutoff, the instance is 
-        assigned to the positive class; otherwise, it 
-        is assigned to the negative class. Adjusting 
-        the cutoff allows for trade-offs between true 
-        positives and false positives, enabling the 
-        model to be optimized for specific objectives 
+        than or equal to the cutoff, the instance is
+        assigned to the positive class; otherwise, it
+        is assigned to the negative class. Adjusting
+        the cutoff allows for trade-offs between true
+        positives and false positives, enabling the
+        model to be optimized for specific objectives
         or to consider the relative costs of different
-        classification errors. The choice of cutoff is 
-        critical for tailoring the model's performance 
+        classification errors. The choice of cutoff is
+        critical for tailoring the model's performance
         to meet specific needs.
 
     Main Plots (Classification Curves)
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Classification models allow for the 
-    creation of various plots that are 
-    very helpful in understanding the 
+    Classification models allow for the
+    creation of various plots that are
+    very helpful in understanding the
     model, such as the ROC Curve,
-    PRC Curve, Cutoff Curve, Gain 
+    PRC Curve, Cutoff Curve, Gain
     Curve, and more.
 
-    Most of the classification curves 
+    Most of the classification curves
     can be found in the
     :ref:`chart_gallery.classification_curve`.
 
-    For example, let's draw the 
+    For example, let's draw the
     model's ROC curve.
 
     .. code-block:: python
@@ -1591,19 +1597,19 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Most of the curves have a parameter called 
-        ``nbins``, which is essential for estimating 
-        metrics. The larger the ``nbins``, the more 
-        precise the estimation, but it can significantly 
-        impact performance. Exercise caution when 
+        Most of the curves have a parameter called
+        ``nbins``, which is essential for estimating
+        metrics. The larger the ``nbins``, the more
+        precise the estimation, but it can significantly
+        impact performance. Exercise caution when
         increasing this parameter excessively.
 
     .. hint::
 
-        In binary classification, various curves can 
-        be easily plotted. However, in multi-class 
-        classification, it's important to select the 
-        ``pos_label``, representing the class to be 
+        In binary classification, various curves can
+        be easily plotted. However, in multi-class
+        classification, it's important to select the
+        ``pos_label``, representing the class to be
         treated as positive when drawing the curve.
 
     Other Plots
@@ -1626,25 +1632,25 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        The above example may not render 
-        properly in the doc because of the 
-        huge size of the tree. But it should 
+        The above example may not render
+        properly in the doc because of the
+        huge size of the tree. But it should
         render nicely in jupyter environment.
 
-    In order to plot graph using 
+    In order to plot graph using
     `graphviz <https://graphviz.org/>`_
-    separately, you can extract the 
+    separately, you can extract the
     graphviz DOT file code as follows:
 
     .. ipython:: python
 
         model.to_graphviz()
 
-    This string can then be copied into a 
+    This string can then be copied into a
     DOT file which can beparsed by graphviz.
 
-    **Contour plot** is another useful plot 
-    that can be produced for models with two 
+    **Contour plot** is another useful plot
+    that can be produced for models with two
     predictors.
 
     .. code-block:: python
@@ -1653,16 +1659,16 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Machine learning models with two 
-        predictors can usually benefit 
-        from their own contour plot. 
-        This visual representation aids 
-        in exploring predictions and 
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
         gaining a deeper understanding
-        of how these models perform in 
+        of how these models perform in
         different scenarios.
-        Please refer to  
-        :ref:`chart_gallery.contour` 
+        Please refer to
+        :ref:`chart_gallery.contour`
         for more examples.
 
     Parameter Modification
@@ -1683,16 +1689,16 @@ class DecisionTreeClassifier(RandomForestClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     Model Exporting
@@ -1706,15 +1712,15 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory 
-        representations of machine learning models. 
-        They can be used for both in-database and 
-        in-memory prediction tasks. These objects 
-        can be pickled in the same way that you 
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model 
-    use ``MemModel``, and it is recommended to use 
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
     ``MemModel`` directly.
 
     **To SQL**
@@ -1727,7 +1733,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     **To Python**
 
-    To obtain the prediction function in 
+    To obtain the prediction function in
     Python syntax, use the following code:
 
     .. ipython:: python
@@ -1740,9 +1746,9 @@ class DecisionTreeClassifier(RandomForestClassifier):
         The
         :py:meth:`verticapy.machine_learning.vertica.tree.DecisionTreeClassifier.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For 
-        specific details on how to use this method 
-        for different model types, refer to the 
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
         relevant documentation for each model.
     """
 
@@ -1786,13 +1792,15 @@ class DummyTreeClassifier(RandomForestClassifier):
         Name of  the  model. The model is stored
         in the database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     trees_: list of one BinaryTreeClassifier
         One tree model which is instance of
@@ -1888,13 +1896,13 @@ class DummyTreeClassifier(RandomForestClassifier):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset 
+    You can easily divide your dataset
     into training and testing subsets
-    using the 
-    :py:meth:`vDataFrame.train_test_split` 
-    method. This is a crucial step when 
-    preparing your data for machine learning, 
-    as it allows you to evaluate the 
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
     performance of your models accurately.
 
     .. code-block:: python
@@ -1904,15 +1912,15 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded 
-        randomization to guarantee the reproducibility 
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
         of your data split. However, please be aware
-        that this approach may lead to reduced 
-        performance. For a more efficient data split, 
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
         you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` 
-        or ``temporary tables``. This will help 
-        enhance the overall performance of the 
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
         process.
 
     .. ipython:: python
@@ -1926,25 +1934,25 @@ class DummyTreeClassifier(RandomForestClassifier):
     Balancing the Dataset
     ^^^^^^^^^^^^^^^^^^^^^^
 
-    In VerticaPy, balancing a dataset to 
-    address class imbalances is made 
+    In VerticaPy, balancing a dataset to
+    address class imbalances is made
     straightforward through the
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function within the ``preprocessing`` 
-    module. This function enables users 
-    to rectify skewed class distributions 
-    efficiently. By specifying the target 
+    function within the ``preprocessing``
+    module. This function enables users
+    to rectify skewed class distributions
+    efficiently. By specifying the target
     variable and setting parameters like
-    the method for balancing, users can 
-    effortlessly achieve a more equitable 
+    the method for balancing, users can
+    effortlessly achieve a more equitable
     representation of classes in their dataset.
-    Whether opting for over-sampling, 
+    Whether opting for over-sampling,
     under-sampling, or a combination
     of both, VerticaPy's
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function streamlines the process, 
+    function streamlines the process,
     empowering users to enhance the
-    performance and fairness of their 
+    performance and fairness of their
     machine learning models trained
     on imbalanced data.
 
@@ -1963,35 +1971,35 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        With this code, a table named `train_balanced` 
-        is created in the `my_schema` schema. 
-        It can then be used to train the model. 
-        In the rest of the example, we will work 
+        With this code, a table named `train_balanced`
+        is created in the `my_schema` schema.
+        It can then be used to train the model.
+        In the rest of the example, we will work
         with the full dataset.
 
     .. hint::
 
-        Balancing the dataset is a crucial 
-        step in improving the accuracy of 
-        machine learning models, particularly 
-        when faced with imbalanced class 
-        distributions. By addressing disparities 
-        in the number of instances across different 
+        Balancing the dataset is a crucial
+        step in improving the accuracy of
+        machine learning models, particularly
+        when faced with imbalanced class
+        distributions. By addressing disparities
+        in the number of instances across different
         classes, the model becomes more adept at
-        learning patterns from all classes rather 
-        than being biased towards the majority 
-        class. This, in turn, enhances the model's 
-        ability to make accurate predictions for 
+        learning patterns from all classes rather
+        than being biased towards the majority
+        class. This, in turn, enhances the model's
+        ability to make accurate predictions for
         under-represented classes. The balanced
-        dataset ensures that the model is not 
-        dominated by the majority class and, as a 
-        result, leads to more robust and unbiased 
-        model performance. Therefore, by employing 
+        dataset ensures that the model is not
+        dominated by the majority class and, as a
+        result, leads to more robust and unbiased
+        model performance. Therefore, by employing
         techniques such as over-sampling, under-sampling,
-        or a combination of both during dataset 
-        preparation, practitioners can significantly 
-        contribute to achieving higher accuracy and 
-        better generalization of their machine learning 
+        or a combination of both during dataset
+        preparation, practitioners can significantly
+        contribute to achieving higher accuracy and
+        better generalization of their machine learning
         models.
 
     Model Initialization
@@ -2112,10 +2120,10 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Most metrics are computed using a 
-        single SQL query, but some of them 
-        might require multiple SQL queries. 
-        Selecting only the necessary metrics 
+        Most metrics are computed using a
+        single SQL query, but some of them
+        might require multiple SQL queries.
+        Selecting only the necessary metrics
         in the report can help optimize performance.
         E.g. ``model.report(metrics = ["auc", "accuracy"])``.
 
@@ -2190,15 +2198,15 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        Predictions can be made automatically 
-        using the test set, in which case you 
-        don't need to specify the predictors. 
-        Alternatively, you can pass only the 
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
         :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -2246,10 +2254,10 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``, 
-        and VerticaPy uses the corresponding probability 
-        function in SQL behind the scenes. You can use 
-        the ``pos_label`` parameter to add only the 
+        Probabilities are added to the ``vDataFrame``,
+        and VerticaPy uses the corresponding probability
+        function in SQL behind the scenes. You can use
+        the ``pos_label`` parameter to add only the
         probability of the selected category.
 
     Confusion Matrix
@@ -2264,38 +2272,38 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        In classification, the ``cutoff`` is a 
-        threshold value used to determine class 
-        assignment based on predicted probabilities 
-        or scores from a classification model. In 
-        binary classification, if the predicted 
+        In classification, the ``cutoff`` is a
+        threshold value used to determine class
+        assignment based on predicted probabilities
+        or scores from a classification model. In
+        binary classification, if the predicted
         probability for a specific class is greater
-        than or equal to the cutoff, the instance is 
-        assigned to the positive class; otherwise, it 
-        is assigned to the negative class. Adjusting 
-        the cutoff allows for trade-offs between true 
-        positives and false positives, enabling the 
-        model to be optimized for specific objectives 
+        than or equal to the cutoff, the instance is
+        assigned to the positive class; otherwise, it
+        is assigned to the negative class. Adjusting
+        the cutoff allows for trade-offs between true
+        positives and false positives, enabling the
+        model to be optimized for specific objectives
         or to consider the relative costs of different
-        classification errors. The choice of cutoff is 
-        critical for tailoring the model's performance 
+        classification errors. The choice of cutoff is
+        critical for tailoring the model's performance
         to meet specific needs.
 
     Main Plots (Classification Curves)
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Classification models allow for the 
-    creation of various plots that are 
-    very helpful in understanding the 
+    Classification models allow for the
+    creation of various plots that are
+    very helpful in understanding the
     model, such as the ROC Curve,
-    PRC Curve, Cutoff Curve, Gain 
+    PRC Curve, Cutoff Curve, Gain
     Curve, and more.
 
-    Most of the classification curves 
+    Most of the classification curves
     can be found in the
     :ref:`chart_gallery.classification_curve`.
 
-    For example, let's draw the 
+    For example, let's draw the
     model's ROC curve.
 
     .. code-block:: python
@@ -2313,19 +2321,19 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Most of the curves have a parameter called 
-        ``nbins``, which is essential for estimating 
-        metrics. The larger the ``nbins``, the more 
-        precise the estimation, but it can significantly 
-        impact performance. Exercise caution when 
+        Most of the curves have a parameter called
+        ``nbins``, which is essential for estimating
+        metrics. The larger the ``nbins``, the more
+        precise the estimation, but it can significantly
+        impact performance. Exercise caution when
         increasing this parameter excessively.
 
     .. hint::
 
-        In binary classification, various curves can 
-        be easily plotted. However, in multi-class 
-        classification, it's important to select the 
-        ``pos_label``, representing the class to be 
+        In binary classification, various curves can
+        be easily plotted. However, in multi-class
+        classification, it's important to select the
+        ``pos_label``, representing the class to be
         treated as positive when drawing the curve.
 
     Other Plots
@@ -2348,25 +2356,25 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        The above example may not render 
-        properly in the doc because of the 
-        huge size of the tree. But it should 
+        The above example may not render
+        properly in the doc because of the
+        huge size of the tree. But it should
         render nicely in jupyter environment.
 
-    In order to plot graph using 
+    In order to plot graph using
     `graphviz <https://graphviz.org/>`_
-    separately, you can extract the 
+    separately, you can extract the
     graphviz DOT file code as follows:
 
     .. ipython:: python
 
         model.to_graphviz()
 
-    This string can then be copied into a 
+    This string can then be copied into a
     DOT file which can beparsed by graphviz.
 
-    **Contour plot** is another useful plot 
-    that can be produced for models with two 
+    **Contour plot** is another useful plot
+    that can be produced for models with two
     predictors.
 
     .. code-block:: python
@@ -2375,31 +2383,31 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Machine learning models with two 
-        predictors can usually benefit 
-        from their own contour plot. 
-        This visual representation aids 
-        in exploring predictions and 
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
         gaining a deeper understanding
-        of how these models perform in 
+        of how these models perform in
         different scenarios.
-        Please refer to  
-        :ref:`chart_gallery.contour` 
+        Please refer to
+        :ref:`chart_gallery.contour`
         for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     Model Exporting
@@ -2413,15 +2421,15 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory 
-        representations of machine learning models. 
-        They can be used for both in-database and 
-        in-memory prediction tasks. These objects 
-        can be pickled in the same way that you 
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model 
-    use ``MemModel``, and it is recommended to use 
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
     ``MemModel`` directly.
 
     **To SQL**
@@ -2434,7 +2442,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     **To Python**
 
-    To obtain the prediction function in 
+    To obtain the prediction function in
     Python syntax, use the following code:
 
     .. ipython:: python
@@ -2447,9 +2455,9 @@ class DummyTreeClassifier(RandomForestClassifier):
         The
         :py:meth:`verticapy.machine_learning.vertica.tree.DummyTreeClassifier.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For 
-        specific details on how to use this method 
-        for different model types, refer to the 
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
         relevant documentation for each model.
     """
 

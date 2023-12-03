@@ -518,8 +518,9 @@ class CountVectorizer(VerticaModel):
     name: str, optional
         Name of the model.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     lowercase: bool, optional
         Converts  all  the elements to lowercase  before
@@ -541,7 +542,8 @@ class CountVectorizer(VerticaModel):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     vocabulary_: numpy.array
         Model's final vocabulary.
@@ -783,8 +785,9 @@ class Scaler(Preprocessing):
     name: str, optional
         Name of the model.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     method: str, optional
         Method used to scale the data.
@@ -812,7 +815,8 @@ class Scaler(Preprocessing):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     **For StandardScaler:**
 
@@ -1198,8 +1202,9 @@ class OneHotEncoder(Preprocessing):
     name: str, optional
         Name of the model.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     extra_levels: dict, optional
         Additional levels in each  category that are not
@@ -1242,7 +1247,8 @@ class OneHotEncoder(Preprocessing):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     categories_: numpy.array
         ArrayLike of the categories of the different features.

@@ -1041,8 +1041,9 @@ class ARIMA(TimeSeriesModelBase):
         Name of the model. The  model is stored  in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     order: tuple, optional
         The (p,d,q) order of the model for the autoregressive,
@@ -1083,7 +1084,8 @@ class ARIMA(TimeSeriesModelBase):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     phi_: numpy.array
         The coefficient of the AutoRegressive process.
@@ -1318,16 +1320,16 @@ class ARIMA(TimeSeriesModelBase):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     _____
@@ -1469,16 +1471,16 @@ class ARIMA(TimeSeriesModelBase):
 
     .. note::
 
-        Predictions can be made automatically 
-        by using the training set, in which 
-        case you don't need to specify the 
-        predictors. Alternatively, you can 
-        pass only the :py:class:`vDataFrame` 
+        Predictions can be made automatically
+        by using the training set, in which
+        case you don't need to specify the
+        predictors. Alternatively, you can
+        pass only the :py:class:`vDataFrame`
         to the
         :py:meth:`verticapy.machine_learning.vertica.tsa.ARIMA.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -1771,8 +1773,9 @@ class ARMA(TimeSeriesModelBase):
         Name of the model. The  model is stored  in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     order: tuple, optional
         The (p,q) order of the model for the autoregressive,
@@ -1813,7 +1816,8 @@ class ARMA(TimeSeriesModelBase):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     phi_: numpy.array
         The coefficient of the AutoRegressive process.
@@ -2049,16 +2053,16 @@ class ARMA(TimeSeriesModelBase):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     _____
@@ -2190,16 +2194,16 @@ class ARMA(TimeSeriesModelBase):
 
     .. note::
 
-        Predictions can be made automatically 
-        by using the training set, in which 
-        case you don't need to specify the 
-        predictors. Alternatively, you can 
-        pass only the :py:class:`vDataFrame` 
+        Predictions can be made automatically
+        by using the training set, in which
+        case you don't need to specify the
+        predictors. Alternatively, you can
+        pass only the :py:class:`vDataFrame`
         to the
         :py:meth:`verticapy.machine_learning.vertica.tsa.ARMA.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -2485,8 +2489,9 @@ class AR(TimeSeriesModelBase):
         Name of the model. The  model is stored  in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     p: int, optional
         Integer in the range [1, 1999], the number of
@@ -2531,7 +2536,8 @@ class AR(TimeSeriesModelBase):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     phi_: numpy.array
         The coefficient of the AutoRegressive process.
@@ -2762,16 +2768,16 @@ class AR(TimeSeriesModelBase):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     _____
@@ -2900,16 +2906,16 @@ class AR(TimeSeriesModelBase):
 
     .. note::
 
-        Predictions can be made automatically 
-        by using the training set, in which 
-        case you don't need to specify the 
-        predictors. Alternatively, you can 
-        pass only the :py:class:`vDataFrame` 
+        Predictions can be made automatically
+        by using the training set, in which
+        case you don't need to specify the
+        predictors. Alternatively, you can
+        pass only the :py:class:`vDataFrame`
         to the
         :py:meth:`verticapy.machine_learning.vertica.tsa.AR.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -3182,8 +3188,9 @@ class MA(TimeSeriesModelBase):
         Name of the model. The  model is stored  in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     q: int, optional
         Integer in the range [1, 67), the number of lags
@@ -3219,7 +3226,8 @@ class MA(TimeSeriesModelBase):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     theta_: numpy.array
         The theta coefficient of the Moving Average
@@ -3440,16 +3448,16 @@ class MA(TimeSeriesModelBase):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
     _____
@@ -3578,16 +3586,16 @@ class MA(TimeSeriesModelBase):
 
     .. note::
 
-        Predictions can be made automatically 
-        by using the training set, in which 
-        case you don't need to specify the 
-        predictors. Alternatively, you can 
-        pass only the :py:class:`vDataFrame` 
+        Predictions can be made automatically
+        by using the training set, in which
+        case you don't need to specify the
+        predictors. Alternatively, you can
+        pass only the :py:class:`vDataFrame`
         to the
         :py:meth:`verticapy.machine_learning.vertica.tsa.MA.predict`
-        function, but in this case, it's 
+        function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the 
+        the :py:class:`vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -3675,16 +3683,16 @@ class MA(TimeSeriesModelBase):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model 
+    In order to register the model
     for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to 
+    Please refer to
     :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model 
+    for more details on model
     tracking and versioning.
 
 

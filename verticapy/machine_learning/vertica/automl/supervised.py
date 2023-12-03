@@ -76,8 +76,9 @@ class AutoML(VerticaModel):
     name: str, optional
         Name of the model.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     estimator: list / 'native' / 'all' / 'fast' / object
         List  of Vertica  estimators with a fit  method.

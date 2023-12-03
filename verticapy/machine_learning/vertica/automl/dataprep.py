@@ -46,8 +46,9 @@ class AutoDataPrep(VerticaModel):
         Name of the model in which to store the output
         relation in the Vertica database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     cat_method: str, optional
         Method for encoding categorical features. This
