@@ -1045,11 +1045,11 @@ class Scaler(Preprocessing):
         relevant documentation for each model.
 
     .. seealso::
-        | :py:meth:`verticapy.machine_learning.vertica.preprocessing.StandardScaler` :
+        | :py:class:`verticapy.machine_learning.vertica.preprocessing.StandardScaler` :
             Scalar with method set as ``zscore``.
-        | :py:meth:`verticapy.machine_learning.vertica.preprocessing.RobustScaler` :
+        | :py:class:`verticapy.machine_learning.vertica.preprocessing.RobustScaler` :
             Scalar with method set as ``robust_zscore``.
-        | :py:meth:`verticapy.machine_learning.vertica.preprocessing.MinMaxScaler` :
+        | :py:class:`verticapy.machine_learning.vertica.preprocessing.MinMaxScaler` :
             Scalar with method set as ``minmax``.
 
     """
@@ -1137,7 +1137,7 @@ class StandardScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:class:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1156,7 +1156,7 @@ class RobustScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:class:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1175,7 +1175,7 @@ class MinMaxScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:class:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
