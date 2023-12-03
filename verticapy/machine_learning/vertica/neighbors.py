@@ -101,7 +101,8 @@ class KNeighborsRegressor(Regressor):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     n_neighbors_: int
         Number of neighbors.
@@ -169,10 +170,14 @@ class KNeighborsRegressor(Regressor):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets
-    using the :py:meth:`vDataFrame.train_test_split` method. This is a
-    crucial step when preparing your data for machine learning, as it
-    allows you to evaluate the performance of your models accurately.
+    You can easily divide your dataset
+    into training and testing subsets
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
+    performance of your models accurately.
 
     .. code-block:: python
 
@@ -180,12 +185,16 @@ class KNeighborsRegressor(Regressor):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded randomization to guarantee
-        the reproducibility of your data split. However, please be aware
-        that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` or ``temporary tables``.
-        This will help enhance the overall performance of the process.
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
+        of your data split. However, please be aware
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
+        you can use the :py:meth:`vDataFrame.to_db`
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
+        process.
 
     .. ipython:: python
         :suppress:
@@ -353,12 +362,16 @@ class KNeighborsRegressor(Regressor):
 
     .. note::
 
-        Predictions can be made automatically using the test set, in which
-        case you don't need to specify the predictors. Alternatively, you
-        can pass only the :py:class:`vDataFrame` to the
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
+        :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
-        function, but in this case, it's essential that the column names of
-        the :py:class:`vDataFrame` match the predictors and response name in the
+        function, but in this case, it's
+        essential that the column names of
+        the :py:class:`vDataFrame` match the
+        predictors and response name in the
         model.
 
     Parameter Modification
@@ -618,7 +631,8 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     n_neighbors_: int
         Number of neighbors.
@@ -703,10 +717,14 @@ class KNeighborsClassifier(MulticlassClassifier):
 
         data = data.balance(column="quality", x = 1)
 
-    You can easily divide your dataset into training and testing subsets
-    using the :py:meth:`vDataFrame.train_test_split` method. This is a
-    crucial step when preparing your data for machine learning, as it
-    allows you to evaluate the performance of your models accurately.
+    You can easily divide your dataset
+    into training and testing subsets
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
+    performance of your models accurately.
 
     .. code-block:: python
 
@@ -714,12 +732,16 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded randomization to guarantee
-        the reproducibility of your data split. However, please be aware
-        that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` or ``temporary tables``.
-        This will help enhance the overall performance of the process.
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
+        of your data split. However, please be aware
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
+        you can use the :py:meth:`vDataFrame.to_db`
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
+        process.
 
     .. ipython:: python
         :suppress:
@@ -735,19 +757,26 @@ class KNeighborsClassifier(MulticlassClassifier):
     Balancing the Dataset
     ^^^^^^^^^^^^^^^^^^^^^^
 
-    In VerticaPy, balancing a dataset to address class imbalances
-    is made straightforward through the
+    In VerticaPy, balancing a dataset to
+    address class imbalances is made
+    straightforward through the
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function within the ``preprocessing`` module. This function
-    enables users to rectify skewed class distributions efficiently.
-    By specifying the target variable and setting parameters like
-    the method for balancing, users can effortlessly achieve a more
-    equitable representation of classes in their dataset.
-    Whether opting for over-sampling, under-sampling, or a combination
+    function within the ``preprocessing``
+    module. This function enables users
+    to rectify skewed class distributions
+    efficiently. By specifying the target
+    variable and setting parameters like
+    the method for balancing, users can
+    effortlessly achieve a more equitable
+    representation of classes in their dataset.
+    Whether opting for over-sampling,
+    under-sampling, or a combination
     of both, VerticaPy's
     :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
-    function streamlines the process, empowering users to enhance the
-    performance and fairness of their machine learning models trained
+    function streamlines the process,
+    empowering users to enhance the
+    performance and fairness of their
+    machine learning models trained
     on imbalanced data.
 
     To balance the dataset, use the following syntax.
@@ -765,25 +794,36 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. note::
 
-        With this code, a table named `train_balanced` is created in the
-        `my_schema` schema. It can then be used to train the model. In the
-        rest of the example, we will work with the full dataset.
+        With this code, a table named `train_balanced`
+        is created in the `my_schema` schema.
+        It can then be used to train the model.
+        In the rest of the example, we will work
+        with the full dataset.
 
     .. hint::
 
-        Balancing the dataset is a crucial step in improving the accuracy
-        of machine learning models, particularly when faced with imbalanced
-        class distributions. By addressing disparities in the number of
-        instances across different classes, the model becomes more adept at
-        learning patterns from all classes rather than being biased towards
-        the majority class. This, in turn, enhances the model's ability to
-        make accurate predictions for under-represented classes. The balanced
-        dataset ensures that the model is not dominated by the majority class
-        and, as a result, leads to more robust and unbiased model performance.
-        Therefore, by employing techniques such as over-sampling, under-sampling,
-        or a combination of both during dataset preparation, practitioners can
-        significantly contribute to achieving higher accuracy and better
-        generalization of their machine learning models.
+        Balancing the dataset is a crucial
+        step in improving the accuracy of
+        machine learning models, particularly
+        when faced with imbalanced class
+        distributions. By addressing disparities
+        in the number of instances across different
+        classes, the model becomes more adept at
+        learning patterns from all classes rather
+        than being biased towards the majority
+        class. This, in turn, enhances the model's
+        ability to make accurate predictions for
+        under-represented classes. The balanced
+        dataset ensures that the model is not
+        dominated by the majority class and, as a
+        result, leads to more robust and unbiased
+        model performance. Therefore, by employing
+        techniques such as over-sampling, under-sampling,
+        or a combination of both during dataset
+        preparation, practitioners can significantly
+        contribute to achieving higher accuracy and
+        better generalization of their machine learning
+        models.
 
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
@@ -876,9 +916,11 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. important::
 
-        Most metrics are computed using a single SQL query, but some of them might
-        require multiple SQL queries. Selecting only the necessary metrics in the
-        report can help optimize performance.
+        Most metrics are computed using a
+        single SQL query, but some of them
+        might require multiple SQL queries.
+        Selecting only the necessary metrics
+        in the report can help optimize performance.
         E.g. ``model.report(metrics = ["auc", "accuracy"])``.
 
     For classification models, we can easily modify the ``cutoff`` to observe
@@ -909,9 +951,10 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. note::
 
-        For multi-class scoring, :py:mod:`verticapy` allows the
-        flexibility to use three averaging techniques:
-        micro, macro and weighted. Please refer to
+        For multi-class scoring, :py:mod:`verticapy`
+        allows the flexibility to use three averaging
+        techniques: ``micro``, ``macro`` and ``weighted``.
+        Please refer to
         `this link <https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f>`_
         for more details on how they are calculated.
 
@@ -955,12 +998,16 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. note::
 
-        Predictions can be made automatically using the test set, in which
-        case you don't need to specify the predictors. Alternatively, you
-        can pass only the :py:class:`vDataFrame` to the
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
+        :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
-        function, but in this case, it's essential that the column names of
-        the :py:class:`vDataFrame` match the predictors and response name in the
+        function, but in this case, it's
+        essential that the column names of
+        the :py:class:`vDataFrame` match the
+        predictors and response name in the
         model.
 
     Probabilities
@@ -1003,10 +1050,11 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the vDataFrame, and VerticaPy uses the
-        corresponding probability function in SQL behind the scenes. You
-        can use the ``pos_label`` parameter to add only the probability
-        of the selected category.
+        Probabilities are added to the ``vDataFrame``,
+        and VerticaPy uses the corresponding probability
+        function in SQL behind the scenes. You can use
+        the ``pos_label`` parameter to add only the
+        probability of the selected category.
 
     Confusion Matrix
     ^^^^^^^^^^^^^^^^^
@@ -1020,13 +1068,16 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. hint::
 
-        In the context of multi-class classification, you typically work
-        with an overall confusion matrix that summarizes the classification
-        efficiency across all classes. However, you have the flexibility to
-        specify a ``pos_label`` and adjust the cutoff threshold. In this case,
-        a binary confusion matrix is computed, where the chosen class is treated
-        as the positive class, allowing you to evaluate its efficiency as if it
-        were a binary classification problem.
+        In the context of multi-class classification,
+        you typically work with an overall confusion
+        matrix that summarizes the classification
+        efficiency across all classes. However, you
+        have the flexibility to specify a ``pos_label``
+        and adjust the cutoff threshold. In this case,
+        a binary confusion matrix is computed, where
+        the chosen class is treated as the positive
+        class, allowing you to evaluate its efficiency
+        as if it were a binary classification problem.
 
         .. ipython:: python
 
@@ -1034,30 +1085,40 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. note::
 
-        In classification, the ``cutoff`` is a threshold value used to
-        determine class assignment based on predicted probabilities or
-        scores from a classification model. In binary classification,
-        if the predicted probability for a specific class is greater
-        than or equal to the cutoff, the instance is assigned to the
-        positive class; otherwise, it is assigned to the negative class.
-        Adjusting the cutoff allows for trade-offs between true positives
-        and false positives, enabling the model to be optimized for
-        specific objectives or to consider the relative costs of different
-        classification errors. The choice of cutoff is critical for
-        tailoring the model's performance to meet specific needs.
+        In classification, the ``cutoff`` is a
+        threshold value used to determine class
+        assignment based on predicted probabilities
+        or scores from a classification model. In
+        binary classification, if the predicted
+        probability for a specific class is greater
+        than or equal to the cutoff, the instance is
+        assigned to the positive class; otherwise, it
+        is assigned to the negative class. Adjusting
+        the cutoff allows for trade-offs between true
+        positives and false positives, enabling the
+        model to be optimized for specific objectives
+        or to consider the relative costs of different
+        classification errors. The choice of cutoff is
+        critical for tailoring the model's performance
+        to meet specific needs.
 
 
     Main Plots (Classification Curves)
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Classification models allow for the creation of various plots that
-    are very helpful in understanding the model, such as the ROC Curve,
-    PRC Curve, Cutoff Curve, Gain Curve, and more.
+    Classification models allow for the
+    creation of various plots that are
+    very helpful in understanding the
+    model, such as the ROC Curve,
+    PRC Curve, Cutoff Curve, Gain
+    Curve, and more.
 
-    Most of the classification curves can be found in the
+    Most of the classification curves
+    can be found in the
     :ref:`chart_gallery.classification_curve`.
 
-    For example, let's draw the model's ROC curve.
+    For example, let's draw the
+    model's ROC curve.
 
     .. code-block:: python
 
@@ -1075,16 +1136,20 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. important::
 
-        Most of the curves have a parameter called ``nbins``, which is essential
-        for estimating metrics. The larger the ``nbins``, the more precise the
-        estimation, but it can significantly impact performance. Exercise caution
-        when increasing this parameter excessively.
+        Most of the curves have a parameter called
+        ``nbins``, which is essential for estimating
+        metrics. The larger the ``nbins``, the more
+        precise the estimation, but it can significantly
+        impact performance. Exercise caution when
+        increasing this parameter excessively.
 
     .. hint::
 
-        In binary classification, various curves can be easily plotted. However,
-        in multi-class classification, it's important to select the ``pos_label``
-        , representing the class to be treated as positive when drawing the curve.
+        In binary classification, various curves can
+        be easily plotted. However, in multi-class
+        classification, it's important to select the
+        ``pos_label``, representing the class to be
+        treated as positive when drawing the curve.
 
     Other Plots
     ^^^^^^^^^^^^
@@ -1098,11 +1163,17 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. important::
 
-        Machine learning models with two predictors can usually
-        benefit from their own contour plot. This visual representation
-        aids in exploring predictions and gaining a deeper understanding
-        of how these models perform in different scenarios.
-        Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
+        gaining a deeper understanding
+        of how these models perform in
+        different scenarios.
+        Please refer to
+        :ref:`chart_gallery.contour`
+        for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1594,8 +1665,9 @@ class KernelDensity(Regressor, Tree):
         Name of the model. This is not a built-in model, so
         this name is used  to build the final table.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
@@ -2049,8 +2121,9 @@ class LocalOutlierFactor(VerticaModel):
         model, so this name is used to build the
         final table.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     n_neighbors: int, optional
         Number of neighbors to consider when computing
@@ -2061,7 +2134,8 @@ class LocalOutlierFactor(VerticaModel):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     n_neighbors_: int
         Number of neighbors.

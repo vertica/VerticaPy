@@ -115,7 +115,8 @@ class TfidfVectorizer(VerticaModel):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     vocabulary_: ArrayLike
         The ultimate vocabulary. If empty, it implies that all

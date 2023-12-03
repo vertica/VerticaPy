@@ -47,8 +47,9 @@ class LinearSVR(LinearModel, Regressor):
         Name of the model. The model is stored in
         the database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     tol: float, optional
         Tolerance for stopping criteria. This is
@@ -83,7 +84,8 @@ class LinearSVR(LinearModel, Regressor):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     coef_: numpy.array
         The regression coefficients. The order of
@@ -172,10 +174,14 @@ class LinearSVR(LinearModel, Regressor):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets
-    using the :py:meth:`vDataFrame.train_test_split` method. This is a
-    crucial step when preparing your data for machine learning, as it
-    allows you to evaluate the performance of your models accurately.
+    You can easily divide your dataset
+    into training and testing subsets
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
+    performance of your models accurately.
 
     .. code-block:: python
 
@@ -184,12 +190,16 @@ class LinearSVR(LinearModel, Regressor):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded randomization to guarantee
-        the reproducibility of your data split. However, please be aware
-        that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` or ``temporary tables``.
-        This will help enhance the overall performance of the process.
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
+        of your data split. However, please be aware
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
+        you can use the :py:meth:`vDataFrame.to_db`
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
+        process.
 
     .. ipython:: python
         :suppress:
@@ -401,12 +411,16 @@ class LinearSVR(LinearModel, Regressor):
 
     .. note::
 
-        Predictions can be made automatically using the test set, in which
-        case you don't need to specify the predictors. Alternatively, you
-        can pass only the :py:class:`vDataFrame` to the
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
+        :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
-        function, but in this case, it's essential that the column names of
-        the :py:class:`vDataFrame` match the predictors and response name in the
+        function, but in this case, it's
+        essential that the column names of
+        the :py:class:`vDataFrame` match the
+        predictors and response name in the
         model.
 
     Plots
@@ -433,11 +447,17 @@ class LinearSVR(LinearModel, Regressor):
 
     .. important::
 
-        Machine learning models with two predictors can usually
-        benefit from their own contour plot. This visual representation
-        aids in exploring predictions and gaining a deeper understanding
-        of how these models perform in different scenarios.
-        Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
+        gaining a deeper understanding
+        of how these models perform in
+        different scenarios.
+        Please refer to
+        :ref:`chart_gallery.contour`
+        for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -457,14 +477,17 @@ class LinearSVR(LinearModel, Regressor):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -477,13 +500,16 @@ class LinearSVR(LinearModel, Regressor):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory representations of machine
-        learning models. They can be used for both in-database and in-memory
-        prediction tasks. These objects can be pickled in the same way that
-        you would pickle a ``scikit-learn`` model.
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
+        would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
+    ``MemModel`` directly.
 
     **To SQL**
 
@@ -495,7 +521,8 @@ class LinearSVR(LinearModel, Regressor):
 
     **To Python**
 
-    To obtain the prediction function in Python syntax, use the following code:
+    To obtain the prediction function in
+    Python syntax, use the following code:
 
     .. ipython:: python
 
@@ -507,9 +534,10 @@ class LinearSVR(LinearModel, Regressor):
         The
         :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For specific details on how to
-        use this method for different model types, refer to the relevant
-        documentation for each model.
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
+        relevant documentation for each model.
     """
 
     # Properties.
@@ -588,8 +616,9 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         Name  of the  model. The model is stored
         in the database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     tol: float, optional
         Tolerance for stopping criteria. This is
@@ -630,7 +659,8 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     coef_: numpy.array
         The regression coefficients. The order of
@@ -722,10 +752,14 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         data analysis and machine learning skills
         within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets
-    using the :py:meth:`vDataFrame.train_test_split` method. This is a
-    crucial step when preparing your data for machine learning, as it
-    allows you to evaluate the performance of your models accurately.
+    You can easily divide your dataset
+    into training and testing subsets
+    using the
+    :py:meth:`vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
+    performance of your models accurately.
 
     .. code-block:: python
 
@@ -734,12 +768,16 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded randomization to guarantee
-        the reproducibility of your data split. However, please be aware
-        that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
-        method to save your results into ``tables`` or ``temporary tables``.
-        This will help enhance the overall performance of the process.
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
+        of your data split. However, please be aware
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
+        you can use the :py:meth:`vDataFrame.to_db`
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
+        process.
 
     .. ipython:: python
         :suppress:
@@ -872,9 +910,11 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. important::
 
-        Most metrics are computed using a single SQL query, but some of them might
-        require multiple SQL queries. Selecting only the necessary metrics in the
-        report can help optimize performance.
+        Most metrics are computed using a
+        single SQL query, but some of them
+        might require multiple SQL queries.
+        Selecting only the necessary metrics
+        in the report can help optimize performance.
         E.g. ``model.report(metrics = ["auc", "accuracy"])``.
 
     For classification models, we can easily modify the ``cutoff`` to observe
@@ -947,12 +987,16 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. note::
 
-        Predictions can be made automatically using the test set, in which
-        case you don't need to specify the predictors. Alternatively, you
-        can pass only the :py:class:`vDataFrame` to the
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
+        :py:class:`vDataFrame` to the
         :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
-        function, but in this case, it's essential that the column names of
-        the :py:class:`vDataFrame` match the predictors and response name in the
+        function, but in this case, it's
+        essential that the column names of
+        the :py:class:`vDataFrame` match the
+        predictors and response name in the
         model.
 
     Probabilities
@@ -999,10 +1043,11 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. note::
 
-        Probabilities are added to the vDataFrame, and VerticaPy uses the
-        corresponding probability function in SQL behind the scenes. You
-        can use the ``pos_label`` parameter to add only the probability
-        of the selected category.
+        Probabilities are added to the ``vDataFrame``,
+        and VerticaPy uses the corresponding probability
+        function in SQL behind the scenes. You can use
+        the ``pos_label`` parameter to add only the
+        probability of the selected category.
 
     Confusion Matrix
     ^^^^^^^^^^^^^^^^^
@@ -1016,29 +1061,39 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. note::
 
-        In classification, the ``cutoff`` is a threshold value used to
-        determine class assignment based on predicted probabilities or
-        scores from a classification model. In binary classification,
-        if the predicted probability for a specific class is greater
-        than or equal to the cutoff, the instance is assigned to the
-        positive class; otherwise, it is assigned to the negative class.
-        Adjusting the cutoff allows for trade-offs between true positives
-        and false positives, enabling the model to be optimized for
-        specific objectives or to consider the relative costs of different
-        classification errors. The choice of cutoff is critical for
-        tailoring the model's performance to meet specific needs.
+        In classification, the ``cutoff`` is a
+        threshold value used to determine class
+        assignment based on predicted probabilities
+        or scores from a classification model. In
+        binary classification, if the predicted
+        probability for a specific class is greater
+        than or equal to the cutoff, the instance is
+        assigned to the positive class; otherwise, it
+        is assigned to the negative class. Adjusting
+        the cutoff allows for trade-offs between true
+        positives and false positives, enabling the
+        model to be optimized for specific objectives
+        or to consider the relative costs of different
+        classification errors. The choice of cutoff is
+        critical for tailoring the model's performance
+        to meet specific needs.
 
     Main Plots (Classification Curves)
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Classification models allow for the creation of various plots that
-    are very helpful in understanding the model, such as the ROC Curve,
-    PRC Curve, Cutoff Curve, Gain Curve, and more.
+    Classification models allow for the
+    creation of various plots that are
+    very helpful in understanding the
+    model, such as the ROC Curve,
+    PRC Curve, Cutoff Curve, Gain
+    Curve, and more.
 
-    Most of the classification curves can be found in the
+    Most of the classification curves
+    can be found in the
     :ref:`chart_gallery.classification_curve`.
 
-    For example, let's draw the model's ROC curve.
+    For example, let's draw the
+    model's ROC curve.
 
     .. code-block:: python
 
@@ -1055,16 +1110,20 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. important::
 
-        Most of the curves have a parameter called ``nbins``, which is essential
-        for estimating metrics. The larger the ``nbins``, the more precise the
-        estimation, but it can significantly impact performance. Exercise caution
-        when increasing this parameter excessively.
+        Most of the curves have a parameter called
+        ``nbins``, which is essential for estimating
+        metrics. The larger the ``nbins``, the more
+        precise the estimation, but it can significantly
+        impact performance. Exercise caution when
+        increasing this parameter excessively.
 
     .. hint::
 
-        In binary classification, various curves can be easily plotted. However,
-        in multi-class classification, it's important to select the ``pos_label``
-        , representing the class to be treated as positive when drawing the curve.
+        In binary classification, various curves can
+        be easily plotted. However, in multi-class
+        classification, it's important to select the
+        ``pos_label``, representing the class to be
+        treated as positive when drawing the curve.
 
     Other Plots
     ^^^^^^^^^^^^
@@ -1091,11 +1150,17 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. important::
 
-        Machine learning models with two predictors can usually
-        benefit from their own contour plot. This visual representation
-        aids in exploring predictions and gaining a deeper understanding
-        of how these models perform in different scenarios.
-        Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two
+        predictors can usually benefit
+        from their own contour plot.
+        This visual representation aids
+        in exploring predictions and
+        gaining a deeper understanding
+        of how these models perform in
+        different scenarios.
+        Please refer to
+        :ref:`chart_gallery.contour`
+        for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1115,14 +1180,17 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -1135,13 +1203,16 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory representations of machine
-        learning models. They can be used for both in-database and in-memory
-        prediction tasks. These objects can be pickled in the same way that
-        you would pickle a ``scikit-learn`` model.
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
+        would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
+    ``MemModel`` directly.
 
     **To SQL**
 
@@ -1153,7 +1224,8 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     **To Python**
 
-    To obtain the prediction function in Python syntax, use the following code:
+    To obtain the prediction function in
+    Python syntax, use the following code:
 
     .. ipython:: python
 
@@ -1165,9 +1237,10 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         The
         :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For specific details on how to
-        use this method for different model types, refer to the relevant
-        documentation for each model.
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
+        relevant documentation for each model.
     """
 
     # Properties.

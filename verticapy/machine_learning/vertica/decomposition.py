@@ -404,8 +404,9 @@ class PCA(Decomposition):
         Name  of the  model. The model is stored in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     n_components: int, optional
         The  number of  components to keep in the model.
@@ -427,7 +428,8 @@ class PCA(Decomposition):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     principal_components_: numpy.array
         Matrix of the principal components.
@@ -682,14 +684,17 @@ class PCA(Decomposition):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -702,10 +707,12 @@ class PCA(Decomposition):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory representations of machine
-        learning models. They can be used for both in-database and in-memory
-        prediction tasks. These objects can be pickled in the same way that
-        you would pickle a ``scikit-learn`` model.
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
+        would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the model use ``MemModel``, and it
     is recommended to use ``MemModel`` directly.
@@ -720,7 +727,8 @@ class PCA(Decomposition):
 
     **To Python**
 
-    To obtain the prediction function in Python syntax, use the following code:
+    To obtain the prediction function in
+    Python syntax, use the following code:
 
     .. ipython:: python
 
@@ -841,13 +849,15 @@ class MCA(PCA):
         Name of the model.  The model is stored in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     principal_components_: numpy.array
         Matrix of the principal components.
@@ -1105,10 +1115,12 @@ class MCA(PCA):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory representations of machine
-        learning models. They can be used for both in-database and in-memory
-        prediction tasks. These objects can be pickled in the same way that
-        you would pickle a ``scikit-learn`` model.
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
+        would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the model use ``MemModel``, and it
     is recommended to use ``MemModel`` directly.
@@ -1123,7 +1135,8 @@ class MCA(PCA):
 
     **To Python**
 
-    To obtain the prediction function in Python syntax, use the following code:
+    To obtain the prediction function in
+    Python syntax, use the following code:
 
     .. ipython:: python
 
@@ -1381,8 +1394,9 @@ class SVD(Decomposition):
         Name  of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
-        If set to True, training a model with the same
-        name as an existing model overwrites the
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
         existing model.
     n_components: int, optional
         The number  of components to keep in the model.
@@ -1400,7 +1414,8 @@ class SVD(Decomposition):
 
     Attributes
     ----------
-    Many attributes are created during the fitting phase.
+    Many attributes are created
+    during the fitting phase.
 
     values_: numpy.array
         Matrix of the right singular vectors.
@@ -1644,14 +1659,17 @@ class SVD(Decomposition):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -1664,10 +1682,12 @@ class SVD(Decomposition):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory representations of machine
-        learning models. They can be used for both in-database and in-memory
-        prediction tasks. These objects can be pickled in the same way that
-        you would pickle a ``scikit-learn`` model.
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
+        would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the model use ``MemModel``, and it
     is recommended to use ``MemModel`` directly.
@@ -1682,7 +1702,8 @@ class SVD(Decomposition):
 
     **To Python**
 
-    To obtain the prediction function in Python syntax, use the following code:
+    To obtain the prediction function in
+    Python syntax, use the following code:
 
     .. ipython:: python
 
