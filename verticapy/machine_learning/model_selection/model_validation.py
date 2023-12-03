@@ -1046,6 +1046,7 @@ def learning_curve(
         :suppress:
         :okwarning:
 
+        vp.set_option("plotting_lib", "plotly")
         fig = vms.learning_curve(
             model,
             data,
