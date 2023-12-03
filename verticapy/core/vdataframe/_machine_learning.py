@@ -1525,7 +1525,6 @@ class vDFMachineLearning(vDFScaler):
 
                     Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-
             - lr+:
                 Positive Likelihood Ratio.
 
@@ -1589,7 +1588,6 @@ class vDFMachineLearning(vDFScaler):
 
                     threshold = \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
-
             - recall:
                 Recall.
 
@@ -1619,7 +1617,6 @@ class vDFMachineLearning(vDFScaler):
                 .. math::
 
                     MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
-
 
             - median:
                 Median Absolute Error.

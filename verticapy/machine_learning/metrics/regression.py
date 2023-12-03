@@ -1192,7 +1192,6 @@ def regression_report(
         Number  of predictors. Used  to compute the adjusted
         R2.
 
-
     Returns
     -------
     TableSample
