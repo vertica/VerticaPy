@@ -28,18 +28,49 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 @save_verticapy_logs
 def parameter_grid(param_grid: dict) -> list[dict]:
     """
-    Generates a list of the different combinations
-    of input parameters.
+    Generates a ``list`` of the
+    different combinations of
+    input parameters.
 
     Parameters
     ----------
     param_grid: dict
-        Dictionary of parameters.
+        ``dictionary`` of parameters.
 
     Returns
     -------
     list of dict
-        List of the different combinations.
+        ``list`` of the different
+        combinations.
+
+    Examples
+    --------
+    Its easy to generate a ``list``
+    of the different combinations
+    of input parameters.
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.hp_tuning.param_gen import parameter_grid
+
+        parameter_grid(
+            {
+                "nbins": [10, 100, 360],
+                "alpha": [0.1, 0.3, 0.5],
+                "solver": ["bfgs", "newton"],
+            },
+        )
+
+    .. note::
+
+        This function is essential for
+        conducting a
+        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.param_gen.gen_params_grid` :
+            Generates the estimator grid.
     """
     return [
         dict(zip(param_grid.keys(), values))
@@ -83,6 +114,41 @@ def gen_params_grid(
     -------
     dict
         Dictionary of parameters.
+
+    Examples
+    --------
+    Let's take
+    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    as an example model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+
+        model = LogisticRegression()
+
+    Now, we can find the parameter
+    grid quite conveniently using:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection import gen_params_grid
+
+        gen_params_grid(model, lmax = 10)
+
+    .. note::
+
+        The function automatically detects
+        the parameters from any VerticaPy
+        model, and then creates a grid
+        based on the generic value range.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.param_gen.parameter_grid` :
+            Generates a ``list`` of the
+            different combinations of
+            input parameters.
     """
     params_grid = {}
     if isinstance(
