@@ -421,7 +421,7 @@ def cross_validate(
     :py:func:`verticapy.machine_learning.model_selection.model_validation.cross_validate`
     function to evaluate our model.
 
-    .. code-block:: python
+    .. ipython:: python
 
         from verticapy.machine_learning.model_selection import cross_validate
 
@@ -441,36 +441,6 @@ def cross_validate(
             metric = "auc",
             training_score = True,
         )
-
-    .. ipython:: python
-        :suppress:
-        :okwarning:
-
-        import verticapy as vp
-        from verticapy.machine_learning.model_selection import cross_validate
-
-        result = cross_validate(
-            model,
-            input_relation = data,
-            X = [
-                "fixed_acidity",
-                "volatile_acidity",
-                "citric_acid",
-                "residual_sugar",
-                "chlorides",
-                "density",
-            ],
-            y = "good",
-            cv = 3,
-            metric = "auc",
-            training_score = True,
-        )
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_cross_validate_table.html", "w")
-        html_file.write(result._repr_html_())
-        html_file.close()
-
-    .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_cross_validate_table.html
 
     .. note::
 
@@ -1048,6 +1018,7 @@ def learning_curve(
         :suppress:
         :okwarning:
 
+        vp.set_option("plotting_lib", "plotly")
         fig = vms.learning_curve(
             model,
             data,
