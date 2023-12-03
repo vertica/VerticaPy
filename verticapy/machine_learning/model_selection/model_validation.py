@@ -72,7 +72,7 @@ def cross_validate(
         List   of  the  predictor   columns.
     y: str
         Response Column.
-    metrics: str / list, optional
+    metrics: str | list, optional
         Metrics used to do the model evaluation. It can also
         be a list of metrics. If empty, most of the estimator
         metrics are computed.
@@ -161,7 +161,6 @@ def cross_validate(
 
                 Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-
         - lr+:
             Positive Likelihood Ratio.
 
@@ -236,7 +235,6 @@ def cross_validate(
 
         For Regression:
 
-
         - max:
             Max Error.
 
@@ -250,7 +248,6 @@ def cross_validate(
             .. math::
 
                 MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
-
 
         - median:
             Median Absolute Error.
@@ -592,7 +589,6 @@ def learning_curve(
 
                 Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-
         - lr+:
             Positive Likelihood Ratio.
 
@@ -667,7 +663,6 @@ def learning_curve(
 
         For Regression:
 
-
         - max:
             Max Error.
 
@@ -681,7 +676,6 @@ def learning_curve(
             .. math::
 
                 MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
-
 
         - median:
             Median Absolute Error.

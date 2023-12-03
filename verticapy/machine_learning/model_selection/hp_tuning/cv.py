@@ -66,154 +66,186 @@ def randomized_search_cv(
     print_info: bool = True,
 ) -> TableSample:
     """
-    Computes  the   K-Fold  randomized  search  of  an
-    estimator.
+    Computes the K-Fold randomized
+    search of an estimator.
 
     Parameters
     ----------
     estimator: VerticaModel
-        Vertica estimator with a fit method.
+        Vertica estimator with
+        a fit method.
     input_relation: SQLRelation
-        Relation used to train the model.
+        Relation used to
+        train the model.
     X: SQLColumns
-        List of the predictor columns.
+        ``list`` of the
+        predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used for the model evaluation.
-
+        Metric used for the
+        model evaluation.
 
         - auto:
-            logloss for classification & rmse for
-            regression.
+            logloss for classification
+            & rmse for regression.
 
         **For Classification**
 
         - accuracy:
             Accuracy.
+
+            .. math::
+
+                Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
         - auc:
             Area Under the Curve (ROC).
+
+            .. math::
+
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
         - ba:
             Balanced Accuracy.
 
             .. math::
 
-                (tpr + tnr) / 2
+                BA = \\frac{TPR + TNR}{2}
 
-        - best_cutoff:
-            Cutoff  which  optimised
-            the ROC Curve prediction.
         - bm:
-            Informedness.
+            Informedness
 
             .. math::
 
-                tpr + tnr - 1
+                BM = TPR + TNR - 1
 
         - csi:
-            Critical  Success  Index.
+            Critical Success Index
 
             .. math::
 
-                tp / (tp + fn + fp)
+                index = \\frac{TP}{TP + FN + FP}
 
         - f1:
             F1 Score
+            .. math::
+
+                F_1 Score = 2 \\times \frac{Precision \\times Recall}{Precision + Recall}
+
         - fdr:
-            False Discovery Rate.
+            False Discovery Rate
 
             .. math::
 
-                1 - ppv
+                FDR = 1 - PPV
 
         - fm:
-            Fowlkes–Mallows index.
+            Fowlkes-Mallows index
+
             .. math::
 
-                sqrt(ppv * tpr)
+                FM = \\sqrt{PPV * TPR}
 
         - fnr:
-            False Negative Rate.
+            False Negative Rate
+
             .. math::
 
-                fn / (fn + tp)
+                FNR = \\frac{FN}{FN + TP}
 
         - for:
-            False Omission Rate.
+            False Omission Rate
 
             .. math::
 
-                1 - npv
+                FOR = 1 - NPV
 
         - fpr:
-            False Positive Rate.
+            False Positive Rate
 
             .. math::
 
-                fp / (fp + tn)
+                FPR = \\frac{FP}{FP + TN}
 
         - logloss:
-            Log Loss.
+            Log Loss
+
+            .. math::
+
+                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
         - lr+:
             Positive Likelihood Ratio.
 
             .. math::
 
-                tpr / fpr
+                LR+ = \\frac{TPR}{FPR}
 
         - lr-:
             Negative Likelihood Ratio.
 
             .. math::
 
-                fnr / tnr
+                LR- = \\frac{FNR}{TNR}
 
         - dor:
             Diagnostic Odds Ratio.
-        - mcc:
-            Matthews Correlation Coefficient.
-        - mk:
-            Markedness.
 
             .. math::
 
-                ppv + npv - 1
+                DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+        - mcc:
+            Matthews Correlation Coefficient
+
+        - mk:
+            Markedness
+
+            .. math::
+
+                MK = PPV + NPV - 1
 
         - npv:
-            Negative Predictive Value.
+            Negative Predictive Value
 
             .. math::
 
-                tn / (tn + fn)
+                NPV = \\frac{TN}{TN + FN}
 
         - prc_auc:
-            Area Under the Curve (PRC).
-        - precision:
-            Precision.
+            Area Under the Curve (PRC)
 
             .. math::
 
-                tp / (tp + fp)
+                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+        - precision:
+            Precision
+
+            .. math::
+
+                TP / (TP + FP)
 
         - pt:
             Prevalence Threshold.
 
             .. math::
 
-                sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
         - recall:
             Recall.
 
             .. math::
-                tp / (tp + fn)
+                TP / (TP + FN)
 
         - specificity:
             Specificity.
 
             .. math::
 
-                tn / (tn + fp)
+                TN / (TN + FP)
 
         **For Regression**
 
@@ -230,7 +262,6 @@ def randomized_search_cv(
             .. math::
 
                 MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
-
 
         - median:
             Median Absolute Error.
@@ -284,55 +315,72 @@ def randomized_search_cv(
     cv: int, optional
         Number of folds.
     average: str, optional
-        The method used to  compute the final score for
-        multiclass-classification.
+        The method used to
+        compute the final
+        score for multiclass
+        -classification.
 
         - binary:
-            considers one of the classes  as
-            positive  and  use  the   binary
-            confusion  matrix to compute the
-            score.
+            considers one of the
+            classes as positive
+            and use the binary
+            confusion matrix to
+            compute the score.
 
         - micro:
-            positive  and   negative  values
-            globally.
+            positive and negative
+            values globally.
 
         - macro:
-            average  of  the  score of  each class.
+            average of the score
+            of each class.
 
         - weighted:
-            weighted average of the score of each class.
+            weighted average of
+            the score of each
+            class.
 
     pos_label: PythonScalar, optional
-        The main class to be considered as positive
+        The main class to be
+        considered as positive
         (classification only).
     cutoff: float, optional
-        The model cutoff (classification only).
+        The model cutoff
+        (classification only).
     nbins: int, optional
-        Number of bins used to compute the different
+        Number of bins used to
+        compute the different
         parameters categories.
     lmax: int, optional
-        Maximum length of each parameter list.
+        Maximum length of each
+        parameter ``list``.
     optimized_grid: int, optional
-        If set to 0, the randomness is based on the
-        input parameters.
-        If set to 1,  the randomness is limited  to
-        some  parameters  while others  are  picked
-        based on a default grid.
-        If set  to 2, there is no  randomness and a
-        default grid is returned.
+        If set to ``0``, the
+        randomness is based
+        on the input parameters.
+        If set to ``1``, the
+        randomness is limited
+        to some  parameters
+        while others  are
+        picked based on a
+        default grid.
+        If set to ``2``,
+        there is no randomness
+        and a default grid
+        is returned.
     print_info: bool, optional
-        If set to True, prints the model information
-        at each step.
+        If set to ``True``, prints
+        the model information at
+        each step.
 
     Returns
     -------
     TableSample
-        result of the randomized search.
+        result of the randomized
+        search.
 
     Examples
     ---------
-
     We import :py:mod:`verticapy`:
 
     .. ipython:: python
@@ -352,7 +400,8 @@ def randomized_search_cv(
         without interfering with functions from other
         libraries.
 
-    For this example, we will use the Wine Quality dataset.
+    For this example, we will use
+    the Wine Quality dataset.
 
     .. code-block:: python
 
@@ -383,7 +432,8 @@ def randomized_search_cv(
 
         data = vpd.load_winequality()
 
-    Next, we can initialize a Logistic Regression
+    Next, we can initialize a
+    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -392,8 +442,10 @@ def randomized_search_cv(
 
         model = LogisticRegression()
 
-    Now we can conveniently use the ``randomized_search_cv``
-    function to find the K-Fold randomized search of an
+    Now we can conveniently use the
+    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
+    function to find the K-Fold
+    randomized search of an
     estimator.
 
     .. code-block:: python
@@ -409,12 +461,12 @@ def randomized_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
             cv = 3,
             metric = "auc",
-            lmax = 5
+            lmax = 5,
         )
 
     .. ipython:: python
@@ -433,12 +485,12 @@ def randomized_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
             cv = 3,
             metric = "auc",
-            lmax = 5
+            lmax = 5,
         )
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_randomized_search_cv_table.html", "w")
         html_file.write(result._repr_html_())
@@ -447,6 +499,21 @@ def randomized_search_cv(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_randomized_search_cv_table.html
 
+    .. note::
+
+        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
+        works almost the same as
+        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`.
+        The only difference is that
+        the function will generate
+        a random grid of parameters
+        at the beginning.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+            Computes the k-fold grid
+            search of an estimator.
     """
     X = format_type(X, dtype=list)
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
@@ -490,155 +557,191 @@ def grid_search_cv(
     **kwargs,
 ) -> TableSample:
     """
-    Computes the k-fold grid search of an estimator.
+    Computes the k-fold grid
+    search of an estimator.
 
     Parameters
     ----------
     estimator: VerticaModel
-        Vertica estimator with a fit method.
-    param_grid: dict/list
-        Dictionary of the parameters to test. It can
-        also be a list of the different combinations.
+        Vertica estimator
+        with a fit method.
+    param_grid: dict | list
+        Dictionary of the parameters
+        to test. It can also be a
+        ``list`` of the different
+        combinations.
     input_relation: SQLRelation
-        Relation used to train the model.
+        Relation used to
+        train the model.
     X: SQLColumns
-        List of the predictor columns.
+        ``list`` of the
+        predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used for the model evaluation.
+        Metric used for the
+        model evaluation.
 
         - auto:
-            logloss for classification & rmse for
-            regression.
+            logloss for classification
+            & rmse for regression.
 
         **For Classification**
 
         - accuracy:
             Accuracy.
+
+            .. math::
+
+                Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
         - auc:
             Area Under the Curve (ROC).
+
+            .. math::
+
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
         - ba:
             Balanced Accuracy.
 
             .. math::
 
-                (tpr + tnr) / 2
+                BA = \\frac{TPR + TNR}{2}
 
-        - best_cutoff:
-            Cutoff  which  optimised
-            the ROC Curve prediction.
         - bm:
-            Informedness.
+            Informedness
 
             .. math::
 
-                tpr + tnr - 1
+                BM = TPR + TNR - 1
 
         - csi:
-            Critical  Success  Index.
+            Critical Success Index
 
             .. math::
 
-                tp / (tp + fn + fp)
+                index = \\frac{TP}{TP + FN + FP}
 
         - f1:
             F1 Score
+            .. math::
+
+                F_1 Score = 2 \\times \frac{Precision \\times Recall}{Precision + Recall}
+
         - fdr:
-            False Discovery Rate.
+            False Discovery Rate
 
             .. math::
 
-                1 - ppv
+                FDR = 1 - PPV
 
         - fm:
-            Fowlkes–Mallows index.
+            Fowlkes-Mallows index
+
             .. math::
 
-                sqrt(ppv * tpr)
+                FM = \\sqrt{PPV * TPR}
 
         - fnr:
-            False Negative Rate.
+            False Negative Rate
+
             .. math::
 
-                fn / (fn + tp)
+                FNR = \\frac{FN}{FN + TP}
 
         - for:
-            False Omission Rate.
+            False Omission Rate
 
             .. math::
 
-                1 - npv
+                FOR = 1 - NPV
 
         - fpr:
-            False Positive Rate.
+            False Positive Rate
 
             .. math::
 
-                fp / (fp + tn)
+                FPR = \\frac{FP}{FP + TN}
 
         - logloss:
-            Log Loss.
+            Log Loss
+
+            .. math::
+
+                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
         - lr+:
             Positive Likelihood Ratio.
 
             .. math::
 
-                tpr / fpr
+                LR+ = \\frac{TPR}{FPR}
 
         - lr-:
             Negative Likelihood Ratio.
 
             .. math::
 
-                fnr / tnr
+                LR- = \\frac{FNR}{TNR}
 
         - dor:
             Diagnostic Odds Ratio.
-        - mcc:
-            Matthews Correlation Coefficient.
-        - mk:
-            Markedness.
 
             .. math::
 
-                ppv + npv - 1
+                DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+        - mcc:
+            Matthews Correlation Coefficient
+
+        - mk:
+            Markedness
+
+            .. math::
+
+                MK = PPV + NPV - 1
 
         - npv:
-            Negative Predictive Value.
+            Negative Predictive Value
 
             .. math::
 
-                tn / (tn + fn)
+                NPV = \\frac{TN}{TN + FN}
 
         - prc_auc:
-            Area Under the Curve (PRC).
-        - precision:
-            Precision.
+            Area Under the Curve (PRC)
 
             .. math::
 
-                tp / (tp + fp)
+                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+        - precision:
+            Precision
+
+            .. math::
+
+                TP / (TP + FP)
 
         - pt:
             Prevalence Threshold.
 
             .. math::
 
-                sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
         - recall:
             Recall.
 
             .. math::
-                tp / (tp + fn)
+                TP / (TP + FN)
 
         - specificity:
             Specificity.
 
             .. math::
 
-                tn / (tn + fp)
+                TN / (TN + FP)
 
         **For Regression**
 
@@ -655,7 +758,6 @@ def grid_search_cv(
             .. math::
 
                 MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
-
 
         - median:
             Median Absolute Error.
@@ -709,48 +811,56 @@ def grid_search_cv(
     cv: int, optional
         Number of folds.
     average: str, optional
-        The method used to  compute the final score for
-        multiclass-classification.
+        The method used to compute
+        the final score for multiclass
+        -classification.
 
         - binary:
-            considers one of the classes  as
-            positive  and  use  the   binary
-            confusion  matrix to compute the
+            considers one of the classes
+            as positive and use the binary
+            confusion matrix to compute the
             score.
 
         - micro:
-            positive  and   negative  values
-            globally.
+            positive and negative
+            values globally.
 
         - macro:
-            average  of  the  score of  each class.
+            average of the score
+            of each class.
 
         - weighted:
-            weighted average of the score of each class.
+            weighted average of the
+            score of each class.
 
     pos_label: PythonScalar, optional
-        The main class to  be considered as positive
+        The main class to  be
+        considered as positive
         (classification only).
     cutoff: float, optional
-        The  model   cutoff  (classification  only).
+        The model cutoff
+        (classification only).
     training_score: bool, optional
-        If set to True,  the  training score is
-        computed with the validation score.
+        If set to ``True``,
+        the training score
+        is computed with the
+        validation score.
     skip_error: bool, optional
-        If set to True and an error occurs, the error
+        If set to ``True`` and
+        an error occurs, the error
         is displayed but not raised.
     print_info: bool, optional
-        If set to True, prints the model information
-        at each step.
+        If set to ``True``, prints
+        the model information at
+        each step.
 
     Returns
     -------
     TableSample
-        Result of the the grid search.
+        Result of the grid search.
 
     Examples
     ---------
-
     We import :py:mod:`verticapy`:
 
     .. ipython:: python
@@ -770,7 +880,8 @@ def grid_search_cv(
         without interfering with functions from other
         libraries.
 
-    For this example, we will use the Wine Quality dataset.
+    For this example, we will use
+    the Wine Quality dataset.
 
     .. code-block:: python
 
@@ -801,7 +912,8 @@ def grid_search_cv(
 
         data = vpd.load_winequality()
 
-    Next, we can initialize a Logistic Regression
+    Next, we can initialize a
+    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -810,8 +922,10 @@ def grid_search_cv(
 
         model = LogisticRegression()
 
-    Now we can conveniently use the ``grid_search_cv``
-    to search for the estimator using k-fold grid search.
+    Now we can conveniently use the
+    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`
+    to search for the estimator using
+    k-fold grid search.
 
     .. code-block:: python
 
@@ -819,9 +933,11 @@ def grid_search_cv(
 
         result = grid_search_cv(
             model,
-            {"tol": [1e-2, 1e-4, 1e-6],
+            {
+                "tol": [1e-2, 1e-4, 1e-6],
                 "max_iter": [3, 10, 100],
-                "solver": ["Newton", "BFGS"]},
+                "solver": ["Newton", "BFGS"]
+            },
             input_relation = data,
             X = [
                 "fixed_acidity",
@@ -829,10 +945,10 @@ def grid_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
-            cv = 3
+            cv = 3,
         )
 
     .. ipython:: python
@@ -844,9 +960,11 @@ def grid_search_cv(
 
         result = grid_search_cv(
             model,
-            {"tol": [1e-2, 1e-4, 1e-6],
+            {
+                "tol": [1e-2, 1e-4, 1e-6],
                 "max_iter": [3, 10, 100],
-                "solver": ["Newton", "BFGS"]},
+                "solver": ["Newton", "BFGS"]
+            },
             input_relation = data,
             X = [
                 "fixed_acidity",
@@ -854,10 +972,10 @@ def grid_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
-            cv = 3
+            cv = 3,
         )
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_grid_search_cv_table.html", "w")
         html_file.write(result._repr_html_())
@@ -866,6 +984,31 @@ def grid_search_cv(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_grid_search_cv_table.html
 
+    .. note::
+
+        Grid Search in VerticaPy involves
+        systematically evaluating different
+        combinations of hyperparameters
+        specified in a predefined grid. It
+        iterates through all possible parameter
+        combinations, training and evaluating
+        models for each set. This exhaustive
+        search helps identify the optimal
+        hyperparameters that result in the best
+        model performance. Grid Search is a
+        powerful tool for fine-tuning machine
+        learning models in VerticaPy to achieve
+        better accuracy and generalization
+        across various datasets.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.bayesian_search_cv` :
+            Computes the k-fold bayesian
+            search of an estimator.
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+            Computes the K-Fold randomized
+            search of an estimator.
     """
     X = format_type(X, dtype=list)
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
@@ -1071,154 +1214,189 @@ def bayesian_search_cv(
     **kwargs,
 ) -> TableSample:
     """
-    Computes the k-fold bayesian search of an estimator
-    using a random forest model to estimate a probably
-    optimal set of parameters.
+    Computes the k-fold bayesian
+    search of an estimator using
+    a random forest model to
+    estimate a probably optimal
+    set of parameters.
 
     Parameters
     ----------
     estimator: object
-        Vertica estimator with a fit method.
+        Vertica estimator
+        with a fit method.
     input_relation: SQLRelation
-        Relation used to train the model.
+        Relation used to
+        train the model.
     X: SQLColumns
-        List of the predictor columns.
+        ``list`` of the predictor
+        columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used for the model evaluation.
+        Metric used for the
+        model evaluation.
 
         - auto:
-            logloss for classification & rmse for
-            regression.
+            logloss for classification
+            & rmse for regression.
 
         **For Classification**
 
         - accuracy:
             Accuracy.
+
+            .. math::
+
+                Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
         - auc:
             Area Under the Curve (ROC).
+
+            .. math::
+
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
         - ba:
             Balanced Accuracy.
 
             .. math::
 
-                (tpr + tnr) / 2
+                BA = \\frac{TPR + TNR}{2}
 
-        - best_cutoff:
-            Cutoff  which  optimised
-            the ROC Curve prediction.
         - bm:
-            Informedness.
+            Informedness
 
             .. math::
 
-                tpr + tnr - 1
+                BM = TPR + TNR - 1
 
         - csi:
-            Critical  Success  Index.
+            Critical Success Index
 
             .. math::
 
-                tp / (tp + fn + fp)
+                index = \\frac{TP}{TP + FN + FP}
 
         - f1:
             F1 Score
+            .. math::
+
+                F_1 Score = 2 \\times \frac{Precision \\times Recall}{Precision + Recall}
+
         - fdr:
-            False Discovery Rate.
+            False Discovery Rate
 
             .. math::
 
-                1 - ppv
+                FDR = 1 - PPV
 
         - fm:
-            Fowlkes–Mallows index.
+            Fowlkes-Mallows index
+
             .. math::
 
-                sqrt(ppv * tpr)
+                FM = \\sqrt{PPV * TPR}
 
         - fnr:
-            False Negative Rate.
+            False Negative Rate
+
             .. math::
 
-                fn / (fn + tp)
+                FNR = \\frac{FN}{FN + TP}
 
         - for:
-            False Omission Rate.
+            False Omission Rate
 
             .. math::
 
-                1 - npv
+                FOR = 1 - NPV
 
         - fpr:
-            False Positive Rate.
+            False Positive Rate
 
             .. math::
 
-                fp / (fp + tn)
+                FPR = \\frac{FP}{FP + TN}
 
         - logloss:
-            Log Loss.
+            Log Loss
+
+            .. math::
+
+                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
         - lr+:
             Positive Likelihood Ratio.
 
             .. math::
 
-                tpr / fpr
+                LR+ = \\frac{TPR}{FPR}
 
         - lr-:
             Negative Likelihood Ratio.
 
             .. math::
 
-                fnr / tnr
+                LR- = \\frac{FNR}{TNR}
 
         - dor:
             Diagnostic Odds Ratio.
-        - mcc:
-            Matthews Correlation Coefficient.
-        - mk:
-            Markedness.
 
             .. math::
 
-                ppv + npv - 1
+                DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+        - mcc:
+            Matthews Correlation Coefficient
+
+        - mk:
+            Markedness
+
+            .. math::
+
+                MK = PPV + NPV - 1
 
         - npv:
-            Negative Predictive Value.
+            Negative Predictive Value
 
             .. math::
 
-                tn / (tn + fn)
+                NPV = \\frac{TN}{TN + FN}
 
         - prc_auc:
-            Area Under the Curve (PRC).
-        - precision:
-            Precision.
+            Area Under the Curve (PRC)
 
             .. math::
 
-                tp / (tp + fp)
+                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+        - precision:
+            Precision
+
+            .. math::
+
+                TP / (TP + FP)
 
         - pt:
             Prevalence Threshold.
 
             .. math::
 
-                sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
         - recall:
             Recall.
 
             .. math::
-                tp / (tp + fn)
+                TP / (TP + FN)
 
         - specificity:
             Specificity.
 
             .. math::
 
-                tn / (tn + fp)
+                TN / (TN + FP)
 
         **For Regression**
 
@@ -1235,7 +1413,6 @@ def bayesian_search_cv(
             .. math::
 
                 MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
-
 
         - median:
             Median Absolute Error.
@@ -1289,44 +1466,62 @@ def bayesian_search_cv(
     cv: int, optional
         Number of folds.
     pos_label: PythonScalar, optional
-        The main class to be considered as positive
+        The main class to be
+        considered as positive
         (classification only).
     cutoff: float, optional
-        The model cutoff (classification only).
-    param_grid: dict/list, optional
-        Dictionary of the parameters to test. It can
-        also be a list of the different combinations.
-        If empty, a parameter grid is generated.
+        The model cutoff
+        (classification only).
+    param_grid: dict | list, optional
+        Dictionary of the
+        parameters to test.
+        It can also be a
+        ``list`` of the
+        different combinations.
+        If empty, a parameter
+        grid is generated.
     random_nbins: int, optional
-        Number of bins used to compute the different
-        parameters    categories   in   the   random
-        parameters generation.
+        Number of bins used
+        to compute the different
+        parameters categories in
+        the random parameters
+        generation.
     bayesian_nbins: int, optional
-        Number of bins used to compute the different
-        parameters  categories in the bayesian table
+        Number of bins used to
+        compute the different
+        parameters categories
+        in the bayesian table
         generation.
     random_grid: bool, optional
-        If  True,  the rows used to find the optimal
-        function  are used randomnly.  Otherwise,
-        they are regularly spaced.
+        If ``True``, the rows
+        used to find the optimal
+        function  are used randomnly.
+        Otherwise, they are regularly
+        spaced.
     lmax: int, optional
-        Maximum length of each parameter list.
+        Maximum length of
+        each parameter list.
     nrows: int, optional
-        Number  of  rows to use when performing  the
-        bayesian search.
+        Number of rows to use when
+        performing the bayesian
+        search.
     k_tops: int, optional
-        When  performing  the bayesian  search,  the
-        final  stage  is to  retrain  the top
-        possible  combinations. 'k_tops'  represents
-        the number of  models to train at this stage
-        in order to find the most efficient model.
+        When performing the bayesian
+        search, the final stage is to
+        retrain the top possible
+        combinations. 'k_tops'
+        represents the number of
+        models to train at this
+        stage in order to find
+        the most efficient model.
     RFmodel_params: dict, optional
-        Dictionary   of   the  random  forest  model
-        parameters  used  to   estimate  a  probably
-        optimal set of parameters.
+        ``dictionary`` of the random
+        forest model parameters used
+        to estimate a probably optimal
+        set of parameters.
     print_info: bool, optional
-        If True, prints the model information at each
-        step.
+        If ``True``, prints the model
+        information at each step.
 
     Returns
     -------
@@ -1335,7 +1530,6 @@ def bayesian_search_cv(
 
     Examples
     ---------
-
     We import :py:mod:`verticapy`:
 
     .. ipython:: python
@@ -1355,7 +1549,8 @@ def bayesian_search_cv(
         without interfering with functions from other
         libraries.
 
-    For this example, we will use the Wine Quality dataset.
+    For this example, we will use
+    the Wine Quality dataset.
 
     .. code-block:: python
 
@@ -1386,7 +1581,8 @@ def bayesian_search_cv(
 
         data = vpd.load_winequality()
 
-    Next, we can initialize a Logistic Regression
+    Next, we can initialize a
+    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -1395,8 +1591,10 @@ def bayesian_search_cv(
 
         model = LogisticRegression()
 
-    Now we can conveniently use the ``bayesian_search_cv``
-    function to find an optimal set of parameters estimator.
+    Now we can conveniently use the
+    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.bayesian_search_cv`
+    function to find an optimal set
+    of parameters estimator.
 
     .. code-block:: python
 
@@ -1411,10 +1609,10 @@ def bayesian_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
-            cv = 3
+            cv = 3,
         )
 
     .. ipython:: python
@@ -1433,10 +1631,10 @@ def bayesian_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
-            cv = 3
+            cv = 3,
         )
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_bayesian_search_cv_table.html", "w")
         html_file.write(result._repr_html_())
@@ -1445,6 +1643,30 @@ def bayesian_search_cv(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_bayesian_search_cv_table.html
 
+    .. note::
+
+        In VerticaPy, Bayesian optimization
+        utilizes the ``RandomForest`` model
+        instead of Gaussian processes. The
+        optimization process involves
+        iteratively selecting and evaluating
+        sets of parameters, with the
+        ``RandomForest`` model predicting
+        the performance of different parameter
+        configurations. This approach allows
+        VerticaPy to efficiently navigate the
+        parameter space and identify optimal
+        settings for machine learning models,
+        enhancing their overall performance.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+            Computes the k-fold grid
+            search of an estimator.
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+            Computes the K-Fold randomized
+            search of an estimator.
     """
     RFmodel_params, param_grid = format_type(RFmodel_params, param_grid, dtype=dict)
     X = format_type(X, dtype=list)
@@ -1627,217 +1849,249 @@ def enet_search_cv(
     **kwargs,
 ) -> TableSample:
     """
-    Computes the  k-fold grid search using multiple ENet
+    Computes the  k-fold grid
+    search using multiple ENet
     models.
 
     Parameters
     ----------
     input_relation: SQLRelation
-        Relation used to train the model.
+        Relation used to
+        train the model.
     X: SQLColumns
-        List of the predictor columns.
+        ``list`` of the predictor
+        columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used for the model evaluation.
+        Metric used for
+        the model evaluation.
 
-            - auto:
-                logloss for classification & rmse for
-                regression.
+        - auto:
+            logloss for classification
+            & rmse for regression.
 
-            **For Classification**
+        **For Classification**
 
-            - accuracy:
-                Accuracy.
-            - auc:
-                Area Under the Curve (ROC).
-            - ba:
-                Balanced Accuracy.
+        - accuracy:
+            Accuracy.
 
-                .. math::
+            .. math::
 
-                    (tpr + tnr) / 2
+                Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
 
-            - best_cutoff:
-                Cutoff  which  optimised
-                the ROC Curve prediction.
-            - bm:
-                Informedness.
+        - auc:
+            Area Under the Curve (ROC).
 
-                .. math::
+            .. math::
 
-                    tpr + tnr - 1
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
 
-            - csi:
-                Critical  Success  Index.
+        - ba:
+            Balanced Accuracy.
 
-                .. math::
+            .. math::
 
-                    tp / (tp + fn + fp)
+                BA = \\frac{TPR + TNR}{2}
 
-            - f1:
-                F1 Score
-            - fdr:
-                False Discovery Rate.
+        - bm:
+            Informedness
 
-                .. math::
+            .. math::
 
-                    1 - ppv
+                BM = TPR + TNR - 1
 
-            - fm:
-                Fowlkes–Mallows index.
-                .. math::
+        - csi:
+            Critical Success Index
 
-                    sqrt(ppv * tpr)
+            .. math::
 
-            - fnr:
-                False Negative Rate.
-                .. math::
+                index = \\frac{TP}{TP + FN + FP}
 
-                    fn / (fn + tp)
+        - f1:
+            F1 Score
+            .. math::
 
-            - for:
-                False Omission Rate.
+                F_1 Score = 2 \\times \frac{Precision \\times Recall}{Precision + Recall}
 
-                .. math::
+        - fdr:
+            False Discovery Rate
 
-                    1 - npv
+            .. math::
 
-            - fpr:
-                False Positive Rate.
+                FDR = 1 - PPV
 
-                .. math::
+        - fm:
+            Fowlkes-Mallows index
 
-                    fp / (fp + tn)
+            .. math::
 
-            - logloss:
-                Log Loss.
-            - lr+:
-                Positive Likelihood Ratio.
+                FM = \\sqrt{PPV * TPR}
 
-                .. math::
+        - fnr:
+            False Negative Rate
 
-                    tpr / fpr
+            .. math::
 
-            - lr-:
-                Negative Likelihood Ratio.
+                FNR = \\frac{FN}{FN + TP}
 
-                .. math::
+        - for:
+            False Omission Rate
 
-                    fnr / tnr
+            .. math::
 
-            - dor:
-                Diagnostic Odds Ratio.
-            - mcc:
-                Matthews Correlation Coefficient.
-            - mk:
-                Markedness.
+                FOR = 1 - NPV
 
-                .. math::
+        - fpr:
+            False Positive Rate
 
-                    ppv + npv - 1
+            .. math::
 
-            - npv:
-                Negative Predictive Value.
+                FPR = \\frac{FP}{FP + TN}
 
-                .. math::
+        - logloss:
+            Log Loss
 
-                    tn / (tn + fn)
+            .. math::
 
-            - prc_auc:
-                Area Under the Curve (PRC).
-            - precision:
-                Precision.
+                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-                .. math::
+        - lr+:
+            Positive Likelihood Ratio.
 
-                    tp / (tp + fp)
+            .. math::
 
-            - pt:
-                Prevalence Threshold.
+                LR+ = \\frac{TPR}{FPR}
 
-                .. math::
+        - lr-:
+            Negative Likelihood Ratio.
 
-                    sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+            .. math::
 
-            - recall:
-                Recall.
+                LR- = \\frac{FNR}{TNR}
 
-                .. math::
-                    tp / (tp + fn)
+        - dor:
+            Diagnostic Odds Ratio.
 
-            - specificity:
-                Specificity.
+            .. math::
 
-                .. math::
+                DOR = \\frac{TP \\times TN}{FP \\times FN}
 
-                    tn / (tn + fp)
+        - mcc:
+            Matthews Correlation Coefficient
 
-            **For Regression**
+        - mk:
+            Markedness
 
-            - max:
-                Max Error.
+            .. math::
 
-                .. math::
+                MK = PPV + NPV - 1
 
-                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+        - npv:
+            Negative Predictive Value
 
-            - mae:
-                Mean Absolute Error.
+            .. math::
 
-                .. math::
+                NPV = \\frac{TN}{TN + FN}
 
-                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+        - prc_auc:
+            Area Under the Curve (PRC)
 
+            .. math::
 
-            - median:
-                Median Absolute Error.
+                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
 
-                .. math::
+        - precision:
+            Precision
 
-                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+            .. math::
 
-            - mse:
-                Mean Squared Error.
+                TP / (TP + FP)
 
-                .. math::
+        - pt:
+            Prevalence Threshold.
 
-                    MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+            .. math::
 
-            - msle:
-                Mean Squared Log Error.
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
-                .. math::
+        - recall:
+            Recall.
 
-                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+            .. math::
+                TP / (TP + FN)
 
-            - r2:
-                R squared coefficient.
+        - specificity:
+            Specificity.
 
-                .. math::
+            .. math::
 
-                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                TN / (TN + FP)
 
-            - r2a:
-                R2 adjusted
+        **For Regression**
 
-                .. math::
+        - max:
+            Max Error.
 
-                    \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+            .. math::
 
-            - var:
-                Explained Variance.
+                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
-                .. math::
+        - mae:
+            Mean Absolute Error.
 
-                    VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+            .. math::
 
-            - rmse:
-                Root-mean-squared error
+                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
 
-                .. math::
+        - median:
+            Median Absolute Error.
 
-                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+            .. math::
+
+                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+        - mse:
+            Mean Squared Error.
+
+            .. math::
+
+                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+        - msle:
+            Mean Squared Log Error.
+
+            .. math::
+
+                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+        - r2:
+            R squared coefficient.
+
+            .. math::
+
+                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+        - r2a:
+            R2 adjusted
+
+            .. math::
+
+                \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+        - var:
+            Explained Variance.
+
+            .. math::
+
+                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
+        - rmse:
+            Root-mean-squared error
+
+            .. math::
+
+                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.
@@ -1845,19 +2099,23 @@ def enet_search_cv(
         Estimator Type.
 
         - auto:
-            detects if it is a Logit Model or ENet.
+            detects if it is a
+            :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+            or :py:class:`verticapy.machine_learning.vertica.linear_model.ElasticNet`.
 
         - logit:
-            Logistic Regression
+            :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
 
         - enet:
-            ElasticNet
+            :py:class:`verticapy.machine_learning.vertica.linear_model.ElasticNet`
 
     cutoff: float, optional
-        The model cutoff (logit only).
+        The model cutoff
+        (logit only).
     print_info: bool, optional
-        If   set   to  True,   prints  the  model
-        information at each step.
+        If set to ``True``, prints
+        the modelinformation at each
+        step.
 
     Returns
     -------
@@ -1886,7 +2144,8 @@ def enet_search_cv(
         without interfering with functions from other
         libraries.
 
-    For this example, we will use the Wine Quality dataset.
+    For this example, we will use
+    the Wine Quality dataset.
 
     .. code-block:: python
 
@@ -1917,7 +2176,8 @@ def enet_search_cv(
 
         data = vpd.load_winequality()
 
-    Next, we can initialize a Logistic Regression
+    Next, we can initialize a
+    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -1926,9 +2186,11 @@ def enet_search_cv(
 
         model = LogisticRegression()
 
-    Now we can conveniently use the ``enet_search_cv``
-    function to perform the  k-fold grid search using
-    multiple ENet models
+    Now we can conveniently use the
+    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.enet_search_cv`
+    function to perform the k-fold
+    grid search using multiple ENet
+    models.
 
     .. code-block:: python
 
@@ -1943,10 +2205,10 @@ def enet_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
-            cv = 3
+            cv = 3,
         )
 
     .. ipython:: python
@@ -1964,10 +2226,10 @@ def enet_search_cv(
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             y = "good",
-            cv = 3
+            cv = 3,
         )
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_enet_search_cv_table.html", "w")
         html_file.write(result._repr_html_())
@@ -1976,6 +2238,31 @@ def enet_search_cv(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_cv_enet_search_cv_table.html
 
+    .. note::
+
+        In VerticaPy, Elastic Net Cross-Validation
+        (EnetCV) utilizes multiple
+        :py:class:`verticapy.machine_learning.vertica.linear_model.ElasticNet`
+        models for regression tasks and
+        :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+        models for classification tasks. It
+        systematically tests various combinations
+        of hyperparameters, such as the
+        regularization terms (L1 and L2),
+        to identify the set that optimizes
+        the model's performance. This process
+        helps in automatically fine-tuning the
+        model to achieve better accuracy and
+        generalization on diverse datasets.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+            Computes the k-fold grid
+            search of an estimator.
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+            Computes the K-Fold randomized
+            search of an estimator.
     """
     X = format_type(X, dtype=list)
     param_grid = parameter_grid(

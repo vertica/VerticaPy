@@ -44,7 +44,7 @@ class AutoClustering(VerticaModel):
         Number  of clusters. If empty, an optimal number  of
         clusters  are determined using multiple  k-means
         models.
-    init: str / list, optional
+    init: str | list, optional
         The method for finding the initial cluster  centers.
             kmeanspp : Uses   the    k-means++   method   to
                        initialize the centers.

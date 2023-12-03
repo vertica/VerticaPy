@@ -198,7 +198,7 @@ class vDFPivot(vDFJoinUnionSort):
 
         Parameters
         ----------
-        skip_word: str / list, optional
+        skip_word: str | list, optional
             List  of words to  exclude  from  the provided column  names.
             For example,     if      two      columns      are     named
             'age.information.phone'  and  'age.phone' AND  ``skip_word``  is
