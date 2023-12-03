@@ -439,7 +439,6 @@ def cross_validate(
             y = "good",
             cv = 3,
             metric = "auc",
-            training_score = True,
         )
 
     .. ipython:: python
@@ -463,7 +462,6 @@ def cross_validate(
             y = "good",
             cv = 3,
             metric = "auc",
-            training_score = True,
         )
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_cross_validate_table.html", "w")
         html_file.write(result._repr_html_())
