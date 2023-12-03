@@ -83,6 +83,32 @@ def gen_params_grid(
     -------
     dict
         Dictionary of parameters.
+
+    Examples
+    ---------
+
+    Let's take
+    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    as an example model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+
+        model = LogisticRegression()
+
+    Now, we can find the parameter grid quite conveniently using:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection import gen_params_grid
+
+        gen_params_grid(model, lmax = 10)
+
+    The function automatically detecs the parameters from
+    any VerticaPy model, and then creates a grid based on the generic
+    value range.
+
     """
     params_grid = {}
     if isinstance(
