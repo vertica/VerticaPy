@@ -326,28 +326,29 @@ def validation_curve(
             class.
 
     pos_label: PythonScalar, optional
-        The main class to be considered as positive
+        The main class to be
+        considered as positive
         (classification only).
     cutoff: float, optional
-        The  model  cutoff  (classification  only).
+        The model cutoff
+        (classification only).
     std_coeff: float, optional
-        Value of the standard deviation coefficient
-        used  to compute the area plot around  each
-        score.
+        Value of the standard deviation
+        coefficient used to compute the
+        area plot around each score.
     chart: PlottingObject, optional
         The chart object to plot on.
     show: bool, optional
-        Select whether you want to get the chart as the output only.
+        Select whether you want to get
+        the chart as the output only.
     **style_kwargs
-        Any  optional  parameter  to  pass  to  the
-        Plotting functions.
+        Any  optional parameter to
+        pass to the Plotting functions.
 
     Returns
     -------
     TableSample
-        training_score_lower, training_score,
-        training_score_upper, test_score_lower,
-        test_score, test_score_upper
+        ``training_score_lower, training_score,training_score_upper, test_score_lower,test_score,test_score_upper``
 
 
     Examples
@@ -473,7 +474,6 @@ def validation_curve(
 
         | :py:func:`verticapy.machine_learning.model_selection.learning_curve` :
             Draws the learning curve.
-
     """
     X = format_type(X, dtype=list)
     if not isinstance(param_range, Iterable) or isinstance(param_range, str):
@@ -584,7 +584,9 @@ def plot_acf_pacf(
     Returns
     -------
     TableSample
-        acf, pacf, confidence
+        ``acf, pacf, confidence``
+
+    ...
     """
     by = format_type(by, dtype=list)
     by, column, ts = vdf.format_colnames(by, column, ts)
