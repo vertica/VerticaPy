@@ -88,7 +88,7 @@ def randomized_search_cv(
 
         - auto:
             logloss for classification
-            & rmse for regression.
+            & RMSE for regression.
 
         **For Classification**
 
@@ -584,7 +584,7 @@ def grid_search_cv(
 
         - auto:
             logloss for classification
-            & rmse for regression.
+            & RMSE for regression.
 
         **For Classification**
 
@@ -812,8 +812,8 @@ def grid_search_cv(
         Number of folds.
     average: str, optional
         The method used to compute
-        the final score for multiclass
-        -classification.
+        the final score for
+        multiclass-classification.
 
         - binary:
             considers one of the classes
@@ -1239,7 +1239,7 @@ def bayesian_search_cv(
 
         - auto:
             logloss for classification
-            & rmse for regression.
+            & RMSE for regression.
 
         **For Classification**
 
@@ -1869,7 +1869,7 @@ def enet_search_cv(
 
         - auto:
             logloss for classification
-            & rmse for regression.
+            & RMSE for regression.
 
         **For Classification**
 

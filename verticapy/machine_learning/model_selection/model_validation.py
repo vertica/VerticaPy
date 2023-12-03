@@ -60,22 +60,29 @@ def cross_validate(
     **kwargs,
 ) -> TableSample:
     """
-    Computes the  K-Fold cross validation  of an estimator.
+    Computes the K-Fold cross
+    validation of an estimator.
 
     Parameters
     ----------
     estimator: object
-        Vertica estimator with a fit method.
+        Vertica estimator
+        with a fit method.
     input_relation: SQLRelation
-        Relation  used to train the model.
+        Relation used to
+        train the model.
     X: SQLColumns
-        List   of  the  predictor   columns.
+        ``list`` of the predictor
+        columns.
     y: str
         Response Column.
     metrics: str | list, optional
-        Metrics used to do the model evaluation. It can also
-        be a list of metrics. If empty, most of the estimator
-        metrics are computed.
+        Metrics used to do the model
+        evaluation. It can also be a
+        ``list`` of metrics. If empty,
+        most of the estimator metrics
+        are computed.
+
         For Classification:
 
         - accuracy:
@@ -301,41 +308,200 @@ def cross_validate(
     cv: int, optional
         Number of folds.
     average: str, optional
-        The method used to  compute the final score for
+        The method used to compute
+        the final score for
         multiclass-classification.
 
         - binary:
-            considers one of the classes  as
-            positive  and  use  the   binary
-            confusion  matrix to compute the
+            considers one of the classes
+            as positive and use the binary
+            confusion matrix to compute the
             score.
 
         - micro:
-            positive  and   negative  values
+            positive and negative values
             globally.
 
         - macro:
-            average  of  the  score of  each class.
+            average of the score of each
+            class.
 
         - weighted:
-            weighted average of the score of each class.
+            weighted average of the
+            score of each class.
 
     pos_label: PythonScalar, optional
-        The main class to be considered as positive
+        The main class to be
+        considered as positive
         (classification only).
     cutoff: PythonNumber, optional
-        The model cutoff (classification only).
+        The model cutoff
+        (classification only).
     show_time: bool, optional
-        If set to True,  the  time  and the average
-        time   are    added  to   the   report.
+        If set to ``True``,
+        the time and the
+        average time are
+        added to the report.
     training_score: bool, optional
-        If set to True,  the training score is
-        computed   with   the   validation   score.
+        If set to ``True``,
+        the training score
+        is computed with the
+        validation score.
 
     Returns
     -------
     TableSample
-        result of the cross validation.
+        result of the
+        cross validation.
+
+    Examples
+    ---------
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will use
+    the Wine Quality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    Next, we can initialize a
+    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+
+        model = LogisticRegression()
+
+    Now we can conveniently use the
+    :py:func:`verticapy.machine_learning.model_selection.model_validation.cross_validate`
+    function to evaluate our model.
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection import cross_validate
+
+        cross_validate(
+            model,
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            y = "good",
+            cv = 3,
+            metric = "auc",
+            training_score = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        import verticapy as vp
+        from verticapy.machine_learning.model_selection import cross_validate
+
+        result = cross_validate(
+            model,
+            input_relation = data,
+            X = [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            y = "good",
+            cv = 3,
+            metric = "auc",
+            training_score = True,
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_cross_validate_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_cross_validate_table.html
+
+    .. note::
+
+        VerticaPy Cross-Validation involves splitting
+        the dataset into multiple folds, training the
+        model on subsets of the data, and evaluating
+        its performance on the remaining data. This
+        process is repeated for each fold, and the
+        overall model performance is averaged across
+        all folds. Cross-Validation helps assess how
+        well a model generalizes to new, unseen data
+        and provides more robust performance metrics.
+        In VerticaPy, cross-validation is a valuable
+        technique for model evaluation and parameter
+        tuning, contributing to the reliability and
+        effectiveness of machine learning models.
+
+        For example,
+        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`,
+        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
+        and some other model validation functions
+        are using Cross-Validation techniques.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+            Computes the k-fold grid
+            search of an estimator.
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+            Computes the K-Fold randomized
+            search of an estimator.
     """
     X = format_type(X, dtype=list)
     if isinstance(input_relation, str):
@@ -481,29 +647,44 @@ def learning_curve(
     Parameters
     ----------
     estimator: object
-        Vertica estimator with a fit method.
+        Vertica estimator
+        with a fit method.
     input_relation: SQLRelation
-        Relation  used  to train the model.
+        Relation used to
+        train the model.
     X: SQLColumns
-        List   of  the  predictor   columns.
+        ``list`` of the predictor
+        columns.
     y: str
         Response Column.
     sizes: list, optional
-        Different sizes of the dataset used
-        to train the model. Multiple models
-        are trained using the different
+        Different sizes of the
+        dataset used to train
+        the model. Multiple
+        models are trained
+        using the different
         sizes.
     method: str, optional
         Method used to plot the curve.
-            efficiency  : draws train/test score
-                          vs sample size.
-            performance : draws score  vs  time.
-            scalability : draws time  vs  sample
-                          size.
+
+         - efficiency:
+            Draws train/test score
+            vs sample size.
+
+         - performance:
+            draws score vs time.
+
+         - scalability:
+            draws time vs
+            sample size.
     metric: str, optional
-        Metric used to do the model evaluation.
-            auto: logloss for classification & RMSE
-                  for regression.
+        Metric used to do
+        the model evaluation.
+
+         - auto:
+            logloss for classification
+            & RMSE for regression.
+
         For Classification:
 
         - accuracy:
@@ -729,46 +910,179 @@ def learning_curve(
     cv: int, optional
         Number of folds.
     average: str, optional
-        The method used to  compute the final score for
+        The method used to compute
+        the final score for
         multiclass-classification.
 
         - binary:
-            considers one of the classes  as
-            positive  and  use  the   binary
-            confusion  matrix to compute the
+            considers one of the classes
+            as positive and use the binary
+            confusion matrix to compute the
             score.
 
         - micro:
-            positive  and   negative  values
-            globally.
+            positive and negative
+            values globally.
 
         - macro:
-            average  of  the  score of  each class.
+            average of the score
+            of each class.
 
         - weighted:
-            weighted average of the score of each class.
+            weighted average of the
+            score of each class.
 
     pos_label: PythonScalar, optional
-        The main class to be considered as positive
+        The main class to  be
+        considered as positive
         (classification only).
-    cutoff: PythonNumber, optional
-        The  model  cutoff  (classification  only).
+    cutoff: float, optional
+        The model cutoff
+        (classification only).
     std_coeff: PythonNumber, optional
-        Value of the standard deviation coefficient
-        used to compute the area plot around each
+        Value of the standard
+        deviation coefficient
+        used to compute the
+        area plot around each
         score.
     chart: PlottingObject, optional
-        The chart object to plot on.
+        The chart object to
+        plot on.
     return_chart: bool, optional
-        Select whether you want to get the chart as the output only.
+        Select whether you want
+        to get the chart as the
+        output only.
     **style_kwargs
-        Any  optional  parameter  to  pass  to  the
-        Plotting functions.
+        Any optional parameter
+        to pass to the Plotting
+        functions.
 
     Returns
     -------
     TableSample
-        result of the learning curve.
+        result of the
+        learning curve.
+
+    Examples
+    --------
+
+    .. note::
+
+        The below example is a very basic one. For
+        other more detailed examples and customization
+        options, please see :ref:`chart_gallery.learning`_
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    Let's generate a dataset
+    using the following data.
+
+    .. ipython:: python
+
+        import random
+
+        N = 500 # Number of Records
+        k = 10 # step
+
+        # Normal Distributions
+        x = np.random.normal(5, 1, round(N / 2))
+        y = np.random.normal(3, 1, round(N / 2))
+        z = np.random.normal(3, 1, round(N / 2))
+
+        # Creating a vDataFrame with two clusters
+        data = vp.vDataFrame({
+            "x": np.concatenate([x, x + k]),
+            "y": np.concatenate([y, y + k]),
+            "z": np.concatenate([z, z + k]),
+            "c": [random.randint(0, 1) for _ in range(N)]
+        })
+
+    Let's proceed by creating a
+    :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier`
+    model using the complete dataset.
+
+    .. ipython:: python
+
+        # Importing the Vertica ML module
+        import verticapy.machine_learning.vertica as vml
+
+        # Importing the model selection module
+        import verticapy.machine_learning.model_selection as vms
+
+        # Defining the Model
+        model = vml.RandomForestClassifier()
+
+    Let's draw the learning curve.
+
+    .. code-block:: python
+
+        vms.learning_curve(
+            model,
+            data,
+            X = ["x", "y", "z"],
+            y = "c",
+            method = "efficiency",
+            cv = 3,
+            metric = "auc",
+            return_chart = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        fig = vms.learning_curve(
+            model,
+            data,
+            X = ["x", "y", "z"],
+            y = "c",
+            method = "efficiency",
+            cv = 3,
+            metric = "auc",
+            return_chart = True,
+        )
+        fig.write_html("figures/plotting_machine_learning_validation_learning_efficiency.html")
+
+    .. raw:: html
+          :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_validation_learning_efficiency.html
+
+    .. note::
+
+        VerticaPy's Learning Curve tool is
+        an essential asset for evaluating
+        machine learning models. It enables
+        users to visualize a model's performance
+        by plotting key metrics against varying
+        training dataset sizes. By analyzing
+        these curves, data analysts can identify
+        issues such as overfitting or underfitting,
+        make informed decisions about dataset size,
+        and optimize model performance. This feature
+        plays a crucial role in enhancing model
+        robustness and facilitating data-driven
+        decision-making.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.plotting.validation_curve` :
+            Draws the validation curve.
     """
     sizes = format_type(sizes, dtype=list, na_out=[0.1, 0.33, 0.55, 0.78, 1.0])
     for s in sizes:
