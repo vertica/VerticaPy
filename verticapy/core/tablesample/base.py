@@ -1073,7 +1073,9 @@ class TableSample:
         columns = [column[0] for column in cursor.description]
 
         # Dealing with duplicated names.
-        dnames = [item for item, count in collections.Counter(columns).items() if count > 1]
+        dnames = [
+            item for item, count in collections.Counter(columns).items() if count > 1
+        ]
         for dcol in dnames:
             j = 0
             for idx, col in enumerate(columns):

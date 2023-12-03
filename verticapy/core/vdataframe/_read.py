@@ -438,12 +438,16 @@ class vDFRead(vDFUtils):
             "symbol": self._vars["symbol"],
         }
         if self._vars["has_dpnames"]:
-            kwargs["query"] = f"""
+            kwargs[
+                "query"
+            ] = f"""
                 {extract_subquery(self.current_relation())}
                 {self._get_last_order_by()} 
                 LIMIT {limit} OFFSET {offset}"""
         else:
-            kwargs["query"] = f"""
+            kwargs[
+                "query"
+            ] = f"""
                 SELECT 
                     {', '.join(all_columns)} 
                 FROM {self}

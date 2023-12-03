@@ -668,10 +668,11 @@ class vDataFrame(vDFAnimatedPlot):
                 "main_relation": main_relation,
             }
 
-
             # Checking for duplicated names
             cols = [dt[0] for dt in dtypes]
-            dnames = [item for item, count in collections.Counter(cols).items() if count > 1]
+            dnames = [
+                item for item, count in collections.Counter(cols).items() if count > 1
+            ]
             if len(dnames) > 0:
                 warning_message = (
                     "your vDataFrame includes duplicated names, "
