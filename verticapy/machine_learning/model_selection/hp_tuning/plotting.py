@@ -586,7 +586,136 @@ def plot_acf_pacf(
     TableSample
         ``acf, pacf, confidence``
 
-    ...
+    Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
+
+        For this example, we will use the Amazon dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            amazon = vpd.load_amazon()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            amazon = vpd.load_amazon()
+
+        Let's select only one state to get a refined plot.
+
+        .. ipython:: python
+
+            amazon = amazon[amazon["state"] == "ACRE"]
+
+        We can have a look at the time-series plot
+        using the :py:meth:`vDataFrame.plot`:
+
+        .. code-block::
+
+            amazon["number"].plot(ts = "date")
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = amazon["number"].plot(ts = "date")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_plotting_plot_data.html", "w")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_plotting_plot_data.html
+
+        Now we can plot the ACF and PACF plots together:
+
+        .. code-block::
+
+            from verticapy.machine_learning.model_selection import plot_acf_pacf
+
+            plot_acf_pacf(amazon,
+                column = "number",
+                ts = "date",
+                p = 40,
+            )
+
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            vp.set_option("plotting_lib", "highcharts")
+            from verticapy.machine_learning.model_selection import plot_acf_pacf
+            fig = plot_acf_pacf(amazon,
+                column = "number",
+                ts = "date",
+                p = 40,
+                show = True,
+            )
+            html_text = fig.htmlcontent.replace("container", "machine_learning_model_selection_hp_tuning_plotting_plot_acf_pacf")
+            with open("figures/machine_learning_model_selection_hp_tuning_plotting_plot_acf_pacf.html", "w") as file:
+                file.write(html_text)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_plotting_plot_acf_pacf.html
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            vp.set_option("plotting_lib", "plotly")
+            result = plot_acf_pacf(amazon,
+                column = "number",
+                ts = "date",
+                p = 40,
+                show = False,
+            )
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_plotting_plot_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_hp_tuning_plotting_plot_result.html
+
+        .. seealso::
+
+            | :py:func:`vDataFrame.acf` : ACF plot from a ``vDataFrame``.
+            | :py:func:`vDataFrame.pacf` : PACF plot from a ``vDataFrame``.
     """
     by = format_type(by, dtype=list)
     by, column, ts = vdf.format_colnames(by, column, ts)
