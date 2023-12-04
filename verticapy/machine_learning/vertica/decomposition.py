@@ -1831,9 +1831,11 @@ class MCA(PCA):
         .. ipython:: python
             :suppress:
 
-            vp.set_option("plotting_lib", "plotly")
+            vp.set_option("plotting_lib", "highcharts")
             fig = model.plot_contrib(dimension = 1)
-            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_contrib.html")
+            html_text = fig.htmlcontent.replace("container", "ml_vertica_SVD_scree")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_contrib.html", "w") as file:
+                file.write(html_text)
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_contrib.html
@@ -1963,9 +1965,11 @@ class MCA(PCA):
         .. ipython:: python
             :suppress:
 
-            vp.set_option("plotting_lib", "plotly")
+            vp.set_option("plotting_lib", "highcharts")
             fig = model.plot_cos2(dimensions = (1, 2))
-            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_cos2.html")
+            html_text = fig.htmlcontent.replace("container", "machine_learning_vertica_mca_plot_cos2")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_cos2.html", "w") as file:
+                file.write(html_text)
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_cos2.html
@@ -2112,9 +2116,11 @@ class MCA(PCA):
         .. ipython:: python
             :suppress:
 
-            vp.set_option("plotting_lib", "plotly")
+            vp.set_option("plotting_lib", "highcharts")
             fig = model.plot_var(dimensions = (1, 2))
-            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_var.html")
+            html_text = fig.htmlcontent.replace("container", "machine_learning_vertica_mca_plot_var")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_var.html", "w") as file:
+                file.write(html_text)
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_var.html
@@ -2435,7 +2441,7 @@ class SVD(Decomposition):
 
         vp.set_option("plotting_lib", "highcharts")
         fig = model.plot_scree()
-        html_text = fig.htmlcontent.replace("container", "ml_vertica_SVD_scree")
+        html_text = fig.htmlcontent.replace("container", "machine_learning_vertica_svd_plot_scree")
         with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot_scree.html", "w") as file:
             file.write(html_text)
 
