@@ -86,30 +86,101 @@ class Clustering(Unsupervised):
         inplace: bool = True,
     ) -> vDataFrame:
         """
-        Makes predictions using the input relation.
+        Makes predictions using
+        the input relation.
 
         Parameters
         ----------
         vdf: SQLRelation
-            Object  used to run the prediction.  You can
-            also  specify a  customized relation,  but you
-            must  enclose  it with an alias. For  example:
-            ``(SELECT 1) x`` is valid whereas ``(SELECT 1)``
-            and "SELECT 1" are invalid.
+            Object used to run the prediction.
+            You can also specify a customized
+            relation, but you must enclose it
+            with an alias. For example:
+            ``(SELECT 1) x`` is valid whereas
+            ``(SELECT 1)`` and ``SELECT 1``
+            are invalid.
         X: SQLColumns, optional
-            List of the columns used to deploy the models.
-            If empty, the model predictors are used.
+            ``list`` of the columns used to
+            deploy the models. If empty, the
+            model predictors are used.
         name: str, optional
-            Name  of  the added  vDataColumn. If empty,  a
-            name is generated.
+            Name of the added
+            :py:class:`vDataColumn`.
+            If empty, a name is generated.
         inplace: bool, optional
-            If  set to True, the prediction is  added
-            to the vDataFrame.
+            If set to ``True``, the prediction
+            is added to the :py:class:`vDataFrame`.
 
         Returns
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KMeans
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KMeans(
+                n_cluster = 8,
+                init = "kmeanspp",
+                max_iter = 300,
+                tol = 1e-4,
+            )
+
+        We can then fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        Predicting or ranking the
+        dataset is straight-forward:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_prediction.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_prediction.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if isinstance(X, NoneType):
             X = self.X
@@ -156,7 +227,8 @@ class Clustering(Unsupervised):
         Parameters
         ----------
         max_nb_points: int
-            Maximum number  of points to display.
+            Maximum number of
+            points to display.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -167,6 +239,77 @@ class Clustering(Unsupervised):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KMeans
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KMeans(
+                n_cluster = 8,
+                init = "kmeanspp",
+                max_iter = 300,
+                tol = 1e-4,
+            )
+
+        We can then fit the model:
+
+        .. code-block:: python
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        .. ipython:: python
+            :okwarning:
+            :suppress:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        Plots highlighting the different
+        clusters can be easily drawn using:
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot(width = 600)
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_clustering_plot_fun.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_clustering_plot_fun.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         vdf = vDataFrame(self.input_relation)
         kwargs = {
@@ -284,12 +427,13 @@ class KMeans(Clustering):
         method.
 
     Examples
-    ---------
+    --------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -348,7 +492,9 @@ class KMeans(Clustering):
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
-    First we import the ``KMeans`` model:
+    First we import the
+    :py:class:`verticapy.machine_learning.vertica.cluster.KMeans`
+    model:
 
     .. code-block::
 
@@ -491,8 +637,11 @@ class KMeans(Clustering):
     Plots - Voronoi
     ^^^^^^^^^^^^^^^^
 
-    ``KMeans`` models can be visualized by drawing their voronoi plots.
-    For more examples, check out :ref:`chart_gallery.voronoi_plot`.
+    :py:class:`verticapy.machine_learning.vertica.cluster.KMeans`
+    models can be visualized by
+    drawing their voronoi plots.
+    For more examples, check out
+    :ref:`chart_gallery.voronoi_plot`.
 
     .. code-block:: python
 
@@ -501,6 +650,7 @@ class KMeans(Clustering):
     .. ipython:: python
         :suppress:
 
+        vp.set_option("plotting_lib", "plotly")
         fig = model.plot_voronoi(width = 600)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot_voronoi.html")
 
@@ -583,22 +733,29 @@ class KMeans(Clustering):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is
-    recommended to use ``MemModel`` directly.
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
-    You can get the SQL query equivalent of the ``KMeans`` model by:
+    You can get the SQL query
+    equivalent of the ``KMeans``
+    model by:
 
     .. ipython:: python
 
         model.to_sql()
 
-    .. note:: This SQL query can be directly used in any database.
+    .. note::
+
+        This SQL query can be
+        directly used in any
+        database.
 
     **Deploy SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query which uses
+    Vertica functions use below:
 
     .. ipython:: python
 
@@ -620,7 +777,8 @@ class KMeans(Clustering):
         :py:meth:`verticapy.machine_learning.vertica.tree.KMeans.to_python`
         method is used to retrieve the anomaly score.
         For specific details on how to
-        use this method for different model types, refer to the relevant
+        use this method for different
+        model types, refer to the relevant
         documentation for each model.
     """
 
@@ -723,8 +881,40 @@ class KMeans(Clustering):
 
     def to_memmodel(self) -> mm.KMeans:
         """
-        Converts the  model to an InMemory  object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.cluster.KMeans`
+            for more information.
         """
         return mm.KMeans(
             self.clusters_,
@@ -741,25 +931,97 @@ class KMeans(Clustering):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws the Voronoi Graph of the model.
+        Draws the Voronoi
+        Graph of the model.
 
         Parameters
         ----------
         max_nb_points: int, optional
-            Maximum  number  of   points  to   display.
+            Maximum number of
+            points to display.
         plot_crosses: bool, optional
-            If set to True, the centers are represented
+            If set to ``True``, the
+            centers are represented
             by white crosses.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object
+            to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KMeans
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KMeans(
+                n_cluster = 8,
+                init = "kmeanspp",
+                max_iter = 300,
+                tol = 1e-4,
+            )
+
+        We can then fit the model:
+
+        .. code-block:: python
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        .. ipython:: python
+            :okwarning:
+            :suppress:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        Models can be visualized by drawing
+        their voronoi plots.
+
+        .. code-block:: python
+
+            model.plot_voronoi()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot_voronoi(width = 600)
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot_voronoi.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot_voronoi.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.KMeans`
+            for more information about the
+            different methods and usages.
         """
         if len(self.X) == 2:
             vpy_plt, kwargs = self.get_plotting_lib(
@@ -868,10 +1130,11 @@ class KPrototypes(KMeans):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -1162,8 +1425,8 @@ class KPrototypes(KMeans):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is
-    recommended to use ``MemModel`` directly.
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -1173,11 +1436,16 @@ class KPrototypes(KMeans):
 
         model.to_sql()
 
-    .. note:: This SQL query can be directly used in any database.
+    .. note::
+
+        This SQL query can be
+        directly used in any
+        database.
 
     **Deploy SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query which uses
+    Vertica functions use below:
 
     .. ipython:: python
 
@@ -1199,7 +1467,8 @@ class KPrototypes(KMeans):
         :py:meth:`verticapy.machine_learning.vertica.tree.KPrototypes.to_python`
         method is used to retrieve the anomaly score.
         For specific details on how to
-        use this method for different model types, refer to the relevant
+        use this method for different
+        model types, refer to the relevant
         documentation for each model.
     """
 
@@ -1274,8 +1543,40 @@ class KPrototypes(KMeans):
 
     def to_memmodel(self) -> mm.KPrototypes:
         """
-        Converts the  model to an InMemory  object that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+            for more information.
         """
         return mm.KPrototypes(
             self.clusters_, self.p_, self.gamma_, self.is_categorical_
@@ -1435,10 +1736,11 @@ class BisectingKMeans(KMeans, Tree):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -1762,8 +2064,8 @@ class BisectingKMeans(KMeans, Tree):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is
-    recommended to use ``MemModel`` directly.
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -1773,11 +2075,16 @@ class BisectingKMeans(KMeans, Tree):
 
         model.to_sql()
 
-    .. note:: This SQL query can be directly used in any database.
+    .. note::
+
+        This SQL query can be
+        directly used in any
+        database.
 
     **Deploy SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query which uses
+    Vertica functions use below:
 
     .. ipython:: python
 
@@ -1799,7 +2106,8 @@ class BisectingKMeans(KMeans, Tree):
         :py:meth:`verticapy.machine_learning.vertica.tree.BisectingKMeans.to_python`
         method is used to retrieve the anomaly score.
         For specific details on how to
-        use this method for different model types, refer to the relevant
+        use this method for different
+        model types, refer to the relevant
         documentation for each model.
     """
 
@@ -1904,8 +2212,40 @@ class BisectingKMeans(KMeans, Tree):
 
     def to_memmodel(self) -> mm.BisectingKMeans:
         """
-        Converts  the model to an InMemory object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+            for more information.
         """
         return mm.BisectingKMeans(
             self.clusters_,
@@ -1920,8 +2260,81 @@ class BisectingKMeans(KMeans, Tree):
 
     def get_tree(self) -> TableSample:
         """
-        Returns a table containing information about the
-        BK-tree.
+        Returns a table containing
+        information about the BK-tree.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import BisectingKMeans
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = BisectingKMeans(
+                n_cluster = 8,
+                bisection_iterations = 1,
+                split_method = 'sum_squares',
+                min_divisible_cluster_size = 2,
+                distance_method = "euclidean",
+                init = "kmeanspp",
+                max_iter = 300,
+                tol = 1e-4,
+            )
+
+        We can then fit the model:
+
+        .. code-block:: python
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        .. ipython:: python
+            :okwarning:
+            :suppress:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        We can get all the information of
+        the tree using:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict()
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_get_tree.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.get_tree()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_get_tree.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.BisectingKMeans`
+            for more information about the
+            different methods and usages.
         """
         return self.tree_
 
@@ -1951,23 +2364,85 @@ class BisectingKMeans(KMeans, Tree):
         node_style: dict, optional
             Dictionary of options to customize each  node
             of the tree.
-            For a list of options,  see the Graphviz API:
-            https://graphviz.org/doc/info/attrs.html
+            For a list of options, see the:
+            `Graphviz API < https://graphviz.org/doc/info/attrs.html>`_
         arrow_style: dict, optional
             Dictionary of options to customize each arrow
             of the tree.
-            For  a list of options, see the Graphviz API:
-            https://graphviz.org/doc/info/attrs.html
+            For a list of options, see the:
+            `Graphviz API < https://graphviz.org/doc/info/attrs.html>`_
         leaf_style: dict, optional
             Dictionary of options to customize each  leaf
             of the tree.
-            For a list of options,  see the Graphviz API:
-            https://graphviz.org/doc/info/attrs.html
+            For a list of options, see the:
+            `Graphviz API < https://graphviz.org/doc/info/attrs.html>`_
 
         Returns
         -------
         str
             Graphviz code.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import BisectingKMeans
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = BisectingKMeans(
+                n_cluster = 8,
+                bisection_iterations = 1,
+                split_method = 'sum_squares',
+                min_divisible_cluster_size = 2,
+                distance_method = "euclidean",
+                init = "kmeanspp",
+                max_iter = 300,
+                tol = 1e-4,
+            )
+
+        We can then fit the model:
+
+        .. code-block:: python
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        .. ipython:: python
+            :okwarning:
+            :suppress:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        We can then get the code for
+        a graphviz tree:
+
+        .. ipython:: python
+
+            model.to_graphviz()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.BisectingKMeans`
+            for more information about the
+            different methods and usages.
         """
         return self.to_memmodel().to_graphviz(
             round_score=round_score,
@@ -1985,19 +2460,82 @@ class BisectingKMeans(KMeans, Tree):
         **kwargs,
     ) -> "Source":
         """
-        Draws the input tree. Requires the graphviz module.
+        Draws the input tree.
+        Requires the graphviz module.
 
         Parameters
         ----------
         pic_path: str, optional
-            Absolute  path to save the image of the  tree.
+            Absolute path to save
+            the image of the tree.
         *args, **kwargs: Any, optional
-            Arguments to pass to the 'to_graphviz' method.
+            Arguments to pass to the
+            ``to_graphviz`` method.
 
         Returns
         -------
         graphviz.Source
             graphviz object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import BisectingKMeans
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = BisectingKMeans(
+                n_cluster = 8,
+                bisection_iterations = 1,
+                split_method = 'sum_squares',
+                min_divisible_cluster_size = 2,
+                distance_method = "euclidean",
+                init = "kmeanspp",
+                max_iter = 300,
+                tol = 1e-4,
+            )
+
+        We can then fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        We can plot the tree conveniently:
+
+        .. ipython:: python
+            :suppress:
+
+            res = model.plot_tree()
+            res.render(filename='figures/machine_learning_vertica_cluster_BKMeans_plot_tree', format='png')
+
+        .. image:: /../figures/machine_learning_vertica_cluster_BKMeans_plot_tree.png
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.BisectingKMeans`
+            for more information about the
+            different methods and usages.
         """
         return self.to_memmodel().plot_tree(
             pic_path=pic_path,
@@ -2040,12 +2578,14 @@ class DBSCAN(VerticaModel):
 
     .. important::
 
-        This algorithm is not Vertica Native and relies solely
-        on SQL for attribute computation. While this model does
-        not take advantage of the benefits provided by a model
-        management system, including versioning and tracking,
-        the SQL code it generates can still be used to create a
-        pipeline.
+        This algorithm is not Vertica
+        Native and relies solely on SQL
+        for attribute computation. While
+        this model does not take advantage
+        of the benefits provided by a model
+        management system, including versioning
+        and tracking, the SQL code it generates
+        can still be used to create a pipeline.
 
     Parameters
     ----------
@@ -2089,10 +2629,11 @@ class DBSCAN(VerticaModel):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -2139,7 +2680,9 @@ class DBSCAN(VerticaModel):
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
-    First we import the ``DBSCAN`` model:
+    First we import the
+    :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+    model:
 
     .. code-block::
 
@@ -2296,7 +2839,48 @@ class DBSCAN(VerticaModel):
 
     def drop(self) -> bool:
         """
-        Drops the model from the Vertica database.
+        Drops the model from
+        the Vertica database.
+
+        Examples
+        --------
+        Let's start by importing a model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import DBSCAN
+
+        Then we can initialize the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = DBSCAN(
+                eps = 0.5,
+                min_samples = 2,
+                p = 2,
+            )
+
+        Once the model is initialized
+        we can easily drop it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.drop()
+
+        .. note::
+
+            If it returns ``False``, then
+            it means that there was no model
+            in the first place.
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            for more information about the
+            different methods and usages.
         """
         try:
             _executeSQL(
@@ -2325,17 +2909,69 @@ class DBSCAN(VerticaModel):
         input_relation: SQLRelation
             Training relation.
         X: SQLColumns, optional
-            List of the predictors. If empty, all the
-            numerical vDataColumns are used.
+            ``list`` of the predictors.
+            If empty, all the numerical
+            `:py:class:`vDataColumn`
+            are used.
         key_columns: SQLColumns, optional
-            Columns  not  used  during  the  algorithm
-            computation  but  which  are  used  to
-            create the final relation.
+            Columns not used during the
+            algorithm computation but
+            which are used to create
+            the final relation.
         index: str, optional
-            Index  used to identify each row  separately.
-            It is highly  recommanded to have one already
-            in the main table to avoid creating temporary
-            tables.
+            Index used to identify each
+            row separately. It is highly
+            recommanded to have one already
+            in the main table to avoid creating
+            temporary tables.
+
+        Examples
+        --------
+        Let's start by importing
+        :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        create a small dataset.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({"col":[1.2, 1.1, 1.3, 1.5, 2, 2.2, 1.09, 0.9, 100, 102]})
+
+        Then we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import DBSCAN
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = DBSCAN(
+                eps = 0.5,
+                min_samples = 2,
+                p = 2,
+            )
+
+        Once the model is initialized
+        we can fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["col"])
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            for more information about the
+            different methods and usages.
         """
         if self.overwrite_model:
             self.drop()
@@ -2510,12 +3146,84 @@ class DBSCAN(VerticaModel):
 
     def predict(self) -> vDataFrame:
         """
-        Creates a vDataFrame of the model.
+        Creates a :py:class:`vDataFrame`
+        of the model.
 
         Returns
         -------
         vDataFrame
-            the vDataFrame including the prediction.
+            the :py:class:`vDataFrame`
+            including the prediction.
+
+        Examples
+        --------
+        Let's start by importing
+        :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        create a small dataset.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame(
+                {
+                    "col": [1.2, 1.1, 1.3, 1.5, 2, 2.2, 1.09, 0.9, 100, 102],
+                }
+            )
+
+        Then we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import DBSCAN
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = DBSCAN(
+                eps = 0.5,
+                min_samples = 2,
+                p = 2,
+            )
+
+        Once the model is initialized
+        we can fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["col"])
+
+        And lastly we can use the
+        trained model to predict:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict()
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_dbscan_prediction_fun.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_dbscan_prediction_fun.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            for more information about the
+            different methods and usages.
         """
         return vDataFrame(self.model_name)
 
@@ -2533,7 +3241,8 @@ class DBSCAN(VerticaModel):
         Parameters
         ----------
         max_nb_points: int
-            Maximum number of points to display.
+            Maximum number of
+            points to display.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -2544,6 +3253,75 @@ class DBSCAN(VerticaModel):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Let's start by importing
+        :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        create a small dataset.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame(
+                {
+                    "col1": [1.2, 1.1, 1.3, 1.5, 2, 2.2, 1.09, 0.9, 100, 102],
+                    "col2": [2.2, 2.1, 4.3, 5.5, 6, 2, 9, 1, 110, 120],
+                },
+            )
+
+        Then we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import DBSCAN
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = DBSCAN(
+                eps = 0.5,
+                min_samples = 2,
+                p = 2,
+            )
+
+        Once the model is initialized
+        we can fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["col1", "col2"])
+
+        And lastly we can plot the model:
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot(width = 600)
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_dbscan_plot_func.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_dbscan_plot_func.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            for more information about the
+            different methods and usages.
         """
         return vDataFrame(self.model_name).scatter(
             columns=self.X,
@@ -2562,25 +3340,29 @@ Algorithms used for classification.
 
 class NearestCentroid(MulticlassClassifier):
     """
-    Creates  a NearestCentroid object using the  k-nearest
-    centroid algorithm.
-    This object uses pure SQL to compute the distances and
-    final score.
+    Creates a ``NearestCentroid`` object
+    using the k-nearest centroid algorithm.
+    This object uses pure SQL to compute
+    the distances and final score.
 
     .. important::
 
-        This algorithm is not Vertica Native and relies solely
-        on SQL for attribute computation. While this model does
-        not take advantage of the benefits provided by a model
-        management system, including versioning and tracking,
-        the SQL code it generates can still be used to create a
-        pipeline.
+        This algorithm is not Vertica
+        Native and relies solely on SQL
+        for attribute computation. While
+        this model does not take advantage
+        of the benefits provided by a model
+        management system, including versioning
+        and tracking, the SQL code it generates
+        can still be used to create a pipeline.
 
     Parameters
     ----------
     p: int, optional
-        The p corresponding to the one of the p-distances
-        (distance metric used to compute the model).
+        The ``p`` corresponding to
+        the one of the ``p``-distances
+        (distance metric used to compute
+        the model).
 
     Attributes
     ----------
@@ -2603,14 +3385,15 @@ class NearestCentroid(MulticlassClassifier):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     We import :py:mod:`verticapy`:
 
@@ -2764,7 +3547,9 @@ class NearestCentroid(MulticlassClassifier):
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
-    First we import the ``NearestCentroid`` model:
+    First we import the
+    :py:class:`verticapy.machine_learning.vertica.cluster.NearestCentroid`
+    model:
 
     .. ipython:: python
 
@@ -2860,8 +3645,11 @@ class NearestCentroid(MulticlassClassifier):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report_cutoff.html
 
 
-    You can also use the ``NearestCentroid.score`` function to compute any
-    classification metric. The default metric is the accuracy:
+    You can also use the
+    :py:meth:`verticapy.machine_learning.vertica.cluster.NearestCentroid.score`
+    function to compute any
+    classification metric. The
+    default metric is the accuracy:
 
     .. ipython:: python
 
@@ -2968,7 +3756,7 @@ class NearestCentroid(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``,
+        Probabilities are added to the :py:class:`vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
@@ -3204,7 +3992,11 @@ class NearestCentroid(MulticlassClassifier):
 
     def drop(self) -> bool:
         """
-        NearestCentroid models are not stored in the Vertica DB.
+        NearestCentroid models are
+        not stored in the Vertica DB.
+
+        The method will always return
+        ``False``.
         """
         return False
 
@@ -3238,7 +4030,8 @@ class NearestCentroid(MulticlassClassifier):
         pos_label: Optional[PythonScalar] = None,
     ) -> str:
         """
-        Returns the input that represents the model's
+        Returns the input that
+        represents the model's
         probabilities.
         """
         idx = self.get_match_index(pos_label, self.classes_, False)
@@ -3248,8 +4041,40 @@ class NearestCentroid(MulticlassClassifier):
 
     def to_memmodel(self) -> mm.NearestCentroid:
         """
-        Converts  the  model to  an InMemory object that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
+            for more information.
         """
         return mm.NearestCentroid(
             self.clusters_,

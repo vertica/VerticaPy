@@ -568,10 +568,11 @@ class RandomForestRegressor(Regressor, RandomForest):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     .. important::
@@ -1226,10 +1227,11 @@ class XGBRegressor(Regressor, XGBoost):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     .. important::
@@ -1616,11 +1618,16 @@ class XGBRegressor(Regressor, XGBoost):
 
         model.to_sql()
 
-    .. note:: This SQL query can be directly used in any database.
+    .. note::
+
+        This SQL query can be
+        directly used in any
+        database.
 
     **Deploy SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query which uses
+    Vertica functions use below:
 
     .. ipython:: python
 
@@ -1905,10 +1912,11 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     .. important::
@@ -2328,7 +2336,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``,
+        Probabilities are added to the :py:class:`vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
@@ -2822,10 +2830,11 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     .. important::
@@ -3249,7 +3258,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``,
+        Probabilities are added to the :py:class:`vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
@@ -3450,11 +3459,16 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
         model.to_sql()
 
-    .. note:: This SQL query can be directly used in any database.
+    .. note::
+
+        This SQL query can be
+        directly used in any
+        database.
 
     **Deploy SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query which uses
+    Vertica functions use below:
 
     .. ipython:: python
 
@@ -3724,10 +3738,11 @@ class IsolationForest(Clustering, Tree):
     Examples
     --------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -4023,11 +4038,16 @@ class IsolationForest(Clustering, Tree):
 
         model.to_sql()
 
-    .. note:: This SQL query can be directly used in any database.
+    .. note::
+
+        This SQL query can be
+        directly used in any
+        database.
 
     **Deploy SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query which uses
+    Vertica functions use below:
 
     .. ipython:: python
 
@@ -4347,11 +4367,12 @@ class IsolationForest(Clustering, Tree):
             the models. If empty, the model
             predictors are used.
         name: str, optional
-            Name of the additional ``vDataColumn``.
+            Name of the additional
+            :py:class:`vDataColumn`.
             If empty, a name is generated.
         inplace: bool, optional
             If ``True``, the prediction is added
-            to the ``vDataFrame``.
+            to the :py:class:`vDataFrame`.
 
         Returns
         -------
@@ -4488,7 +4509,7 @@ class IsolationForest(Clustering, Tree):
             the ``cutoff`` parameter is ignored.
         inplace: bool, optional
             If ``True``, the prediction is added to
-            the ``vDataFrame``.
+            the :py:class:`vDataFrame`.
 
         Returns
         -------

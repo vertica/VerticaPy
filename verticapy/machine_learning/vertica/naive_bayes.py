@@ -120,10 +120,11 @@ class NaiveBayes(MulticlassClassifier):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -497,7 +498,7 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``,
+        Probabilities are added to the :py:class:`vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
