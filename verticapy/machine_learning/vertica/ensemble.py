@@ -49,6 +49,19 @@ General Classes.
 
 
 class RandomForest(Tree):
+    """
+    :py:class:`verticapy.machine_learning.vertica.base.Tree`
+    implementation of Random Forest.
+
+    .. note::
+
+        Refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor`
+        for more information on Regression models. And refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier`
+        for more information on Classification models.
+    """
+
     # Properties.
 
     @property
@@ -61,6 +74,20 @@ class RandomForest(Tree):
 
 
 class XGBoost(Tree):
+    """
+    :py:class:`verticapy.machine_learning.vertica.base.Tree`
+    implementation of XGBoost.
+
+
+    .. note::
+
+        Refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.XGBRegressor`
+        for more information on Regression models. And refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.XGBClassifier`
+        for more information on Classification models.
+    """
+
     # Properties.
 
     @property
@@ -310,13 +337,14 @@ class XGBoost(Tree):
         Creates  a  Python  XGBoost  JSON  file  that  can
         be imported into the Python XGBoost API.
 
-        \u26A0 Warning :   For    multiclass   classifiers,
-        the   probabilities  returned   by  the   VerticaPy
-        and  exported  models might differ slightly because
-        of  normalization;  while Vertica uses  multinomial
-        logistic  regression, XGBoost Python uses  Softmax.
-        This  difference does not affect the model's  final
-        predictions. Categorical predictors must be encoded.
+        .. warning::
+            For    multiclass   classifiers,
+            the   probabilities  returned   by  the   VerticaPy
+            and  exported  models might differ slightly because
+            of  normalization;  while Vertica uses  multinomial
+            logistic  regression, XGBoost Python uses  Softmax.
+            This  difference does not affect the model's  final
+            predictions. Categorical predictors must be encoded.
 
         Parameters
         ----------
@@ -330,6 +358,86 @@ class XGBoost(Tree):
         None / str
             The content of the JSON file if variable 'path'
             is empty. Otherwise, nothing is returned.
+
+        Examples
+        --------
+        Let's use the wine quality dataset:
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+
+        Model Initialization
+        ^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``XGBRegressor`` model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import XGBRegressor
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = XGBRegressor(
+                max_ntree = 3,
+                max_depth = 3,
+                nbins = 6,
+                split_proposal_method = 'global',
+                tol = 0.001,
+                learning_rate = 0.1,
+                min_split_loss = 0,
+                weight_reg = 0,
+                sample = 0.7,
+                col_sample_by_tree = 1,
+                col_sample_by_node = 1,
+            )
+
+        Model Training
+        ^^^^^^^^^^^^^^^
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "quality",
+                test,
+            )
+
+        TO JSON
+        ^^^^^^^^
+
+        .. ipython:: python
+
+            model.to_json()
+
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.ensemble.XGBRegressor`
+            for more information about the
+            different methods and usages.
         """
         res = {"learner": self._to_json_learner(), "version": [1, 6, 2]}
         res = (
