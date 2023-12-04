@@ -45,7 +45,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
         statistic, p_value
 
     Examples
-    ---------
+    --------
 
     Let's try this test on two set of distribution to
     obverse the contrast in test results:
@@ -234,7 +234,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
         statistic, p_value
 
     Examples
-    ---------
+    --------
 
     Let's try this test on two set of distribution to
     obverse the contrast in test results:
@@ -433,7 +433,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         statistic, p_value
 
     Examples
-    ---------
+    --------
 
     Let's try this test on two set of distribution to
     obverse the contrast in test results:
@@ -623,7 +623,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         statistic, p_value
 
     Examples
-    ---------
+    --------
 
     Let's try this test on two set of distribution to
     obverse the contrast in test results:

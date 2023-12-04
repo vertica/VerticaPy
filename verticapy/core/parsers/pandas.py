@@ -112,7 +112,7 @@ def read_pandas(
         of the new relation.
 
     Examples
-    ---------
+    --------
 
     In this example, we will first create
     a ``pandas.DataFrame`` using

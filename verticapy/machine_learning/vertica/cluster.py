@@ -1128,7 +1128,7 @@ class KPrototypes(KMeans):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -1734,7 +1734,7 @@ class BisectingKMeans(KMeans, Tree):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -2627,7 +2627,7 @@ class DBSCAN(VerticaModel):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -3383,7 +3383,7 @@ class NearestCentroid(MulticlassClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.

@@ -961,7 +961,7 @@ class PCA(Decomposition):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -1430,7 +1430,7 @@ class MCA(PCA):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -2251,7 +2251,7 @@ class SVD(Decomposition):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.

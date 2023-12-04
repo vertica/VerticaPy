@@ -120,7 +120,7 @@ class LinearSVR(LinearModel, Regressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -698,7 +698,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.

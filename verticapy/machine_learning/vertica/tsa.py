@@ -1132,7 +1132,7 @@ class ARIMA(TimeSeriesModelBase):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -1865,7 +1865,7 @@ class ARMA(TimeSeriesModelBase):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -2585,7 +2585,7 @@ class AR(TimeSeriesModelBase):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -3268,7 +3268,7 @@ class MA(TimeSeriesModelBase):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.

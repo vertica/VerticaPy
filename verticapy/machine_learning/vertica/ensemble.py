@@ -566,7 +566,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -1225,7 +1225,7 @@ class XGBRegressor(Regressor, XGBoost):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -1910,7 +1910,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -2828,7 +2828,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.

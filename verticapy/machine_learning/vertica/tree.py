@@ -110,7 +110,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -601,7 +601,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -1107,7 +1107,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -1838,7 +1838,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.

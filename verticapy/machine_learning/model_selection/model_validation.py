@@ -355,7 +355,7 @@ def cross_validate(
         cross validation.
 
     Examples
-    ---------
+    --------
     We import :py:mod:`verticapy`:
 
     .. ipython:: python

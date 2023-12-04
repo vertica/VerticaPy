@@ -380,7 +380,7 @@ def randomized_search_cv(
         search.
 
     Examples
-    ---------
+    --------
     We import :py:mod:`verticapy`:
 
     .. ipython:: python
@@ -860,7 +860,7 @@ def grid_search_cv(
         Result of the grid search.
 
     Examples
-    ---------
+    --------
     We import :py:mod:`verticapy`:
 
     .. ipython:: python
@@ -1529,7 +1529,7 @@ def bayesian_search_cv(
         result of the bayesian search.
 
     Examples
-    ---------
+    --------
     We import :py:mod:`verticapy`:
 
     .. ipython:: python
@@ -2123,7 +2123,7 @@ def enet_search_cv(
         result of the ENET search.
 
     Examples
-    ---------
+    --------
 
     We import :py:mod:`verticapy`:
 

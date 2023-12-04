@@ -118,7 +118,7 @@ class KNeighborsRegressor(Regressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -654,7 +654,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
@@ -2165,7 +2165,7 @@ class LocalOutlierFactor(VerticaModel):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a
     basic understanding of usage.
