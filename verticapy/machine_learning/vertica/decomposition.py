@@ -77,6 +77,83 @@ class Decomposition(Preprocessing):
         -------
         str
             the SQL code needed to deploy the model.
+
+        Examples
+        ---------
+
+        Load data for machine learning
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+        We can drop the "color" column as it is varchar type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Model Initialization and Training
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``PCA`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        SQL
+        ^^^
+
+        Once the mdoel is trained, we can extract the SQL conveniently:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            for a more detailed example.
         """
         exclude_columns, key_columns = format_type(
             exclude_columns, key_columns, dtype=list
@@ -126,10 +203,12 @@ class Decomposition(Preprocessing):
             relation are used.
         metric: str, optional
             Distance metric used to do the scoring.
-                avg    : The average is used as
-                         aggregation.
-                median : The median  is used as
-                         aggregation.
+
+            - avg:
+                The average is used as aggregation.
+            - median:
+                The median  is used as aggregation.
+
         p: int, optional
             The p of the p-distance.
 
@@ -137,6 +216,96 @@ class Decomposition(Preprocessing):
         -------
         TableSample
             PCA scores.
+
+        Examples
+        ---------
+
+        Load data for machine learning
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+        We can drop the "color" column as it is varchar type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Model Initialization and Training
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``PCA`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        Scores
+        ^^^^^^^
+
+        The decomposition  score  on  the  dataset for  each
+        transformed column can be calculated by:
+
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.score()
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_score.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.score()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_score.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            for a more detailed example.
         """
         if isinstance(X, NoneType):
             X = self.X
@@ -225,6 +394,95 @@ class Decomposition(Preprocessing):
         -------
         vDataFrame
             object result of the model transformation.
+
+        Examples
+        ---------
+
+        Load data for machine learning
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+        We can drop the "color" column as it is varchar type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Model Initialization and Training
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``PCA`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        Principal Components
+        ^^^^^^^^^^^^^^^^^^^^^
+
+        To get the transformed dataset in the form of principal
+        components:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.score()
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_transform.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.transform(data)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_transform.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            for a more detailed example.
         """
         if isinstance(X, NoneType):
             X = self.X
@@ -272,6 +530,94 @@ class Decomposition(Preprocessing):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        Load data for machine learning
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+        We can drop the "color" column as it is varchar type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Model Initialization and Training
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``PCA`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        Plots - PCA
+        ^^^^^^^^^^^^
+
+        You can plot the first two components conveniently using:
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot(width = 550)
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            for a more detailed example.
+
         """
         vdf = self.transform(vDataFrame(self.input_relation))
         dim_perc = []
@@ -321,6 +667,93 @@ class Decomposition(Preprocessing):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        Load data for machine learning
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+        We can drop the "color" column as it is varchar type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Model Initialization and Training
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``PCA`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        Plots - Decomposition Circle
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        You can also plot the Decomposition Circles:
+
+        .. code-block:: python
+
+            model.plot_circle()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot_circle()
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_circle.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_circle.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            for a more detailed example.
         """
         if self._model_type == "SVD":
             x = self.vectors_[:, dimensions[0] - 1]
@@ -365,6 +798,95 @@ class Decomposition(Preprocessing):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        Load data for machine learning
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+
+        We can drop the "color" column as it is varchar type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Model Initialization and Training
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``PCA`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        Plots - Scree
+        ^^^^^^^^^^^^^^
+
+        You can also plot the Scree plot:
+
+        .. code-block:: python
+
+            model.plot_scree()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "highcharts")
+            fig = model.plot_scree()
+            html_text = fig.htmlcontent.replace("container", "ml_vertica_MCA_scree")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_scree.html", "w") as file:
+                file.write(html_text)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_scree.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            for a more detailed example.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="PCAScreePlot",
@@ -639,7 +1161,7 @@ class PCA(Decomposition):
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot()
+        fig = model.plot(width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html")
 
     .. raw:: html
@@ -1051,7 +1573,7 @@ class MCA(PCA):
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot()
+        fig = model.plot(width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot.html")
 
     .. raw:: html
