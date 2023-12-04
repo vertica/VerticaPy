@@ -150,6 +150,8 @@ class ACFPACFPlot(ACFPlot):
         Draws an ACF-PACF time series plot using the Matplotlib API.
         """
         style_kwargs = self._fix_color_style_kwargs(style_kwargs)
+        if "ax" in style_kwargs:
+            del style_kwargs["ax"]
         fig = plt.figure(figsize=(10, 6))
         plt.rcParams["axes.facecolor"] = "#FCFCFC"
         color = self._get_final_color(style_kwargs=style_kwargs)

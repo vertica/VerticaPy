@@ -258,10 +258,11 @@ class PlottingBase(PlottingBaseSQL):
         self,
         style_kwargs: dict,
     ) -> dict:
-        if "colors" in style_kwargs:
-            style_kwargs["color"] = style_kwargs["colors"]
-            del style_kwargs["colors"]
-        return style_kwargs
+        style_kwargs_copy = copy.deepcopy(style_kwargs)
+        if "colors" in style_kwargs_copy:
+            style_kwargs_copy["color"] = style_kwargs_copy["colors"]
+            del style_kwargs_copy["colors"]
+        return style_kwargs_copy
 
     def get_colors(
         self, d: Optional[dict] = None, idx: Optional[int] = None
