@@ -58,6 +58,97 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
     dict
         dictionary containing column names and their SQL
         data type.
+
+    Examples
+    ---------
+
+    In this example, we will first create
+    a *JSON* file using
+    :py:meth:`verticapy.vDataFrame.to_json`
+    and ingest it into Vertica database.
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    We will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    Let's convert the :py:class:`vDataFrame`
+    to a JSON.
+
+    .. ipython:: python
+
+        data[0:20].to_json(
+            path = "titanic_subset.json",
+        )
+
+    Our JSON file is ready to be parsed now.
+
+    .. ipython:: python
+
+        from verticapy.core.parsers.json import pjson
+
+        pjson(
+            path = "titanic_subset.json",
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        #Cleanup block - drop / remove objects created for this example
+        import os
+        os.remove("titanic_subset.json")
+
+    .. seealso::
+
+        | :py:meth:`verticapy.utilities.read_csv` :
+            Ingests a CSV file into the Vertica DB.
+        | :py:meth:`verticapy.utilities.read_json` :
+            Ingests a JSON file into the Vertica DB.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
     _executeSQL(
@@ -232,6 +323,188 @@ def read_json(
     -------
     vDataFrame
         The vDataFrame of the relation.
+
+    Examples
+    ---------
+
+    In this example, we will first create
+    a *JSON* file using
+    :py:meth:`verticapy.vDataFrame.to_json`
+    and ingest it into Vertica database.
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    We will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    Let's convert the :py:class:`vDataFrame`
+    to a JSON file.
+
+    .. ipython:: python
+
+        data[0:20].to_json(
+            path = "titanic_subset.json",
+        )
+
+    Let's ingest the json file
+    into the Vertica database.
+
+    .. code-block:: python
+
+        from verticapy.core.parsers.json import read_json
+
+        read_json(
+            path = "titanic_subset.json",
+            table_name = "titanic_subset",
+            schema = "public",
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        from verticapy.core.parsers.json import read_json
+        res = read_json(
+            path = "titanic_subset.json",
+            table_name = "titanic_subset",
+            schema = "public",
+        )
+        html_file = open("figures/core_parsers_json1.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_json1.html
+
+    Let's ingest the json and rename some columns
+
+    .. code-block:: python
+
+        read_json(
+            path = "titanic_subset.json",
+            table_name = "titanic_sub_newnames",
+            schema = "public",
+            new_name = {
+                "fields.fare": "fare",
+                "fields.sex": "sex"
+            },
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        res = read_json(
+            path = "titanic_subset.json",
+            table_name = "titanic_sub_newnames",
+            schema = "public",
+            new_name = {
+                "fields.fare": "fare",
+                "fields.sex": "sex"
+            },
+        )
+        html_file = open("figures/core_parsers_json2.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_json2.html
+
+    Let's ingest only two columns from the json
+
+    .. code-block:: python
+
+        read_json(
+            path = "titanic_subset.json",
+            table_name = "titanic_sub_usecols",
+            schema = "public",
+            usecols  = [
+                "fields.fare",
+                "fields.sex"
+            ],
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        res = read_json(
+            path = "titanic_subset.json",
+            table_name = "titanic_sub_usecols",
+            schema = "public",
+            usecols  = [
+                "fields.fare",
+                "fields.sex"
+            ],
+        )
+        html_file = open("figures/core_parsers_json3.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_json3.html
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        #Cleanup block - drop / remove objects created for this example
+        from verticapy.utilities import drop
+        drop(name = "public.titanic_subset")
+        drop(name = "public.titanic_sub_newnames")
+        drop(name = "public.titanic_sub_usecols")
+        import os
+        os.remove("titanic_subset.json")
+
+    .. seealso::
+
+        | :py:meth:`verticapy.utilities.read_csv` :
+            Ingests a CSV file into the Vertica DB.
     """
     new_name = format_type(new_name, dtype=dict)
     usecols = format_type(usecols, dtype=list)
