@@ -322,42 +322,43 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (``ts``):
 
-              - No provided timeseries-column:
-                    ``start`` must be an integer
-                    greater or equal to 0, where
-                    zero indicates to start
-                    prediction at the end of the
-                    in-sample data. If ``start``
-                    is a positive value, the function
-                    predicts the values between the
-                    end of the in-sample data and
-                    the start index, and then uses
-                    the predicted values as time
-                    series inputs for the subsequent
-                    ``npredictions``.
-              - timeseries-column provided:
-                    ``start`` must be an ``integer``
-                    greater or equal to ``1`` and
-                    identifies the index (row) of
-                    the timeseries-column at which
-                    to begin prediction. If the
-                    ``start`` index is greater than
-                    the number of rows, ``N``, in the
-                    input data, the function predicts
-                    the values between ``N`` and
-                    ``start`` and uses the predicted
-                    values as time series inputs for
-                    the subsequent npredictions.
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column:
-                    prediction begins from the
-                    end of the in-sample data.
-              - timeseries-column provided:
-                    prediction begins from the
-                    end of the provided input
-                    data.
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
         npredictions: int, optional
             ``integer`` greater or equal to ``1``,
             the number of predicted timesteps.
@@ -662,42 +663,43 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (``ts``):
 
-              - No provided timeseries-column:
-                    ``start`` must be an integer
-                    greater or equal to 0, where
-                    zero indicates to start
-                    prediction at the end of the
-                    in-sample data. If ``start``
-                    is a positive value, the function
-                    predicts the values between the
-                    end of the in-sample data and
-                    the start index, and then uses
-                    the predicted values as time
-                    series inputs for the subsequent
-                    ``npredictions``.
-              - timeseries-column provided:
-                    ``start`` must be an ``integer``
-                    greater or equal to ``1`` and
-                    identifies the index (row) of
-                    the timeseries-column at which
-                    to begin prediction. If the
-                    ``start`` index is greater than
-                    the number of rows, ``N``, in the
-                    input data, the function predicts
-                    the values between ``N`` and
-                    ``start`` and uses the predicted
-                    values as time series inputs for
-                    the subsequent npredictions.
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column:
-                    prediction begins from the
-                    end of the in-sample data.
-              - timeseries-column provided:
-                    prediction begins from the
-                    end of the provided input
-                    data.
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
         npredictions: int, optional
             ``integer`` greater or equal to ``1``,
             the number of predicted timesteps.
@@ -717,24 +719,25 @@ class TimeSeriesModelBase(VerticaModel):
         freq: str, optional
             How to compute the delta.
 
-              - m/month:
+            - m/month:
                 We assume that the data
                 is organized on a monthly
                 basis.
-              - y/year:
+            - y/year:
                 We assume that the data
                 is organized on a yearly
                 basis.
-              - infer:
+            - infer:
                 When making inferences, the
                 system will attempt to identify
                 the best option, which may
                 involve more computational
                 resources.
-              - None:
+            - None:
                 The inference is based on the
                 average of the difference
                 between ``ts`` and its lag.
+
         filter_step: int, optional
             Integer parameter that determines
             the frequency of predictions. You
@@ -750,7 +753,7 @@ class TimeSeriesModelBase(VerticaModel):
         method: str, optional
             Forecasting method. One of the following:
 
-             - auto:
+            - auto:
                 the model initially utilizes the true
                 values at each step for forecasting.
                 However, when it reaches a point where
@@ -759,7 +762,7 @@ class TimeSeriesModelBase(VerticaModel):
                 predictions for further forecasting.
                 This method is often referred to as
                 "one step ahead" forecasting.
-             - forecast:
+            - forecast:
                 the model initiates forecasting from
                 an initial value and entirely disregards
                 any subsequent true values. This approach
@@ -1139,49 +1142,50 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (``ts``):
 
-              - No provided timeseries-column:
-                    ``start`` must be an integer
-                    greater or equal to 0, where
-                    zero indicates to start
-                    prediction at the end of the
-                    in-sample data. If ``start``
-                    is a positive value, the function
-                    predicts the values between the
-                    end of the in-sample data and
-                    the start index, and then uses
-                    the predicted values as time
-                    series inputs for the subsequent
-                    ``npredictions``.
-              - timeseries-column provided:
-                    ``start`` must be an ``integer``
-                    greater or equal to ``1`` and
-                    identifies the index (row) of
-                    the timeseries-column at which
-                    to begin prediction. If the
-                    ``start`` index is greater than
-                    the number of rows, ``N``, in the
-                    input data, the function predicts
-                    the values between ``N`` and
-                    ``start`` and uses the predicted
-                    values as time series inputs for
-                    the subsequent npredictions.
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column:
-                    prediction begins from the
-                    end of the in-sample data.
-              - timeseries-column provided:
-                    prediction begins from the
-                    end of the provided input
-                    data.
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
         npredictions: int, optional
             ``integer`` greater or equal to ``1``,
             the number of predicted timesteps.
         method: str, optional
             Forecasting method. One of the following:
 
-             - auto:
+            - auto:
                 the model initially utilizes the true
                 values at each step for forecasting.
                 However, when it reaches a point where
@@ -1399,49 +1403,50 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (``ts``):
 
-              - No provided timeseries-column:
-                    ``start`` must be an integer
-                    greater or equal to 0, where
-                    zero indicates to start
-                    prediction at the end of the
-                    in-sample data. If ``start``
-                    is a positive value, the function
-                    predicts the values between the
-                    end of the in-sample data and
-                    the start index, and then uses
-                    the predicted values as time
-                    series inputs for the subsequent
-                    ``npredictions``.
-              - timeseries-column provided:
-                    ``start`` must be an ``integer``
-                    greater or equal to ``1`` and
-                    identifies the index (row) of
-                    the timeseries-column at which
-                    to begin prediction. If the
-                    ``start`` index is greater than
-                    the number of rows, ``N``, in the
-                    input data, the function predicts
-                    the values between ``N`` and
-                    ``start`` and uses the predicted
-                    values as time series inputs for
-                    the subsequent npredictions.
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column:
-                    prediction begins from the
-                    end of the in-sample data.
-              - timeseries-column provided:
-                    prediction begins from the
-                    end of the provided input
-                    data.
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
         npredictions: int, optional
             ``integer`` greater or equal to ``1``,
             the number of predicted timesteps.
         method: str, optional
             Forecasting method. One of the following:
 
-             - auto:
+            - auto:
                 the model initially utilizes the true
                 values at each step for forecasting.
                 However, when it reaches a point where
@@ -1450,7 +1455,7 @@ class TimeSeriesModelBase(VerticaModel):
                 predictions for further forecasting.
                 This method is often referred to as
                 "one step ahead" forecasting.
-             - forecast:
+            - forecast:
                 the model initiates forecasting from
                 an initial value and entirely disregards
                 any subsequent true values. This approach
@@ -1597,49 +1602,50 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (``ts``):
 
-              - No provided timeseries-column:
-                    ``start`` must be an integer
-                    greater or equal to 0, where
-                    zero indicates to start
-                    prediction at the end of the
-                    in-sample data. If ``start``
-                    is a positive value, the function
-                    predicts the values between the
-                    end of the in-sample data and
-                    the start index, and then uses
-                    the predicted values as time
-                    series inputs for the subsequent
-                    ``npredictions``.
-              - timeseries-column provided:
-                    ``start`` must be an ``integer``
-                    greater or equal to ``1`` and
-                    identifies the index (row) of
-                    the timeseries-column at which
-                    to begin prediction. If the
-                    ``start`` index is greater than
-                    the number of rows, ``N``, in the
-                    input data, the function predicts
-                    the values between ``N`` and
-                    ``start`` and uses the predicted
-                    values as time series inputs for
-                    the subsequent npredictions.
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column:
-                    prediction begins from the
-                    end of the in-sample data.
-              - timeseries-column provided:
-                    prediction begins from the
-                    end of the provided input
-                    data.
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
         npredictions: int, optional
             ``integer`` greater or equal to ``1``,
             the number of predicted timesteps.
         method: str, optional
             Forecasting method. One of the following:
 
-             - auto:
+            - auto:
                 the model initially utilizes the true
                 values at each step for forecasting.
                 However, when it reaches a point where
@@ -1648,7 +1654,7 @@ class TimeSeriesModelBase(VerticaModel):
                 predictions for further forecasting.
                 This method is often referred to as
                 "one step ahead" forecasting.
-             - forecast:
+            - forecast:
                 the model initiates forecasting from
                 an initial value and entirely disregards
                 any subsequent true values. This approach
