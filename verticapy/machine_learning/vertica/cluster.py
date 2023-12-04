@@ -892,7 +892,6 @@ class KMeans(Clustering):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.
@@ -1554,7 +1553,6 @@ class KPrototypes(KMeans):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.
@@ -2223,7 +2221,6 @@ class BisectingKMeans(KMeans, Tree):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.
@@ -4052,7 +4049,6 @@ class NearestCentroid(MulticlassClassifier):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.

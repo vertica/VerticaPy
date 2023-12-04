@@ -313,25 +313,85 @@ class Preprocessing(Unsupervised):
         exclude_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code needed
+        to deploy the model.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model.
-            If empty,  the model predictors are used.
+            ``list`` of the columns
+            used to deploy the model.
+            If empty, the model predictors
+            are used.
         key_columns: SQLColumns, optional
-            Predictors   used   during   the   algorithm
-            computation which will  be deployed with the
+            Predictors used during the
+            algorithm computation which
+            will be deployed with the
             principal components.
         exclude_columns: SQLColumns, optional
-            Columns to exclude from the prediction.
+            Columns to exclude from
+            the prediction.
 
         Returns
         -------
         str
             the SQL code needed
             to deploy the model.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use a dummy dataset.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame(
+                {
+                    "values": [1, 1.01, 1.02, 1.05, 1.024],
+                }
+            )
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import Scaler
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = Scaler(method = "zscore")
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        To get the Model Vertica
+        SQL, use below:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         key_columns, exclude_columns = format_type(
             key_columns, exclude_columns, dtype=list
@@ -380,25 +440,85 @@ class Preprocessing(Unsupervised):
         X: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Returns  the SQL code needed to deploy the  inverse
-        model.
+        Returns the SQL code needed
+        to deploy the inverse model.
 
         Parameters
         ----------
         key_columns: SQLColumns, optional
-            Predictors used during the algorithm computation
-            which  will  be  deployed   with  the  principal
-            components.
+            Predictors used during
+            the algorithm computation
+            which will be deployed with
+            the principal components.
         exclude_columns: SQLColumns, optional
-            Columns to exclude from the prediction.
+            Columns to exclude from the
+            prediction.
         X: SQLColumns, optional
-            List  of the columns used to deploy the  inverse
-            model. If empty, the model predictors are used.
+            ``list`` of the columns used
+            to deploy the inverse model.
+            If empty, the model predictors
+            are used.
 
         Returns
         -------
         str
-            the SQL code needed to deploy the inverse model.
+            the SQL code needed to
+            deploy the inverse model.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use a dummy dataset.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame(
+                {
+                    "values": [1, 1.01, 1.02, 1.05, 1.024],
+                }
+            )
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import Scaler
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = Scaler(method = "zscore")
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        To get the Model Vertica
+        Inverse SQL, use below:
+
+        .. ipython:: python
+
+            model.deployInverseSQL()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if isinstance(X, NoneType):
             X = self.X
@@ -431,22 +551,107 @@ class Preprocessing(Unsupervised):
         self, vdf: SQLRelation = None, X: Optional[SQLColumns] = None
     ) -> vDataFrame:
         """
-        Applies the model on a vDataFrame.
+        Applies the model on a
+        :py:class:`vDataFrame`.
 
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input vDataFrame. You can also specify a customized
-            relation,  but you must  enclose it with an  alias.
-            For  example:  ``(SELECT 1) x``  is  valid  whereas
-            ``(SELECT 1)`` and "SELECT 1" are invalid.
+            Input vDataFrame. You can also
+            specify a customized relation,
+            but you must  enclose it with
+            an alias. For  example:
+            ``(SELECT 1) x`` is valid whereas
+            ``(SELECT 1)`` and ``SELECT 1``
+            are invalid.
         X: SQLColumns, optional
-            List of the input vDataColumns.
+            ``list`` of the input
+            :py:class:`vDataColumn`.
 
         Returns
         -------
         vDataFrame
-            object result of the model transformation.
+            object result of the
+            model transformation.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use a dummy dataset.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame(
+                {
+                    "values": [1, 1.01, 1.02, 1.05, 1.024],
+                }
+            )
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import Scaler
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = Scaler(method = "zscore")
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        To get the scaled dataset,
+        we can use the ``transform``
+        method. Let us transform
+        the data:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.transform(data)
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.transform(data)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_1.html
+
+        Similarly, you can perform the
+        inverse transform to get the
+        original features using:
+
+        .. code-block:: python
+
+            model.inverse_transform(data_transformed)
+
+        The variable ``data_transformed``
+        is the scaled dataset.
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if isinstance(X, NoneType):
             X = self.X
@@ -466,22 +671,107 @@ class Preprocessing(Unsupervised):
         self, vdf: SQLRelation, X: Optional[SQLColumns] = None
     ) -> vDataFrame:
         """
-        Applies the Inverse Model on a vDataFrame.
+        Applies the Inverse
+        Model on a :py:class:`vDataFrame`.
 
         Parameters
         ----------
         vdf: SQLRelation
-            Input vDataFrame. You can also specify a customized
-            relation,  but you must  enclose it with an  alias.
-            For  example:  ``(SELECT 1) x``  is  valid  whereas
-            ``(SELECT 1)`` and "SELECT 1" are invalid.
+            Input vDataFrame. You can also
+            specify a customized relation,
+            but you must  enclose it with
+            an alias. For  example:
+            ``(SELECT 1) x`` is valid whereas
+            ``(SELECT 1)`` and ``SELECT 1``
+            are invalid.
         X: SQLColumns, optional
-            List of the input vDataColumns.
+            ``list`` of the input
+            :py:class:`vDataColumn`.
 
         Returns
         -------
         vDataFrame
-            object result of the model transformation.
+            object result of the
+            model transformation.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use a dummy dataset.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame(
+                {
+                    "values": [1, 1.01, 1.02, 1.05, 1.024],
+                }
+            )
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import Scaler
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = Scaler(method = "zscore")
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        To get the scaled dataset,
+        we can use the ``transform``
+        method. Let us transform
+        the data:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.transform(data)
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.transform(data)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_1.html
+
+        Similarly, you can perform the
+        inverse transform to get the
+        original features using:
+
+        .. code-block:: python
+
+            model.inverse_transform(data_transformed)
+
+        The variable ``data_transformed``
+        is the scaled dataset.
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         X = format_type(X, dtype=list)
         if self._model_type == "OneHotEncoder":
@@ -511,8 +801,17 @@ Algorithms used for text analytics.
 
 class CountVectorizer(VerticaModel):
     """
-    Creates a Text Index that counts the occurences
-    of each word in the data.
+    Creates a Text Index that counts
+    the occurences of each word in
+    the data.
+
+    .. deprecated::
+
+        This feature is deprecated and
+        it will be removed on VerticaPy
+        version 1.1.0. Please use:
+        :py:class:`verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer`
+        instead.
 
     Parameters
     ----------
@@ -884,11 +1183,16 @@ class Scaler(Preprocessing):
         without interfering with functions from other
         libraries.
 
-    For this example, we will use a dummy dataset.
+    For this example, we will
+    use a dummy dataset.
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"values": [1, 1.01, 1.02, 1.05, 1.024]})
+        data = vp.vDataFrame(
+            {
+                "values": [1, 1.01, 1.02, 1.05, 1.024],
+            }
+        )
 
     .. note::
 
@@ -967,26 +1271,41 @@ class Scaler(Preprocessing):
     Conversion/Transformation
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    To get the scaled dataset, we can use the ``transform``
-    function. Let us transform the data:
+    To get the scaled dataset,
+    we can use the ``transform``
+    method. Let us transform
+    the data:
 
     .. ipython:: python
-        :okwarning:
+        :suppress:
+
+        result = model.transform(data)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
 
         model.transform(data)
 
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_3.html
+
     Please refer to
     :py:meth:`verticapy.machine_learning.Scaler.transform`
-    for more details on transforming a :py:class:`vDataFrame`.
+    for more details on transforming
+    a :py:class:`vDataFrame`.
 
-    Similarly, you can perform the inverse tranform to get
-    the original features using:
+    Similarly, you can perform the
+    inverse transform to get the
+    original features using:
 
     .. code-block:: python
 
         model.inverse_transform(data_transformed)
 
-    The variable ``data_transformed`` is the scaled dataset.
+    The variable ``data_transformed``
+    is the scaled dataset.
 
     Model Register
     ^^^^^^^^^^^^^^^
@@ -1053,7 +1372,6 @@ class Scaler(Preprocessing):
             Scalar with method set as ``robust_zscore``.
         | :py:class:`verticapy.machine_learning.vertica.preprocessing.MinMaxScaler` :
             Scalar with method set as ``minmax``.
-
     """
 
     # Properties.
@@ -1121,8 +1439,39 @@ class Scaler(Preprocessing):
 
     def to_memmodel(self) -> mm.Scaler:
         """
-        Converts the model to an InMemory object that can
-        be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.preprocessing.Scaler`
+            for more information.
         """
         if self.parameters["method"] == "minmax":
             return mm.MinMaxScaler(self.min_, self.max_)
@@ -1397,25 +1746,38 @@ class OneHotEncoder(Preprocessing):
 
     To get the transformed dataset in the form that is encoded,
     we can use the ``transform`` function. Let us transform the
-    data and display the first 20 datapoints.
+    data and display the first datapoints.
 
     .. ipython:: python
-        :okwarning:
+        :suppress:
 
-        model.transform(data)[:20]
+        result = model.transform(data)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_ooe_transform_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.transform(data)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_ooe_transform_1.html
 
     Please refer to
     :py:meth:`verticapy.machine_learning.OneHotEncoder.transform`
-    for more details on transforming a :py:class:`vDataFrame`.
+    for more details on transforming
+    a :py:class:`vDataFrame`.
 
-    Similarly, you can perform the inverse tranform to get
-    the original features using:
+    Similarly, you can perform the
+    inverse transform to get the
+    original features using:
 
     .. code-block:: python
 
         model.inverse_transform(data_transformed)
 
-    The variable ``data_transformed`` includes the OneHotEncoder
+    The variable ``data_transformed``
+    includes the ``OneHotEncoder``
     components.
 
     Model Register
@@ -1599,7 +1961,38 @@ class OneHotEncoder(Preprocessing):
 
     def to_memmodel(self) -> mm.OneHotEncoder:
         """
-        Converts the model to an InMemory object that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+            for more information.
         """
         return mm.OneHotEncoder(self.categories_, self.column_naming_, self.drop_first_)
