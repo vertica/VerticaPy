@@ -583,8 +583,8 @@ class KMeans(Clustering):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -1162,8 +1162,8 @@ class KPrototypes(KMeans):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -1762,8 +1762,8 @@ class BisectingKMeans(KMeans, Tree):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **To SQL**
 

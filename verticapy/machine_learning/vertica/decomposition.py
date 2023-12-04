@@ -1215,8 +1215,8 @@ class PCA(Decomposition):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **SQL**
 
@@ -1668,8 +1668,8 @@ class MCA(PCA):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **SQL**
 
@@ -2497,8 +2497,8 @@ class SVD(Decomposition):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **SQL**
 

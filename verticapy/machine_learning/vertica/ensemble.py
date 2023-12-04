@@ -49,6 +49,19 @@ General Classes.
 
 
 class RandomForest(Tree):
+    """
+    :py:class:`verticapy.machine_learning.vertica.base.Tree`
+    implementation of Random Forest.
+
+    .. note::
+
+        Refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor`
+        for more information on Regression models. And refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier`
+        for more information on Classification models.
+    """
+
     # Properties.
 
     @property
@@ -61,6 +74,20 @@ class RandomForest(Tree):
 
 
 class XGBoost(Tree):
+    """
+    :py:class:`verticapy.machine_learning.vertica.base.Tree`
+    implementation of XGBoost.
+
+
+    .. note::
+
+        Refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.XGBRegressor`
+        for more information on Regression models. And refer to
+        :py:class:`verticapy.machine_learning.vertica.ensemble.XGBClassifier`
+        for more information on Classification models.
+    """
+
     # Properties.
 
     @property
@@ -307,29 +334,109 @@ class XGBoost(Tree):
 
     def to_json(self, path: Optional[str] = None) -> Optional[str]:
         """
-        Creates  a  Python  XGBoost  JSON  file  that  can
-        be imported into the Python XGBoost API.
+         Creates a Python ``XGBoost`` JSON file
+         that can be imported into the Python
+         ``XGBoost`` API.
 
-        \u26A0 Warning :   For    multiclass   classifiers,
-        the   probabilities  returned   by  the   VerticaPy
-        and  exported  models might differ slightly because
-        of  normalization;  while Vertica uses  multinomial
-        logistic  regression, XGBoost Python uses  Softmax.
-        This  difference does not affect the model's  final
-        predictions. Categorical predictors must be encoded.
+         .. warning::
 
-        Parameters
-        ----------
-        path: str, optional
-            The path and name of the output file. If a file
-            with the same name already exists, the function
-            returns an error.
+             For multiclass classifiers, the
+             probabilities returned by the
+             VerticaPy and exported models
+             might differ slightly because
+             of normalization; while Vertica
+             uses multinomial ``LogisticRegression``,
+             ``XGBoost`` Python uses Softmax.
+             This difference does not affect
+             the model's final predictions.
+             Categorical predictors must be
+             encoded.
 
-        Returns
-        -------
-        None / str
-            The content of the JSON file if variable 'path'
-            is empty. Otherwise, nothing is returned.
+         Parameters
+         ----------
+         path: str, optional
+             The path and name of the
+             output file. If a file with
+             the same name already exists,
+             the function returns an error.
+
+         Returns
+         -------
+         None | str
+             The content of the JSON file if
+             variable ``path`` is empty.
+             Otherwise, nothing is returned.
+
+         Examples
+         --------
+         Let's use the wine quality dataset:
+
+         .. ipython:: python
+
+             import verticapy.datasets as vpd
+
+             data = vpd.load_winequality()
+
+         .. raw:: html
+             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+         .. ipython:: python
+
+             from verticapy.machine_learning.vertica import XGBRegressor
+
+         Then we can create the model:
+
+         .. ipython:: python
+             :okwarning:
+
+             model = XGBRegressor(
+                 max_ntree = 3,
+                 max_depth = 3,
+                 nbins = 6,
+                 split_proposal_method = 'global',
+                 tol = 0.001,
+                 learning_rate = 0.1,
+                 min_split_loss = 0,
+                 weight_reg = 0,
+                 sample = 0.7,
+                 col_sample_by_tree = 1,
+                 col_sample_by_node = 1,
+             )
+
+         We can now fit the model:
+
+         .. ipython:: python
+             :okwarning:
+
+             model.fit(
+                 train,
+                 [
+                     "fixed_acidity",
+                     "volatile_acidity",
+                     "citric_acid",
+                     "residual_sugar",
+                     "chlorides",
+                     "density"
+                 ],
+                 "quality",
+                 test,
+             )
+
+         And export it to the JSON format.
+
+         .. ipython:: python
+
+             model.to_json()
+
+         .. note::
+
+             Refer to
+             :py:class:`verticapy.machine_learning.vertica.ensemble.XGBRegressor`
+             or :py:class:`verticapy.machine_learning.vertica.ensemble.XGBClassifier`
+             for more information about the
+             different methods and usages.
         """
         res = {"learner": self._to_json_learner(), "version": [1, 6, 2]}
         res = (
@@ -955,8 +1062,42 @@ class RandomForestRegressor(Regressor, RandomForest):
 
     def to_memmodel(self) -> Union[mm.RandomForestRegressor, mm.BinaryTreeRegressor]:
         """
-        Converts  the model  to an InMemory object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+            and
+            :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+            for more information.
         """
         if self.n_estimators_ == 1:
             return self.trees_[0]
@@ -1464,8 +1605,8 @@ class XGBRegressor(Regressor, XGBoost):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -1611,8 +1752,40 @@ class XGBRegressor(Regressor, XGBoost):
 
     def to_memmodel(self) -> mm.XGBRegressor:
         """
-        Converts  the  model to an InMemory object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+            for more information.
         """
         return mm.XGBRegressor(self.trees_, self.mean_, self.eta_)
 
@@ -2481,8 +2654,42 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     def to_memmodel(self) -> Union[mm.RandomForestClassifier, mm.BinaryTreeClassifier]:
         """
-        Converts the model to an InMemory object that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+            and
+            :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+            for more information.
         """
         if self.n_estimators_ == 1:
             return self.trees_[0]
@@ -3232,8 +3439,8 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -3409,8 +3616,39 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     def to_memmodel(self) -> mm.XGBClassifier:
         """
-        Converts the model  to an InMemory  object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+            for more information.
         """
         return mm.XGBClassifier(self.trees_, self.logodds_, self.classes_, self.eta_)
 
@@ -3484,7 +3722,7 @@ class IsolationForest(Clustering, Tree):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -3774,8 +4012,8 @@ class IsolationForest(Clustering, Tree):
         would pickle a ``scikit-learn`` model.
 
     The preceding methods for exporting the
-    model use ``MemModel``, and it is recommended
-    to use ``MemModel`` directly.
+    model use ``MemModel``, and it is
+    recommended to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -3906,33 +4144,110 @@ class IsolationForest(Clustering, Tree):
         return_score: bool = False,
     ) -> str:
         """
-        Returns  the SQL code needed to deploy the model.
+        Returns the SQL code needed
+        to deploy the model.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to  deploy the model.
-            If empty, the model predictors are used.
+            ``list`` of the columns used
+            to deploy the model. If empty,
+            the model predictors are used.
         cutoff: PythonNumber, optional
-            Float in the range  (0.0, 1.0),  specifies the
-            threshold that determines  if a data  point is
-            an anomaly.  If the  anomaly_score  for a data
-            point is greater  than or equal to the cutoff,
-            the data point is marked as an anomaly.
+            ``float`` in the range ``(0.0, 1.0)``,
+            specifies the threshold that
+            determines  if a data  point is
+            an anomaly.  If the ``anomaly_score``
+            for a data point is greater than or
+            equal to the ``cutoff``, the data
+            point is marked as an anomaly.
         contamination: PythonNumber, optional
-            Float in the range (0,1), the approximate ratio
-            of data points in the training data that should
-            be labeled  as anomalous.  If this parameter is
-            specified, the cutoff parameter is ignored.
+            ``float`` in the range ``(0,1)``,
+            the approximate ratio of data
+            points in the training data that
+            should be labeled  as anomalous.
+            If this parameter is specified, the
+            ``cutoff`` parameter is ignored.
         return_score: bool, optional
-            If  set to True, the anomaly score is returned,
-            and the parameters 'cutoff' and 'contamination'
+            If set to ``True``, the anomaly
+            score is returned, and the parameters
+            ``cutoff`` and ``contamination``
             are ignored.
 
         Returns
         -------
         str
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        We import the ``IsolationForest`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import IsolationForest
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import IsolationForest
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = IsolationForest(
+                n_estimators = 10,
+                max_depth = 3,
+                nbins = 6,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        To get the SQL query which uses
+        Vertica functions use below:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.ensemble.IsolationForest`
+            for more information about the
+            different methods and usages.
         """
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
@@ -3964,8 +4279,41 @@ class IsolationForest(Clustering, Tree):
 
     def to_memmodel(self) -> Union[mm.IsolationForest, mm.BinaryTreeAnomaly]:
         """
-        Converts  the model  to an InMemory object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+            and
+            :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
+            for more information.
         """
         if self.n_estimators_ == 1:
             return self.trees_[0]
@@ -3982,31 +4330,102 @@ class IsolationForest(Clustering, Tree):
         inplace: bool = True,
     ) -> vDataFrame:
         """
-        Returns  the  anomaly  score using the  input
-        relation.
+        Returns the anomaly score using the
+        input relation.
 
         Parameters
         ----------
         vdf: SQLRelation
-            Object to use for the prediction. You can
-            specify  a customized  relation if it  is
-            enclosed  with  an  alias.  For  example,
-            ``(SELECT 1) x``   is   valid,    whereas
-            ``(SELECT 1)`` and "SELECT 1" are invalid.
+            Object to use for the prediction.
+            You can specify  a customized
+            relation if it is enclosed with
+            an alias. For example,``(SELECT 1) x``
+            is valid, whereas ``(SELECT 1)``
+            and ``SELECT 1`` are invalid.
         X: SQLColumns, optional
-            List of columns used to deploy the models.
-            If empty,  the model  predictors are used.
+            ``list`` of columns used to deploy
+            the models. If empty, the model
+            predictors are used.
         name: str, optional
-            Name  of the  additional  vDataColumn.  If
-            empty, a name is generated.
+            Name of the additional ``vDataColumn``.
+            If empty, a name is generated.
         inplace: bool, optional
-            If  True,  the prediction is added to  the
-            vDataFrame.
+            If ``True``, the prediction is added
+            to the ``vDataFrame``.
 
         Returns
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        We import the ``IsolationForest`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import IsolationForest
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import IsolationForest
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = IsolationForest(
+                n_estimators = 10,
+                max_depth = 3,
+                nbins = 6,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        To get the SQL query which uses
+        Vertica functions use below:
+
+        .. ipython:: python
+
+            model.decision_function(data)
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.ensemble.IsolationForest`
+            for more information about the
+            different methods and usages.
         """
         # Inititalization
         if isinstance(vdf, str):
@@ -4044,35 +4463,116 @@ class IsolationForest(Clustering, Tree):
             Object to use for the prediction. You can
             specify  a customized  relation if it  is
             enclosed  with  an  alias.  For  example,
-            ``(SELECT 1) x``   is   valid,    whereas
-            ``(SELECT 1)`` and "SELECT 1" are invalid.
+            ``(SELECT 1) x`` is valid, whereas
+            ``(SELECT 1)`` and ``SELECT 1`` are
+            invalid.
         X: list, optional
-            List of columns used to deploy the models.
-            If empty,  the model  predictors are used.
+            ``list`` of columns used to deploy the
+            models. If empty,  the model  predictors
+            are used.
         name: str, optional
-            Name  of the  additional  vDataColumn.  If
-            empty, a name is generated.
+            Name  of the  additional  vDataColumn.
+            If empty, a name is generated.
         cutoff: PythonNumber, optional
-            Float  in the range (0.0, 1.0),  specifies
-            the  threshold  that determines if a  data
-            point is an anomaly.  If the anomaly_score
-            for a data point  is greater than or equal
-            to the cutfoff,  the data  point is marked
-            as an anomaly.
+            ``float`` in the range ``(0.0, 1.0)``,
+            specifies the  threshold  that determines
+            if a data point is an anomaly. If the
+            ``anomaly_score`` for a data point is
+            greater than or equal to the ``cutfoff``,
+            the data point is marked as an anomaly.
         contamination: PythonNumber, optional
-            Float  in the range (0,1), the approximate
-            ratio of data points  in the training data
-            that  should  be labeled as anomalous.  If
-            this  parameter is specified,  the  cutoff
-            parameter is ignored.
+            ``float``  in the range ``(0, 1)``, the
+            approximate ratio of data points in the
+            training data that should be labeled as
+            anomalous. If this parameter is specified,
+            the ``cutoff`` parameter is ignored.
         inplace: bool, optional
-            If  True,  the prediction is added to  the
-            vDataFrame.
+            If ``True``, the prediction is added to
+            the ``vDataFrame``.
 
         Returns
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        We import the ``IsolationForest`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import IsolationForest
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import IsolationForest
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = IsolationForest(
+                n_estimators = 10,
+                max_depth = 3,
+                nbins = 6,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        Prediction is straight-forward:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict(data, ["density", "sulphates"])
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_prediction.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict(data, ["density", "sulphates"])
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_prediction.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.ensemble.IsolationForest`
+            for more information about the
+            different methods and usages.
         """
         # Initialization
         if isinstance(vdf, str):
