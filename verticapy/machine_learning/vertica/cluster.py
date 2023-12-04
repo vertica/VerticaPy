@@ -160,8 +160,8 @@ class Clustering(Unsupervised):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
@@ -582,8 +582,9 @@ class KMeans(Clustering):
         can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The preceding methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The preceding methods for exporting the
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -980,8 +981,10 @@ class KPrototypes(KMeans):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database.
+        To train a model, you can directly
+        use the :py:class:`vDataFrame` or
+        the name of the relation stored in
+        the database.
 
     .. note::
 
@@ -1158,8 +1161,9 @@ class KPrototypes(KMeans):
         can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The preceding methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The preceding methods for exporting the
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -1757,8 +1761,9 @@ class BisectingKMeans(KMeans, Tree):
         can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The preceding methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The preceding methods for exporting the
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -2174,8 +2179,10 @@ class DBSCAN(VerticaModel):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database.
+        To train a model, you can directly
+        use the :py:class:`vDataFrame` or
+        the name of the relation stored in
+        the database.
 
     .. hint::
 
@@ -2237,9 +2244,10 @@ class DBSCAN(VerticaModel):
     Model Register
     ^^^^^^^^^^^^^^
 
-    As this model is not native, it does not support model management and
-    versioning. However, it is possible to use the SQL code it generates
-    for deployment.
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
     """
 
     # Properties.
@@ -2529,8 +2537,8 @@ class DBSCAN(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
@@ -3103,9 +3111,10 @@ class NearestCentroid(MulticlassClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    As this model is not native, it does not support model management and
-    versioning. However, it is possible to use the SQL code it generates
-    for deployment.
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^

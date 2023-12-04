@@ -294,7 +294,8 @@ class TimeSeriesModelBase(VerticaModel):
         Returns
         -------
         str
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
         """
         if self._vertica_predict_sql:
             # Initialization
@@ -982,8 +983,8 @@ class TimeSeriesModelBase(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------

@@ -331,7 +331,8 @@ class AutoML(VerticaModel):
         Returns
         -------
         str
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
         """
         return self.best_model_.deploySQL(X)
 
@@ -687,8 +688,8 @@ class AutoML(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------

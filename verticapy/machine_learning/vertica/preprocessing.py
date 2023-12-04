@@ -330,7 +330,8 @@ class Preprocessing(Unsupervised):
         Returns
         -------
         str
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
         """
         key_columns, exclude_columns = format_type(
             key_columns, exclude_columns, dtype=list

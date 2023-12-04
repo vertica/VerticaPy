@@ -1463,8 +1463,9 @@ class XGBRegressor(Regressor, XGBoost):
         can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The preceding methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The preceding methods for exporting the
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -3230,8 +3231,9 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The preceding methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The preceding methods for exporting the
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 
@@ -3771,8 +3773,9 @@ class IsolationForest(Clustering, Tree):
         can be pickled in the same way that you
         would pickle a ``scikit-learn`` model.
 
-    The preceding methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The preceding methods for exporting the
+    model use ``MemModel``, and it is recommended
+    to use ``MemModel`` directly.
 
     **To SQL**
 

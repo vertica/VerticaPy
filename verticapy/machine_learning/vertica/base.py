@@ -593,7 +593,8 @@ class VerticaModel(PlottingUtils):
         Returns
         -------
         str
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
         """
         if hasattr(self, "_vertica_predict_sql"):
             match_by_pos = "'true'"
@@ -860,8 +861,8 @@ class VerticaModel(PlottingUtils):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
@@ -1265,8 +1266,8 @@ class Tree:
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------

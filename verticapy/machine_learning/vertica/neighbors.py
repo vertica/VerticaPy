@@ -477,7 +477,8 @@ class KNeighborsRegressor(Regressor):
         Returns
         -------
         str
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
         """
         key_columns = format_type(key_columns, dtype=list)
         X = format_type(X, dtype=list, na_out=self.X)
@@ -890,9 +891,10 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. important::
 
-        As this model is not native, it solely relies on SQL statements to
-        compute various attributes, storing them within the object. No data
-        is saved in the database.
+        As this model is not native, it solely
+        relies on SQL statements to compute
+        various attributes, storing them within
+        the object. No data is saved in the database.
 
     Metrics
     ^^^^^^^^
@@ -1193,9 +1195,10 @@ class KNeighborsClassifier(MulticlassClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    As this model is not native, it does not support model management and
-    versioning. However, it is possible to use the SQL code it generates
-    for deployment.
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -2051,8 +2054,8 @@ class KernelDensity(Regressor, Tree):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
@@ -2241,9 +2244,10 @@ class LocalOutlierFactor(VerticaModel):
 
     .. important::
 
-        As this model is not native, it solely relies on SQL statements to
-        compute various attributes, storing them within the object. No data
-        is saved in the database.
+        As this model is not native, it solely
+        relies on SQL statements to compute
+        various attributes, storing them within
+        the object. No data is saved in the database.
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -2277,9 +2281,10 @@ class LocalOutlierFactor(VerticaModel):
 
     .. important::
 
-        As this model is not native, it solely relies on SQL statements to
-        compute various attributes, storing them within the object. No data
-        is saved in the database.
+        As this model is not native, it solely
+        relies on SQL statements to compute
+        various attributes, storing them within
+        the object. No data is saved in the database.
 
     Prediction
     ^^^^^^^^^^^
@@ -2346,9 +2351,10 @@ class LocalOutlierFactor(VerticaModel):
     Model Register
     ^^^^^^^^^^^^^^
 
-    As this model is not native, it does not support model management and
-    versioning. However, it is possible to use the SQL code it generates
-    for deployment.
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
     """
 
     # Properties.
@@ -2633,8 +2639,8 @@ class LocalOutlierFactor(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
