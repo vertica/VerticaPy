@@ -620,6 +620,7 @@ class Preprocessing(Unsupervised):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             result = model.transform(data)
             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_1.html", "w")
@@ -740,6 +741,7 @@ class Preprocessing(Unsupervised):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             result = model.transform(data)
             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_1.html", "w")
@@ -805,7 +807,7 @@ class CountVectorizer(VerticaModel):
     the occurences of each word in
     the data.
 
-    .. deprecated::
+    .. deprecated:: version 1.1.0.
 
         This feature is deprecated and
         it will be removed on VerticaPy
@@ -1278,6 +1280,7 @@ class Scaler(Preprocessing):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = model.transform(data)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_3.html", "w")
@@ -1750,6 +1753,7 @@ class OneHotEncoder(Preprocessing):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = model.transform(data)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_ooe_transform_1.html", "w")
