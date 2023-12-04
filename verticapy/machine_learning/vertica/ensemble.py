@@ -1074,7 +1074,6 @@ class RandomForestRegressor(Regressor, RandomForest):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.
@@ -1770,7 +1769,6 @@ class XGBRegressor(Regressor, XGBoost):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.
@@ -2673,7 +2671,6 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.

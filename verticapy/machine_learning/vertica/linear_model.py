@@ -267,7 +267,6 @@ class LinearModel:
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.
@@ -470,7 +469,6 @@ class LinearModelClassifier(LinearModel):
 
         Examples
         --------
-
         If we consider that you've built a model named
         ``model``, then it is easy to export it using
         the following syntax.
