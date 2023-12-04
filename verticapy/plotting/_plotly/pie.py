@@ -98,6 +98,8 @@ class PieChart(PlotlyBase):
         )
         fig_base.add_trace(fig.data[0])
         fig_base.update_layout(**self.init_layout_style, **style_kwargs)
+        if self.layout["method"] != "density":
+            fig_base.update_traces(textinfo="value")
         return fig_base
 
 

@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import collections
 import copy
 import decimal
 import datetime
@@ -1070,6 +1071,19 @@ class TableSample:
             print_time(elapsed_time)
         result = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
+
+        # Dealing with duplicated names.
+        dnames = [
+            item for item, count in collections.Counter(columns).items() if count > 1
+        ]
+        for dcol in dnames:
+            j = 0
+            for idx, col in enumerate(columns):
+                if col == dcol:
+                    if j > 0:
+                        columns[idx] += f"_{j}"
+                    j += 1
+
         data_columns = [[item] for item in columns]
         data = list(result)
         for row in data:

@@ -14,13 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Any, Literal, Optional, Union
+import copy
+from typing import Any, Callable, Literal, Optional, Union
+import warnings
 
 from verticapy.errors import QueryError
 
 from verticapy.core.vdataframe import vDataFrame
 
-from verticapy._typing import NoneType, PlottingObject
+from verticapy._typing import NoneType, PlottingObject, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_query
 from verticapy._utils._sql._sys import _executeSQL
@@ -93,6 +95,36 @@ class QueryProfiler:
 
             This parameter is used only when ``request`` is
             defined.
+    create_copy: bool, optional
+        If set to ``True``, tables or local temporary
+        tables will be created by using the schema
+        definition of ``v_schema_names`` parameter
+        to store all the Vertica monitor and internal
+        meta-tables.
+
+        .. note::
+
+            This parameter is used only when
+            ``create_local_temporary_copy``
+            is set to ``False``.
+    v_schema_names: dict, optional
+        Name of the schema to use to store all
+        the Vertica monitor and internal
+        meta-tables.
+
+        .. note::
+
+            This parameter is used only when
+            ``create_copy`` is set to ``True``.
+    create_local_temporary_copy: bool, optional
+        If set to ``True``, local temporary tables
+        will be created to store all the Vertica
+        monitor and internal meta-tables.
+
+        .. note::
+
+            This parameter is used only when
+            ``create_copy`` is set to ``False``.
 
     Attributes
     ----------
@@ -482,7 +514,28 @@ class QueryProfiler:
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
         add_profile: bool = True,
+        create_copy: bool = False,
+        v_schema_names: Optional[dict] = None,
+        create_local_temporary_copy: bool = False,
     ) -> None:
+        if create_local_temporary_copy and create_copy:
+            raise ValueError(
+                "'create_copy' and 'create_local_temporary_copy'"
+                " can not be both set to True."
+            )
+        if create_copy and isinstance(v_schema_names, NoneType):
+            warning_message = (
+                "'create_copy' is set to True but 'v_schema_names' "
+                " is empty. The parameters will be both ignored."
+            )
+            warnings.warn(warning_message, Warning)
+        if create_local_temporary_copy and not (isinstance(v_schema_names, NoneType)):
+            warning_message = (
+                "'create_local_temporary_copy' is set to True but "
+                "'v_schema_names' is not empty.\nThe parameter "
+                "'v_schema_names' will be ignored."
+            )
+            warnings.warn(warning_message, Warning)
         if not (isinstance(request, NoneType)) and (
             not (isinstance(transaction_id, NoneType))
             or not (isinstance(statement_id, NoneType))
@@ -552,6 +605,7 @@ class QueryProfiler:
                 FROM v_internal.dc_requests_issued 
                 WHERE transaction_id = {transaction_id}
                   AND   statement_id = {statement_id};"""
+            query = self._replace_schema_in_query(query)
             try:
                 self.request = _executeSQL(
                     query,
@@ -564,6 +618,13 @@ class QueryProfiler:
                     f"and statement_id={statement_id} was found in the "
                     "v_internal.dc_requests_issued table."
                 )
+        if create_local_temporary_copy:
+            self.v_schema_names = self._v_temp_schema_dict()
+            create_table = True
+        else:
+            self.v_schema_names = copy.deepcopy(v_schema_names)
+            create_table = create_copy
+        self._create_copy_v_table(create_table=create_table)
 
     # Tools
 
@@ -599,7 +660,7 @@ class QueryProfiler:
             "barh",
             "pie",
         ],
-    ):
+    ) -> Callable:
         chart_type = str(chart_type).lower()
         if chart_type == "pie":
             return v_object.pie
@@ -609,6 +670,63 @@ class QueryProfiler:
             return v_object.barh
         else:
             ValueError("Incorrect parameter 'chart_type'.")
+
+    def _replace_schema_in_query(self, query: SQLExpression) -> SQLExpression:
+        if isinstance(self.v_schema_names, NoneType):
+            return query
+        fquery = copy.deepcopy(query)
+        for sch in self.v_schema_names:
+            fquery = fquery.replace(sch, self.v_schema_names[sch])
+        for table in self.v_table_names:
+            fquery = fquery.replace(table, self.v_table_names[table])
+        return fquery
+
+    @staticmethod
+    def _v_temp_schema_dict() -> dict:
+        return {
+            "v_internal": "v_temp_schema",
+            "v_monitor": "v_temp_schema",
+        }
+
+    @staticmethod
+    def _v_table_dict() -> dict:
+        return {
+            "dc_requests_issued": "v_internal",
+            "dc_query_executions": "v_internal",
+            "dc_explain_plans": "v_internal",
+            "query_plan_profiles": "v_monitor",
+            "query_profiles": "v_monitor",
+            "execution_engine_profiles": "v_monitor",
+            # "resource_pool_status": "v_monitor",
+            # "host_resources": "v_monitor",
+        }
+
+    def _create_copy_v_table(self, create_table: bool = True) -> None:
+        v_table_names = {}
+        v_temp_table_dict = self._v_table_dict()
+        for table in v_temp_table_dict:
+            sql = "CREATE "
+            schema = v_temp_table_dict[table]
+            if (
+                not (isinstance(self.v_schema_names, NoneType))
+                and schema in self.v_schema_names
+            ):
+                new_schema = self.v_schema_names[schema]
+                new_table = f"{table}_{self.statement_id}_{self.transaction_id}"
+                if new_schema == "v_temp_schema":
+                    sql += f"LOCAL TEMPORARY TABLE {new_table} ON COMMIT PRESERVE ROWS "
+                else:
+                    sql += f"TABLE {new_schema}.{new_table}"
+                sql += f" AS SELECT * FROM {schema}.{table}"
+                sql += f" WHERE transaction_id={self.transaction_id} "
+                sql += f"AND statement_id={self.statement_id}"
+                v_table_names[table] = new_table
+            if create_table:
+                _executeSQL(
+                    sql,
+                    title="Creating performance tables",
+                )
+        self.v_table_names = v_table_names
 
     # Main Method
 
@@ -821,6 +939,7 @@ class QueryProfiler:
             WHERE 
                 transaction_id={self.transaction_id} AND 
                 statement_id={self.statement_id};"""
+        query = self._replace_schema_in_query(query)
         qd = _executeSQL(
             query,
             title="Getting the corresponding query",
@@ -923,6 +1042,7 @@ class QueryProfiler:
                 transaction_id={self.transaction_id} AND 
                 statement_id={self.statement_id}
             ORDER BY 2 DESC;"""
+        query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query)
         if show:
             fun = self._get_chart_method(vdf["execution_step"], chart_type)
@@ -997,6 +1117,7 @@ class QueryProfiler:
                 statement_id,
                 path_id,
                 path_line_index;"""
+        query = self._replace_schema_in_query(query)
         if not (return_report):
             path = _executeSQL(
                 query,
@@ -1109,6 +1230,7 @@ class QueryProfiler:
                 statement_id,
                 path_id,
                 path_line_index;"""
+        query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         if show:
             fun = self._get_chart_method(vdf["path_line"], chart_type)
@@ -1194,6 +1316,7 @@ class QueryProfiler:
                 counter_name = 'execution time (us)' AND 
                 transaction_id={self.transaction_id} AND 
                 statement_id={self.statement_id}"""
+        query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query)
         columns = ["path_id", "node_name"]
         if reverse:
@@ -1281,6 +1404,7 @@ class QueryProfiler:
                 CASE WHEN SUM(CASE counter_name WHEN 'execution time (us)' THEN
                     counter_value ELSE NULL END) IS NULL THEN 1 ELSE 0 END ASC,
                 5 DESC;"""
+        query = self._replace_schema_in_query(query)
         return vDataFrame(query)
 
     # Step 14B: Query execution chart
@@ -1440,6 +1564,7 @@ class QueryProfiler:
             :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.resource_pool_status;"""
+        query = self._replace_schema_in_query(query)
         return vDataFrame(query)
 
     # Step 21: Getting Cluster configuration
@@ -1487,4 +1612,5 @@ class QueryProfiler:
             :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.host_resources;"""
+        query = self._replace_schema_in_query(query)
         return vDataFrame(query)

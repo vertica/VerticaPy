@@ -239,6 +239,8 @@ def best_k(
             Draws an Elbow curve.
     """
     X = format_type(X, dtype=list)
+    if X == []:
+        X = None
     if not init and (use_kprototype):
         init = "random"
     elif not init:
@@ -529,6 +531,8 @@ def elbow(
             based on a score.
     """
     X = format_type(X, dtype=list)
+    if X == []:
+        X = None
     if not init and (use_kprototype):
         init = "random"
     elif not init:
