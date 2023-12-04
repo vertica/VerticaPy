@@ -62,62 +62,179 @@ def pcsv(
     genSQL: bool = False,
 ) -> dict[str, str]:
     """
-    Parses a CSV file using flex tables. It identifies the
-    columns and their respective types.
+    Parses a CSV file using flex tables.
+    It identifies the columns and their
+    respective types.
 
     Parameters
     ----------
     path: str
-        Absolute path where the CSV file is located.
+        Absolute path where the
+        CSV file is located.
     sep: str, optional
         Column separator.
     header: bool, optional
-        If set to False, the parameter 'header_names' is
-        used to name the different columns.
+        If set to ``False``, the parameter
+        ``header_names`` is used to name
+        the different columns.
     header_names: list, optional
-        List of the column names.
+        ``list`` of the column names.
     na_rep: str, optional
         Missing values representation.
     quotechar: str, optional
-        Char that encloses the str values.
+        Char that encloses
+        the ``str`` values.
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
-        A single-character  value  used to  specify  the end of
-        a record.
+        A single-character value used
+        to specify the end of a record.
     trim: bool, optional
-        Boolean,  specifies  whether to trim  white space  from
-        header names and key values.
+        ``boolean``, specifies whether
+        to trim white space from header
+        names and key values.
     omit_empty_keys: bool, optional
-        Boolean,  specifies how the  parser handles header keys
-        without  values.  If true,  keys with an empty value in
+        ``boolean``, specifies how the
+        parser handles header keys
+        without  values. If ``True``,
+        keys with an empty value in
         the header row are not loaded.
     reject_on_duplicate: bool, optional
-        Boolean,  specifies whether  to ignore duplicate records
-        (False), or to reject duplicates (True). In either case,
-        the load continues.
+        ``boolean``, specifies whether
+        to ignore duplicate records
+        (``False``), or to reject
+        duplicates (``True``). In
+        either case, the load continues.
     reject_on_empty_key: bool, optional
-        Boolean, specifies whether to reject any  row containing
-        a key without a value.
+        ``boolean``, specifies whether
+        to reject any row containing a
+        key without a value.
     reject_on_materialized_type_error: bool, optional
-        Boolean,  specifies  whether to reject any  materialized
-        column  value  that  the  parser  cannot coerce  into  a
-        compatible data type.
+        ``boolean``, specifies whether
+        to reject any materialized column
+        value that the parser cannot coerce
+        into a compatible data type.
     ingest_local: bool, optional
-        If set to True, the file is ingested from the local
-        machine.
+        If set to ``True``, the file is
+        ingested from the local machine.
     flex_name: str, optional
         Flex table name.
     genSQL: bool, optional
-        If set to True, the SQL code for creating the final table
-        is  generated  but  not executed. This is a good  way  to
-        change the final relation  types or to customize the data
-        ingestion.
+        If set to ``True``, the SQL code
+        for creating the final table is
+        generated but not executed. This
+        is a good way to change the final
+        relation  types or to customize the
+        data ingestion.
 
     Returns
     -------
     dict
-        dictionary containing each column and its type.
+        ``dictionary`` containing
+        each column and its type.
+
+    Examples
+    --------
+    In this example, we will first create
+    a *CSV* file using
+    :py:meth:`verticapy.vDataFrame.to_csv`
+    and ingest it into Vertica database.
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    We will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    Let's convert the
+    :py:class:`vDataFrame`
+    to a CSV.
+
+    .. ipython:: python
+
+        data[0:20].to_csv(
+            path = "titanic_subset.csv",
+        )
+
+    Our CSV file is ready to
+    be parsed now.
+
+    .. ipython:: python
+
+        from verticapy.core.parsers.csv import pcsv
+
+        pcsv(
+            path = "titanic_subset.csv",
+            sep = ",",
+            na_rep = "",
+        )
+
+    You can also rename the columns
+    or name them if it has no header
+    by using the parameter "header_names"
+
+    .. ipython:: python
+
+        from verticapy.core.parsers.csv import pcsv
+
+        pcsv(
+            path = "titanic_subset.csv",
+            sep = ",",
+            na_rep = "",
+            header = True,
+            header_names = ["new_name1", "new_name2"],
+        )
+
+    .. seealso::
+
+        | :py:meth:`verticapy.utilities.read_csv` :
+            Ingests a CSV file into the Vertica DB.
+        | :py:meth:`verticapy.utilities.read_json` :
+            Ingests a JSON file into the Vertica DB.
     """
     header_names = format_type(header_names, dtype=list)
     if isinstance(na_rep, NoneType):
@@ -220,92 +337,341 @@ def read_csv(
     Parameters
     ----------
     path: str
-        Absolute path where the CSV file is located.
+        Absolute path where the
+        CSV file is located.
     schema: str, optional
-        Schema where the CSV file will be ingested.
+        Schema where the CSV file
+        will be ingested.
     table_name: str, optional
-        The final relation/table name. If unspecified, the name
-        is set to the name of the file or parent directory.
+        The final relation/table name.
+        If unspecified, the name is set
+        to the name of the file or parent
+        directory.
     sep: str, optional
         Column separator.
     header: bool, optional
-        If set to False, the parameter 'header_names' is used
-        to name the different columns.
+        If set to ``False``, the parameter
+        ``header_names`` is used to name
+        the different columns.
     header_names: list, optional
-        List of the column names.
+        ``list`` of the column names.
     dtype: dict, optional
-        Dictionary of the user types. Providing a dictionary can
-        increase   ingestion  speed  and  precision; instead  of
-        parsing the file to guess the different types, VerticaPy
-        will use the input types.
+        ``dictionary`` of the user types.
+        Providing a ``dictionary`` can
+        increase ingestion speed and
+        precision; instead of parsing
+        the file to guess the different
+        types, VerticaPy will use the
+        input types.
     na_rep: str, optional
         Missing values representation.
     quotechar: str, optional
-        Char that encloses the str values.
+        Char that encloses
+        the ``str`` values.
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
-        A single-character  value  used to  specify  the end of
-        a record.
+        A single-character value used
+        to specify the end of a record.
     trim: bool, optional
-        Boolean,  specifies  whether to trim  white space  from
-        header names and key values.
+        ``boolean``, specifies whether
+        to trim white space from header
+        names and key values.
     omit_empty_keys: bool, optional
-        Boolean,  specifies how the  parser handles header keys
-        without  values.  If true,  keys with an empty value in
+        ``boolean``, specifies how the
+        parser handles header keys
+        without  values. If ``True``,
+        keys with an empty value in
         the header row are not loaded.
     reject_on_duplicate: bool, optional
-        Boolean,  specifies whether  to ignore duplicate records
-        (False), or to reject duplicates (True). In either case,
-        the load continues.
+        ``boolean``, specifies whether
+        to ignore duplicate records
+        (``False``), or to reject
+        duplicates (``True``). In
+        either case, the load continues.
     reject_on_empty_key: bool, optional
-        Boolean, specifies whether to reject any  row containing
-        a key without a value.
+        ``boolean``, specifies whether
+        to reject any row containing a
+        key without a value.
     reject_on_materialized_type_error: bool, optional
-        Boolean,  specifies  whether to reject any  materialized
-        column  value  that  the  parser  cannot coerce  into  a
-        compatible data type.
+        ``boolean``, specifies whether
+        to reject any materialized column
+        value that the parser cannot coerce
+        into a compatible data type.
     parse_nrows: int, optional
-        If  this parameter is greater than zero, a new  file  of
-        'parse_nrows' rows is created and ingested to identify
-        the data types. It is then dropped and the entire file
-        is ingested. The data types identification  will be less
-        precise but this  parameter can make the process faster
-        if the file is large.
+        If  this parameter is greater
+        than zero, a new file of
+        ``parse_nrows`` rows is created
+        and ingested to identify the
+        data types. It is then dropped
+        and the entire file is ingested.
+        The data types identification
+        will be less precise but this
+        parameter can make the process
+        faster if the file is large.
     insert: bool, optional
-        If set to True,  the data is ingested into the specified
-        input relation. Be sure that your  file  has  a   header
-        corresponding  to  the  name  of the  relation  columns,
+        If set to ``True``, the data
+        is ingested into the specified
+        input relation. Be sure that
+        your file has a header corresponding
+        to the name of the relation columns,
         otherwise ingestion will fail.
     temporary_table: bool, optional
-        If set to True, a temporary table will be created.
+        If set to ``True``, a temporary
+        table will be created.
     temporary_local_table: bool, optional
-        If set to True, a temporary local table will be created.
-        The parameter 'schema'  must  be  empty,  otherwise this
-        parameter is ignored.
+        If set to ``True``, a temporary
+        local table will be created.
+        The parameter ``schema`` must be
+        empty, otherwise this parameter
+        is ignored.
     gen_tmp_table_name: bool, optional
-        Sets the name of the  temporary table. This parameter is
-        only used when the parameter  'temporary_local_table' is
-        set  to  True  and if  the parameters  "table_name"  and
-        "schema" are unspecified.
+        Sets the name of the temporary
+        table. This parameter is only
+        used when the parameter
+        ``temporary_local_table`` is set
+        to ``True`` and if the parameters
+        ``table_name`` and ``schema`` are
+        unspecified.
     ingest_local: bool, optional
-        If set to True, the file will be ingested from the local
-        machine.
+        If set to ``True``, the file is
+        ingested from the local machine.
     genSQL: bool, optional
-        If set to True, the SQL code for creating the final table
-        is  generated  but  not executed. This is a good  way  to
-        change the final relation  types or to customize the data
-        ingestion.
+        If set to ``True``, the SQL code
+        for creating the final table is
+        generated but not executed. This
+        is a good way to change the final
+        relation  types or to customize the
+        data ingestion.
     materialize: bool, optional
-        If  set to True,  the  flex table is  materialized  into a
-        table. Otherwise, it will remain a flex table. Flex tables
-        simplify  the  data  ingestion but have  worse  performace
-        compared to regular tables.
+        If set to ``True``, the flex table
+        is materialized into a table.
+        Otherwise, it will remain a flex
+        table. Flex tables simplify the
+        data ingestion but have worse
+        performace compared to regular
+        tables.
 
     Returns
     -------
     vDataFrame
-        The vDataFrame of the relation.
+        The :py:class:`vDataFrame`
+        of the relation.
+
+    Examples
+    --------
+    In this example, we will first create
+    a *CSV* file using
+    :py:meth:`verticapy.vDataFrame.to_csv`
+    and ingest it into Vertica database.
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    We will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    Let's convert the
+    :py:class:`vDataFrame`
+    to a CSV.
+
+    .. ipython:: python
+
+        data[0:20].to_csv(
+            path = "titanic_subset.csv",
+        )
+
+    Our CSV file is ready to
+    be ingested in database.
+
+    Let's generate, the SQL
+    needed to create the Table.
+
+    .. ipython:: python
+
+        from verticapy.core.parsers.csv import read_csv
+        read_csv(
+            path = "titanic_subset.csv",
+            table_name = "titanic_subset",
+            schema = "public",
+            quotechar = '"',
+            sep = ",",
+            na_rep = "",
+            genSQL = True,
+        )
+
+    .. note::
+
+        When ``genSQL`` flag is set to ``True``,
+        the SQL code for creating the final
+        table is  generated but not executed.
+        This is a good way to change the final
+        relation types or to customize the
+        data ingestion.
+
+    Now, we will ingest the CSV file
+    into the Vertica database.
+
+    .. code-block:: python
+
+        read_csv(
+            path = "titanic_subset.csv",
+            table_name = "titanic_subset",
+            schema = "public",
+            quotechar = '"',
+            sep = ",",
+            na_rep = "",
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        res = read_csv(
+            path = "titanic_subset.csv",
+            table_name = "titanic_subset",
+            schema = "public",
+            quotechar = '"',
+            sep = ",",
+            na_rep = "",
+        )
+        html_file = open("figures/core_parsers_csv1.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_csv1.html
+
+    .. important::
+
+        A limited number of rows, determined by the
+        ``parse_nrows`` parameter, is ingested. If
+        your dataset is large and you want to ingest
+        the entire dataset, increase its value.
+
+    Let's specify data types using
+    ``dtype`` parameter.
+
+    .. code-block:: python
+
+        read_csv(
+            path = "titanic_subset.csv",
+            table_name = "titanic_sub_dtypes",
+            schema = "public",
+            quotechar = '"',
+            sep = ",",
+            na_rep = "",
+            dtype = {
+                "pclass": "Integer",
+                "survived": "Integer",
+                "name": "Varchar(164)",
+                "sex": "Varchar(20)",
+                "age": "Numeric(6,3)",
+                "sibsp": "Integer",
+                "parch": "Integer",
+                "ticket": "Varchar(36)",
+                "fare": "Numeric(10,5)",
+                "cabin": "Varchar(30)",
+                "embarked": "Varchar(20)",
+                "boat": "Varchar(100)",
+                "body": "Integer",
+                "home.dest": "Varchar(100)",
+            },
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        res = read_csv(
+            path = "titanic_subset.csv",
+            table_name = "titanic_sub_dtypes",
+            schema = "public",
+            quotechar = '"',
+            sep = ",",
+            na_rep = "",
+            dtype = {
+                "pclass": "Integer",
+                "survived": "Integer",
+                "name": "Varchar(164)",
+                "sex": "Varchar(20)",
+                "age": "Numeric(6,3)",
+                "sibsp": "Integer",
+                "parch": "Integer",
+                "ticket": "Varchar(36)",
+                "fare": "Numeric(10,5)",
+                "cabin": "Varchar(30)",
+                "embarked": "Varchar(20)",
+                "boat": "Varchar(100)",
+                "body": "Integer",
+                "home.dest": "Varchar(100)",
+            },
+        )
+        html_file = open("figures/core_parsers_csv2.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_csv2.html
+
+    .. note::
+
+        The :py:func:`verticapy.core.parsers.csv.read_csv`
+        function offers various additional
+        parameters and options. Check the
+        documentation to explore its capabilities,
+        such as the ability to automatically
+        guess the separator or ingest a specific
+        number of rows.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.utilities.read_json` :
+            Ingests a JSON file into the Vertica DB.
     """
     dtype = format_type(dtype, dtype=dict)
     if isinstance(sep, NoneType):
