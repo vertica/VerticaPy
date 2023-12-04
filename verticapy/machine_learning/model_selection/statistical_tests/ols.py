@@ -60,7 +60,7 @@ def het_breuschpagan(
         F statistic, F pvalue
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -364,7 +364,7 @@ def het_goldfeldquandt(
         statistic, p_value
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -609,7 +609,7 @@ def het_white(
         F statistic, F pvalue
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -919,7 +919,7 @@ def variance_inflation_factor(
         VIF.
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^

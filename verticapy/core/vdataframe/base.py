@@ -161,7 +161,7 @@ class vDataFrame(vDFAnimatedPlot):
         ``vDataFrame["myVC"]``.
 
     Examples
-    ---------
+    --------
     In this example, we will look
     at some of the ways how we can
     create a :py:class:`vDataFrame`.

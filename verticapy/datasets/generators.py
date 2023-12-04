@@ -73,7 +73,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
         Generated dataset.
 
     Examples
-    ---------
+    --------
     .. code-block:: python
 
         import datetime
@@ -231,7 +231,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
         Generated dataset.
 
     Examples
-    ---------
+    --------
     .. code-block:: python
 
         import datetime

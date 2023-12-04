@@ -353,7 +353,7 @@ def randomized_features_search_cv(
         result of the randomized features search.
 
     Examples
-    ---------
+    --------
 
     Let us use a dataset which has a variety of
     predictors and one value of interest.
@@ -679,7 +679,7 @@ def stepwise(
         result of the stepwise.
 
     Examples
-    ---------
+    --------
 
     Let us use a dataset which has a variety of
     predictors and one value of interest.

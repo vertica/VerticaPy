@@ -85,7 +85,7 @@ def aic_score(
         Number of predictors.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -172,7 +172,7 @@ def bic_score(
         Number of predictors.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -258,7 +258,7 @@ def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -346,7 +346,7 @@ def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -434,7 +434,7 @@ def mean_absolute_error(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -525,7 +525,7 @@ def mean_squared_error(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -615,7 +615,7 @@ def mean_squared_log_error(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -703,7 +703,7 @@ def median_absolute_error(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -798,7 +798,7 @@ def quantile_error(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -885,7 +885,7 @@ def r2_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -987,7 +987,7 @@ def anova_table(
         ANOVA table.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1198,7 +1198,7 @@ def regression_report(
         report.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 

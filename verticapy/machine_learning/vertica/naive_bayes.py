@@ -118,7 +118,7 @@ class NaiveBayes(MulticlassClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the

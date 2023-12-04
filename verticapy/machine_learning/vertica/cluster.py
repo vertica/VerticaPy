@@ -284,7 +284,7 @@ class KMeans(Clustering):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -866,7 +866,7 @@ class KPrototypes(KMeans):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -1433,7 +1433,7 @@ class BisectingKMeans(KMeans, Tree):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -2087,7 +2087,7 @@ class DBSCAN(VerticaModel):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -2601,7 +2601,7 @@ class NearestCentroid(MulticlassClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the

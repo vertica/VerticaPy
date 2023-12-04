@@ -190,7 +190,7 @@ def adfuller(
         result of the test.
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -450,7 +450,7 @@ def mkt(
         result of the test.
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -717,7 +717,7 @@ def cochrane_orcutt(
             R2 score.
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -888,7 +888,7 @@ def durbin_watson(
         Durbin Watson statistic.
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -1082,7 +1082,7 @@ def ljungbox(
         result of the test.
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -1269,7 +1269,7 @@ def het_arch(
         F statistic, F pvalue
 
     Examples
-    ---------
+    --------
 
     Initialization
     ^^^^^^^^^^^^^^^
@@ -1541,7 +1541,7 @@ def seasonal_decompose(
         ts, column, TS seasonal part, TS trend, TS noise.
 
     Examples
-    ---------
+    --------
 
     Let us use a dataset that has seasonailty.
     The Airline passengers dataset is a good example.

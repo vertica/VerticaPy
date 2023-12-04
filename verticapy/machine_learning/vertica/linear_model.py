@@ -107,22 +107,131 @@ class LinearModel:
         self, show: bool = True, chart: Optional[PlottingObject] = None, **style_kwargs
     ) -> PlottingObject:
         """
-        Computes the model's features importance.
+        Computes the model's
+        features importance.
 
         Parameters
         ----------
         show: bool
-            If set to True,  draw the feature's importance.
+            If set to ``True``, draw
+            the feature's importance.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         obj
             features importance.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        We can conveniently get the features importance:
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.features_importance()
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html")
+
+        .. code-block:: python
+
+            result = model.features_importance()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         fi = self._get_features_importance()
         if show:
@@ -147,8 +256,40 @@ class LinearModel:
 
     def to_memmodel(self) -> mm.LinearModel:
         """
-        Converts  the model to an InMemory object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModel`
+            for more information.
         """
         return mm.LinearModel(self.coef_, self.intercept_)
 
@@ -166,9 +307,11 @@ class LinearModel:
         Parameters
         ----------
         max_nb_points: int
-            Maximum number of points to display.
+            Maximum number of
+            points to display.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object
+            to plot on.
         **style_kwargs
             Any optional parameter to
             pass to the Plotting functions.
@@ -177,6 +320,106 @@ class LinearModel:
         -------
         object
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        If the model allows, you can also
+        generate relevant plots. For example,
+        regression plots can be found in
+        the :ref:`chart_gallery.regression_plot`.
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="RegressionPlot",
@@ -216,8 +459,40 @@ class LinearModelClassifier(LinearModel):
 
     def to_memmodel(self) -> mm.LinearModelClassifier:
         """
-        Converts  the  model  to an InMemory object that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            for more information.
         """
         return mm.LinearModelClassifier(self.coef_, self.intercept_)
 
@@ -235,9 +510,11 @@ class LinearModelClassifier(LinearModel):
         Parameters
         ----------
         max_nb_points: int
-            Maximum number of points to display.
+            Maximum number of
+            points to display.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object to
+            plot on.
         **style_kwargs
             Any optional parameter to
             pass to the Plotting functions.
@@ -246,6 +523,106 @@ class LinearModelClassifier(LinearModel):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        FLet's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "good",
+                test,
+            )
+
+        If the model allows, you can also
+        generate relevant plots. For example,
+        classification plots can be found in
+        the :ref:`chart_gallery.classification_plot`.
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="LogisticRegressionPlot",
@@ -350,7 +727,7 @@ class ElasticNet(LinearModel, Regressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -849,7 +1226,7 @@ class Lasso(LinearModel, Regressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -1350,7 +1727,7 @@ class LinearRegression(LinearModel, Regressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -1885,7 +2262,7 @@ class PoissonRegressor(LinearModel, Regressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -2380,7 +2757,7 @@ class Ridge(LinearModel, Regressor):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -2929,7 +3306,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         method.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the

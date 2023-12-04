@@ -316,7 +316,7 @@ def confusion_matrix(
         confusion matrix.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -526,7 +526,7 @@ def accuracy_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -669,7 +669,7 @@ def balanced_accuracy_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -814,7 +814,7 @@ def critical_success_index(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -962,7 +962,7 @@ def diagnostic_odds_ratio(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1107,7 +1107,7 @@ def f1_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1251,7 +1251,7 @@ def false_negative_rate(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1392,7 +1392,7 @@ def false_positive_rate(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1536,7 +1536,7 @@ def false_discovery_rate(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1680,7 +1680,7 @@ def false_omission_rate(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1824,7 +1824,7 @@ def fowlkes_mallows_index(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -1968,7 +1968,7 @@ def informedness(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -2114,7 +2114,7 @@ def markedness(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -2262,7 +2262,7 @@ def matthews_corrcoef(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -2406,7 +2406,7 @@ def negative_predictive_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -2550,7 +2550,7 @@ def negative_likelihood_ratio(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -2695,7 +2695,7 @@ def positive_likelihood_ratio(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -2839,7 +2839,7 @@ def precision_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -2984,7 +2984,7 @@ def prevalence_threshold(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -3128,7 +3128,7 @@ def recall_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -3272,7 +3272,7 @@ def specificity_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -3765,7 +3765,7 @@ def best_cutoff(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -3926,7 +3926,7 @@ def average_precision_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -4142,7 +4142,7 @@ def roc_auc_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -4310,7 +4310,7 @@ def prc_auc_score(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -4467,7 +4467,7 @@ def log_loss(
         score.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 
@@ -4869,7 +4869,7 @@ def classification_report(
         report.
 
     Examples
-    ---------
+    --------
 
     We should first import verticapy.
 

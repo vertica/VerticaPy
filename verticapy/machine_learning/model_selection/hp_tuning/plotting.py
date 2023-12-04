@@ -587,7 +587,7 @@ def plot_acf_pacf(
         ``acf, pacf, confidence``
 
     Examples
-    ---------
+    --------
 
     We import :py:mod:`verticapy`:
 
