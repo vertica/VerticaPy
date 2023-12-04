@@ -550,9 +550,12 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
             tftype = tf.float32
             nptype = np.float32
 
-            (train_eval_data, train_eval_labels), (
-                test_data,
-                test_labels,
+            (
+                (train_eval_data, train_eval_labels),
+                (
+                    test_data,
+                    test_labels,
+                ),
             ) = tf.keras.datasets.mnist.load_data()
 
             train_eval_labels = np.asarray(train_eval_labels, dtype=nptype)
