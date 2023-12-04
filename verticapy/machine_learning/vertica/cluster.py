@@ -160,8 +160,8 @@ class Clustering(Unsupervised):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
@@ -981,8 +981,10 @@ class KPrototypes(KMeans):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database.
+        To train a model, you can directly
+        use the :py:class:`vDataFrame` or
+        the name of the relation stored in
+        the database.
 
     .. note::
 
@@ -2177,8 +2179,10 @@ class DBSCAN(VerticaModel):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database.
+        To train a model, you can directly
+        use the :py:class:`vDataFrame` or
+        the name of the relation stored in
+        the database.
 
     .. hint::
 
@@ -2240,9 +2244,10 @@ class DBSCAN(VerticaModel):
     Model Register
     ^^^^^^^^^^^^^^
 
-    As this model is not native, it does not support model management and
-    versioning. However, it is possible to use the SQL code it generates
-    for deployment.
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
     """
 
     # Properties.
@@ -2532,8 +2537,8 @@ class DBSCAN(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
@@ -3106,9 +3111,10 @@ class NearestCentroid(MulticlassClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    As this model is not native, it does not support model management and
-    versioning. However, it is possible to use the SQL code it generates
-    for deployment.
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^

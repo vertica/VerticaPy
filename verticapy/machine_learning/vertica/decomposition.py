@@ -56,27 +56,101 @@ class Decomposition(Preprocessing):
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model.
-            If empty,  the model predictors are used.
+            ``list`` of the columns used to
+            deploy the model. If empty, the
+            model predictors are used.
         n_components: int, optional
-            Number  of  components to return.  If  set to
-            0,  all  the  components  are deployed.
+            Number of components to return.
+            If set to ``0``, all the components
+            are deployed.
         cutoff: PythonNumber, optional
-            Specifies  the minimum accumulated  explained
-            variance.  Components  are  taken  until  the
-            accumulated  explained  variance reaches this
-            value.
+            Specifies the minimum accumulated
+            explained variance. Components are
+            taken until the accumulated explained
+            variance reaches this value.
         key_columns: SQLColumns, optional
-            Predictors   used    during   the   algorithm
-            computation  that will be deployed with  the
-            principal components.
+            Predictors used during the algorithm
+            computation that will be deployed with
+            the principal components.
         exclude_columns: SQLColumns, optional
             Columns to exclude from the prediction.
 
         Returns
         -------
         str
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        We can drop the "color"
+        column as it is varchar
+        type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        Once the model is trained, we can
+        extract the SQL conveniently:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            or
+            :py:class:`verticapy.machine_learning.vertica.decomposition.SVD`
+            for a more detailed example.
         """
         exclude_columns, key_columns = format_type(
             exclude_columns, key_columns, dtype=list
@@ -110,33 +184,124 @@ class Decomposition(Preprocessing):
         p: int = 2,
     ) -> TableSample:
         """
-        Returns  the  decomposition  score  on  a  dataset
-        for  each  transformed column.  It is the  average
-        / median of the p-distance between the real column
-        and  its  result after applying the  decomposition
-        model and its inverse.
+        Returns the decomposition score
+        on a dataset for  each  transformed
+        column. It is the average / median
+        of the ``p``-distance between the
+        real column and  its  result after
+        applying the  decomposition model
+        and its inverse.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model.
-            If empty, the model  predictors are used.
+            ``list`` of the columns used to
+            deploy the model. If empty, the
+            model  predictors are used.
         input_relation: str, optional
-            Input  Relation.  If  empty,  the model input
-            relation are used.
+            Input Relation. If empty, the
+            model input relation are used.
         metric: str, optional
-            Distance metric used to do the scoring.
-                avg    : The average is used as
-                         aggregation.
-                median : The median  is used as
-                         aggregation.
+            Distance metric used to do the
+            scoring.
+
+            - avg:
+                The average is used as
+                aggregation.
+            - median:
+                The median is used as
+                aggregation.
+
         p: int, optional
-            The p of the p-distance.
+            The ``p`` of the ``p``-distance.
 
         Returns
         -------
         TableSample
             PCA scores.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        We can drop the "color"
+        column as it is varchar
+        type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        The decomposition score on the
+        dataset for each transformed
+        column can be calculated by:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.score()
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_score.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.score()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_score.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            or
+            :py:class:`verticapy.machine_learning.vertica.decomposition.SVD`
+            for a more detailed example.
         """
         if isinstance(X, NoneType):
             X = self.X
@@ -200,31 +365,118 @@ class Decomposition(Preprocessing):
         cutoff: PythonNumber = 1,
     ) -> vDataFrame:
         """
-        Applies the model on a vDataFrame.
+        Applies the model on a ``vDataFrame``.
 
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input  vDataFrame.   You can  also  specify
-            a  customized   relation,   but   you  must
-            enclose  it  with  an  alias.  For example:
-            ``(SELECT 1) x``    is     valid    whereas
-            ``(SELECT 1)`` and "SELECT 1" are invalid.
+            Input ``vDataFrame``. You can
+            also specify a  customized
+            relation, but you must enclose
+            it with an alias. For example:
+            ``(SELECT 1) x`` is valid whereas
+            ``(SELECT 1)`` and ``SELECT 1``
+            are invalid.
         X: SQLColumns, optional
-            List of the input vDataColumns.
+            ``list`` of the input ``vDataColumns``.
         n_components: int, optional
-            Number  of components to return.  If set to
-            0, all the components are deployed.
+            Number  of components to return.
+            If set to 0, all the components
+            are deployed.
         cutoff: PythonNumber, optional
-            Specifies the minimum accumulated explained
-            variance.  Components  are taken until  the
-            accumulated explained variance reaches this
+            Specifies the minimum accumulated
+            explained variance. Components
+            are taken until the accumulated
+            explained variance reaches this
             value.
 
         Returns
         -------
         vDataFrame
-            object result of the model transformation.
+            object result of the
+            model transformation.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        We can drop the "color"
+        column as it is varchar
+        type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        To get the transformed dataset in
+        the form of principal components:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.score()
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_transform.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.transform(data)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_decomposition_transform.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            or
+            :py:class:`verticapy.machine_learning.vertica.decomposition.SVD`
+            for a more detailed example.
         """
         if isinstance(X, NoneType):
             X = self.X
@@ -260,18 +512,100 @@ class Decomposition(Preprocessing):
         Parameters
         ----------
         dimensions: tuple, optional
-            Tuple of two elements representing the
-            IDs of the model's components.
+            Tuple of two elements
+            representing the IDs
+            of the model's components.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional  parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        We can drop the "color"
+        column as it is varchar
+        type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        You can plot the first two
+        components conveniently using:
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot(width = 550)
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            or
+            :py:class:`verticapy.machine_learning.vertica.decomposition.SVD`
+            for a more detailed example.
         """
         vdf = self.transform(vDataFrame(self.input_relation))
         dim_perc = []
@@ -309,18 +643,100 @@ class Decomposition(Preprocessing):
         Parameters
         ----------
         dimensions: tuple, optional
-            Tuple of two elements representing the IDs
+            Tuple of two elements
+            representing the IDs
             of the model's components.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass to  the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        We can drop the "color"
+        column as it is varchar
+        type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        You can plot the Decomposition
+        Circles:
+
+        .. code-block:: python
+
+            model.plot_circle()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot_circle()
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_circle.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_circle.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            or
+            :py:class:`verticapy.machine_learning.vertica.decomposition.SVD`
+            for a more detailed example.
         """
         if self._model_type == "SVD":
             x = self.vectors_[:, dimensions[0] - 1]
@@ -358,13 +774,95 @@ class Decomposition(Preprocessing):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the
-            Plotting functions.
+            Any optional parameter to
+            pass to the Plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        We can drop the "color"
+        column as it is varchar
+        type.
+
+        .. code-block::
+
+            data.drop("color")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data.drop("color")
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import PCA
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import PCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = PCA(
+                n_components = 3,
+            )
+
+        And train it:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data)
+
+        You can plot the Scree plot:
+
+        .. code-block:: python
+
+            model.plot_scree()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "highcharts")
+            fig = model.plot_scree()
+            html_text = fig.htmlcontent.replace("container", "ml_vertica_MCA_scree")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_scree.html", "w") as file:
+                file.write(html_text)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_scree.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.PCA`
+            or
+            :py:class:`verticapy.machine_learning.vertica.decomposition.SVD`
+            for a more detailed example.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="PCAScreePlot",
@@ -582,8 +1080,10 @@ class PCA(Decomposition):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database.
+        To train a model, you can directly
+        use the :py:class:`vDataFrame` or
+        the name of the relation stored in
+        the database.
 
     Scores
     ^^^^^^^
@@ -639,7 +1139,7 @@ class PCA(Decomposition):
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot()
+        fig = model.plot(width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html")
 
     .. raw:: html
@@ -740,9 +1240,11 @@ class PCA(Decomposition):
 
         The
         :py:meth:`verticapy.machine_learning.vertica.decomposition.PCA.to_python`
-        method is used to retrieve the Principal Component values.
+        method is used to retrieve the
+        Principal Component values.
         For specific details on how to
-        use this method for different model types, refer to the relevant
+        use this method for different
+        model types, refer to the relevant
         documentation for each model.
     """
 
@@ -821,8 +1323,39 @@ class PCA(Decomposition):
 
     def to_memmodel(self) -> mm.PCA:
         """
-        Converts  the model  to an InMemory object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+            for more information.
         """
         return mm.PCA(self.principal_components_, self.mean_)
 
@@ -920,7 +1453,8 @@ class MCA(PCA):
         without interfering with functions from other
         libraries.
 
-    For this example, we will use the Titanic dataset.
+    For this example, we will
+    use the Titanic dataset.
 
     .. code-block:: python
 
@@ -966,20 +1500,24 @@ class MCA(PCA):
 
         model = MCA()
 
-    You can select the number of components by the ``n_component``
-    parameter. If it is not provided, then all are considered.
+    You can select the number of components
+    by the ``n_component`` parameter. If it
+    is not provided, then all are considered.
 
     .. important::
 
-        As this model is not native, it solely relies on SQL statements to
-        compute various attributes, storing them within the object. No data
-        is saved in the database.
+        As this model is not native, it solely
+        relies on SQL statements to compute
+        various attributes, storing them within
+        the object. No data is saved in the database.
 
     Model Training
     ^^^^^^^^^^^^^^^
 
-    Before fitting the model, we need to calculate the Transformed Completely
-    Disjontive Table before fitting the model:
+    Before fitting the model, we need to
+    calculate the Transformed Completely
+    Disjontive Table before fitting the
+    model:
 
     .. ipython:: python
         :okwarning:
@@ -995,14 +1533,17 @@ class MCA(PCA):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database.
+        To train a model, you can directly
+        use the :py:class:`vDataFrame` or
+        the name of the relation stored in
+        the database.
 
     Scores
     ^^^^^^
 
-    The decomposition  score  on  the  dataset for  each
-    transformed column can be calculated by:
+    The decomposition score on the dataset
+    for each transformed column can be
+    calculated by:
 
     .. ipython:: python
 
@@ -1020,7 +1561,8 @@ class MCA(PCA):
     Principal Components
     ^^^^^^^^^^^^^^^^^^^^^^
 
-    To get the transformed dataset in the form of principal
+    To get the transformed dataset
+    in the form of principal
     components:
 
     .. ipython:: python
@@ -1042,7 +1584,8 @@ class MCA(PCA):
     Plots - MCA
     ^^^^^^^^^^^^
 
-    You can plot the first two dimensions conveniently using:
+    You can plot the first two
+    dimensions conveniently using:
 
     .. code-block:: python
 
@@ -1052,7 +1595,7 @@ class MCA(PCA):
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot()
+        fig = model.plot(width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot.html")
 
     .. raw:: html
@@ -1101,9 +1644,10 @@ class MCA(PCA):
     Model Register
     ^^^^^^^^^^^^^^
 
-    As this model is not native, it does not support model management and
-    versioning. However, it is possible to use the SQL code it generates
-    for deployment.
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -1149,9 +1693,11 @@ class MCA(PCA):
 
         The
         :py:meth:`verticapy.machine_learning.vertica.decomposition.MCA.to_python`
-        method is used to retrieve the Principal Component values.
+        method is used to retrieve the
+        Principal Component values.
         For specific details on how to
-        use this method for different model types, refer to the relevant
+        use this method for different
+        model types, refer to the relevant
         documentation for each model.
     """
 
@@ -1199,24 +1745,107 @@ class MCA(PCA):
         self, dimension: int = 1, chart: Optional[PlottingObject] = None, **style_kwargs
     ) -> PlottingObject:
         """
-        Draws a decomposition  contribution plot of the input
-        dimension.
+        Draws a decomposition contribution
+        plot of the input dimension.
 
         Parameters
         ----------
         dimension: int, optional
-            Integer  representing  the  IDs  of the  model's
+            Integer representing the IDs
+            of the model's
             component.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        We import the ``MCA`` model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import MCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = MCA()
+
+        Before fitting the model, we need to
+        calculate the Transformed Completely
+        Disjontive Table before fitting the
+        model:
+
+        .. ipython:: python
+            :okwarning:
+
+            tcdt = data[["survived", "pclass", "sex"]].cdt()
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(tcdt)
+
+        You can also decomposition
+        contribution of dimension 1.
+
+        .. code-block:: python
+
+            model.plot_contrib(dimension = 1)
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "highcharts")
+            fig = model.plot_contrib(dimension = 1)
+            html_text = fig.htmlcontent.replace("container", "ml_vertica_SVD_scree")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_contrib.html", "w") as file:
+                file.write(html_text)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_contrib.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.MCA`
+            for more information about the
+            different methods and usages.
         """
         contrib = self.principal_components_[:, dimension - 1] ** 2
         contrib = 100 * contrib / contrib.sum()
@@ -1257,17 +1886,100 @@ class MCA(PCA):
         Parameters
         ----------
         dimensions: tuple, optional
-            Tuple of two IDs of the model's components.
+            Tuple of two IDs of the
+            model's components.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        We import the ``MCA`` model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import MCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = MCA()
+
+        Before fitting the model, we need to
+        calculate the Transformed Completely
+        Disjontive Table before fitting the
+        model:
+
+        .. ipython:: python
+            :okwarning:
+
+            tcdt = data[["survived", "pclass", "sex"]].cdt()
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(tcdt)
+
+        You can also decomposition cos2
+        plot of dimensions 1 and 2.
+
+        .. code-block:: python
+
+            model.plot_cos2(dimensions = (1, 2))
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "highcharts")
+            fig = model.plot_cos2(dimensions = (1, 2))
+            html_text = fig.htmlcontent.replace("container", "machine_learning_vertica_mca_plot_cos2")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_cos2.html", "w") as file:
+                file.write(html_text)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_cos2.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.MCA`
+            for more information about the
+            different methods and usages.
         """
         cos2_1 = self.cos2_[:, dimensions[0] - 1]
         cos2_2 = self.cos2_[:, dimensions[1] - 1]
@@ -1307,29 +2019,118 @@ class MCA(PCA):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws  the  MCA  (multiple correspondence analysis)
+        Draws the MCA (multiple
+        correspondence analysis)
         graph.
 
         Parameters
         ----------
         dimensions: tuple, optional
-            Tuple  of  two IDs  of  the model's  components.
+            ``tuple`` of two IDs  of
+            the model's  components.
         method: str, optional
             Method used to draw the plot.
-                auto    : Only the  variables are displayed.
-                cos2    : The cos2 is used as CMAP.
-                contrib : The feature  contribution is  used
-                          as CMAP.
+
+             - auto:
+                Only the  variables are
+                displayed.
+             - cos2:
+                The cos2 is used as CMAP.
+             - contrib :
+                The feature contribution
+                is used as CMAP.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_titanic()
+
+        We import the ``MCA`` model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import MCA
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = MCA()
+
+        Before fitting the model, we need to
+        calculate the Transformed Completely
+        Disjontive Table before fitting the
+        model:
+
+        .. ipython:: python
+            :okwarning:
+
+            tcdt = data[["survived", "pclass", "sex"]].cdt()
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(tcdt)
+
+        You can also decomposition
+        graph of dimensions 1 and 2.
+
+        .. code-block:: python
+
+            model.plot_var(dimensions = (1, 2))
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "highcharts")
+            fig = model.plot_var(dimensions = (1, 2))
+            html_text = fig.htmlcontent.replace("container", "machine_learning_vertica_mca_plot_var")
+            with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_var.html", "w") as file:
+                file.write(html_text)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_var.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.decomposition.MCA`
+            for more information about the
+            different methods and usages.
         """
         x = self.principal_components_[:, dimensions[0] - 1]
         y = self.principal_components_[:, dimensions[1] - 1]
@@ -1420,9 +2221,11 @@ class SVD(Decomposition):
     during the fitting phase.
 
     values_: numpy.array
-        Matrix of the right singular vectors.
+        Matrix of the right
+        singular vectors.
     values_: numpy.array
-        Array of the singular values for each input
+        Array of the singular
+        values for each input
         feature.
 
     .. note::
@@ -1559,8 +2362,10 @@ class SVD(Decomposition):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame` or the
-        name of the relation stored in the database.
+        To train a model, you can directly
+        use the :py:class:`vDataFrame` or
+        the name of the relation stored in
+        the database.
 
     Scores
     ^^^^^^
@@ -1636,7 +2441,7 @@ class SVD(Decomposition):
 
         vp.set_option("plotting_lib", "highcharts")
         fig = model.plot_scree()
-        html_text = fig.htmlcontent.replace("container", "ml_vertica_SVD_scree")
+        html_text = fig.htmlcontent.replace("container", "machine_learning_vertica_svd_plot_scree")
         with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot_scree.html", "w") as file:
             file.write(html_text)
 
@@ -1782,7 +2587,38 @@ class SVD(Decomposition):
 
     def to_memmodel(self) -> mm.SVD:
         """
-        Converts  the model  to an InMemory object  that
-        can be used for different types of predictions.
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+            for more information.
         """
         return mm.SVD(self.vectors_, self.values_)
