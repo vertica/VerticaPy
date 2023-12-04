@@ -365,20 +365,22 @@ class Decomposition(Preprocessing):
         cutoff: PythonNumber = 1,
     ) -> vDataFrame:
         """
-        Applies the model on a ``vDataFrame``.
+        Applies the model on a
+        :py:class:`vDataFrame`.
 
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input ``vDataFrame``. You can
-            also specify a  customized
+            Input :py:class:`vDataFrame`.
+            You can also specify a customized
             relation, but you must enclose
             it with an alias. For example:
             ``(SELECT 1) x`` is valid whereas
             ``(SELECT 1)`` and ``SELECT 1``
             are invalid.
         X: SQLColumns, optional
-            ``list`` of the input ``vDataColumns``.
+            ``list`` of the input
+            :py:class:`vDataColumn`.
         n_components: int, optional
             Number  of components to return.
             If set to 0, all the components
@@ -961,10 +963,11 @@ class PCA(Decomposition):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -1114,8 +1117,10 @@ class PCA(Decomposition):
 
         model.transform(data)
 
-    Please refer to :py:meth:`verticapy.machine_learning.PCA.transform`
-    for more details on transforming a :py:class:`vDataFrame`.
+    Please refer to
+    :py:meth:`verticapy.machine_learning.PCA.transform`
+    for more details on transforming
+    a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:
@@ -1370,12 +1375,14 @@ class MCA(PCA):
 
     .. important::
 
-        This algorithm is not Vertica Native and relies solely
-        on SQL for attribute computation. While this model does
-        not take advantage of the benefits provided by a model
-        management system, including versioning and tracking,
-        the SQL code it generates can still be used to create a
-        pipeline.
+        This algorithm is not Vertica
+        Native and relies solely on SQL
+        for attribute computation. While
+        this model does not take advantage
+        of the benefits provided by a model
+        management system, including versioning
+        and tracking, the SQL code it generates
+        can still be used to create a pipeline.
 
     Parameters
     ----------
@@ -1425,10 +1432,11 @@ class MCA(PCA):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -1569,8 +1577,10 @@ class MCA(PCA):
 
         model.transform(tcdt)
 
-    Please refer to :py:meth:`verticapy.machine_learning.MCA.transform`
-    for more details on transforming a :py:class:`vDataFrame`.
+    Please refer to
+    :py:meth:`verticapy.machine_learning.MCA.transform`
+    for more details on transforming
+    a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:
@@ -2243,10 +2253,11 @@ class SVD(Decomposition):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -2396,8 +2407,10 @@ class SVD(Decomposition):
 
         model.transform(data)
 
-    Please refer to :py:meth:`verticapy.machine_learning.SVD.transform`
-    for more details on transforming a :py:class:`vDataFrame`.
+    Please refer to
+    :py:meth:`verticapy.machine_learning.SVD.transform`
+    for more details on transforming
+    a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:

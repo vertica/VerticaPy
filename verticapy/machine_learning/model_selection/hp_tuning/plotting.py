@@ -696,8 +696,8 @@ def plot_acf_pacf(
 
     .. seealso::
 
-        | :py:func:`vDataFrame.acf` : ACF plot from a ``vDataFrame``.
-        | :py:func:`vDataFrame.pacf` : PACF plot from a ``vDataFrame``.
+        | :py:func:`vDataFrame.acf` : ACF plot from a :py:class:`vDataFrame`.
+        | :py:func:`vDataFrame.pacf` : PACF plot from a :py:class:`vDataFrame`.
     """
     by = format_type(by, dtype=list)
     by, column, ts = vdf.format_colnames(by, column, ts)

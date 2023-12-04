@@ -1134,10 +1134,11 @@ class ARIMA(TimeSeriesModelBase):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Initialization
@@ -1866,10 +1867,11 @@ class ARMA(TimeSeriesModelBase):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Initialization
@@ -2585,10 +2587,11 @@ class AR(TimeSeriesModelBase):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Initialization
@@ -3267,10 +3270,11 @@ class MA(TimeSeriesModelBase):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Initialization

@@ -83,12 +83,14 @@ class KNeighborsRegressor(Regressor):
 
     .. important::
 
-        This algorithm is not Vertica Native and relies solely
-        on SQL for attribute computation. While this model does
-        not take advantage of the benefits provided by a model
-        management system, including versioning and tracking,
-        the SQL code it generates can still be used to create a
-        pipeline.
+        This algorithm is not Vertica
+        Native and relies solely on SQL
+        for attribute computation. While
+        this model does not take advantage
+        of the benefits provided by a model
+        management system, including versioning
+        and tracking, the SQL code it generates
+        can still be used to create a pipeline.
 
     Parameters
     ----------
@@ -118,10 +120,11 @@ class KNeighborsRegressor(Regressor):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -614,12 +617,14 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. important::
 
-        This algorithm is not Vertica Native and relies solely
-        on SQL for attribute computation. While this model does
-        not take advantage of the benefits provided by a model
-        management system, including versioning and tracking,
-        the SQL code it generates can still be used to create a
-        pipeline.
+        This algorithm is not Vertica
+        Native and relies solely on SQL
+        for attribute computation. While
+        this model does not take advantage
+        of the benefits provided by a model
+        management system, including versioning
+        and tracking, the SQL code it generates
+        can still be used to create a pipeline.
 
     Parameters
     ----------
@@ -651,10 +656,11 @@ class KNeighborsClassifier(MulticlassClassifier):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -1052,7 +1058,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the ``vDataFrame``,
+        Probabilities are added to the :py:class:`vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
@@ -2110,12 +2116,14 @@ class LocalOutlierFactor(VerticaModel):
 
     .. important::
 
-        This algorithm is not Vertica Native and relies solely
-        on SQL for attribute computation. While this model does
-        not take advantage of the benefits provided by a model
-        management system, including versioning and tracking,
-        the SQL code it generates can still be used to create a
-        pipeline.
+        This algorithm is not Vertica
+        Native and relies solely on SQL
+        for attribute computation. While
+        this model does not take advantage
+        of the benefits provided by a model
+        management system, including versioning
+        and tracking, the SQL code it generates
+        can still be used to create a pipeline.
 
     Parameters
     ----------
@@ -2159,10 +2167,11 @@ class LocalOutlierFactor(VerticaModel):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning

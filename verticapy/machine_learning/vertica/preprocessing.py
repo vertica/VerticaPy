@@ -855,10 +855,11 @@ class Scaler(Preprocessing):
     Examples
     --------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -1273,10 +1274,11 @@ class OneHotEncoder(Preprocessing):
     Examples
     --------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/examples/>`_
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
