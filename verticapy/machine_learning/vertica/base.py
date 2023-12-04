@@ -2827,8 +2827,10 @@ class Regressor(Supervised):
         ] = None,
     ) -> Union[float, TableSample]:
         """
-        Computes a regression report using multiple metrics to
-        evaluate the model (r2, mse, max error...).
+        Computes a regression report
+        using multiple metrics to
+        evaluate the model (``r2``,
+        ``mse``, ``max error``...).
 
         Parameters
         ----------
