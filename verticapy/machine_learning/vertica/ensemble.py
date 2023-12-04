@@ -4543,6 +4543,13 @@ class IsolationForest(Clustering, Tree):
                 nbins = 6,
             )
 
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
         Prediction is straight-forward:
 
         .. ipython:: python
