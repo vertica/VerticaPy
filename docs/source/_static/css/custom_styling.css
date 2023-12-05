@@ -844,6 +844,31 @@ article, article .align-default {
   font-size: large;
 }
 
+
+.deprecated{
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  background-color: #f8f8f8;
+  border-left: 0.2rem solid red;
+  padding: 5px;
+}
+
+
+.versionadded{
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  background-color: #f8f8f8;
+  border-left: 0.2rem solid green;
+  padding: 5px;
+}
+
+.versionmodified{
+  font-weight: bold;
+  font-style: normal;
+  display: inline-block;
+  border: none;
+}
+
 /* End of form */
 
 
