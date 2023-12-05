@@ -1481,6 +1481,23 @@ class KNeighborsClassifier(MulticlassClassifier):
                p = 2,
             )
 
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "density",
+                    "pH",
+                ],
+                "quality",
+                test,
+            )
+
         And generate the Vertica SQL:
 
         .. ipython:: python
