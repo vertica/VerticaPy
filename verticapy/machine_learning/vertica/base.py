@@ -1580,7 +1580,7 @@ class VerticaModel(PlottingUtils):
         bool
             ``True`` if the model
             was successfully
-            exported.
+            imported.
 
         Examples
         --------
