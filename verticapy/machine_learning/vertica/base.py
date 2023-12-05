@@ -247,7 +247,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -412,7 +412,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -632,7 +632,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -781,7 +781,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1220,7 +1220,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1357,7 +1357,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1821,7 +1821,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1974,7 +1974,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -2738,6 +2738,74 @@ class BinaryClassifier(Supervised):
         -------
         str
                 the SQL code needed to deploy the model.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        To get the Model Vertica
+        SQL, use below:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
@@ -2777,42 +2845,186 @@ class BinaryClassifier(Supervised):
         metrics: list, optional
             List  of the  metrics  used to compute the  final
             report.
-                accuracy    : Accuracy
-                aic         : Akaike’s  Information  Criterion
-                auc         : Area Under the Curve (ROC)
-                ba          : Balanced Accuracy
-                              = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC
-                              Curve prediction.
-                bic         : Bayesian  Information  Criterion
-                bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index
-                              = tp / (tp + fn + fp)
-                f1          : F1 Score
-                fdr         : False Discovery Rate = 1 - ppv
-                fm          : Fowlkes–Mallows index
-                              = sqrt(ppv * tpr)
-                fnr         : False Negative Rate
-                              = fn / (fn + tp)
-                for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate
-                              = fp / (fp + tn)
-                logloss     : Log Loss
-                lr+         : Positive Likelihood Ratio
-                              = tpr / fpr
-                lr-         : Negative Likelihood Ratio
-                              = fnr / tnr
-                dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient
-                mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value
-                              = tn / (tn + fn)
-                prc_auc     : Area Under the Curve (PRC)
-                precision   : Precision = tp / (tp + fp)
-                pt          : Prevalence Threshold
-                              = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-                recall      : Recall = tp / (tp + fn)
-                specificity : Specificity = tn / (tn + fp)
+
+            - accuracy:
+                Accuracy.
+
+                .. math::
+
+                    Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
+            - aic:
+                Akaike's  Information  Criterion
+
+                .. math::
+
+                    AIC = = 2k - 2\ln(\hat{L})
+
+            - auc:
+                Area Under the Curve (ROC).
+
+                .. math::
+
+                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+            - ba:
+                Balanced Accuracy.
+
+                .. math::
+
+                    BA = \\frac{TPR + TNR}{2}
+
+            - best_cutoff:
+                Cutoff  which optimised the  ROC
+                Curve prediction.
+
+            - bic:
+                Bayesian  Information  Criterion
+
+                .. math::
+
+                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+
+            - bm:
+                Informedness
+
+                .. math::
+
+                    BM = TPR + TNR - 1
+
+            - csi:
+                Critical Success Index
+
+                .. math::
+
+                    index = \\frac{TP}{TP + FN + FP}
+
+            - f1:
+                F1 Score
+
+                .. math::
+
+                    F_1 Score = 2 \\times \\frac{Precision \\times Recall}{Precision + Recall}
+
+            - fdr:
+                False Discovery Rate
+
+                .. math::
+
+                    FDR = 1 - PPV
+
+            - fm:
+                Fowlkes-Mallows index
+
+                .. math::
+
+                    FM = \\sqrt{PPV * TPR}
+
+            - fnr:
+                False Negative Rate
+
+                .. math::
+
+                    FNR = \\frac{FN}{FN + TP}
+
+            - for:
+                False Omission Rate
+
+                .. math::
+
+                    FOR = 1 - NPV
+
+            - fpr:
+                False Positive Rate
+
+                .. math::
+
+                    FPR = \\frac{FP}{FP + TN}
+
+            - logloss:
+                Log Loss.
+
+                .. math::
+
+                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
+            - lr+:
+                Positive Likelihood Ratio.
+
+                .. math::
+
+                    LR+ = \\frac{TPR}{FPR}
+
+            - lr-:
+                Negative Likelihood Ratio.
+
+                .. math::
+
+                    LR- = \\frac{FNR}{TNR}
+
+            - dor:
+                Diagnostic Odds Ratio.
+
+                .. math::
+
+                    DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+            - mc:
+                Matthews Correlation Coefficient
+                .. math::
+
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+
+            - mk:
+                Markedness
+
+                .. math::
+
+                    MK = PPV + NPV - 1
+
+            - npv:
+                Negative Predictive Value
+
+                .. math::
+
+                    NPV = \\frac{TN}{TN + FN}
+
+            - prc_auc:
+                Area Under the Curve (PRC)
+
+                .. math::
+
+                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+            - precision:
+                Precision
+
+                .. math::
+
+                    Precision = TP / (TP + FP)
+
+            - pt:
+                Prevalence Threshold.
+
+                .. math::
+
+                    threshold = \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+
+            - recall:
+                Recall.
+
+                .. math::
+                    Recall = TP / (TP + FN)
+
+            - specificity:
+                Specificity.
+
+                .. math::
+
+                    Specificity = TN / (TN + FP)
+
+
         cutoff: PythonNumber, optional
             Probability cutoff.
         nbins: int, optional
@@ -2829,6 +3041,85 @@ class BinaryClassifier(Supervised):
         -------
         TableSample
             report.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        We can get all the classification
+        metrics using the ``classification_report``:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.classification_report()
+            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_class_classification_report.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.classification_report()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_class_classification_report.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.classification_report(
             self.y,
@@ -2854,6 +3145,73 @@ class BinaryClassifier(Supervised):
         -------
         TableSample
             confusion matrix.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        To get the confusion matrix:
+
+        .. ipython:: python
+
+            model.confusion_matrix()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.confusion_matrix(
             self.y,
@@ -2874,42 +3232,186 @@ class BinaryClassifier(Supervised):
         ----------
         metric: str, optional
             The metric used to compute the score.
-                accuracy    : Accuracy
-                aic         : Akaike’s  Information  Criterion
-                auc         : Area Under the Curve (ROC)
-                ba          : Balanced Accuracy
-                              = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC
-                              Curve prediction.
-                bic         : Bayesian  Information  Criterion
-                bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index
-                              = tp / (tp + fn + fp)
-                f1          : F1 Score
-                fdr         : False Discovery Rate = 1 - ppv
-                fm          : Fowlkes–Mallows index
-                              = sqrt(ppv * tpr)
-                fnr         : False Negative Rate
-                              = fn / (fn + tp)
-                for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate
-                              = fp / (fp + tn)
-                logloss     : Log Loss
-                lr+         : Positive Likelihood Ratio
-                              = tpr / fpr
-                lr-         : Negative Likelihood Ratio
-                              = fnr / tnr
-                dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient
-                mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value
-                              = tn / (tn + fn)
-                prc_auc     : Area Under the Curve (PRC)
-                precision   : Precision = tp / (tp + fp)
-                pt          : Prevalence Threshold
-                              = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-                recall      : Recall = tp / (tp + fn)
-                specificity : Specificity = tn / (tn + fp)
+
+            - accuracy:
+                Accuracy.
+
+                .. math::
+
+                    Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
+            - aic:
+                Akaike's  Information  Criterion
+
+                .. math::
+
+                    AIC = = 2k - 2\ln(\hat{L})
+
+            - auc:
+                Area Under the Curve (ROC).
+
+                .. math::
+
+                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+            - ba:
+                Balanced Accuracy.
+
+                .. math::
+
+                    BA = \\frac{TPR + TNR}{2}
+
+            - best_cutoff:
+                Cutoff  which optimised the  ROC
+                Curve prediction.
+
+            - bic:
+                Bayesian  Information  Criterion
+
+                .. math::
+
+                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+
+            - bm:
+                Informedness
+
+                .. math::
+
+                    BM = TPR + TNR - 1
+
+            - csi:
+                Critical Success Index
+
+                .. math::
+
+                    index = \\frac{TP}{TP + FN + FP}
+
+            - f1:
+                F1 Score
+
+                .. math::
+
+                    F_1 Score = 2 \\times \\frac{Precision \\times Recall}{Precision + Recall}
+
+            - fdr:
+                False Discovery Rate
+
+                .. math::
+
+                    FDR = 1 - PPV
+
+            - fm:
+                Fowlkes-Mallows index
+
+                .. math::
+
+                    FM = \\sqrt{PPV * TPR}
+
+            - fnr:
+                False Negative Rate
+
+                .. math::
+
+                    FNR = \\frac{FN}{FN + TP}
+
+            - for:
+                False Omission Rate
+
+                .. math::
+
+                    FOR = 1 - NPV
+
+            - fpr:
+                False Positive Rate
+
+                .. math::
+
+                    FPR = \\frac{FP}{FP + TN}
+
+            - logloss:
+                Log Loss.
+
+                .. math::
+
+                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
+            - lr+:
+                Positive Likelihood Ratio.
+
+                .. math::
+
+                    LR+ = \\frac{TPR}{FPR}
+
+            - lr-:
+                Negative Likelihood Ratio.
+
+                .. math::
+
+                    LR- = \\frac{FNR}{TNR}
+
+            - dor:
+                Diagnostic Odds Ratio.
+
+                .. math::
+
+                    DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+            - mc:
+                Matthews Correlation Coefficient
+                .. math::
+
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+
+            - mk:
+                Markedness
+
+                .. math::
+
+                    MK = PPV + NPV - 1
+
+            - npv:
+                Negative Predictive Value
+
+                .. math::
+
+                    NPV = \\frac{TN}{TN + FN}
+
+            - prc_auc:
+                Area Under the Curve (PRC)
+
+                .. math::
+
+                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+            - precision:
+                Precision
+
+                .. math::
+
+                    Precision = TP / (TP + FP)
+
+            - pt:
+                Prevalence Threshold.
+
+                .. math::
+
+                    threshold = \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+
+            - recall:
+                Recall.
+
+                .. math::
+                    Recall = TP / (TP + FN)
+
+            - specificity:
+                Specificity.
+
+                .. math::
+
+                    Specificity = TN / (TN + FP)
+
+
         cutoff: PythonNumber, optional
             Cutoff for which the tested category will be
             accepted as a prediction.
@@ -2926,6 +3428,73 @@ class BinaryClassifier(Supervised):
         -------
         float
             score
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        To get the score:
+
+        .. ipython:: python
+
+            model.score()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
         if metric in (
@@ -2991,6 +3560,118 @@ class BinaryClassifier(Supervised):
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+
+        .. code-block:: python
+    
+            train, test = data.train_test_split(test_size = 0.5)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.5)
+
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         # Inititalization
         X = format_type(X, dtype=list, na_out=self.X)
@@ -3049,6 +3730,118 @@ class BinaryClassifier(Supervised):
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+
+        .. code-block:: python
+    
+            train, test = data.train_test_split(test_size = 0.5)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.5)
+
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict_proba(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict_proba(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         # Inititalization
         X = format_type(X, dtype=list, na_out=self.X)
@@ -3109,6 +3902,82 @@ class BinaryClassifier(Supervised):
         -------
         TableSample
             cutoff curve data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        To get the cutoff curve:
+            
+        .. code-block:: python
+
+            model.cutoff_curve()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.cutoff_curve()
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.roc_curve(
             self.y,
@@ -3148,6 +4017,82 @@ class BinaryClassifier(Supervised):
         -------
         TableSample
                 lift chart data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        To get the Lift chart:
+            
+        .. code-block:: python
+
+            model.lift_chart()
+
+        .. ipython:: python
+            :suppress:
+            
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.lift_chart()
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_lift_chart.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_lift_chart.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.lift_chart(
             self.y,
@@ -3186,6 +4131,82 @@ class BinaryClassifier(Supervised):
         -------
         TableSample
                 PRC curve data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        To get the PRC curve:
+            
+        .. code-block:: python
+
+            model.prc_curve()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.prc_curve()
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prc_curve.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prc_curve.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.prc_curve(
             self.y,
@@ -3224,6 +4245,82 @@ class BinaryClassifier(Supervised):
         -------
         TableSample
             ROC curve data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LogisticRegression
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LogisticRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "good",
+                test,
+            )
+
+        To get the ROC curve:
+            
+        .. code-block:: python
+
+            model.roc_curve()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.roc_curve()
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc_curve.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc_curve.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.roc_curve(
             self.y,
@@ -3326,6 +4423,69 @@ class MulticlassClassifier(Supervised):
         -------
         SQLExpression
             the SQL code needed to deploy the model.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = RandomForestClassifier()
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "quality",
+                test,
+            )
+
+        To get the Model Vertica
+        SQL, use below:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
@@ -3431,42 +4591,186 @@ class MulticlassClassifier(Supervised):
         metrics: list, optional
             List of  the metrics  used to compute the  final
             report.
-                accuracy    : Accuracy
-                aic         : Akaike’s  Information  Criterion
-                auc         : Area Under the Curve (ROC)
-                ba          : Balanced Accuracy
-                              = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC
-                              Curve prediction.
-                bic         : Bayesian  Information  Criterion
-                bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index
-                              = tp / (tp + fn + fp)
-                f1          : F1 Score
-                fdr         : False Discovery Rate = 1 - ppv
-                fm          : Fowlkes–Mallows index
-                              = sqrt(ppv * tpr)
-                fnr         : False Negative Rate
-                              = fn / (fn + tp)
-                for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate
-                              = fp / (fp + tn)
-                logloss     : Log Loss
-                lr+         : Positive Likelihood Ratio
-                              = tpr / fpr
-                lr-         : Negative Likelihood Ratio
-                              = fnr / tnr
-                dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient
-                mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value
-                              = tn / (tn + fn)
-                prc_auc     : Area Under the Curve (PRC)
-                precision   : Precision = tp / (tp + fp)
-                pt          : Prevalence Threshold
-                              = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-                recall      : Recall = tp / (tp + fn)
-                specificity : Specificity = tn / (tn + fp)
+
+            - accuracy:
+                Accuracy.
+
+                .. math::
+
+                    Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
+            - aic:
+                Akaike's  Information  Criterion
+
+                .. math::
+
+                    AIC = = 2k - 2\ln(\hat{L})
+
+            - auc:
+                Area Under the Curve (ROC).
+
+                .. math::
+
+                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+            - ba:
+                Balanced Accuracy.
+
+                .. math::
+
+                    BA = \\frac{TPR + TNR}{2}
+
+            - best_cutoff:
+                Cutoff  which optimised the  ROC
+                Curve prediction.
+
+            - bic:
+                Bayesian  Information  Criterion
+
+                .. math::
+
+                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+
+            - bm:
+                Informedness
+
+                .. math::
+
+                    BM = TPR + TNR - 1
+
+            - csi:
+                Critical Success Index
+
+                .. math::
+
+                    index = \\frac{TP}{TP + FN + FP}
+
+            - f1:
+                F1 Score
+
+                .. math::
+
+                    F_1 Score = 2 \\times \\frac{Precision \\times Recall}{Precision + Recall}
+
+            - fdr:
+                False Discovery Rate
+
+                .. math::
+
+                    FDR = 1 - PPV
+
+            - fm:
+                Fowlkes-Mallows index
+
+                .. math::
+
+                    FM = \\sqrt{PPV * TPR}
+
+            - fnr:
+                False Negative Rate
+
+                .. math::
+
+                    FNR = \\frac{FN}{FN + TP}
+
+            - for:
+                False Omission Rate
+
+                .. math::
+
+                    FOR = 1 - NPV
+
+            - fpr:
+                False Positive Rate
+
+                .. math::
+
+                    FPR = \\frac{FP}{FP + TN}
+
+            - logloss:
+                Log Loss.
+
+                .. math::
+
+                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
+            - lr+:
+                Positive Likelihood Ratio.
+
+                .. math::
+
+                    LR+ = \\frac{TPR}{FPR}
+
+            - lr-:
+                Negative Likelihood Ratio.
+
+                .. math::
+
+                    LR- = \\frac{FNR}{TNR}
+
+            - dor:
+                Diagnostic Odds Ratio.
+
+                .. math::
+
+                    DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+            - mc:
+                Matthews Correlation Coefficient
+                .. math::
+
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+
+            - mk:
+                Markedness
+
+                .. math::
+
+                    MK = PPV + NPV - 1
+
+            - npv:
+                Negative Predictive Value
+
+                .. math::
+
+                    NPV = \\frac{TN}{TN + FN}
+
+            - prc_auc:
+                Area Under the Curve (PRC)
+
+                .. math::
+
+                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+            - precision:
+                Precision
+
+                .. math::
+
+                    Precision = TP / (TP + FP)
+
+            - pt:
+                Prevalence Threshold.
+
+                .. math::
+
+                    threshold = \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+
+            - recall:
+                Recall.
+
+                .. math::
+                    Recall = TP / (TP + FN)
+
+            - specificity:
+                Specificity.
+
+                .. math::
+
+                    Specificity = TN / (TN + FP)
+
+
         cutoff: PythonNumber, optional
             Cutoff for which the tested category is accepted
             as a prediction.  For multiclass  classification, each
@@ -3492,6 +4796,77 @@ class MulticlassClassifier(Supervised):
         -------
         TableSample
             report.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+            data = vpd.load_iris()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+                test,
+            )
+
+        We can get all the classification
+        metrics using the ``classification_report``:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.classification_report()
+            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_classification_report.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.classification_report()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_classification_report.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if isinstance(labels, NoneType):
             labels = self.classes_
@@ -3530,6 +4905,72 @@ class MulticlassClassifier(Supervised):
         -------
         TableSample
             confusion matrix.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+            data = vpd.load_iris()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+                test,
+            )
+
+        We can get the confusion matrix:
+
+        .. ipython:: python
+            
+            model.confusion_matrix()
+
+        To get the confusion matrix of a particular
+        class:
+
+        .. ipython:: python
+            
+            model.confusion_matrix(pos_label= "Iris-setosa")
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if hasattr(self, "_confusion_matrix"):
             return self._confusion_matrix(
@@ -3566,56 +5007,206 @@ class MulticlassClassifier(Supervised):
         ----------
         metric: str, optional
             The metric used to compute the score.
-                accuracy    : Accuracy
-                aic         : Akaike’s  Information  Criterion
-                auc         : Area Under the Curve (ROC)
-                ba          : Balanced Accuracy
-                              = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC
-                              Curve prediction.
-                bic         : Bayesian  Information  Criterion
-                bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index
-                              = tp / (tp + fn + fp)
-                f1          : F1 Score
-                fdr         : False Discovery Rate = 1 - ppv
-                fm          : Fowlkes–Mallows index
-                              = sqrt(ppv * tpr)
-                fnr         : False Negative Rate
-                              = fn / (fn + tp)
-                for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate
-                              = fp / (fp + tn)
-                logloss     : Log Loss
-                lr+         : Positive Likelihood Ratio
-                              = tpr / fpr
-                lr-         : Negative Likelihood Ratio
-                              = fnr / tnr
-                dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient
-                mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value
-                              = tn / (tn + fn)
-                prc_auc     : Area Under the Curve (PRC)
-                precision   : Precision = tp / (tp + fp)
-                pt          : Prevalence Threshold
-                              = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-                recall      : Recall = tp / (tp + fn)
-                specificity : Specificity = tn / (tn + fp)
+
+            - accuracy:
+                Accuracy.
+
+                .. math::
+
+                    Accuracy = \\frac{TP + TN}{TP + TN + FP + FN}
+
+            - aic:
+                Akaike's  Information  Criterion
+
+                .. math::
+
+                    AIC = = 2k - 2\ln(\hat{L})
+
+            - auc:
+                Area Under the Curve (ROC).
+
+                .. math::
+
+                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+            - ba:
+                Balanced Accuracy.
+
+                .. math::
+
+                    BA = \\frac{TPR + TNR}{2}
+
+            - best_cutoff:
+                Cutoff  which optimised the  ROC
+                Curve prediction.
+
+            - bic:
+                Bayesian  Information  Criterion
+
+                .. math::
+
+                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+
+            - bm:
+                Informedness
+
+                .. math::
+
+                    BM = TPR + TNR - 1
+
+            - csi:
+                Critical Success Index
+
+                .. math::
+
+                    index = \\frac{TP}{TP + FN + FP}
+
+            - f1:
+                F1 Score
+
+                .. math::
+
+                    F_1 Score = 2 \\times \\frac{Precision \\times Recall}{Precision + Recall}
+
+            - fdr:
+                False Discovery Rate
+
+                .. math::
+
+                    FDR = 1 - PPV
+
+            - fm:
+                Fowlkes-Mallows index
+
+                .. math::
+
+                    FM = \\sqrt{PPV * TPR}
+
+            - fnr:
+                False Negative Rate
+
+                .. math::
+
+                    FNR = \\frac{FN}{FN + TP}
+
+            - for:
+                False Omission Rate
+
+                .. math::
+
+                    FOR = 1 - NPV
+
+            - fpr:
+                False Positive Rate
+
+                .. math::
+
+                    FPR = \\frac{FP}{FP + TN}
+
+            - logloss:
+                Log Loss.
+
+                .. math::
+
+                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
+            - lr+:
+                Positive Likelihood Ratio.
+
+                .. math::
+
+                    LR+ = \\frac{TPR}{FPR}
+
+            - lr-:
+                Negative Likelihood Ratio.
+
+                .. math::
+
+                    LR- = \\frac{FNR}{TNR}
+
+            - dor:
+                Diagnostic Odds Ratio.
+
+                .. math::
+
+                    DOR = \\frac{TP \\times TN}{FP \\times FN}
+
+            - mc:
+                Matthews Correlation Coefficient
+                .. math::
+
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+
+            - mk:
+                Markedness
+
+                .. math::
+
+                    MK = PPV + NPV - 1
+
+            - npv:
+                Negative Predictive Value
+
+                .. math::
+
+                    NPV = \\frac{TN}{TN + FN}
+
+            - prc_auc:
+                Area Under the Curve (PRC)
+
+                .. math::
+
+                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+
+            - precision:
+                Precision
+
+                .. math::
+
+                    Precision = TP / (TP + FP)
+
+            - pt:
+                Prevalence Threshold.
+
+                .. math::
+
+                    threshold = \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
+
+            - recall:
+                Recall.
+
+                .. math::
+                    Recall = TP / (TP + FN)
+
+            - specificity:
+                Specificity.
+
+                .. math::
+
+                    Specificity = TN / (TN + FP)
+
         average: str, optional
             The method used to  compute the final score for
             multiclass-classification.
-                binary   : considers one of the classes  as
-                           positive  and  use  the   binary
-                           confusion  matrix to compute the
-                           score.
-                micro    : positive  and   negative  values
-                           globally.
-                macro    : average  of  the  score of  each
-                           class.
-                scores   : scores  for   all  the  classes.
-                weighted : weighted average of the score of
-                           each class.
+
+            - binary:
+                considers one of the classes  as
+                positive  and  use  the   binary
+                confusion  matrix to compute the
+                score.
+            - micro:
+                positive  and   negative  values
+                globally.
+            - macro:
+                average  of  the  score of  each
+                class.
+            - scores:
+                scores  for   all  the  classes.
+            - weighted:
+                weighted average of the score of
+                each class.
+
             If empty,  the result will depend on the  input
             metric.  Whenever  it  is  possible, the  exact
             score is computed.  Otherwise, the behaviour is
@@ -3640,6 +5231,72 @@ class MulticlassClassifier(Supervised):
         -------
         float
             score.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+            data = vpd.load_iris()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+                test,
+            )
+
+        We can get the score:
+
+        .. ipython:: python
+            
+            model.score()
+
+        To get the score of a particular
+        class:
+
+        .. ipython:: python
+            
+            model.score(pos_label= "Iris-setosa")
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
         pos_label = self._check_pos_label(pos_label=pos_label)
@@ -3717,6 +5374,77 @@ class MulticlassClassifier(Supervised):
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+            data = vpd.load_iris()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+                test,
+            )
+
+        We can then get the prediction:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict(test, name = "prediction")
+            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict(test, name = "prediction"
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html
+
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         # Using special method in case of non-native models
         if hasattr(self, "_predict"):
@@ -3794,6 +5522,77 @@ class MulticlassClassifier(Supervised):
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+            data = vpd.load_iris()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+                test,
+            )
+
+        We can then get the prediction:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict_proba(test, name = "prediction")
+            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict_proba(test, name = "prediction"
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html
+
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if hasattr(self, "_predict_proba"):
             return self._predict_proba(
@@ -3912,6 +5711,72 @@ class MulticlassClassifier(Supervised):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "fixed_acidity",
+                    "pH",
+                ],
+                "quality",
+            )
+
+        To get the contour plot:
+            
+        .. code-block:: python
+
+            model.contour(pos_label = 6)
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.contour(pos_label = 6)
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_contour.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_contour.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         pos_label = self._check_pos_label(pos_label=pos_label)
         return vDataFrame(self.input_relation).contour(
@@ -3955,6 +5820,74 @@ class MulticlassClassifier(Supervised):
         -------
         TableSample
             cutoff curve data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_iris()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+            )
+
+        To get the cutoff curve:
+            
+        .. code-block:: python
+
+            model.cutoff_curve(pos_label= "Iris-setosa")
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.cutoff_curve(pos_label= "Iris-setosa")
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_cutoff.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_cutoff.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label, method="cutoff"),
@@ -3996,6 +5929,74 @@ class MulticlassClassifier(Supervised):
         -------
         TableSample
                 lift chart data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_iris()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+            )
+
+        To get the Lift chart:
+            
+        .. code-block:: python
+
+            model.lift_chart(pos_label= "Iris-setosa")
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.lift_chart(pos_label= "Iris-setosa")
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_lift.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_lift.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.lift_chart(
             *self._get_plot_args(pos_label=pos_label),
@@ -4037,6 +6038,74 @@ class MulticlassClassifier(Supervised):
         -------
         TableSample
                 PRC curve data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_iris()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+            )
+
+        To get the PRC curve:
+            
+        .. code-block:: python
+
+            model.prc_curve(pos_label= "Iris-setosa")
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.prc_curve(pos_label= "Iris-setosa")
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_prc_curve.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_prc_curve.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.prc_curve(
             *self._get_plot_args(pos_label=pos_label),
@@ -4078,6 +6147,74 @@ class MulticlassClassifier(Supervised):
         -------
         TableSample
                 roc curve data points.
+
+        Examples
+        --------
+        For this example, we will
+        use the Iris dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_iris()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import NearestCentroid
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = NearestCentroid(p = 2)
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                data,
+                [
+                    "SepalLengthCm",
+                    "SepalWidthCm",
+                    "PetalLengthCm",
+                    "PetalWidthCm",
+                ],
+                "Species",
+            )
+
+        To get the PRC curve:
+            
+        .. code-block:: python
+
+            model.roc_curve(pos_label= "Iris-setosa")
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.roc_curve(pos_label= "Iris-setosa")
+            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_roc_curve.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_roc_curve.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label),
@@ -4238,7 +6375,7 @@ class Regressor(Supervised):
              data = vpd.load_winequality()
 
          .. raw:: html
-             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+             :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
          Divide your dataset into training
          and testing subsets.
@@ -4308,7 +6445,7 @@ class Regressor(Supervised):
              :suppress:
 
              result = model.report()
-             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
+             html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
              html_file.write(result._repr_html_())
              html_file.close()
 
@@ -4317,7 +6454,7 @@ class Regressor(Supervised):
              result = model.report()
 
          .. raw:: html
-             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html
+             :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html
 
         We can easily get the ANOVA table using:
 
@@ -4325,7 +6462,7 @@ class Regressor(Supervised):
              :suppress:
 
              result = model.report(metrics = "anova")
-             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
+             html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
              html_file.write(result._repr_html_())
              html_file.close()
 
@@ -4334,7 +6471,7 @@ class Regressor(Supervised):
              result = model.report(metrics = "anova")
 
          .. raw:: html
-             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html
+             :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html
 
          .. important::
 
@@ -4526,7 +6663,7 @@ class Regressor(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -4689,7 +6826,7 @@ class Regressor(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -4770,7 +6907,7 @@ class Regressor(Supervised):
                 ],
                 "prediction",
             )
-            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
+            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -4790,7 +6927,7 @@ class Regressor(Supervised):
             )
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html
+            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_prediction.html
 
         .. important::
 
@@ -4870,7 +7007,7 @@ class Unsupervised(VerticaModel):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
