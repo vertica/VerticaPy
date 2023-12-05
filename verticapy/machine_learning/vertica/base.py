@@ -247,7 +247,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -412,7 +412,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -632,7 +632,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -781,7 +781,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1220,7 +1220,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1357,7 +1357,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1821,7 +1821,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -1974,7 +1974,7 @@ class VerticaModel(PlottingUtils):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -2752,7 +2752,7 @@ class BinaryClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -3055,7 +3055,7 @@ class BinaryClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -3101,7 +3101,7 @@ class BinaryClassifier(Supervised):
             :suppress:
 
             result = model.classification_report()
-            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_class_classification_report.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_class_classification_report.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3110,7 +3110,7 @@ class BinaryClassifier(Supervised):
             model.classification_report()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_class_classification_report.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_class_classification_report.html
 
         .. important::
 
@@ -3159,7 +3159,7 @@ class BinaryClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -3442,7 +3442,7 @@ class BinaryClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -3573,11 +3573,11 @@ class BinaryClassifier(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
 
         .. code-block:: python
-    
+
             train, test = data.train_test_split(test_size = 0.5)
 
         .. ipython:: python
@@ -3642,7 +3642,7 @@ class BinaryClassifier(Supervised):
                 ],
                 "prediction",
             )
-            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_prediction.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3662,7 +3662,7 @@ class BinaryClassifier(Supervised):
             )
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_prediction.html
 
         .. important::
 
@@ -3743,11 +3743,11 @@ class BinaryClassifier(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
 
         .. code-block:: python
-    
+
             train, test = data.train_test_split(test_size = 0.5)
 
         .. ipython:: python
@@ -3812,7 +3812,7 @@ class BinaryClassifier(Supervised):
                 ],
                 "prediction",
             )
-            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_prediction.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3832,7 +3832,7 @@ class BinaryClassifier(Supervised):
             )
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prediction.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_prediction.html
 
         .. important::
 
@@ -3915,7 +3915,7 @@ class BinaryClassifier(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -3955,7 +3955,7 @@ class BinaryClassifier(Supervised):
             )
 
         To get the cutoff curve:
-            
+
         .. code-block:: python
 
             model.cutoff_curve()
@@ -3965,10 +3965,10 @@ class BinaryClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.cutoff_curve()
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_roc.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_roc.html
 
         .. important::
 
@@ -4030,7 +4030,7 @@ class BinaryClassifier(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -4070,20 +4070,20 @@ class BinaryClassifier(Supervised):
             )
 
         To get the Lift chart:
-            
+
         .. code-block:: python
 
             model.lift_chart()
 
         .. ipython:: python
             :suppress:
-            
+
             vp.set_option("plotting_lib", "plotly")
             fig = model.lift_chart()
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_lift_chart.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_lift_chart.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_lift_chart.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_lift_chart.html
 
         .. important::
 
@@ -4144,7 +4144,7 @@ class BinaryClassifier(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -4184,7 +4184,7 @@ class BinaryClassifier(Supervised):
             )
 
         To get the PRC curve:
-            
+
         .. code-block:: python
 
             model.prc_curve()
@@ -4194,10 +4194,10 @@ class BinaryClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.prc_curve()
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prc_curve.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_prc_curve.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_prc_curve.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_prc_curve.html
 
         .. important::
 
@@ -4258,7 +4258,7 @@ class BinaryClassifier(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -4298,7 +4298,7 @@ class BinaryClassifier(Supervised):
             )
 
         To get the ROC curve:
-            
+
         .. code-block:: python
 
             model.roc_curve()
@@ -4308,10 +4308,10 @@ class BinaryClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.roc_curve()
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc_curve.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_roc_curve.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_roc_curve.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_roc_curve.html
 
         .. important::
 
@@ -4437,7 +4437,7 @@ class MulticlassClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -4809,7 +4809,7 @@ class MulticlassClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -4848,7 +4848,7 @@ class MulticlassClassifier(Supervised):
             :suppress:
 
             result = model.classification_report()
-            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_classification_report.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_classification_report.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -4857,7 +4857,7 @@ class MulticlassClassifier(Supervised):
             model.classification_report()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_classification_report.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_classification_report.html
 
         .. important::
 
@@ -4918,7 +4918,7 @@ class MulticlassClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -4953,14 +4953,14 @@ class MulticlassClassifier(Supervised):
         We can get the confusion matrix:
 
         .. ipython:: python
-            
+
             model.confusion_matrix()
 
         To get the confusion matrix of a particular
         class:
 
         .. ipython:: python
-            
+
             model.confusion_matrix(pos_label= "Iris-setosa")
 
         .. important::
@@ -5244,7 +5244,7 @@ class MulticlassClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -5279,14 +5279,14 @@ class MulticlassClassifier(Supervised):
         We can get the score:
 
         .. ipython:: python
-            
+
             model.score()
 
         To get the score of a particular
         class:
 
         .. ipython:: python
-            
+
             model.score(pos_label= "Iris-setosa")
 
         .. important::
@@ -5387,7 +5387,7 @@ class MulticlassClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -5425,7 +5425,7 @@ class MulticlassClassifier(Supervised):
             :suppress:
 
             result = model.predict(test, name = "prediction")
-            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_predict.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -5434,7 +5434,7 @@ class MulticlassClassifier(Supervised):
             model.predict(test, name = "prediction"
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_predict.html
 
 
         .. important::
@@ -5535,7 +5535,7 @@ class MulticlassClassifier(Supervised):
             train, test = data.train_test_split(test_size = 0.2)
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -5573,7 +5573,7 @@ class MulticlassClassifier(Supervised):
             :suppress:
 
             result = model.predict_proba(test, name = "prediction")
-            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_predict.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -5582,7 +5582,7 @@ class MulticlassClassifier(Supervised):
             model.predict_proba(test, name = "prediction"
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_class_predict.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_predict.html
 
 
         .. important::
@@ -5724,7 +5724,7 @@ class MulticlassClassifier(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
@@ -5754,7 +5754,7 @@ class MulticlassClassifier(Supervised):
             )
 
         To get the contour plot:
-            
+
         .. code-block:: python
 
             model.contour(pos_label = 6)
@@ -5764,10 +5764,10 @@ class MulticlassClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.contour(pos_label = 6)
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_contour.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_contour.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_binary_classifier_contour.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_binary_classifier_contour.html
 
         .. important::
 
@@ -5833,7 +5833,7 @@ class MulticlassClassifier(Supervised):
             data = vpd.load_iris()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -5865,7 +5865,7 @@ class MulticlassClassifier(Supervised):
             )
 
         To get the cutoff curve:
-            
+
         .. code-block:: python
 
             model.cutoff_curve(pos_label= "Iris-setosa")
@@ -5875,10 +5875,10 @@ class MulticlassClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.cutoff_curve(pos_label= "Iris-setosa")
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_cutoff.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_cutoff.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_cutoff.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_cutoff.html
 
         .. important::
 
@@ -5942,7 +5942,7 @@ class MulticlassClassifier(Supervised):
             data = vpd.load_iris()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -5974,7 +5974,7 @@ class MulticlassClassifier(Supervised):
             )
 
         To get the Lift chart:
-            
+
         .. code-block:: python
 
             model.lift_chart(pos_label= "Iris-setosa")
@@ -5984,10 +5984,10 @@ class MulticlassClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.lift_chart(pos_label= "Iris-setosa")
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_lift.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_lift.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_lift.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_lift.html
 
         .. important::
 
@@ -6051,7 +6051,7 @@ class MulticlassClassifier(Supervised):
             data = vpd.load_iris()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -6083,7 +6083,7 @@ class MulticlassClassifier(Supervised):
             )
 
         To get the PRC curve:
-            
+
         .. code-block:: python
 
             model.prc_curve(pos_label= "Iris-setosa")
@@ -6093,10 +6093,10 @@ class MulticlassClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.prc_curve(pos_label= "Iris-setosa")
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_prc_curve.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_prc_curve.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_prc_curve.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_prc_curve.html
 
         .. important::
 
@@ -6160,7 +6160,7 @@ class MulticlassClassifier(Supervised):
             data = vpd.load_iris()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_iris.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
 
         Let's import the model:
 
@@ -6192,7 +6192,7 @@ class MulticlassClassifier(Supervised):
             )
 
         To get the PRC curve:
-            
+
         .. code-block:: python
 
             model.roc_curve(pos_label= "Iris-setosa")
@@ -6202,10 +6202,10 @@ class MulticlassClassifier(Supervised):
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.roc_curve(pos_label= "Iris-setosa")
-            fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_roc_curve.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_roc_curve.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_base_multi_classifier_roc_curve.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_classifier_roc_curve.html
 
         .. important::
 
@@ -6375,7 +6375,7 @@ class Regressor(Supervised):
              data = vpd.load_winequality()
 
          .. raw:: html
-             :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
          Divide your dataset into training
          and testing subsets.
@@ -6445,7 +6445,7 @@ class Regressor(Supervised):
              :suppress:
 
              result = model.report()
-             html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
+             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
              html_file.write(result._repr_html_())
              html_file.close()
 
@@ -6454,7 +6454,7 @@ class Regressor(Supervised):
              result = model.report()
 
          .. raw:: html
-             :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html
+             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html
 
         We can easily get the ANOVA table using:
 
@@ -6462,7 +6462,7 @@ class Regressor(Supervised):
              :suppress:
 
              result = model.report(metrics = "anova")
-             html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
+             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
              html_file.write(result._repr_html_())
              html_file.close()
 
@@ -6471,7 +6471,7 @@ class Regressor(Supervised):
              result = model.report(metrics = "anova")
 
          .. raw:: html
-             :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html
+             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html
 
          .. important::
 
@@ -6663,7 +6663,7 @@ class Regressor(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -6826,7 +6826,7 @@ class Regressor(Supervised):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Divide your dataset into training
         and testing subsets.
@@ -6907,7 +6907,7 @@ class Regressor(Supervised):
                 ],
                 "prediction",
             )
-            html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -6927,7 +6927,7 @@ class Regressor(Supervised):
             )
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_prediction.html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html
 
         .. important::
 
@@ -7007,7 +7007,7 @@ class Unsupervised(VerticaModel):
             data = vpd.load_winequality()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
         Let's import the model:
 
