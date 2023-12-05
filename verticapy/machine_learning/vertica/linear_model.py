@@ -44,7 +44,8 @@ General Classes.
 
 class LinearModel:
     """
-    Base Class for Vertica Linear Models.
+    Base Class for Vertica
+    Linear Models.
     """
 
     # Properties.
@@ -435,7 +436,8 @@ class LinearModel:
 
 class LinearModelClassifier(LinearModel):
     """
-    Base Class for Vertica Linear Models Classifiers.
+    Base Class for Vertica
+    Linear Models Classifiers.
     """
 
     # Properties.
@@ -642,16 +644,19 @@ Algorithms used for regression.
 
 class ElasticNet(LinearModel, Regressor):
     """
-    Creates an ElasticNet object using the Vertica
-    Linear Regression  algorithm. The Elastic Net
-    is a regularized regression method that linearly
-    combines the L1 and L2 penalties of the Lasso and
-    Ridge methods.
+    Creates an ``ElasticNet`` object
+    using the Vertica Linear Regression
+    algorithm. The Elastic Net is a
+    regularized regression method that
+    linearly combines the ``L1`` and
+    ``L2`` penalties of the ``Lasso``
+    and ``Ridge`` methods.
 
     Parameters
     ----------
     name: str, optional
-        Name of the  model.  The model is stored in
+        Name of the  model.
+        The model is stored in
         the database.
     overwrite_model: bool, optional
         If set to ``True``, training a
@@ -659,32 +664,40 @@ class ElasticNet(LinearModel, Regressor):
         existing model overwrites the
         existing model.
     tol: float, optional
-        Determines  whether the algorithm has reached
-        the specified accuracy result.
+        Determines whether the algorithm
+        has reached the specified accuracy
+        result.
     C: PythonNumber, optional
-        The regularization parameter value. The value
-        must be zero or non-negative.
+        The regularization parameter
+        value. The value must be zero
+        or non-negative.
     max_iter: int, optional
-        Determines  the maximum number of  iterations
-        the  algorithm performs before  achieving the
-        specified accuracy result.
+        Determines the  maximum number of
+        iterations the algorithm performs
+        before achieving the specified
+        accuracy result.
     solver: str, optional
-        The optimizer method used to train the model.
+        The optimizer method used
+        to train the model.
 
-        - newton:
+         - newton:
             Newton Method.
-        - bfgs:
+         - bfgs:
             Broyden Fletcher Goldfarb Shanno.
-        - cgd:
+         - cgd:
             Coordinate Gradient Descent.
     l1_ratio: float, optional
-        ENet mixture parameter that defines the provided
-        ratio of L1 versus L2 regularization.
+        ENet mixture parameter that
+        defines the provided ratio
+        of ``L1`` versus ``L2``
+        regularization.
     fit_intercept: bool, optional
-        Boolean,  specifies whether the model includes an
-        intercept. If set to false, no intercept is used
-        in training the model.  Note that setting
-        fit_intercept  to false does  not work well with
+        ``boolean``, specifies whether the
+        model includes an intercept. If set
+        to ``False``, no intercept is used
+        in  training the model. Note that
+        setting ``fit_intercept`` to
+        ``False`` does not work well with
         the BFGS optimizer.
 
     Attributes
@@ -881,7 +894,7 @@ class ElasticNet(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -965,7 +978,7 @@ class ElasticNet(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -983,7 +996,7 @@ class ElasticNet(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -1156,42 +1169,54 @@ class ElasticNet(LinearModel, Regressor):
 
 class Lasso(LinearModel, Regressor):
     """
-    Creates  a  Lasso  object using the  Vertica
-    Linear  Regression  algorithm.
-    Lasso is a regularized regression method
-    that uses an L1 penalty.
+    Creates a ``Lasso``  object
+    using the  Vertica Linear
+    Regression  algorithm.
+    Lasso is a regularized
+    regression method that
+    uses an ``L1`` penalty.
 
     Parameters
     ----------
     name: str, optional
-        Name of the model. The  model is stored in the
-        database.
+        Name of the model. The model
+        is stored in the database.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     tol: float, optional
-        Determines  whether the  algorithm has reached
-        the specified accuracy result.
+        Determines whether the algorithm
+        has reached the specified accuracy
+        result.
     C: PythonNumber, optional
-        The regularization  parameter value. The value
-        must be zero or non-negative.
+        The regularization parameter
+        value. The value must be zero
+        or non-negative.
     max_iter: int, optional
-        Determines  the  maximum number of  iterations
-        the  algorithm  performs before achieving  the
-        specified accuracy result.
+        Determines the  maximum number of
+        iterations the algorithm performs
+        before achieving the specified
+        accuracy result.
     solver: str, optional
-        The optimizer method used to train the model.
-                newton : Newton Method.
-                bfgs   : Broyden Fletcher Goldfarb Shanno.
-                cgd    : Coordinate Gradient Descent.
+        The optimizer method used
+        to train the model.
+
+         - newton:
+            Newton Method.
+         - bfgs:
+            Broyden Fletcher Goldfarb Shanno.
+         - cgd:
+            Coordinate Gradient Descent.
     fit_intercept: bool, optional
-        Boolean,  specifies  whether the model includes an
-        intercept.  If set to false, no intercept is
-        used in  training the model.  Note that setting
-        fit_intercept to false does not work well with the
-        BFGS optimizer.
+        ``boolean``, specifies whether the
+        model includes an intercept. If set
+        to ``False``, no intercept is used
+        in  training the model. Note that
+        setting ``fit_intercept`` to
+        ``False`` does not work well with
+        the BFGS optimizer.
 
     Attributes
     ----------
@@ -1383,7 +1408,7 @@ class Lasso(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -1467,7 +1492,7 @@ class Lasso(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -1485,7 +1510,7 @@ class Lasso(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -1677,36 +1702,45 @@ class Lasso(LinearModel, Regressor):
 
 class LinearRegression(LinearModel, Regressor):
     """
-    Creates a LinearRegression object using the Vertica
+    Creates a ``LinearRegression``
+    object using the Vertica
     Linear Regression algorithm.
 
     Parameters
     ----------
     name: str, optional
-        Name of the model. The  model is stored  in the
-        database.
+        Name of the model. The model
+        is stored in the database.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     tol: float, optional
-        Determines whether the  algorithm has reached the
-        specified accuracy result.
+        Determines whether the algorithm
+        has reached the specified accuracy
+        result.
     max_iter: int, optional
-        Determines the  maximum number of  iterations the
-        algorithm performs before achieving the specified
+        Determines the  maximum number of
+        iterations the algorithm performs
+        before achieving the specified
         accuracy result.
     solver: str, optional
-        The optimizer method used to train the model.
-                newton : Newton Method.
-                bfgs   : Broyden Fletcher Goldfarb Shanno.
+        The optimizer method used
+        to train the model.
+
+         - newton:
+            Newton Method.
+         - bfgs:
+            Broyden Fletcher Goldfarb Shanno.
     fit_intercept: bool, optional
-        Boolean,  specifies  whether the model includes an
-        intercept. If set to false,  no intercept is
-        used in  training the model.  Note that setting
-        fit_intercept to false does not work well with the
-        BFGS optimizer.
+        ``boolean``, specifies whether the
+        model includes an intercept. If set
+        to ``False``, no intercept is used
+        in  training the model. Note that
+        setting ``fit_intercept`` to
+        ``False`` does not work well with
+        the BFGS optimizer.
 
     Attributes
     ----------
@@ -1896,7 +1930,7 @@ class LinearRegression(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -2006,7 +2040,7 @@ class LinearRegression(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2024,7 +2058,7 @@ class LinearRegression(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2212,46 +2246,54 @@ class LinearRegression(LinearModel, Regressor):
 
 class PoissonRegressor(LinearModel, Regressor):
     """
-    Creates an PoissonRegressor object using the
-    Vertica Poisson Regression algorithm.
+    Creates an ``PoissonRegressor``
+    object using the Vertica Poisson
+    Regression algorithm.
 
     Parameters
     ----------
     name: str, optional
-        Name of the  model.  The model is stored in
-        the database.
+        Name of the model. The model
+        is stored in the database.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     tol: float, optional
-        Determines  whether the algorithm has reached
-        the specified accuracy result.
+        Determines whether the algorithm
+        has reached the specified accuracy
+        result.
     penalty: str, optional
-        Method of regularization.
+        Determines the method of
+        regularization.
 
-        - None:
-            No regularization.
-        - L2:
-            L2 regularization.
+         - None:
+            No Regularization.
+         - l2:
+            ``L2`` Regularization.
     C: PythonNumber, optional
-        The regularization parameter value. The value
-        must be zero or non-negative.
+        The regularization parameter
+        value. The value must be zero
+        or non-negative.
     max_iter: int, optional
-        Determines  the maximum number of  iterations
-        the  algorithm performs before  achieving the
-        specified accuracy result.
+        Determines the  maximum number of
+        iterations the algorithm performs
+        before achieving the specified
+        accuracy result.
     solver: str, optional
-        The optimizer method used to train the model.
+        The optimizer method used
+        to train the model.
 
-        - newton:
+         - newton:
             Newton Method.
     fit_intercept: bool, optional
-        Boolean,  specifies whether the model includes an
-        intercept. If set to false, no intercept is used
-        in training the model.  Note that setting
-        fit_intercept  to false does  not work well with
+        ``boolean``, specifies whether the
+        model includes an intercept. If set
+        to ``False``, no intercept is used
+        in  training the model. Note that
+        setting ``fit_intercept`` to
+        ``False`` does not work well with
         the BFGS optimizer.
 
     Attributes
@@ -2446,7 +2488,7 @@ class PoissonRegressor(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -2530,7 +2572,7 @@ class PoissonRegressor(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2548,7 +2590,7 @@ class PoissonRegressor(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2717,41 +2759,52 @@ class PoissonRegressor(LinearModel, Regressor):
 
 class Ridge(LinearModel, Regressor):
     """
-    Creates  a  Ridge  object using the  Vertica
-    Linear  Regression  algorithm.
-    Ridge is a regularized regression method
-    which uses an L2 penalty.
+    Creates a ``Ridge``  object
+    using the Vertica Linear
+    Regression algorithm. Ridge
+    is a regularized regression
+    method which uses an ``L2``
+    penalty.
 
     Parameters
     ----------
     name: str, optional
-        Name of the model. The model is stored in the
-        database.
+        Name of the model. The model
+        is stored in the database.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     tol: float, optional
-        Determines whether  the algorithm has reached
-        the specified accuracy result.
+        Determines whether the algorithm
+        has reached the specified accuracy
+        result.
     C: PythonNumber, optional
-        The regularization parameter value. The value
-        must be zero or non-negative.
+        The regularization parameter
+        value. The value must be zero
+        or non-negative.
     max_iter: int, optional
-        Determines  the maximum number of  iterations
-        the  algorithm performs before  achieving the
-        specified accuracy result.
+        Determines the  maximum number of
+        iterations the algorithm performs
+        before achieving the specified
+        accuracy result.
     solver: str, optional
-        The optimizer method used to train the model.
-                newton : Newton Method.
-                bfgs   : Broyden Fletcher Goldfarb Shanno.
+        The optimizer method used
+        to train the model.
+
+         - newton:
+            Newton Method.
+         - bfgs:
+            Broyden Fletcher Goldfarb Shanno.
     fit_intercept: bool, optional
-        Boolean,  specifies whether the model  includes
-        an intercept. If set to false, no intercept
-        is used in training the model.
-        Note  that setting fit_intercept to false  does
-        not work well with the BFGS optimizer.
+        ``boolean``, specifies whether the
+        model includes an intercept. If set
+        to ``False``, no intercept is used
+        in  training the model. Note that
+        setting ``fit_intercept`` to
+        ``False`` does not work well with
+        the BFGS optimizer.
 
     Attributes
     ----------
@@ -2942,7 +2995,7 @@ class Ridge(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -3051,7 +3104,7 @@ class Ridge(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3069,7 +3122,7 @@ class Ridge(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3266,49 +3319,69 @@ Algorithms used for classification.
 
 class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     """
-    Creates a LogisticRegression  object using the Vertica
+    Creates a ``LogisticRegression``
+    object using the Vertica
     Logistic Regression algorithm.
 
     Parameters
     ----------
     name: str, optional
-        Name of the model.  The model is stored in the
-        database.
+        Name of the model. The model
+        is stored in the database.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     penalty: str, optional
-        Determines the method of regularization.
-            None : No Regularization.
-            l1   : L1 Regularization.
-            l2   : L2 Regularization.
-            enet : Combination between L1 and L2.
+        Determines the method of
+        regularization.
+
+         - None:
+            No Regularization.
+         - l1:
+            ``L1`` Regularization.
+         - l2:
+            ``L2`` Regularization.
+         - enet:
+            Combination between
+            ``L1`` and ``L2``.
     tol: float, optional
-        Determines  whether  the  algorithm has reached  the
-        specified accuracy result.
+        Determines whether the algorithm
+        has reached the specified accuracy
+        result.
     C: PythonNumber, optional
-        The  regularization parameter value.  The value must
-        be zero or non-negative.
+        The regularization parameter
+        value. The value must be zero
+        or non-negative.
     max_iter: int, optional
-        Determines  the  maximum number  of  iterations  the
-        algorithm  performs  before achieving  the specified
+        Determines the  maximum number of
+        iterations the algorithm performs
+        before achieving the specified
         accuracy result.
     solver: str, optional
-        The  optimizer method  used to train the  model.
-            newton : Newton Method.
-            bfgs   : Broyden Fletcher Goldfarb Shanno.
-            cgd    : Coordinate Gradient Descent.
+        The optimizer method used
+        to train the model.
+
+         - newton:
+            Newton Method.
+         - bfgs:
+            Broyden Fletcher Goldfarb Shanno.
+         - cgd:
+            Coordinate Gradient Descent.
     l1_ratio: float, optional
-        ENet  mixture parameter  that  defines the provided
-        ratio of L1 versus L2 regularization.
+        ENet mixture parameter that
+        defines the provided ratio
+        of ``L1`` versus ``L2``
+        regularization.
     fit_intercept: bool, optional
-        Boolean,  specifies  whether  the model  includes an
-        intercept.
-        If set to false,  no intercept is used in
-        training the model.  Note that setting fit_intercept
-        to false does not work well with the BFGS optimizer.
+        ``boolean``, specifies whether the
+        model includes an intercept. If set
+        to ``False``, no intercept is used
+        in  training the model. Note that
+        setting ``fit_intercept`` to
+        ``False`` does not work well with
+        the BFGS optimizer.
 
     Attributes
     ----------
@@ -3573,7 +3646,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "good",
             test,
@@ -3686,7 +3759,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3704,7 +3777,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3742,7 +3815,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3760,7 +3833,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )

@@ -2201,17 +2201,111 @@ class Supervised(VerticaModel):
         y: str
             Response column.
         test_relation: SQLRelation, optional
-            Relation used to test the model.
+            Relation used to
+            test the model.
         return_report: bool, optional
             [For native models]
-            When set to True, the model summary
-            will be returned. Otherwise, it will
+            When set to ``True``,
+            the model summary
+            will be returned.
+            Otherwise, it will
             be printed.
 
         Returns
         -------
         str
             model's summary.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
 
         # Initialization
@@ -2464,24 +2558,135 @@ class Tree:
         **style_kwargs,
     ) -> TableSample:
         """
-        Computes the model's features importance.
+        Computes the model's
+        features importance.
 
         Parameters
         ----------
         tree_id: int
             Tree ID.
         show: bool
-            If  set to True,  draw the features  importance.
+            If set to ``True``,
+            draw the features
+            importance.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object
+            to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         TableSample
             features importance.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = RandomForestClassifier(
+                max_features = "auto",
+                max_leaf_nodes = 32,
+                sample = 0.5,
+                max_depth = 3,
+                min_samples_leaf = 5,
+                min_info_gain = 0.0,
+                nbins = 32,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "good",
+                test,
+            )
+
+        We can conveniently get
+        the features importance:
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.features_importance()
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_feature.html")
+
+        .. code-block:: python
+
+            result = model.features_importance()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_feature.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         fi = self._get_features_importance(tree_id=tree_id)
         if show:
@@ -2507,21 +2712,130 @@ class Tree:
         tree_id: Optional[int] = None,
     ) -> TableSample:
         """
-        Returns the feature importance metrics for the input
-        tree.
+        Returns the feature importance
+        metrics for the input tree.
 
         Parameters
         ----------
         tree_id: int, optional
-            Unique  tree identifier, an integer in the range
-            [0, n_estimators - 1]. If tree_id is  undefined,
-            all  the trees in the model are used to  compute
-            the metrics.
+            Unique  tree identifier, an
+            integer in the range
+            ``[0, n_estimators - 1]``. If
+            ``tree_id`` is undefined, all
+            the trees in the model are used
+            to compute the metrics.
 
         Returns
         -------
         TableSample
             model's score.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = RandomForestClassifier(
+                max_features = "auto",
+                max_leaf_nodes = 32,
+                sample = 0.5,
+                max_depth = 3,
+                min_samples_leaf = 5,
+                min_info_gain = 0.0,
+                nbins = 32,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "good",
+                test,
+            )
+
+        To get the input tree score:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.get_score(tree_id = 0)
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_tree_score_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.get_score(tree_id = 0)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_tree_score_1.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         tree_id = "" if isinstance(tree_id, NoneType) else f", tree_id={tree_id}"
         query = f"""
@@ -2543,9 +2857,11 @@ class Tree:
         Parameters
         ----------
         max_nb_points: int
-            Maximum  number of points to display.
+            Maximum number of
+            points to display.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object
+            to plot on.
         **style_kwargs
             Any optional parameter to
             pass to the Plotting functions.
@@ -2554,6 +2870,106 @@ class Tree:
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = RandomForestClassifier(
+                max_features = "auto",
+                max_leaf_nodes = 32,
+                sample = 0.5,
+                max_depth = 3,
+                min_samples_leaf = 5,
+                min_info_gain = 0.0,
+                nbins = 32,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "good",
+                test,
+            )
+
+        If the model allows, you can also
+        generate relevant plots. For example,
+        regression plots can be found in the
+        :ref:`chart_gallery.regression_plot`
+        or :ref:`chart_gallery.classification_plot`.
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if self._model_subcategory == "REGRESSOR":
             vdf = vDataFrame(self.input_relation)
@@ -2576,18 +2992,127 @@ class Tree:
     @check_minimum_version
     def get_tree(self, tree_id: int = 0) -> TableSample:
         """
-        Returns a table with all the input tree information.
+        Returns a table with all
+        the input tree information.
 
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree  identifier, an integer in the range
-            [0, n_estimators - 1].
+            Unique tree  identifier,
+            an ``integer`` in the range
+            ``[0, n_estimators - 1]``.
 
         Returns
         -------
         TableSample
             tree.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = RandomForestClassifier(
+                max_features = "auto",
+                max_leaf_nodes = 32,
+                sample = 0.5,
+                max_depth = 3,
+                min_samples_leaf = 5,
+                min_info_gain = 0.0,
+                nbins = 32,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "good",
+                test,
+            )
+
+        To get the input tree:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.get_tree(tree_id = 0)
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_tree_score_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.get_tree(tree_id = 0)
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_tree_score_1.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         query = f"""
             SELECT * FROM (SELECT READ_TREE (
@@ -2614,36 +3139,144 @@ class Tree:
         Parameters
         ----------
         tree_id: int, optional
-            Unique  tree identifier,  an integer in the  range
-            [0, n_estimators - 1].
+            Unique tree identifier,
+            an integer in the range
+            ``[0, n_estimators - 1]``.
         classes_color: ArrayLike, optional
-            Colors that represent the different classes.
+            Colors that represent
+            the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to.
-            Zero rounds to an integer.
+            The number of decimals
+            to round the prediction
+            to. ``0`` rounds to an
+            ``integer``.
         percent: bool, optional
-            If set to True, the probabilities are returned as
-            percents.
+            If set to ``True``, the
+            probabilities are returned
+            as percents.
         vertical: bool, optional
-            If set to True, the function generates a vertical
-            tree.
+            If set to ``True``, the
+            function generates a
+            vertical tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node  of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each node of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         arrow_style: dict, optional
-            Dictionary of options to customize each arrow  of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each arrow of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf  of
-            the tree. For a list of options, see the Graphviz
-            API: https://graphviz.org/doc/info/attrs.html
+            ``dictionary`` of options
+            to customize each leaf of
+            the tree. For a list of
+            options, see the:
+            `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
 
         Returns
         -------
         str
             Graphviz code.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = RandomForestClassifier(
+                max_features = "auto",
+                max_leaf_nodes = 32,
+                sample = 0.5,
+                max_depth = 3,
+                min_samples_leaf = 5,
+                min_info_gain = 0.0,
+                nbins = 32,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "good",
+                test,
+            )
+
+        Export the input tree to graphviz:
+
+        .. ipython:: python
+
+            model.to_graphviz(tree_id = 0)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return self.trees_[tree_id].to_graphviz(
             feature_names=self.X,
@@ -2664,22 +3297,132 @@ class Tree:
         **kwargs,
     ) -> "Source":
         """
-        Draws the input tree. Requires the graphviz module.
+        Draws the input tree.
+        Requires the graphviz
+        module.
 
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree identifier, an integer in the range
-            [0, n_estimators - 1].
+            Unique tree identifier,
+            an integer in the range
+            ``[0, n_estimators - 1]``.
         pic_path: str, optional
-            Absolute  path to save  the image of the  tree.
+            Absolute path to save
+            the image of the tree.
         *args, **kwargs: Any, optional
-            Arguments to pass to the 'to_graphviz'  method.
+            Arguments to pass to
+            the ``to_graphviz``
+            method.
 
         Returns
         -------
         graphviz.Source
             graphviz object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import RandomForestClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = RandomForestClassifier(
+                max_features = "auto",
+                max_leaf_nodes = 32,
+                sample = 0.5,
+                max_depth = 3,
+                min_samples_leaf = 5,
+                min_info_gain = 0.0,
+                nbins = 32,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "good",
+                test,
+            )
+
+        To plot the input tree:
+
+        .. code-block:: python
+
+            model.plot_tree()
+
+        .. ipython:: python
+            :suppress:
+
+            res = model.plot_tree(tree_id = 0)
+            res.render(filename='figures/machine_learning_vertica_tree_rf_classifier_', format='png')
+
+        .. image:: /../figures/machine_learning_vertica_tree_rf_classifier_.png
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return self.trees_[tree_id].plot_tree(
             pic_path=pic_path,
@@ -2785,7 +3528,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -2837,8 +3580,10 @@ class BinaryClassifier(Supervised):
         nbins: int = 10000,
     ) -> Union[float, TableSample]:
         """
-        Computes a classification report using multiple model
-        evaluation metrics (AUC, accuracy, PRC AUC, F1...).
+        Computes a classification report
+        using multiple model evaluation
+        metrics (``auc``, ``accuracy``,
+        ``f1``...).
 
         Parameters
         ----------
@@ -2948,7 +3693,6 @@ class BinaryClassifier(Supervised):
 
                     Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-
             - lr+:
                 Positive Likelihood Ratio.
 
@@ -3024,7 +3768,6 @@ class BinaryClassifier(Supervised):
 
                     Specificity = TN / (TN + FP)
 
-
         cutoff: PythonNumber, optional
             Probability cutoff.
         nbins: int, optional
@@ -3088,7 +3831,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -3192,7 +3935,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -3335,7 +4078,6 @@ class BinaryClassifier(Supervised):
 
                     Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-
             - lr+:
                 Positive Likelihood Ratio.
 
@@ -3411,7 +4153,6 @@ class BinaryClassifier(Supervised):
 
                     Specificity = TN / (TN + FP)
 
-
         cutoff: PythonNumber, optional
             Cutoff for which the tested category will be
             accepted as a prediction.
@@ -3475,7 +4216,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -3575,7 +4316,6 @@ class BinaryClassifier(Supervised):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
-
         .. code-block:: python
 
             train, test = data.train_test_split(test_size = 0.5)
@@ -3587,7 +4327,6 @@ class BinaryClassifier(Supervised):
             import verticapy.datasets as vpd
             data = vpd.load_winequality()
             train, test = data.train_test_split(test_size = 0.5)
-
 
         Let's import the model:
 
@@ -3620,12 +4359,11 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
             )
-
 
         .. ipython:: python
             :suppress:
@@ -3638,7 +4376,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "prediction",
             )
@@ -3656,7 +4394,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "prediction",
             )
@@ -3745,7 +4483,6 @@ class BinaryClassifier(Supervised):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
-
         .. code-block:: python
 
             train, test = data.train_test_split(test_size = 0.5)
@@ -3757,7 +4494,6 @@ class BinaryClassifier(Supervised):
             import verticapy.datasets as vpd
             data = vpd.load_winequality()
             train, test = data.train_test_split(test_size = 0.5)
-
 
         Let's import the model:
 
@@ -3790,12 +4526,11 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
             )
-
 
         .. ipython:: python
             :suppress:
@@ -3808,7 +4543,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "prediction",
             )
@@ -3826,7 +4561,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "prediction",
             )
@@ -3948,7 +4683,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -4063,7 +4798,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -4177,7 +4912,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -4291,7 +5026,7 @@ class BinaryClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "good",
                 test,
@@ -4465,7 +5200,7 @@ class MulticlassClassifier(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "quality",
                 test,
@@ -4581,7 +5316,7 @@ class MulticlassClassifier(Supervised):
     ) -> Union[float, TableSample]:
         """
         Computes a classification report using multiple model
-        evaluation metrics (AUC, accuracy, PRC AUC, F1...).
+        evaluation metrics (``auc``, ``accuracy``, ``f1``...).
         For  multiclass classification,  it considers  each
         category as positive and switches to the next one during
         the computation.
@@ -4694,7 +5429,6 @@ class MulticlassClassifier(Supervised):
 
                     Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-
             - lr+:
                 Positive Likelihood Ratio.
 
@@ -4769,7 +5503,6 @@ class MulticlassClassifier(Supervised):
                 .. math::
 
                     Specificity = TN / (TN + FP)
-
 
         cutoff: PythonNumber, optional
             Cutoff for which the tested category is accepted
@@ -5110,7 +5843,6 @@ class MulticlassClassifier(Supervised):
 
                     Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
 
-
             - lr+:
                 Positive Likelihood Ratio.
 
@@ -5436,7 +6168,6 @@ class MulticlassClassifier(Supervised):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_predict.html
 
-
         .. important::
 
             For this example, a specific model is
@@ -5584,7 +6315,6 @@ class MulticlassClassifier(Supervised):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_base_multi_class_predict.html
 
-
         .. important::
 
             For this example, a specific model is
@@ -5695,17 +6425,19 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            Label  to  consider  as positive. All other
-            classes  are  merged   and   considered  as
-            negative for multiclass classification.
+            To draw the contour plot,
+            one of the response column
+            classes must be the positive
+            class. The parameter ``pos_label``
+            represents this class.
         nbins: int, optional
-             Number  of  bins  used to  discretize  the  two
-             predictors.
+            Number of bins used to discretize
+            the two predictors.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
@@ -5801,25 +6533,32 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            To  draw the Cutoff curve, one of the response  column
-            classes  must  be  the  positive  class. The  parameter
-            'pos_label' represents this class.
+            To draw the Cutoff curve,
+            one of the response column
+            classes must be the positive
+            class. The parameter ``pos_label``
+            represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision
-            boundaries.  Decision  boundaries  are   set at equally
-            -spaced intervals between 0 and 1, inclusive.
+            An ``integer`` value that
+            determines the number of
+            decision boundaries.
+            Decision boundaries are
+            set at equally-spaced
+            intervals between ``0``
+            and ``1``, inclusive.
         show: bool, optional
-            If set to True,  the  Plotting object is returned.
+            If set to ``True``, the
+            Plotting object is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         TableSample
-            cutoff curve data points.
+            Cutoff curve data points.
 
         Examples
         --------
@@ -5910,25 +6649,32 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            To  draw  the Lift Chart, one of the  response  column
-            classes  must  be  the  positive  class. The parameter
-            'pos_label' represents this class.
+            To draw the Lift chart,
+            one of the response column
+            classes must be the positive
+            class. The parameter ``pos_label``
+            represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision
-            boundaries.  Decision  boundaries  are   set at equally
-            -spaced intervals between 0 and 1, inclusive.
+            An ``integer`` value that
+            determines the number of
+            decision boundaries.
+            Decision boundaries are
+            set at equally-spaced
+            intervals between ``0``
+            and ``1``, inclusive.
         show: bool, optional
-            If set to True,  the  Plotting object is returned.
+            If set to ``True``, the
+            Plotting object is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         TableSample
-                lift chart data points.
+            lift chart data points.
 
         Examples
         --------
@@ -6019,32 +6765,39 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            To  draw  the PRC curve,  one of the  response  column
-            classes  must  be  the  positive  class. The parameter
-            'pos_label' represents this class.
+            To draw the PRC curve,
+            one of the response column
+            classes must be the positive
+            class. The parameter ``pos_label``
+            represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision
-            boundaries.  Decision  boundaries  are   set at equally
-            -spaced intervals between 0 and 1, inclusive.
+            An ``integer`` value that
+            determines the number of
+            decision boundaries.
+            Decision boundaries are
+            set at equally-spaced
+            intervals between ``0``
+            and ``1``, inclusive.
         show: bool, optional
-            If set to True,  the  Plotting object is returned.
+            If set to ``True``, the
+            Plotting object is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         TableSample
-                PRC curve data points.
+            PRC curve data points.
 
         Examples
         --------
         For this example, we will
         use the Iris dataset.
 
-        .. code-block:: python
+        .. ipython:: python
 
             import verticapy.datasets as vpd
 
@@ -6128,25 +6881,32 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            To  draw  the ROC curve,  one of the  response  column
-            classes  must  be  the  positive  class. The parameter
-            'pos_label' represents this class.
+            To draw the ROC curve,
+            one of the response column
+            classes must be the positive
+            class. The parameter ``pos_label``
+            represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision
-            boundaries.  Decision  boundaries  are   set at equally
-            -spaced intervals between 0 and 1, inclusive.
+            An ``integer`` value that
+            determines the number of
+            decision boundaries.
+            Decision boundaries are
+            set at equally-spaced
+            intervals between ``0``
+            and ``1``, inclusive.
         show: bool, optional
-            If set to True,  the  Plotting object is returned.
+            If set to ``True``, the
+            Plotting object is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting
-            functions.
+            Any optional parameter to pass
+            to the Plotting functions.
 
         Returns
         -------
         TableSample
-                roc curve data points.
+            ROC curve data points.
 
         Examples
         --------
@@ -6903,7 +7663,7 @@ class Regressor(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "prediction",
             )
@@ -6921,7 +7681,7 @@ class Regressor(Supervised):
                     "citric_acid",
                     "residual_sugar",
                     "chlorides",
-                    "density"
+                    "density",
                 ],
                 "prediction",
             )
