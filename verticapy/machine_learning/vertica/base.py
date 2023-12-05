@@ -4118,15 +4118,15 @@ class Regressor(Supervised):
          Parameters
          ----------
          metrics: str | list, optional
-             The metrics used to compute
-             the regression report.
+            The metrics used to compute
+            the regression report.
 
-              - None:
-                 Computes the model different metrics.
-              - anova:
-                 Computes the model ANOVA table.
-              - details:
-                 Computes the model details.
+            - None:
+                Computes the model different metrics.
+            - anova:
+                Computes the model ANOVA table.
+            - details:
+                Computes the model details.
 
              It can also be a ``list`` of the
              metrics used to compute the final
