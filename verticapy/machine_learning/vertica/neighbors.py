@@ -66,9 +66,10 @@ Algorithms used for regression.
 class KNeighborsRegressor(Regressor):
     """
     [Beta Version]
-    Creates a  KNeighborsRegressor object using the
-    k-nearest neighbors algorithm. This object uses
-    pure SQL to compute all the distances and final
+    Creates a ``KNeighborsRegressor``
+    object using the k-nearest neighbors
+    algorithm. This object uses pure SQL
+    to compute all the distances and final
     score.
 
     .. warning::
@@ -95,11 +96,13 @@ class KNeighborsRegressor(Regressor):
     Parameters
     ----------
     n_neighbors: int, optional
-        Number of neighbors to consider when computing
+        Number of neighbors to
+        consider when computing
         the score.
     p: int, optional
-        The p of the p-distances (distance metric used
-        during the model computation).
+        The ``p`` of the ``p``-distances
+        (distance metric used during
+        the model computation).
 
     Attributes
     ----------
@@ -109,7 +112,7 @@ class KNeighborsRegressor(Regressor):
     n_neighbors_: int
         Number of neighbors.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
 
     .. note::
 
@@ -449,7 +452,11 @@ class KNeighborsRegressor(Regressor):
 
     def drop(self) -> bool:
         """
-        KNN models are not stored in the Vertica DB.
+        ``KNeighborsRegressor`` models
+        are not stored in the Vertica DB.
+
+        The method will always return
+        ``False``.
         """
         return False
 
@@ -468,23 +475,107 @@ class KNeighborsRegressor(Regressor):
         key_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code
+        needed to deploy the
+        model.
 
         Parameters
         ----------
         X: SQLColumns
-            List of the predictors.
+            ``list`` of the predictors.
         test_relation: str, optional
-            Relation used to do the predictions.
+            Relation used to do the
+            predictions.
         key_columns: SQLColumns, optional
-            A  list  of columns  to  include in  the  results,
-            but to exclude from computation of the prediction.
+            A ``list`` of columns to
+            include in the results,
+            but to exclude from
+            computation of the
+            prediction.
 
         Returns
         -------
         str
             the SQL code needed
             to deploy the model.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KNeighborsRegressor
+
+        Then we can create the model:
+
+        .. ipython:: python
+
+            model = KNeighborsRegressor()
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        And generate the Vertica SQL:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.KNeighborsRegressor`
+            for more information about the
+            different methods and usages.
         """
         key_columns = format_type(key_columns, dtype=list)
         X = format_type(X, dtype=list, na_out=self.X)
@@ -632,11 +723,12 @@ class KNeighborsClassifier(MulticlassClassifier):
     Parameters
     ----------
     n_neighbors: int, optional
-        Number  of neighbors to consider when computing  the
-        score.
+        Number of neighbors to consider
+        when computing  the score.
     p: int, optional
-        The p of the p-distances (distance metric used
-        during the model computation).
+        The ``p`` of the ``p``-distances
+        (distance metric used during the
+        model computation).
 
     Attributes
     ----------
@@ -646,7 +738,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     n_neighbors_: int
         Number of neighbors.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
     classes_: numpy.array
         The classes labels.
 
@@ -1212,8 +1304,9 @@ class KNeighborsClassifier(MulticlassClassifier):
     Model Exporting
     ^^^^^^^^^^^^^^^^
 
-    It is not possible to export this type of model, but you can still
-    examine the SQL code generated by using the
+    It is not possible to export this type of
+    model, but you can still examine the SQL
+    code generated by using the
     :py:meth:`verticapy.machine_learning.vertica.neighbors.KNeighborsClassifier.deploySQL`
     method.
     """
@@ -1259,7 +1352,11 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def drop(self) -> bool:
         """
-        KNN models are not stored in the Vertica DB.
+        ``KNeighborsClassifier`` models
+        are not stored in the Vertica DB.
+
+        The method will always return
+        ``False``.
         """
         return False
 
@@ -1280,7 +1377,8 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def _compute_attributes(self) -> None:
         """
-        Computes the model's attributes.
+        Computes the
+        model's attributes.
         """
         self.classes_ = self._get_classes()
         self.p_ = self.parameters["p"]
@@ -1296,26 +1394,105 @@ class KNeighborsClassifier(MulticlassClassifier):
         key_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code
+        needed to deploy the
+        model.
 
         Parameters
         ----------
         X: SQLColumns
-            List of the predictors.
+            ``list`` of the predictors.
         test_relation: str, optional
-            Relation used to do the predictions.
+            Relation used to do
+            the predictions.
         predict: bool, optional
-            If set to True, returns the prediction instead
+            If set to ``True``, returns
+            the prediction instead
             of the probability.
         key_columns: SQLColumns, optional
-            A  list of columns to include in the  results,
-            but  to   exclude  from   computation  of  the
+            A ``list`` of columns to
+            include in the results,
+            but to exclude from
+            computation of the
             prediction.
 
         Returns
         -------
         SQLExpression
-            the SQL code needed to deploy the model.
+            the SQL code needed
+            to deploy the model.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's divide the dataset into
+        training and testing subsets.
+
+        .. code-block:: python
+
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            data = data[data["quality"]>=5]
+            data = data[data["quality"]<=7]
+            data = data.balance(column="quality", x = 1)
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import KNeighborsClassifier
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import KNeighborsClassifier
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KNeighborsClassifier(
+               n_neighbors = 10,
+               p = 2,
+            )
+
+        And generate the Vertica SQL:
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.KNeighborsClassifier`
+            for more information about the
+            different methods and usages.
         """
         key_columns = format_type(key_columns, dtype=list)
         X = format_type(X, dtype=list, na_out=self.X)
@@ -1390,7 +1567,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         pos_label: Optional[PythonScalar] = None,
     ) -> str:
         """
-        Returns the final relation used to do the predictions.
+        Returns the final relation
+        used to do the predictions.
         """
         filter_sql = ""
         if not (isinstance(pos_label, NoneType)):
@@ -1407,7 +1585,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         pos_label: Optional[PythonScalar] = None,
     ) -> str:
         """
-        Returns the input which represents the model's probabilities.
+        Returns the input which
+        represents the model's
+        probabilities.
         """
         return "proba_predict"
 
@@ -1418,7 +1598,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         allSQL: bool = False,
     ) -> str:
         """
-        Returns the input that represents the model's scoring.
+        Returns the input that
+        represents the model's
+        scoring.
         """
         cutoff = self._check_cutoff(cutoff=cutoff)
         if isinstance(pos_label, NoneType) and not (self._is_binary_classifier()):
@@ -1444,7 +1626,8 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def _compute_accuracy(self) -> float:
         """
-        Computes the model accuracy.
+        Computes the
+        model accuracy.
         """
         return mt.accuracy_score(
             self.y, "predict_neighbors", self.deploySQL(predict=True)
@@ -1456,7 +1639,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         cutoff: Optional[PythonNumber] = None,
     ) -> TableSample:
         """
-        Computes the model confusion matrix.
+        Computes the model
+        confusion matrix.
         """
         if isinstance(pos_label, NoneType):
             input_relation = f"""
@@ -1490,7 +1674,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         **kwargs,
     ) -> vDataFrame:
         """
-        Predicts using the input relation.
+        Predicts using the
+        input relation.
         """
         X = format_type(X, dtype=list)
         cutoff = self._check_cutoff(cutoff=cutoff)
@@ -1551,8 +1736,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         **kwargs,
     ) -> vDataFrame:
         """
-        Returns the model's probabilities using the
-        input relation.
+        Returns the model's probabilities
+        using the input relation.
         """
         # Inititalization
         X = format_type(X, dtype=list)
@@ -1617,7 +1802,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         self, pos_label: Optional[PythonScalar] = None, method: Optional[str] = None
     ) -> list:
         """
-        Returns the args used by plotting methods.
+        Returns the args used
+        by plotting methods.
         """
         pos_label = self._check_pos_label(pos_label)
         if method == "contour":
@@ -1649,7 +1835,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         method: Optional[str] = None,
     ) -> dict:
         """
-        Returns the kwargs used by plotting methods.
+        Returns the kwargs used
+        by plotting methods.
         """
         pos_label = self._check_pos_label(pos_label)
         res = {"nbins": nbins, "chart": chart}
@@ -1668,14 +1855,18 @@ Algorithms used for density analysis.
 class KernelDensity(Regressor, Tree):
     """
     [Beta Version]
-    Creates a KernelDensity object.
-    This object uses pure SQL to compute the final score.
+    Creates a ``KernelDensity``
+    object. This object uses
+    pure SQL to compute the
+    final score.
 
     Parameters
     ----------
     name: str, optional
-        Name of the model. This is not a built-in model, so
-        this name is used  to build the final table.
+        Name of the model. This is
+        not a built-in model, so
+        this name is used  to build
+        the final table.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
@@ -1684,39 +1875,229 @@ class KernelDensity(Regressor, Tree):
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
     kernel: str, optional
-        The kernel used during the learning phase.
-            gaussian  : Gaussian Kernel.
-            logistic  : Logistic Kernel.
-            sigmoid   : Sigmoid Kernel.
-            silverman : Silverman Kernel.
+        The kernel used during the
+        learning phase.
+
+         - gaussian:
+            Gaussian Kernel.
+         - logistic:
+            Logistic Kernel.
+         - sigmoid:
+            Sigmoid Kernel.
+         - silverman:
+            Silverman Kernel.
     p: int, optional
-        The p of the p-distances (distance metric used
-        during the model computation).
+        The ``p`` of the ``p``-distances
+        (distance metric used during the
+        model computation).
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes,  an integer between
-        1 and 1e9, inclusive.
+        The maximum number of leaf nodes,
+        an ``integer`` between ``1`` and
+        ``1e9``, inclusive.
     max_depth: int, optional
-        The maximum tree depth,  an integer between 1 and 100,
-        inclusive.
+        The maximum tree depth, an ``integer``
+        between ``1`` and ``100``, inclusive.
     min_samples_leaf: int, optional
-        The  minimum number of  samples each branch must  have
-        after splitting a node,  an integer between 1 and 1e6,
-        inclusive. A split that results in fewer remaining
+        The minimum number of samples each
+        branch must have after splitting a
+        node, an ``integer`` between ``1``
+        and ``1e6``, inclusive. A split
+        that results in fewer remaining
         samples is discarded.
     nbins: int, optional
-        The  number  of  bins used to discretize  the  input
-        features.
+        The number of bins used to
+        discretize the input features.
     xlim: list, optional
-        List of tuples used to compute the kernel window.
+        ``list`` of tuples used to
+        compute the kernel window.
 
     Attributes
     ----------
-    Several attributes are computed during the fitting phase,
-    and in the case of kernel density estimation (KDE), a
-    :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
-    is employed to approximate the k-nearest neighbors (KNN)
-    computation. This reliance on RandomForestRegressor
-    enhances the efficiency and accuracy of the KDE algorithm.
+    Several attributes are computed during
+    the fitting phase, and in the case of
+    kernel density estimation (KDE), a
+    :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
+    is employed to approximate the k-nearest
+    neighbors (KNN) computation. This reliance
+    on :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
+    enhances the efficiency and accuracy of
+    the KDE algorithm.
+
+    Examples
+    --------
+
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    For this example, we will
+    use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``KernelDensity`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import KernelDensity
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = KernelDensity(
+            kernel = 'gaussian',
+            p = 2,
+        )
+
+    .. important::
+
+        As this model is not native, it solely
+        relies on SQL statements to compute
+        various attributes, storing them within
+        the object. No data is saved in the database.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data, X = ["sulphates"])
+
+    .. important::
+
+        To train a model, you can directly use the
+        :py:class:`vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
+
+    .. hint::
+
+        For clustering and anomaly detection, the
+        use of predictors is optional. In such cases,
+        all available predictors are considered, which
+        can include solely numerical variables or a
+        combination of numerical and categorical variables,
+        depending on the model's capabilities.
+
+    .. important::
+
+        As this model is not native, it solely
+        relies on SQL statements to compute
+        various attributes, storing them within
+        the object. No data is saved in the database.
+
+    KDE Plots
+    ^^^^^^^^^^
+
+    Plots highlighting the KDE
+    can be easily drawn using:
+
+    .. code-block:: python
+
+        model.plot()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(width = 600)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kde_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kde_plot.html
+
+    .. important::
+
+        Please refer to
+        :ref:`chart_gallery.density`
+        for more examples.
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change
+    some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'p': 3})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    As this model is not native, it does not
+    support model management and versioning.
+    However, it is possible to use the SQL
+    code it generates for deployment.
     """
 
     # Properties.
@@ -1785,7 +2166,70 @@ class KernelDensity(Regressor, Tree):
 
     def drop(self) -> bool:
         """
-        Drops the model from the Vertica database.
+        Drops the model from
+        the Vertica database.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KernelDensity
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KernelDensity(
+                kernel = 'gaussian',
+                p = 2,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["sulphates"])
+
+        To drop the model:
+
+        .. ipython:: python
+
+            model.drop()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.KernelDensity`
+            for more information about the
+            different methods and usages.
         """
         try:
             table_name = self.model_name.replace('"', "") + "_KernelDensity_Map"
@@ -1864,7 +2308,8 @@ class KernelDensity(Regressor, Tree):
         p: int = 2,
     ) -> list:
         """
-        Returns the result of the KDE for all the data points.
+        Returns the result of the
+        KDE for all the data points.
         """
         columns = vdf.format_colnames(columns)
         x_vars = []
@@ -1915,6 +2360,62 @@ class KernelDensity(Regressor, Tree):
             Training relation.
         X: list, optional
             List of the predictors.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KernelDensity
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KernelDensity(
+                kernel = 'gaussian',
+                p = 2,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["sulphates"])
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.KernelDensity`
+            for more information about the
+            different methods and usages.
         """
         X = format_type(X, dtype=list)
         X = quote_ident(X)
@@ -2061,15 +2562,95 @@ class KernelDensity(Regressor, Tree):
         Parameters
         ----------
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object
+            to plot on.
         **style_kwargs
             Any optional parameter to
-            pass to the Plotting functions.
+            pass to the Plotting
+            functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KernelDensity
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KernelDensity(
+                kernel = 'gaussian',
+                p = 2,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["sulphates"])
+
+        Let's draw the model:
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot(width = 600)
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kde_plot.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kde_plot.html
+
+        .. important::
+
+            Please refer to
+            :ref:`chart_gallery.density`
+            for more examples.
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.KernelDensity`
+            for more information about the
+            different methods and usages.
         """
         data, layout = self._compute_plot_params()
         if len(self.X) == 1:
@@ -2099,11 +2680,14 @@ Algorithms used for anomaly detection.
 class LocalOutlierFactor(VerticaModel):
     """
     [Beta Version]
-    Creates a LocalOutlierFactor object by using the
-    Local Outlier Factor algorithm as defined by Markus
-    M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg
-    Sander. This object is using pure SQL to compute all
-    the distances and final score.
+    Creates a ``LocalOutlierFactor``
+    object by using the Local Outlier
+    Factor algorithm as defined by
+    Markus M. Breunig, Hans-Peter
+    Kriegel, Raymond T. Ng and Jörg
+    Sander. This object is using pure
+    SQL to compute all the distances
+    and final score.
 
     .. warning::
 
@@ -2131,9 +2715,10 @@ class LocalOutlierFactor(VerticaModel):
     Parameters
     ----------
     name: str, optional
-        Name  of the  model.  This is not a  built-in
-        model, so this name is used to build the
-        final table.
+        Name of the  model. This is
+        not a built-in model, so this
+        name is used to build the final
+        table.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
@@ -2143,8 +2728,9 @@ class LocalOutlierFactor(VerticaModel):
         Number of neighbors to consider when computing
         the score.
     p: int, optional
-        The p of the p-distances (distance metric used
-        during the model computation).
+        The ``p`` of the ``p``-distances
+        (distance metric used during the
+        model computation).
 
     Attributes
     ----------
@@ -2154,7 +2740,7 @@ class LocalOutlierFactor(VerticaModel):
     n_neighbors_: int
         Number of neighbors.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
     n_errors_: int
         Number of errors during the model fitting phase.
     cnt_: int
@@ -2235,12 +2821,7 @@ class LocalOutlierFactor(VerticaModel):
 
     First we import the ``LocalOutlierFactor`` model:
 
-    .. code-block::
-
-        from verticapy.machine_learning.vertica import LocalOutlierFactor
-
     .. ipython:: python
-        :suppress:
 
         from verticapy.machine_learning.vertica import LocalOutlierFactor
 
@@ -2301,7 +2882,8 @@ class LocalOutlierFactor(VerticaModel):
     Prediction
     ^^^^^^^^^^^
 
-    To find out the LOF score for each datapoint:
+    To find out the LOF
+    score for each datapoint:
 
     .. ipython:: python
         :suppress:
@@ -2318,14 +2900,16 @@ class LocalOutlierFactor(VerticaModel):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_prediction.html
 
-    As shown above, a new column has been created, containing
+    As shown above, a new column
+    has been created, containing
     the lof score.
 
 
     Plots - Outliers
     ^^^^^^^^^^^^^^^^^
 
-    Plots highlighting the outliers can be easily drawn using:
+    Plots highlighting the outliers
+    can be easily drawn using:
 
     .. code-block:: python
 
@@ -2343,18 +2927,21 @@ class LocalOutlierFactor(VerticaModel):
 
     .. important::
 
-        Please refer to :ref:`chart_gallery.lof` for more examples.
+        Please refer to :ref:`chart_gallery.lof`
+        for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
 
-    In order to see the parameters:
+    In order to see
+    the parameters:
 
     .. ipython:: python
 
         model.get_params()
 
-    And to manually change some of the parameters:
+    And to manually change
+    some of the parameters:
 
     .. ipython:: python
 
@@ -2414,7 +3001,70 @@ class LocalOutlierFactor(VerticaModel):
 
     def drop(self) -> bool:
         """
-        Drops the model from the Vertica database.
+        Drops the model from
+        the Vertica database.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LocalOutlierFactor
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LocalOutlierFactor(
+                n_neighbors = 10,
+                p = 2,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        To drop the model:
+
+        .. ipython:: python
+
+            model.drop()
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            for more information about the
+            different methods and usages.
         """
         try:
             _executeSQL(
@@ -2467,6 +3117,62 @@ class LocalOutlierFactor(VerticaModel):
             To avoid the creation of temporary tables,
             it is recommended that you already have an
             index in the main table.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LocalOutlierFactor
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LocalOutlierFactor(
+                n_neighbors = 10,
+                p = 2,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            for more information about the
+            different methods and usages.
         """
         X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X)
@@ -2624,12 +3330,87 @@ class LocalOutlierFactor(VerticaModel):
 
     def predict(self) -> vDataFrame:
         """
-        Creates a vDataFrame of the model.
+        Creates a :py:class:`vDataFrame`
+        of the model.
 
         Returns
         -------
         vDataFrame
-            the vDataFrame including the prediction.
+            the :py:class:`vDataFrame`
+            including the prediction.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LocalOutlierFactor
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LocalOutlierFactor(
+                n_neighbors = 10,
+                p = 2,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        To compute the predictions:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict()
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_prediction.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_prediction.html
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            for more information about the
+            different methods and usages.
         """
         return vDataFrame(self.model_name)
 
@@ -2647,9 +3428,11 @@ class LocalOutlierFactor(VerticaModel):
         Parameters
         ----------
         max_nb_points: int
-            Maximum  number of points to display.
+            Maximum  number of
+            points to display.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object
+            to plot on.
         **style_kwargs
             Any optional parameter to
             pass to the Plotting functions.
@@ -2658,6 +3441,82 @@ class LocalOutlierFactor(VerticaModel):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+
+        First we import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import LocalOutlierFactor
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = LocalOutlierFactor(
+                n_neighbors = 10,
+                p = 2,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        To plot the model:
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = model.plot(width = 600)
+            fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_plot.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_plot.html
+
+        .. important::
+
+            Please refer to :ref:`chart_gallery.lof` for more examples.
+
+        .. note::
+
+            Refer to
+            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            for more information about the
+            different methods and usages.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="LOFPlot",

@@ -388,7 +388,7 @@ class KMeans(Clustering):
     clusters_: numpy.array
         Cluster centers.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
     between_cluster_ss_: float
         The between-cluster sum of squares (BSS) measures
         the dispersion between different clusters and is
@@ -1088,7 +1088,7 @@ class KPrototypes(KMeans):
     clusters_: numpy.array
         Cluster centers.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
     between_cluster_ss_: float
         The between-cluster sum of squares (BSS) measures
         the dispersion between different clusters and is
@@ -1676,7 +1676,7 @@ class BisectingKMeans(KMeans, Tree):
     clusters_: numpy.array
         Cluster centers.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
     children_left_: numpy.array
         A list of node IDs, where
         ``children_left[i]`` is
@@ -2613,7 +2613,7 @@ class DBSCAN(VerticaModel):
     n_cluster_: int
         Number of clusters.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
     n_noise_: int
         Number of outliers.
 
@@ -3369,7 +3369,7 @@ class NearestCentroid(MulticlassClassifier):
     clusters_: numpy.array
         Cluster centers.
     p_: int
-        The p of the p-distances.
+        The ``p`` of the ``p``-distances.
     classes_: numpy.array
         The classes labels.
 
@@ -3989,7 +3989,7 @@ class NearestCentroid(MulticlassClassifier):
 
     def drop(self) -> bool:
         """
-        NearestCentroid models are
+        ``NearestCentroid`` models are
         not stored in the Vertica DB.
 
         The method will always return
