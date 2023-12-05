@@ -556,6 +556,17 @@ def read_json(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_parsers_json3.html
 
+    Let's ingest multiple JSON files
+    into the Vertica database.
+
+    .. code-block:: python
+
+        read_json(
+            path = "*.json",
+            table_name = "titanic_multi_files",
+            schema = "public",
+        )
+
     .. ipython:: python
         :suppress:
         :okexcept:
