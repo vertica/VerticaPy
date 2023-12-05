@@ -229,6 +229,15 @@ def pcsv(
             header_names = ["new_name1", "new_name2"],
         )
 
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        # Cleanup block - drop / remove objects created for this example
+
+        import os
+        os.remove("titanic_subset.json")
+
     .. seealso::
 
         | :py:meth:`verticapy.utilities.read_csv` :
@@ -657,6 +666,33 @@ def read_csv(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_parsers_csv2.html
+
+    Let's ingest multiple CSV files
+    into the Vertica database.
+
+    .. code-block:: python
+
+        read_csv(
+            path = "*.csv",
+            table_name = "titanic_multi_files",
+            schema = "public",
+            quotechar = '"',
+            sep = ",",
+            na_rep = "",
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        # Cleanup block - drop / remove objects created for this example
+
+        from verticapy.utilities import drop
+        drop(name = "public.titanic_subset")
+        drop(name = "public.titanic_sub_dtypes")
+
+        import os
+        os.remove("titanic_subset.json")
 
     .. note::
 
