@@ -153,6 +153,51 @@ class VerticaModel(PlottingUtils):
     def get_match_index(x: str, col_list: list, str_check: bool = True) -> None:
         """
         Returns the matching index.
+        This function is used to simplify
+        the overall code.
+
+        Parameters
+        ----------
+        x: str
+            Column's name.
+        col_list: list
+            List of columns.
+        str_check: bool, optional
+            If set to ``True``,
+            checks if the formatted
+            ``str`` is in the formatted
+            ``list``. No need for an
+            exact match.
+
+        Returns
+        -------
+        int
+            index.
+
+        Examples
+        --------
+        The following code demonstrates
+        the usage of the function.
+
+        .. ipython:: python
+
+            # Import the Vertica Model.
+            from verticapy.machine_learning.vertica.base import VerticaModel
+
+            # Match
+            VerticaModel.get_match_index('b', ['"A"', '"B"', '"C"'])
+
+            # str_check = False
+            VerticaModel.get_match_index('b', ['"A"', '"B"', '"C"'], str_check = False)
+
+            # No Match
+            VerticaModel.get_match_index('d', ['"A"', '"B"', '"C"'])
+
+        .. note::
+
+            These functions serve as utilities to
+            construct others, simplifying the overall
+            code.
         """
         for idx, col in enumerate(col_list):
             if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
@@ -181,7 +226,105 @@ class VerticaModel(PlottingUtils):
 
     def drop(self) -> bool:
         """
-        Drops the model from the Vertica database.
+        Drops the model from
+        the Vertica database.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        You can easily drop the model:
+
+        .. ipython:: python
+
+            model.drop()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         return drop(self.model_name, method="model")
 
@@ -191,23 +334,28 @@ class VerticaModel(PlottingUtils):
         return_model_type: bool = False,
     ) -> Union[bool, str]:
         """
-        Checks whether the model is stored in the
-        Vertica database.
+        Checks whether the
+        model is stored in
+        the Vertica database.
 
         Parameters
         ----------
         raise_error: bool, optional
-            If set to True and an error occurs,
-            raises the error.
+            If set to ``True`` and
+            an error occurs, raises
+            the error.
         return_model_type: bool, optional
-            If set to True, returns a tuple with
-            the model category and type.
+            If set to ``True``,
+            returns a tuple with
+            the model category and
+            type.
 
         Returns
         -------
         bool
-            True if the model is stored in the
-            Vertica database.
+            ``True`` if the model is
+            stored in the Vertica
+            database.
         """
         return self.does_model_exists(
             name=self.model_name,
@@ -222,7 +370,8 @@ class VerticaModel(PlottingUtils):
         return_model_type: bool = False,
     ) -> Union[bool, str]:
         """
-        Checks whether the model is stored in the Vertica
+        Checks whether the model
+        is stored in the Vertica
         database.
 
         Parameters
@@ -230,17 +379,130 @@ class VerticaModel(PlottingUtils):
         name: str, optional
             Model's name.
         raise_error: bool, optional
-            If set to True and an error occurs,
-            raises the error.
+            If set to ``True`` and an
+            error occurs, raises the
+            error.
         return_model_type: bool, optional
-            If set to True, returns a tuple with
-            the model category and type.
+            If set to ``True``, returns
+            a ``tuple`` with the model
+            category and type.
 
         Returns
         -------
         bool
-            True if the model is stored in the
-            Vertica database.
+            ``True`` if the model
+            is stored in the Vertica
+            database.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        You can easily check that
+        the model was saved in DB:
+
+        .. ipython:: python
+
+            model.does_model_exists(
+                name = model.model_name, # name of the model
+            )
+
+        We can even get the model
+        type:
+
+        .. ipython:: python
+
+            model.does_model_exists(
+                name = model.model_name, # name of the model
+                return_model_type = True,
+            )
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         model_type = None
         schema, model_name = schema_relation(name)
@@ -271,21 +533,51 @@ class VerticaModel(PlottingUtils):
 
     def register(self, registered_name: str, raise_error: bool = False) -> bool:
         """
-        Registers the model and adds it to in-DB Model versioning environment
+        Registers the model and adds it to
+        in-DB Model versioning environment
         with a status of 'under_review'.
-        The model must be native and already saved in-DB to be registered.
+        The model must be native and already
+        saved in-DB to be registered.
 
         Parameters
         ----------
         registered_name: str
-            Identifies an abstract name to which the model is registered.
+            Identifies an abstract name to
+            which the model is registered.
         raise_error: bool, optional
-            If set to True and an error occurs, raises the error.
+            If set to ``True`` and an error
+            occurs, raises the error.
 
         Returns
         -------
         bool
-            Returns True when registeration is successful; False otherwise.
+            Returns ``True`` when registeration
+            is successful; ``False`` otherwise.
+
+        Examples
+        --------
+        Let's consider, we've fitted
+        a model ``model``.
+        In order to register the model
+        for tracking and versioning:
+
+        .. code-block:: python
+
+            model.register("model_v1")
+
+        Please refer to
+        :ref:`notebooks/ml/model_tracking_versioning/index.html`
+        for more details on model
+        tracking and versioning.
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         try:
             if not self._is_native:
@@ -321,6 +613,110 @@ class VerticaModel(PlottingUtils):
         -------
         Any
             model attribute.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        We can easily get the
+        model attributes:
+
+        .. ipython:: python
+
+            model.get_attributes()
+
+        To access a specific attribute:
+
+        .. ipython:: python
+
+            model.get_attributes('coef_')
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if hasattr(self, "_model_subcategory") and self._model_subcategory in (
             "TENSORFLOW",
@@ -353,7 +749,8 @@ class VerticaModel(PlottingUtils):
 
     def get_vertica_attributes(self, attr_name: Optional[str] = None) -> TableSample:
         """
-        Returns the model Vertica attributes. These are stored
+        Returns the model Vertica
+        attributes. These are stored
         in Vertica.
 
         Parameters
@@ -365,6 +762,111 @@ class VerticaModel(PlottingUtils):
         -------
         TableSample
             model attributes.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        We can easily get the
+        model Vertica attributes:
+
+        .. ipython:: python
+
+            model.get_vertica_attributes()
+
+        To access a specific
+        Vertica attribute:
+
+        .. ipython:: python
+
+            model.get_vertica_attributes('details')
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if self._is_native or self._is_using_native:
             vertica_version(condition=[8, 1, 1])
@@ -388,8 +890,11 @@ class VerticaModel(PlottingUtils):
 
     def _get_vertica_model_id(self) -> int:
         """
-        Returns the model_id of a native model archived in database.
-        It returns 0 if the model is not archived in the database.
+        Returns the model_id of a
+        native model archived in
+        database. It returns ``0``
+        if the model is not archived
+        in the database.
         """
         if not self._is_native:
             raise AttributeError(
@@ -410,7 +915,8 @@ class VerticaModel(PlottingUtils):
 
     def _is_binary_classifier(self) -> Literal[False]:
         """
-        Returns True if the model is a Binary Classifier.
+        Returns ``True`` if the model
+        is a ``BinaryClassifier``.
         """
         return False
 
@@ -419,8 +925,10 @@ class VerticaModel(PlottingUtils):
     @staticmethod
     def _map_to_vertica_param_dict() -> dict[str, str]:
         """
-        Returns a dictionary used to map VerticaPy parameter
-        names to Vertica parameter names.
+        Returns a dictionary used
+        to map VerticaPy parameter
+        names to Vertica parameter
+        names.
         """
         return {
             "class_weights": "class_weight",
@@ -441,7 +949,8 @@ class VerticaModel(PlottingUtils):
 
     def _map_to_vertica_param_name(self, param: str) -> str:
         """
-        Maps the input VerticaPy parameter name to the
+        Maps the input VerticaPy
+        parameter name to the
         Vertica parameter name.
         """
         options = self._map_to_vertica_param_dict()
@@ -452,9 +961,12 @@ class VerticaModel(PlottingUtils):
 
     def _get_vertica_param_dict(self) -> dict[str, str]:
         """
-        Returns the Vertica parameters dict to use when fitting
-        the model. As some model's parameters names are not the
-        same in Vertica. It is important to map them.
+        Returns the Vertica parameters
+        ``dict`` to use when fitting
+        the model. As some model's
+        parameters names are not the
+        same in Vertica. It is important
+        to map them.
 
         Returns
         -------
@@ -486,7 +998,8 @@ class VerticaModel(PlottingUtils):
 
     def _map_to_verticapy_param_name(self, param: str) -> str:
         """
-        Maps the Vertica parameter name to the VerticaPy one.
+        Maps the Vertica parameter
+        name to the VerticaPy one.
         """
         options = self._map_to_vertica_param_dict()
         for key in options:
@@ -498,9 +1011,10 @@ class VerticaModel(PlottingUtils):
         self, options: Optional[dict] = None, **kwargs
     ) -> dict:
         """
-        Takes as input a dictionary of Vertica options and
-        returns  the  associated  dictionary of  VerticaPy
-        options.
+        Takes as input a ``dictionary``
+        of Vertica options and returns
+        the  associated  ``dictionary``
+        of  VerticaPy options.
         """
         options = format_type(options, dtype=dict)
         parameters = {}
@@ -511,12 +1025,75 @@ class VerticaModel(PlottingUtils):
 
     def get_params(self) -> dict:
         """
-        Returns the parameters of the model.
+        Returns the parameters
+        of the model.
 
         Returns
         -------
         dict
             model parameters.
+
+        Examples
+        --------
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can easily get the
+        model parameters:
+
+        .. ipython:: python
+
+            model.get_params()
+
+        Let's change some of the
+        parameter.
+
+        .. ipython:: python
+
+            model.set_params(
+                solver = 'bfgs',
+                max_iter = 200,
+            )
+
+        The parameters have changed:
+
+        .. ipython:: python
+
+            model.get_params()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         all_init_params = list(get_type_hints(self.__init__).keys())
         parameters = copy.deepcopy(self.parameters)
@@ -528,15 +1105,80 @@ class VerticaModel(PlottingUtils):
 
     def set_params(self, parameters: Optional[dict] = None, **kwargs) -> None:
         """
-        Sets the parameters of the model.
+        Sets the parameters
+        of the model.
 
         Parameters
         ----------
         parameters: dict, optional
             New parameters.
         **kwargs
-            New  parameters can  also be passed as arguments,
-            example: set_params(param1 = val1, param2 = val2)
+            New parameters can also
+            be passed as arguments,
+            Example:
+            ``set_params(param1 = val1, param2 = val2)``
+
+        Examples
+        --------
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can easily get the
+        model parameters:
+
+        .. ipython:: python
+
+            model.get_params()
+
+        Let's change some of the
+        parameter.
+
+        .. ipython:: python
+
+            model.set_params(
+                solver = 'bfgs',
+                max_iter = 200,
+            )
+
+        The parameters have changed:
+
+        .. ipython:: python
+
+            model.get_params()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         parameters = format_type(parameters, dtype=dict)
         all_init_params = list(get_type_hints(self.__init__).keys())
@@ -559,6 +1201,103 @@ class VerticaModel(PlottingUtils):
     def summarize(self) -> str:
         """
         Summarizes the model.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        Let's summarize the model.
+
+        .. ipython:: python
+
+            model.summarize()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if self._is_native:
             try:
@@ -582,19 +1321,121 @@ class VerticaModel(PlottingUtils):
 
     def deploySQL(self, X: Optional[SQLColumns] = None) -> str:
         """
-        Returns the SQL code needed to deploy the model.
+        Returns the SQL code
+        needed to deploy the
+        model.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model.
-            If empty,  the model predictors are used.
+            ``list`` of the columns used
+            to deploy the model.
+            If empty, the model predictors
+            are used.
 
         Returns
         -------
         str
             the SQL code needed
             to deploy the model.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        Get the Vertica SQL code
+        needed to deploy the model.
+
+        .. ipython:: python
+
+            model.deploySQL()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if hasattr(self, "_vertica_predict_sql"):
             match_by_pos = "'true'"
@@ -622,7 +1463,64 @@ class VerticaModel(PlottingUtils):
         ] = None,
     ) -> bool:
         """
-        Exports machine learning models.
+        Exports machine
+        learning models.
+
+        Parameters
+        ----------
+        name: str
+            Model's name.
+        path: str
+            Absolute path of an output
+            directory to store the
+            exported models.
+
+            .. warning::
+
+                This function operates solely
+                on the server side and is not
+                accessible locally.
+                The ``path`` provided should
+                match the location where the
+                file(s) will be exported on
+                the server.
+        kind: str, optional
+            One of the following:
+             - pmml
+             - vertica
+             - tensorflow
+
+        Returns
+        -------
+        bool
+            ``True`` if the model
+            was successfully
+            exported.
+
+        Examples
+        --------
+        Let's consider we've fitted a
+        Vertica model named 'my_model'.
+        It is stored in the 'my_schema'
+        schema and available in the
+        Database.
+
+        You can export it easily:
+
+        .. code-block:: python
+
+            from verticapy.machine_learning.vertica.base import VerticaModel
+
+            VerticaModel.export_models(
+                name = 'my_schema.my_model',
+                kind = 'pmml', # Pick up the export type.
+            )
+
+        .. warning::
+
+            This function operates solely
+            on the server side and is not
+            accessible locally.
         """
         if isinstance(kind, NoneType):
             params = ""
@@ -650,7 +1548,64 @@ class VerticaModel(PlottingUtils):
         ] = None,
     ) -> bool:
         """
-        Imports machine learning models.
+        Imports machine
+        learning models.
+
+        Parameters
+        ----------
+        path: str
+            Absolute path of an output
+            directory to store the
+            exported models.
+
+            .. warning::
+
+                This function operates solely
+                on the server side and is not
+                accessible locally.
+                The ``path`` provided should
+                match the location where the
+                file(s) will be exported on
+                the server.
+        schema: str, optional
+            Schema name.
+        kind: str, optional
+            One of the following:
+             - pmml
+             - vertica
+             - tensorflow
+
+        Returns
+        -------
+        bool
+            ``True`` if the model
+            was successfully
+            exported.
+
+        Examples
+        --------
+        Let's consider we've fitted a
+        Vertica model named 'my_model'.
+        We want to import it in the
+        'my_schema' schema.
+
+        You can import it easily:
+
+        .. code-block:: python
+
+            from verticapy.machine_learning.vertica.base import VerticaModel
+
+            VerticaModel.import_models(
+                path = 'server_location'
+                schema = 'my_schema',
+                kind = 'pmml', # Pick up the import type.
+            )
+
+        .. warning::
+
+            This function operates solely
+            on the server side and is not
+            accessible locally.
         """
         if isinstance(schema, NoneType):
             schema = conf.get_option("temp_schema")
@@ -671,25 +1626,51 @@ class VerticaModel(PlottingUtils):
 
     def to_binary(self, path: str):
         """
-        Exports the model to the Vertica Binary format.
+        Exports the model to the
+        Vertica Binary format.
 
         Parameters
         ----------
         path: str
-            Absolute path of an output directory to store
-            the exported models.
+            Absolute path of an output
+            directory to store the
+            exported models.
 
             .. warning::
 
-                This function operates solely on the server
-                side and is not accessible locally.
-                The 'path' provided should match the location
-                where the file(s) will be exported on the server.
+                This function operates solely
+                on the server side and is not
+                accessible locally.
+                The ``path`` provided should
+                match the location where the
+                file(s) will be exported on
+                the server.
 
         Returns
         -------
         bool
-            True if the model was successfully exported.
+            ``True`` if the model
+            was successfully
+            exported.
+
+        Examples
+        --------
+        Let's consider we've fitted a
+        Vertica model ``model``.
+
+        You can export it easily to
+        the Vertica binary format
+        by using:
+
+        .. code-block:: python
+
+            model.to_binary(path = 'server_location')
+
+        .. warning::
+
+            This function operates solely
+            on the server side and is not
+            accessible locally.
         """
         return self.export_models(name=self.model_name, path=path, kind="vertica")
 
@@ -700,44 +1681,93 @@ class VerticaModel(PlottingUtils):
         Parameters
         ----------
         path: str
-            Absolute path of an output directory to store
-            the exported models.
+            Absolute path of an output
+            directory to store the
+            exported models.
 
             .. warning::
 
-                This function operates solely on the server
-                side and is not accessible locally.
-                The 'path' provided should match the location
-                where the file(s) will be exported on the server.
+                This function operates solely
+                on the server side and is not
+                accessible locally.
+                The ``path`` provided should
+                match the location where the
+                file(s) will be exported on
+                the server.
 
         Returns
         -------
         bool
-            True if the model was successfully exported.
+            ``True`` if the model
+            was successfully
+            exported.
+
+        Examples
+        --------
+        Let's consider we've fitted a
+        Vertica model ``model``.
+
+        You can export it easily to
+        PMML by using:
+
+        .. code-block:: python
+
+            model.to_pmml(path = 'server_location')
+
+        .. warning::
+
+            This function operates solely
+            on the server side and is not
+            accessible locally.
         """
         return self.export_models(name=self.model_name, path=path, kind="pmml")
 
     def to_tf(self, path: str):
         """
-        Exports the model to the Frozen Graph format (TensorFlow).
+        Exports the model to the
+        Frozen Graph format (TensorFlow).
 
         Parameters
         ----------
         path: str
-            Absolute path of an output directory to store
-            the exported model.
+            Absolute path of an output
+            directory to store the
+            exported models.
 
             .. warning::
 
-                This function operates solely on the server
-                side and is not accessible locally.
-                The 'path' provided should match the location
-                where the file(s) will be exported on the server.
+                This function operates solely
+                on the server side and is not
+                accessible locally.
+                The ``path`` provided should
+                match the location where the
+                file(s) will be exported on
+                the server.
 
         Returns
         -------
         bool
-            True if the model was successfully exported.
+            ``True`` if the model
+            was successfully
+            exported.
+
+        Examples
+        --------
+        Let's consider we've fitted a
+        tensorflow model ``model``.
+
+        You can export it easily to
+        frozen graph by using:
+
+        .. code-block:: python
+
+            model.to_tf(path = 'server_location')
+
+        .. warning::
+
+            This function operates solely
+            on the server side and is not
+            accessible locally.
         """
         return self.export_models(name=self.model_name, path=path, kind="tensorflow")
 
@@ -747,24 +1777,141 @@ class VerticaModel(PlottingUtils):
         return_distance_clusters: bool = False,
     ) -> Callable:
         """
-        Returns the Python function needed for in-memory
-        scoring  without using built-in Vertica functions.
+        Returns the Python function
+        needed for in-memory scoring
+        without using built-in Vertica
+        functions.
 
         Parameters
         ----------
         return_proba: bool, optional
-            If  set to True  and  the  model is a  classifier,
-            the  function  returns  the  model  probabilities.
+            If set to ``True`` and the
+            model is a classifier, the
+            function returns the model
+            probabilities.
         return_distance_clusters: bool, optional
-            If  set to  True and the  model is  cluster-based,
-            the function returns the model clusters distances.
-            If the model is KPrototypes, the  function returns
-            the dissimilarity function.
+            If set to ``True`` and the
+            model is cluster-based, the
+            function returns the model
+            clusters distances. If the
+            model is KPrototypes, the
+            function returns the
+            dissimilarity function.
 
         Returns
         -------
         Callable
             Python function.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        Get the Python function
+        needed to deploy the model.
+
+        .. ipython:: python
+
+            model.to_python()
+
+        Use the function to make
+        predictions:
+
+        .. ipython:: python
+
+            # Building a dataset
+            data = [
+                [1.0, 2.3, 3.2, 1.9, 1.0, 0.0]
+            ]
+            # Making in-memory predictions
+            model.to_python()(data)
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         model = self.to_memmodel()
         if return_proba:
@@ -781,26 +1928,131 @@ class VerticaModel(PlottingUtils):
         return_distance_clusters: bool = False,
     ) -> SQLExpression:
         """
-        Returns  the SQL  code  needed  to deploy the  model
-        without using built-in Vertica functions.
+        Returns the SQL code needed
+        to deploy the model without
+        using built-in Vertica
+        functions.
 
         Parameters
         ----------
         X: SQLColumns, optional
             Input predictor's name.
         return_proba: bool, optional
-            If  set to  True and  the  model is a  classifier,
-            the function returns the class probabilities.
+            If set to ``True`` and the
+            model is a classifier, the
+            function returns the class
+            probabilities.
         return_distance_clusters: bool, optional
-            If  set to  True and the  model is  cluster-based,
-            the function returns the model clusters distances.
-            If the model is  KPrototypes, the function returns
-            the dissimilarity function.
+            If set to ``True`` and the
+            model is cluster-based, the
+            function returns the model
+            clusters distances.
+            If the model is ``KPrototypes``,
+            the function returns the
+            dissimilarity function.
 
         Returns
         -------
         SQLExpression
             SQL code.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        Get the SQL code needed
+        to deploy the model.
+
+        .. ipython:: python
+
+            model.to_sql()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         X = format_type(X, dtype=list)
         if len(X) == 0:
@@ -817,7 +2069,8 @@ class VerticaModel(PlottingUtils):
 
     def _get_plot_args(self, method: Optional[str] = None) -> list:
         """
-        Returns the args used by plotting methods.
+        Returns the args used
+        by plotting methods.
         """
         if method == "contour":
             args = [self.X, self.deploySQL(X=self.X)]
@@ -832,7 +2085,8 @@ class VerticaModel(PlottingUtils):
         method: Optional[str] = None,
     ) -> dict:
         """
-        Returns the kwargs used by plotting methods.
+        Returns the kwargs used
+        by plotting methods.
         """
         res = {"nbins": nbins, "chart": chart}
         if method == "contour":
@@ -856,7 +2110,8 @@ class VerticaModel(PlottingUtils):
         Parameters
         ----------
         nbins: int, optional
-            Number of bins used to discretize the
+            Number of bins used
+            to discretize the
             two predictors.
         chart: PlottingObject, optional
             The chart object to plot on.
@@ -868,6 +2123,32 @@ class VerticaModel(PlottingUtils):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Let's consider we've fitted a model
+        ``model``.
+
+        **Contour plot** is another useful
+        plot that can be produced for models
+        with two predictors.
+
+        .. code-block:: python
+
+            model.contour()
+
+        .. important::
+
+            Machine learning models with two
+            predictors can usually benefit
+            from their own contour plot. This
+            visual representation aids in
+            exploring predictions and gaining
+            a deeper understanding of how these
+            models perform in different scenarios.
+            Please refer to
+            :ref:`chart_gallery.contour`
+            for more examples.
         """
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(method="contour"),
@@ -1430,7 +2711,8 @@ class BinaryClassifier(Supervised):
 
     def _is_binary_classifier(self) -> Literal[True]:
         """
-        Returns True if the model is a Binary Classifier.
+        Returns ``True`` if the
+        model is a ``BinaryClassifier``.
         """
         return True
 
@@ -2002,7 +3284,8 @@ class MulticlassClassifier(Supervised):
 
     def _is_binary_classifier(self) -> bool:
         """
-        Returns True if the model is a Binary Classifier.
+        Returns ``True`` if the
+        model is a ``BinaryClassifier``.
         """
         if len(self.classes_) == 2 and self.classes_[0] == 0 and self.classes_[1] == 1:
             return True
@@ -2827,40 +4110,240 @@ class Regressor(Supervised):
         ] = None,
     ) -> Union[float, TableSample]:
         """
-        Computes a regression report
-        using multiple metrics to
-        evaluate the model (``r2``,
-        ``mse``, ``max error``...).
+         Computes a regression report
+         using multiple metrics to
+         evaluate the model (``r2``,
+         ``mse``, ``max error``...).
 
-        Parameters
-        ----------
-        metrics: str, optional
-            The metrics used to compute the regression report.
-                None    : Computes the model different metrics.
-                anova   : Computes the model ANOVA table.
-                details : Computes the model details.
-            You can also provide a list of different metrics,
-            including the following:
-                aic    : Akaike’s Information Criterion
-                bic    : Bayesian Information Criterion
-                max    : Max Error
-                mae    : Mean Absolute Error
-                median : Median Absolute Error
-                mse    : Mean Squared Error
-                msle   : Mean Squared Log Error
-                qe     : quantile  error,  the quantile must be
-                         included in the name. Example:
-                         qe50.1% will return the quantile error
-                         using q=0.501.
-                r2     : R squared coefficient
-                r2a    : R2 adjusted
-                rmse   : Root Mean Squared Error
-                var    : Explained Variance
+         Parameters
+         ----------
+         metrics: str | list, optional
+             The metrics used to compute
+             the regression report.
 
-        Returns
-        -------
-        TableSample
-            report.
+              - None:
+                 Computes the model different metrics.
+              - anova:
+                 Computes the model ANOVA table.
+              - details:
+                 Computes the model details.
+
+             It can also be a ``list`` of the
+             metrics used to compute the final
+             report.
+
+             - aic:
+                 Akaike's Information Criterion
+
+                 .. math::
+
+                     AIC = 2k - 2\ln(\hat{L})
+
+             - bic:
+                 Bayesian Information Criterion
+
+                 .. math::
+
+                     BIC = -2\ln(\hat{L}) + k \ln(n)
+
+             - max:
+                 Max Error.
+
+                 .. math::
+
+                     ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+             - mae:
+                 Mean Absolute Error.
+
+                 .. math::
+
+                     MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+             - median:
+                 Median Absolute Error.
+
+                 .. math::
+
+                     MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+             - mse:
+                 Mean Squared Error.
+
+                 .. math::
+
+                     MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+             - msle:
+                 Mean Squared Log Error.
+
+                 .. math::
+
+                     MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+             - r2:
+                 R squared coefficient.
+
+                 .. math::
+
+                     R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+             - r2a:
+                 R2 adjusted
+
+                 .. math::
+
+                     \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+             - qe:
+                 quantile error, the quantile must be
+                 included in the name. Example:
+                 qe50.1% will  return the quantile
+                 error using q=0.501.
+
+             - rmse:
+                 Root-mean-squared error
+
+                 .. math::
+
+                     RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
+             - var:
+                 Explained Variance
+
+                 .. math::
+
+                     \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
+         Returns
+         -------
+         TableSample
+             report.
+
+         Examples
+         --------
+         We import :py:mod:`verticapy`:
+
+         .. code-block:: python
+
+             import verticapy as vp
+
+         For this example, we will
+         use the winequality dataset.
+
+         .. code-block:: python
+
+             import verticapy.datasets as vpd
+
+             data = vpd.load_winequality()
+
+         .. raw:: html
+             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+         Divide your dataset into training
+         and testing subsets.
+
+         .. code-block:: python
+
+             data = vpd.load_winequality()
+             train, test = data.train_test_split(test_size = 0.2)
+
+         .. ipython:: python
+             :suppress:
+
+             import verticapy as vp
+             import verticapy.datasets as vpd
+             data = vpd.load_winequality()
+             train, test = data.train_test_split(test_size = 0.2)
+
+         Let's import the model:
+
+         .. code-block::
+
+             from verticapy.machine_learning.vertica import LinearRegression
+
+         Then we can create the model:
+
+         .. code-block::
+
+             model = LinearRegression(
+                 tol = 1e-6,
+                 max_iter = 100,
+                 solver = 'newton',
+                 fit_intercept = True,
+             )
+
+         .. ipython:: python
+             :suppress:
+
+             from verticapy.machine_learning.vertica import LinearRegression
+             model = LinearRegression(
+                 tol = 1e-6,
+                 max_iter = 100,
+                 solver = 'newton',
+                 fit_intercept = True,
+             )
+
+         We can now fit the model:
+
+         .. ipython:: python
+
+             model.fit(
+                 train,
+                 [
+                     "fixed_acidity",
+                     "volatile_acidity",
+                     "citric_acid",
+                     "residual_sugar",
+                     "chlorides",
+                     "density",
+                 ],
+                 "quality",
+                 test,
+             )
+
+         We can get the entire report using:
+
+         .. ipython:: python
+             :suppress:
+
+             result = model.report()
+             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
+             html_file.write(result._repr_html_())
+             html_file.close()
+
+         .. code-block:: python
+
+             result = model.report()
+
+         .. raw:: html
+             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html
+
+        We can easily get the ANOVA table using:
+
+         .. ipython:: python
+             :suppress:
+
+             result = model.report(metrics = "anova")
+             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
+             html_file.write(result._repr_html_())
+             html_file.close()
+
+         .. code-block:: python
+
+             result = model.report(metrics = "anova")
+
+         .. raw:: html
+             :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html
+
+         .. important::
+
+             For this example, a specific model is
+             utilized, and it may not correspond
+             exactly to the model you are working
+             with. To see a comprehensive example
+             specific to your class of interest,
+             please refer to that particular class.
         """
         prediction = self.deploySQL()
         if self._model_type == "KNeighborsRegressor":
@@ -2936,22 +4419,191 @@ class Regressor(Supervised):
         ----------
         metric: str, optional
             The metric used to compute the score.
-                aic    : Akaike’s Information Criterion
-                bic    : Bayesian Information Criterion
-                max    : Max Error
-                mae    : Mean Absolute Error
-                median : Median Absolute Error
-                mse    : Mean Squared Error
-                msle   : Mean Squared Log Error
-                r2     : R squared coefficient
-                r2a    : R2 adjusted
-                rmse   : Root Mean Squared Error
-                var    : Explained Variance
+
+            - aic:
+                Akaike's Information Criterion
+
+                .. math::
+
+                    AIC = 2k - 2\ln(\hat{L})
+
+            - bic:
+                Bayesian Information Criterion
+
+                .. math::
+
+                    BIC = -2\ln(\hat{L}) + k \ln(n)
+
+            - max:
+                Max Error.
+
+                .. math::
+
+                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mae:
+                Mean Absolute Error.
+
+                .. math::
+
+                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - median:
+                Median Absolute Error.
+
+                .. math::
+
+                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mse:
+                Mean Squared Error.
+
+                .. math::
+
+                    MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+            - msle:
+                Mean Squared Log Error.
+
+                .. math::
+
+                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+            - r2:
+                R squared coefficient.
+
+                .. math::
+
+                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+            - r2a:
+                R2 adjusted
+
+                .. math::
+
+                    \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+            - qe:
+                quantile error, the quantile must be
+                included in the name. Example:
+                qe50.1% will  return the quantile
+                error using q=0.501.
+
+            - rmse:
+                Root-mean-squared error
+
+                .. math::
+
+                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
+            - var:
+                Explained Variance
+
+                .. math::
+
+                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
 
         Returns
         -------
         float
             score.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        Let's compute the model score:
+
+        .. ipython:: python
+
+            model.score()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         # Initialization
         metric = str(metric).lower()
@@ -2988,30 +4640,166 @@ class Regressor(Supervised):
         inplace: bool = True,
     ) -> vDataFrame:
         """
-        Predicts using the input relation.
+        Predicts using the
+        input relation.
 
         Parameters
         ----------
         vdf: SQLRelation
-            Object  used to run  the prediction.  You can
-            also  specify a  customized  relation,  but you
-            must  enclose  it with an alias.  For  example,
-            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
-            and "SELECT 1" are invalid.
+            Object used to run the prediction.
+            You can also  specify a customized
+            relation, but you must enclose it
+            with an alias. For example,
+            ``(SELECT 1) x`` is valid, whereas
+            ``(SELECT 1)`` and ``SELECT 1``
+            are invalid.
         X: SQLColumns, optional
-            List of the columns  used to deploy the models.
-            If empty, the model predictors are used.
+            ``list`` of the columns used to
+            deploy the models. If empty, the
+            model predictors are used.
         name: str, optional
-            Name of the added vDataColumn. If empty, a name
-            is generated.
+            Name of the added
+            :py:class`vDataColumn`.
+            If empty, a name is generated.
         inplace: bool, optional
-            If set to True, the prediction is added to the
-            vDataFrame.
+            If set to True, the prediction
+            is added to the
+            :py:class`vDataFrame`.
 
         Returns
         -------
         vDataFrame
             the input object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        Prediction is straight-forward:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+            html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            model.predict(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
         if hasattr(self, "_predict"):
             return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
@@ -3056,18 +4844,67 @@ class Unsupervised(VerticaModel):
         input_relation: SQLRelation
             Training relation.
         X: SQLColumns, optional
-            List of the predictors. If empty, all
-            the numerical columns are used.
+            ``list`` of the predictors.
+            If empty, all the numerical
+            columns are used.
         return_report: bool, optional
             [For native models]
-            When set to True, the model summary
-            will be returned. Otherwise, it will
-            be printed.
+            When set to ``True``, the
+            model summary will be returned.
+            Otherwise, it will be printed.
 
         Returns
         -------
         str
             model's summary.
+
+        Examples
+        --------
+        For this example, we will
+        use the winequality dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Let's import the model:
+
+        .. ipython:: python
+
+            from verticapy.machine_learning.vertica import KMeans
+
+        Then we can create the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model = KMeans(
+                n_cluster = 8,
+                init = "kmeanspp",
+                max_iter = 300,
+                tol = 1e-4,
+            )
+
+        We can then fit the model:
+
+        .. ipython:: python
+            :okwarning:
+
+            model.fit(data, X = ["density", "sulphates"])
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
         """
 
         # Initialization

@@ -395,14 +395,17 @@ class KNeighborsRegressor(Regressor):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
-    more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
     """
 
     # Properties.

@@ -1727,7 +1727,7 @@ class vDFMachineLearning(vDFScaler):
             model = LinearRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
@@ -1738,7 +1738,7 @@ class vDFMachineLearning(vDFScaler):
             model = LinearRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
