@@ -421,6 +421,25 @@ Machine Learning
 
     .. grid-item::
 
+        .. card:: Elbow
+          :img-top: _static/pic_elbow.png
+          :link: chart_gallery.elbow
+          :link-type: ref
+          :text-align: center
+          :class-card: custom-card-6
+          :class-img-top: custom-class-img-top-7
+          
+          
+          Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
+          Using: :bdg-secondary:`Python` 
+
+          :bdg-dark-line:`Scalability`  :bdg-dark-line:`Performance`
+
+          +++
+          See Examples
+
+    .. grid-item::
+
         .. card:: LOF
           :img-top: _static/gif_lof.gif
           :link: chart_gallery.lof
