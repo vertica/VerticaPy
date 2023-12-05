@@ -6797,7 +6797,7 @@ class MulticlassClassifier(Supervised):
         For this example, we will
         use the Iris dataset.
 
-        .. code-block:: python
+        .. ipython:: python
 
             import verticapy.datasets as vpd
 
