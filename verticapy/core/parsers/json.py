@@ -150,9 +150,9 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.utilities.read_csv` :
+        | :py:meth:`verticapy.core.parsers.read_csv` :
             Ingests a CSV file into the Vertica DB.
-        | :py:meth:`verticapy.utilities.read_json` :
+        | :py:meth:`verticapy.core.parsers.read_json` :
             Ingests a JSON file into the Vertica DB.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
@@ -268,7 +268,7 @@ def read_json(
         file has  JSON records
         terminated by newline
         characters,  set this
-        parameter to '\n').
+        parameter to ``\\n``.
         If any invalid JSON records
         exist, parsing continues
         after the next ``record_terminator``.
@@ -561,7 +561,7 @@ def read_json(
         :okexcept:
 
         #Cleanup block - drop / remove objects created for this example
-        from verticapy.utilities import drop
+        from verticapy import drop
         drop(name = "public.titanic_subset")
         drop(name = "public.titanic_sub_newnames")
         drop(name = "public.titanic_sub_usecols")
@@ -570,7 +570,7 @@ def read_json(
 
     .. seealso::
 
-        | :py:meth:`verticapy.utilities.read_csv` :
+        | :py:meth:`verticapy.core.parsers.read_csv` :
             Ingests a CSV file into the Vertica DB.
     """
     new_name = format_type(new_name, dtype=dict)
