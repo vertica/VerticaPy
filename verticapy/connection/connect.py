@@ -34,7 +34,8 @@ Connecting to the DB.
 
 def auto_connect() -> None:
     """
-    Automatically creates a connection using the
+    Automatically creates
+    a connection using the
     auto-connection.
     """
     gb_conn = get_global_connection()
@@ -61,11 +62,13 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
     Parameters
     ----------
     section: str
-        Name  of the  section in the  configuration
-        file.
+        Name of the section in the
+        configuration file.
     dsn: str, optional
-        Path to the file containing the credentials.
-        If empty, the  Connection File will be used.
+        Path to the file containing
+        the credentials. If empty,
+        the Connection File will be
+        used.
 
     Examples
     --------
@@ -110,16 +113,19 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
 
 def set_connection(conn: Connection) -> None:
     """
-    Saves a custom  connection to the VerticaPy object.
-    This allows you to specify,  for example, a JDBC or
-    ODBC connection. This should not be confused with a
-    native   VerticaPy   connection  created   by   the
-    'new_connection' function.
+    Saves a custom connection to the
+    VerticaPy object. This allows you
+    to specify, for example, a JDBC or
+    ODBC connection. This should not be
+    confused with a native VerticaPy
+    connection created by the
+    :py:func:`verticapy.connect.write.new_connection`
+    function.
 
     Examples
     --------
-    Create a connection using the official Vertica Python
-    client:
+    Create a connection using the
+    official Vertica Python client:
 
     .. note::
 
@@ -175,7 +181,8 @@ Closing DB Connection.
 
 def close_connection() -> None:
     """
-    Closes the connection to the database.
+    Closes the connection
+    to the database.
 
     Examples
     --------
@@ -183,8 +190,9 @@ def close_connection() -> None:
 
     .. warning::
 
-        When you close the connection, your session will
-        terminate and all temporary elements will be
+        When you close the connection,
+        your session will terminate and
+        all temporary elements will be
         automatically dropped.
 
     .. code-block:: python
@@ -208,16 +216,20 @@ Connections & Cursors Objects.
 
 def current_connection() -> GlobalConnection:
     """
-    Returns the current  database connection. If the
-    connection  is  closed,  VerticaPy  attempts  to
-    reconnect with the existing connection.
+    Returns the current database
+    connection. If the connection
+    is closed, VerticaPy attempts
+    to reconnect with the existing
+    connection.
 
-    If  the  connection   attempt  fails,  VerticaPy
-    attempts to reconnect using  stored  credentials.
-    If  this  also  fails,   VerticaPy  attempts  to
-    connect  using  an  auto  connection.  Otherwise,
-    VerticaPy  attempts  to connect to a  VerticaLab
-    Environment.
+    If the connection attempt fails,
+    VerticaPy attempts to reconnect
+    using stored credentials.
+    If this also fails, VerticaPy
+    attempts to connect using an
+    auto connection. Otherwise,
+    VerticaPy attempts to connect
+    to a VerticaLab Environment.
 
     Examples
     --------
@@ -280,7 +292,8 @@ def current_connection() -> GlobalConnection:
 
 def current_cursor() -> Cursor:
     """
-    Returns the current database cursor.
+    Returns the current
+    database cursor.
 
     Examples
     --------
@@ -311,17 +324,21 @@ def current_cursor() -> Cursor:
 
 def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     """
-    Reads the input DSN and creates a Vertica Database
+    Reads the input DSN and
+    creates a Vertica Database
     connection.
 
     Parameters
     ----------
     section: str
-        Name of the section in  the configuration file.
+        Name of the section in
+        the configuration file.
     dsn: str, optional
-        Path  to the file containing  the  credentials.
-        If empty, the VERTICAPY_CONNECTION environment
-        variable will be used.
+        Path to the file containing
+        the credentials. If empty,
+        the ``VERTICAPY_CONNECTION``
+        environment variable will
+        be used.
 
     Returns
     -------
@@ -337,8 +354,8 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
         This example utilizes a Data Source Name (DSN)
         to establish the connection, which is stored in
         the file specified by the global variable
-        VERTICAPY_CONNECTION. However, if you prefer a
-        customized file with a different location, you
+        ``VERTICAPY_CONNECTION``. However, if you prefer
+        a customized file with a different location, you
         can specify the file path accordingly.
 
     .. code-block:: python
@@ -357,7 +374,8 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
 
 def verticapylab_connection() -> Connection:
     """
-    Returns the VerticaPyLab connection, if possible.
+    Returns the VerticaPyLab
+    connection, if possible.
 
     Returns
     -------

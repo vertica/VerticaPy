@@ -21,19 +21,22 @@ from typing import Optional
 
 def get_confparser(dsn: Optional[str] = None) -> ConfigParser:
     """
-    Parses the input DSN and returns the linked
-    Config Parser.
+    Parses the input DSN and
+    returns the linked Config
+    Parser.
 
     Parameters
     ----------
     dsn: str, optional
-        Path to the file containing the credentials.
-        If empty, the VERTICAPY_CONNECTION environment
-        variable is used.
+        Path to the file containing
+        the credentials. If empty,
+        the ``VERTICAPY_CONNECTION``
+        environment variable is used.
 
     Examples
     --------
-    Get the Config Parser using the VERTICAPY_CONNECTION
+    Get the Config Parser
+    using the ``VERTICAPY_CONNECTION``
     environment variable:
 
     .. ipython:: python
@@ -52,28 +55,32 @@ def get_confparser(dsn: Optional[str] = None) -> ConfigParser:
 
 def get_connection_file() -> str:
     """
-    Gets (and creates, if necessary) the auto
-    -connection file. If the environment variable
-    'VERTICAPY_CONNECTION' is set, it is assumed
-    to be the full path to the auto-connection file.
+    Gets (and creates, if necessary) the
+    auto-connection file. If the environment
+    variable ``VERTICAPY_CONNECTION`` is set,
+    it is assumed to be the full path to the
+    auto-connection file.
     Otherwise, we reference "connections.verticapy"
-    in the hidden ".verticapy" folder in the user's
-    home directory.
+    in the hidden ".verticapy" folder in the
+    user's home directory.
 
     Returns
     -------
     string
-        the full path to the auto-connection file.
+        the full path to the
+        auto-connection file.
 
     Examples
     --------
-    The connection file is used to store all connections:
+    The connection file is used
+    to store all connections:
 
     .. warning::
 
-        Connections are stored in plain text format. In
-        shared environments, it's recommended to create
-        connections manually for added security.
+        Connections are stored in plain
+        text format. In shared environments,
+        it's recommended to create connections
+        manually for added security.
 
     .. code-block:: python
 

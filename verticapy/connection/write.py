@@ -80,8 +80,8 @@ def change_auto_connection(name: str) -> None:
 
 def delete_connection(name: str) -> bool:
     """
-    Deletes a specified connection from the
-    connection file.
+    Deletes a specified connection
+    from the connection file.
 
     Parameters
     ----------
@@ -91,12 +91,14 @@ def delete_connection(name: str) -> bool:
     Returns
     -------
     bool
-        True if the connection was deleted,
-        False otherwise.
+        ``True`` if the connection
+        was deleted, ``False``
+        otherwise.
 
     Examples
     --------
-    Create a connection named 'My_New_Vertica_Connection':
+    Create a connection named
+    'My_New_Vertica_Connection':
 
     .. code-block:: python
 
@@ -108,12 +110,13 @@ def delete_connection(name: str) -> bool:
                 "port": "5433",
                 "database": "vertica_eon",
                 "password": "vertica",
-                "user": "dbadmin"
+                "user": "dbadmin",
             },
             name = "My_New_Vertica_Connection",
         )
 
-    Display all available connections:
+    Display all available
+    connections:
 
     .. code-block:: python
 
@@ -123,7 +126,8 @@ def delete_connection(name: str) -> bool:
 
     ``['VerticaDSN', 'My_New_Vertica_Connection']``
 
-    Delete the 'My_New_Vertica_Connection' connection:
+    Delete the 'My_New_Vertica_Connection'
+    connection:
 
     .. code-block:: python
 
@@ -131,7 +135,8 @@ def delete_connection(name: str) -> bool:
 
         delete_connection("My_New_Vertica_Connection")
 
-    Confirm that the connection no longer appears in the
+    Confirm that the connection
+    no longer appears in the
     available connections:
 
     .. code-block:: python
@@ -199,38 +204,31 @@ def new_connection(
         ...
 
          - env:
-            Bool to indicate whether the user and
+            ``bool`` to indicate whether the user and
             password are replaced by the associated
-            environment variables. If True, VerticaPy
+            environment variables. If ``True``, VerticaPy
             reads the associated environment variables
             instead of writing and directly using the
             username and password.
-            For example: ``{'user': 'ENV_USER', 'password'
-            : 'ENV_PASSWORD'}``
+            For example:
+            ``{'user': 'ENV_USER', 'password': 'ENV_PASSWORD'}``
 
             This works only for the user and password.
             The real values of the other variables are
             stored plaintext in the VerticaPy connection
-            file. Using the enviornment variables hides
+            file. Using the environment variables hides
             the username and password in cases where the
             local machine is shared.
 
     name: str, optional
         Name of the connection.
     auto: bool, optional
-        If set to True, the connection will become the new
-        auto-connection.
+        If set to True, the connection
+        will become the new auto-connection.
     overwrite: bool, optional
-        If set to True and the connection already exists,
-        the existing connection will be overwritten.
-    env: bool, optional
-        If True, user and password are replaced by the
-        associated environment variables. VerticaPy reads
-        the associated environment variables instead of
-        writing and directly using the username and password.
-
-        For example: ``{'user': 'ENV_USER', 'password'
-        : 'ENV_PASSWORD'}``
+        If set to ``True`` and the connection
+        already exists, the existing connection
+        will be overwritten.
 
     Examples
     --------
