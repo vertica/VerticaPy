@@ -121,7 +121,241 @@ def read_file(
     Returns
     -------
     vDataFrame
-        The vDataFrame of the relation.
+        The :py:class:`vDataFrame`
+        of the relation.
+
+    Examples
+    --------
+    In this example, we will first create
+    a *CSV* file using
+    :py:meth:`verticapy.vDataFrame.to_csv`
+    and ingest it into Vertica database.
+
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended
+        without interfering with functions from other
+        libraries.
+
+    We will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    Let's convert the
+    :py:class:`vDataFrame`
+    to a CSV.
+
+    .. ipython:: python
+
+        data[0:20].to_csv(
+            path = "titanic_subset.csv",
+        )
+
+    Our CSV file is ready to
+    be ingested in database.
+
+    Let's generate, the SQL
+    needed to create the Table.
+
+    .. ipython:: python
+
+        from verticapy.core.parsers.csv import read_file
+
+        read_file(
+            path = "titanic_subset.csv",
+            table_name = "titanic_subset",
+            schema = "public",
+            ingest_local = True, # ingest on the client side
+            genSQL = True,
+        )
+
+    .. note::
+
+        When ``genSQL`` flag is set to ``True``,
+        the SQL code for creating the final
+        table is  generated but not executed.
+        This is a good way to change the final
+        relation types or to customize the
+        data ingestion.
+
+    Now, we will ingest the CSV file
+    into the Vertica database.
+
+    .. code-block:: python
+
+        read_file(
+            path = "titanic_subset.csv",
+            table_name = "titanic_subset",
+            schema = "public",
+            ingest_local = True, # ingest on the client side
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        res = read_file(
+            path = "titanic_subset.csv",
+            table_name = "titanic_subset",
+            schema = "public",
+            ingest_local = True, # ingest on the client side
+        )
+        html_file = open("figures/core_parsers_csv1.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_csv1.html
+
+    Let's specify data types using
+    ``dtype`` parameter.
+
+    .. code-block:: python
+
+        read_file(
+            path = "titanic_subset.csv",
+            table_name = "titanic_sub_dtypes",
+            schema = "public",
+            ingest_local = True, # ingest on the client side
+            dtype = {
+                "pclass": "Integer",
+                "survived": "Integer",
+                "name": "Varchar(164)",
+                "sex": "Varchar(20)",
+                "age": "Numeric(6,3)",
+                "sibsp": "Integer",
+                "parch": "Integer",
+                "ticket": "Varchar(36)",
+                "fare": "Numeric(10,5)",
+                "cabin": "Varchar(30)",
+                "embarked": "Varchar(20)",
+                "boat": "Varchar(100)",
+                "body": "Integer",
+                "home.dest": "Varchar(100)",
+            },
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        res = read_file(
+            path = "titanic_subset.csv",
+            table_name = "titanic_sub_dtypes",
+            schema = "public",
+            ingest_local = True, # ingest on the client side
+            dtype = {
+                "pclass": "Integer",
+                "survived": "Integer",
+                "name": "Varchar(164)",
+                "sex": "Varchar(20)",
+                "age": "Numeric(6,3)",
+                "sibsp": "Integer",
+                "parch": "Integer",
+                "ticket": "Varchar(36)",
+                "fare": "Numeric(10,5)",
+                "cabin": "Varchar(30)",
+                "embarked": "Varchar(20)",
+                "boat": "Varchar(100)",
+                "body": "Integer",
+                "home.dest": "Varchar(100)",
+            },
+        )
+        html_file = open("figures/core_parsers_csv2.html", "w")
+        html_file.write(res._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_parsers_csv2.html
+
+    .. note::
+
+        You can ingest multiple CSV
+        files into the Vertica database
+        by using the following syntax.
+
+        .. code-block:: python
+
+            read_file(
+                path = "*.csv",
+                table_name = "titanic_multi_files",
+                schema = "public",
+                ingest_local = True,
+            )
+
+    .. ipython:: python
+        :suppress:
+        :okexcept:
+
+        # Cleanup block - drop / remove objects created for this example
+
+        from verticapy.utilities import drop
+        drop(name = "public.titanic_subset")
+        drop(name = "public.titanic_sub_dtypes")
+
+        import os
+        os.remove("titanic_subset.json")
+
+    .. note::
+
+        The :py:func:`verticapy.core.parsers.all.read_file`
+        function offers various additional
+        parameters and options. Check the
+        documentation to explore its capabilities,
+        such as the ability to automatically
+        guess the input file type and structure.
+
+    .. seealso::
+
+        | :py:func:`verticapy.core.parsers.read_avro` :
+            Ingests a AVRO file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_csv` :
+            Ingests a CSV file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_json` :
+            Ingests a JSON file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_pandas` :
+            Ingests the ``pandas.DataFrame``
+            into the Vertica DB.
     """
     dtype = format_type(dtype, dtype=dict)
     assert not ingest_local or insert, ValueError(

@@ -186,24 +186,29 @@ def intersect(
     y: Optional[str] = None,
 ) -> vDataFrame:
     """
-    Spatially intersects a point or points with a set
-    of polygons.
+    Spatially intersects a point
+    or points with a set of polygons.
 
     Parameters
     ----------
     vdf: SQLRelation
-        :py:class:`vDataFrame` used to compute the
+        :py:class:`vDataFrame`
+        used to compute the
         spatial join.
     index: str
         Name of the index.
     gid: str
-        An  integer  column  or integer that  uniquely
-        identifies the spatial object(s) of ``g`` or
+        An ``integer`` column or
+        ``integer`` that uniquely
+        identifies the spatial
+        object(s) of ``g`` or
         ``x`` and ``y``.
     g: str, optional
-        A  geometry  or  geography (WGS84) column that
-        contains points. The ``g`` column can contain
-        only point geometries or geographies.
+        A geometry or geography
+        (WGS84) column that contains
+        points. The ``g`` column can
+        contain only point geometries
+        or geographies.
     x: str, optional
         ``x``-coordinate or longitude.
     y: str, optional

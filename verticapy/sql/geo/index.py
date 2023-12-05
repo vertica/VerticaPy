@@ -208,6 +208,16 @@ def create_index(
         potentially extensive size of polygons.
         This is a unique optimization approach employed by
         Vertica in these scenarios.
+
+    .. seealso::
+
+        | :py:func:`verticapy.sql.geo.index.describe_index` :
+            Describes the geo index.
+        | :py:func:`verticapy.sql.geo.functions.intersect` :
+            Spatially intersects a point
+            or points with a set of polygons.
+        | :py:func:`verticapy.sql.geo.index.rename_index` :
+            Renames the geo index.
     """
     gid, g = vdf.format_colnames(gid, g)
     query = f"""
@@ -313,6 +323,16 @@ def describe_index(
         potentially extensive size of polygons.
         This is a unique optimization approach employed by
         Vertica in these scenarios.
+
+    .. seealso::
+
+        | :py:func:`verticapy.sql.geo.index.create_index` :
+            Creates the geo index.
+        | :py:func:`verticapy.sql.geo.functions.intersect` :
+            Spatially intersects a point
+            or points with a set of polygons.
+        | :py:func:`verticapy.sql.geo.index.rename_index` :
+            Renames the geo index.
     """
     if not name:
         query = f"SELECT STV_Describe_Index () OVER ()"
@@ -409,6 +429,16 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
         potentially extensive size of polygons.
         This is a unique optimization approach employed by
         Vertica in these scenarios.
+
+    .. seealso::
+
+        | :py:func:`verticapy.sql.geo.index.create_index` :
+            Creates the geo index.
+        | :py:func:`verticapy.sql.geo.index.describe_index` :
+            Describes the geo index.
+        | :py:func:`verticapy.sql.geo.functions.intersect` :
+            Spatially intersects a point
+            or points with a set of polygons.
     """
 
     try:

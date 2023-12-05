@@ -240,10 +240,15 @@ def pcsv(
 
     .. seealso::
 
-        | :py:meth:`verticapy.utilities.read_csv` :
-            Ingests a CSV file into the Vertica DB.
-        | :py:meth:`verticapy.utilities.read_json` :
+        | :py:func:`verticapy.core.parsers.read_avro` :
+            Ingests a AVRO file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_file` :
+            Ingests an input file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_json` :
             Ingests a JSON file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_pandas` :
+            Ingests the ``pandas.DataFrame``
+            into the Vertica DB.
     """
     header_names = format_type(header_names, dtype=list)
     if isinstance(na_rep, NoneType):
@@ -543,6 +548,7 @@ def read_csv(
     .. ipython:: python
 
         from verticapy.core.parsers.csv import read_csv
+
         read_csv(
             path = "titanic_subset.csv",
             table_name = "titanic_subset",
@@ -709,7 +715,7 @@ def read_csv(
 
     .. seealso::
 
-        | :py:meth:`verticapy.utilities.read_json` :
+        | :py:func:`verticapy.core.parsers.read_json` :
             Ingests a JSON file into the Vertica DB.
     """
     dtype = format_type(dtype, dtype=dict)
