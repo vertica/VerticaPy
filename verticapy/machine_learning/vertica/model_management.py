@@ -63,47 +63,90 @@ def export_models(
     Parameters
     ----------
     name: str
-        Specifies which models to export as follows:
+        Specifies which models
+        to export as follows:
 
         ``[schema.]{ model-name | * }``
 
-        where schema optionally specifies to export
-        models from the specified schema. If omitted,
-        ``export_models`` uses the default schema.
-        Supply * (asterisk) to export all models from
-        the schema.
+        where schema optionally
+        specifies to export models
+        from the specified schema.
+        If omitted, ``export_models``
+        uses the default schema.
+        Supply * (asterisk) to export
+        all models from the schema.
     path: str
-        Absolute path of an output directory to store
-        the exported models.
+        Absolute path of an output
+        directory to store the
+        exported models.
 
         .. warning::
 
-            This function operates solely on the server
-            side and is not accessible locally.
-            The 'path' provided should match the location
-            where the file(s) will be exported on the server.
+            This function operates
+            solely on the server side
+            and is not accessible locally.
+            The 'path' provided should
+            match the location where the
+            file(s) will be exported on
+            the server.
     kind: str, optional
-        The category of models to export, one of the
-        following:
+        The category of models to
+        export, one of the following:
 
             - vertica
             - pmml
             - tensorflow
 
-        ``export_models`` exports models of the specified
-        category according to the scope of the export
-        operation—that is, whether it applies to a single
-        model, or to all models within a schema.
+        ``export_models`` exports models
+        of the specified category according
+        to the scope of the export operation—that
+        is, whether it applies to a single model,
+        or to all models within a schema.
 
         If you omit this parameter, ``export_models``
-        exports the model, or models in the specified
-        schema, according to their model type.
+        exports the model, or models in
+        the specified schema, according
+        to their model type.
 
     Returns
     -------
     bool
-        True if the model(s) was(were) successfully
+        ``True`` if the model(s)
+        was(were) successfully
         exported.
+
+    Examples
+    --------
+    Let's consider we've fitted a
+    Vertica model named 'my_model'.
+    It is stored in the 'my_schema'
+    schema and available in the
+    Database.
+
+    You can export it easily:
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.vertica.model_management import export_models
+
+        export_models(
+            name = 'my_schema.my_model',
+            kind = 'pmml', # Pick up the export type.
+        )
+
+    .. warning::
+
+        This function operates solely
+        on the server side and is not
+        accessible locally.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+            Imports machine learning models.
+        | :py:func:`verticapy.machine_learning.vertica.model_management.load_model` :
+            Loads a Vertica model and returns
+            the associated object.
     """
     return VerticaModel.export_models(name=name, path=path, kind=kind)
 
@@ -120,8 +163,10 @@ def import_models(
     Parameters
     ----------
     path: str
-        The absolute path of the location from which
-        to import models, one of the following:
+        The absolute path of
+        the location from which
+        to import models, one of
+        the following:
 
          - The directory of a single model:
             ``path/model-directory``
@@ -131,43 +176,49 @@ def import_models(
 
         .. warning::
 
-            This function only operates on the server
-            side and is not accessible locally.
-            The 'path' should correspond to the location
-            of the file(s) on the server. Please make
-            sure you have successfully transferred your
-            file(s) to the server.
+            This function only operates
+            on the server side and is not
+            accessible locally.
+            The ``path`` should correspond
+            to the location of the file(s)
+            on the server. Please make sure
+            you have successfully transferred
+            your file(s) to the server.
     schema: str, optional
-        An existing schema where the machine learning
-        models are imported. If omitted, models are
-        imported to the default schema.
-        ``import_models`` extracts the name of the
-        imported model from its metadata.json file,
-        if it exists. Otherwise, the function uses
-        the name of the model directory.
+        An existing ``schema`` where the
+        machine learning models are imported.
+        If omitted, models are imported to the
+        default schema. ``import_models``
+        extracts the name of the imported model
+        from its metadata.json file,if it exists.
+        Otherwise, the function usesthe name of
+        the model directory.
     kind: str, optional
-        The category of models to import, one of the
-        following:
+        The category of models to import,
+        one of the following:
 
             - vertica
             - pmml
             - tensorflow
 
-        This parameter is required if the model directory
-        has no metadata.json file. ``import_models``
-        returns with an error if one of the following
+        This parameter is required if the
+        model directory has no metadata.json
+        file. ``import_models`` returns with
+        an error if one of the following
         cases is true:
 
-            - No category is specified and the model
-              directory has no metadata.json.
-            - The specified category does not match the
-              model type.
+            - No category is specified and
+              the model directory has no
+              metadata.json.
+            - The specified category does
+              not match the model type.
 
         .. note::
 
-            If the category is `tensorflow`, ``import_models``
-            only imports the following files from the model
-            directory:
+            If the category is `tensorflow`,
+            ``import_models`` only imports
+            the following files from the
+            model directory:
 
                 - model-name.pb
                 - model-name.json
@@ -176,8 +227,42 @@ def import_models(
     Returns
     -------
     bool
-        True if the model(s) was(were) successfully
+        ``True`` if the model(s)
+        was(were) successfully
         imported.
+
+    Examples
+    --------
+    Let's consider we've fitted a
+    Vertica model named 'my_model'.
+    We want to import it in the
+    'my_schema' schema.
+
+    You can import it easily:
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.vertica.model_management import import_models
+
+        VerticaModel.import_models(
+            path = 'server_location'
+            schema = 'my_schema',
+            kind = 'pmml', # Pick up the import type.
+        )
+
+    .. warning::
+
+        This function operates solely
+        on the server side and is not
+        accessible locally.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+            Exports machine learning models.
+        | :py:func:`verticapy.machine_learning.vertica.model_management.load_model` :
+            Loads a Vertica model and returns
+            the associated object.
     """
     return VerticaModel.import_models(path=path, schema=schema, kind=kind)
 
@@ -187,7 +272,8 @@ def load_model(
     name: str, input_relation: SQLRelation = "", test_relation: SQLRelation = ""
 ) -> VerticaModel:
     """
-    Loads a Vertica model and returns the associated
+    Loads a Vertica model and
+    returns the associated
     object.
 
     Parameters
@@ -195,19 +281,138 @@ def load_model(
     name: str
         Model Name.
     input_relation: str, optional
-        Some automated functions depend on the
-        input relation. If the load_model function
-        cannot  find the  input relation from  the
-        call string, you should fill it manually.
+        Some automated functions
+        depend on the input relation.
+        If the ``load_model`` function
+        cannot  find the  input relation
+        from the call string, you should
+        fill it manually.
     test_relation: str, optional
-        Relation used for testing. All the methods
-        use this  relation for scoring. If empty,
-        the training relation is used for testing.
+        Relation used for testing. All
+        the methods use this relation
+        for scoring. If empty, the
+        training relation is used for
+        testing.
 
     Returns
     -------
     model
         The model.
+
+    Examples
+    --------
+    We import :py:mod:`verticapy`:
+
+    .. code-block:: python
+
+        import verticapy as vp
+
+    For this example, we will
+    use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    Divide your dataset into training
+    and testing subsets.
+
+    .. code-block:: python
+
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    Let's import the model:
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import LinearRegression
+
+    Then we can create the model:
+
+    .. code-block::
+
+        model = LinearRegression(
+            tol = 1e-6,
+            max_iter = 100,
+            solver = 'newton',
+            fit_intercept = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import LinearRegression
+        model = LinearRegression(
+            tol = 1e-6,
+            max_iter = 100,
+            solver = 'newton',
+            fit_intercept = True,
+        )
+
+    We can now fit the model:
+
+    .. ipython:: python
+
+        model.fit(
+            train,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            "quality",
+            test,
+        )
+
+    The model is now saved in the
+    Vertica Database. It is easily
+    possible to re-import it later
+    by using the
+    :py:func:`verticapy.machine_learning.vertica.model_management.load_model`
+    function.
+
+    .. ipython:: python
+
+        lmodel = load_model(model.model_name)
+
+    The model is now loaded and we
+    can use its different methods.
+
+    .. ipython:: python
+
+        lmodel.summarize()
+
+    .. note::
+
+        Loaded models function identically
+        to VerticaPy models. VerticaPy will
+        automatically identify the correct
+        instances and utilize all the saved
+        parameters to redefine them accurately.
+
+    .. seealso::
+
+        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+            Exports machine learning models.
+        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+            Imports machine learning models.
     """
     res = VerticaModel.does_model_exists(
         name=name, raise_error=False, return_model_type=True

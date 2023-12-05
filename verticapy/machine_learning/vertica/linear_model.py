@@ -175,7 +175,7 @@ class LinearModel:
             model = LinearRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
@@ -186,7 +186,7 @@ class LinearModel:
             model = LinearRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
@@ -369,7 +369,7 @@ class LinearModel:
             model = LinearRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
@@ -380,7 +380,7 @@ class LinearModel:
             model = LinearRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
@@ -571,7 +571,7 @@ class LinearModelClassifier(LinearModel):
             model = LogisticRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
@@ -582,7 +582,7 @@ class LinearModelClassifier(LinearModel):
             model = LogisticRegression(
                 tol = 1e-6,
                 max_iter = 100,
-                solver = 'Newton',
+                solver = 'newton',
                 fit_intercept = True,
             )
 
@@ -1008,8 +1008,10 @@ class ElasticNet(LinearModel, Regressor):
     Plots
     ^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example,
-    regression plots can be found in the :ref:`chart_gallery.regression_plot`.
+    If the model allows, you can also
+    generate relevant plots. For example,
+    regression plots can be found in the
+    :ref:`chart_gallery.regression_plot`.
 
     .. code-block:: python
 
@@ -1017,7 +1019,8 @@ class ElasticNet(LinearModel, Regressor):
 
     .. important::
 
-        The plotting feature is typically suitable for models with fewer than
+        The plotting feature is typically
+        suitable for models with fewer than
         three predictors.
 
     Parameter Modification
@@ -1038,14 +1041,17 @@ class ElasticNet(LinearModel, Regressor):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
-    more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -1504,8 +1510,10 @@ class Lasso(LinearModel, Regressor):
     Plots
     ^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example,
-    regression plots can be found in the :ref:`chart_gallery.regression_plot`.
+    If the model allows, you can also
+    generate relevant plots. For example,
+    regression plots can be found in the
+    :ref:`chart_gallery.regression_plot`.
 
     .. code-block:: python
 
@@ -1513,11 +1521,13 @@ class Lasso(LinearModel, Regressor):
 
     .. important::
 
-        The plotting feature is typically suitable for models with fewer than
+        The plotting feature is typically
+        suitable for models with fewer than
         three predictors.
 
-    **Contour plot** is another useful plot that can be produced
-    for models with two predictors.
+    **Contour plot** is another useful
+    plot that can be produced for models
+    with two predictors.
 
     .. code-block:: python
 
@@ -1525,11 +1535,16 @@ class Lasso(LinearModel, Regressor):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+    Machine learning models with two
+    predictors can usually benefit
+    from their own contour plot. This
+    visual representation aids in
+    exploring predictions and gaining
+    a deeper understanding of how these
+    models perform in different scenarios.
+    Please refer to
+    :ref:`chart_gallery.contour`
+    for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1549,14 +1564,17 @@ class Lasso(LinearModel, Regressor):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
-    more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -1833,7 +1851,7 @@ class LinearRegression(LinearModel, Regressor):
         model = LinearRegression(
             tol = 1e-6,
             max_iter = 100,
-            solver = 'Newton',
+            solver = 'newton',
             fit_intercept = True,
         )
 
@@ -1859,7 +1877,7 @@ class LinearRegression(LinearModel, Regressor):
         model = LinearRegression(
             tol = 1e-6,
             max_iter = 100,
-            solver = 'Newton',
+            solver = 'newton',
             fit_intercept = True,
         )
 
@@ -2031,8 +2049,10 @@ class LinearRegression(LinearModel, Regressor):
     Plots
     ^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example,
-    regression plots can be found in the :ref:`chart_gallery.regression_plot`.
+    If the model allows, you can also
+    generate relevant plots. For example,
+    regression plots can be found in the
+    :ref:`chart_gallery.regression_plot`.
 
     .. code-block:: python
 
@@ -2043,8 +2063,9 @@ class LinearRegression(LinearModel, Regressor):
         The plotting feature is typically suitable for models with fewer
         than three predictors.
 
-    **Contour plot** is another useful plot that can be produced
-    for models with two predictors.
+    **Contour plot** is another useful
+    plot that can be produced for models
+    with two predictors.
 
     .. code-block:: python
 
@@ -2052,11 +2073,16 @@ class LinearRegression(LinearModel, Regressor):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+    Machine learning models with two
+    predictors can usually benefit
+    from their own contour plot. This
+    visual representation aids in
+    exploring predictions and gaining
+    a deeper understanding of how these
+    models perform in different scenarios.
+    Please refer to
+    :ref:`chart_gallery.contour`
+    for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -2076,14 +2102,17 @@ class LinearRegression(LinearModel, Regressor):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    In order to register the model
+    for tracking and versioning:
 
     .. code-block:: python
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
-    more details on model tracking and versioning.
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model
+    tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -2544,8 +2573,10 @@ class PoissonRegressor(LinearModel, Regressor):
     Plots
     ^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example,
-    regression plots can be found in the :ref:`chart_gallery.regression_plot`.
+    If the model allows, you can also
+    generate relevant plots. For example,
+    regression plots can be found in the
+    :ref:`chart_gallery.regression_plot`.
 
     .. code-block:: python
 
@@ -2553,7 +2584,8 @@ class PoissonRegressor(LinearModel, Regressor):
 
     .. important::
 
-        The plotting feature is typically suitable for models with fewer than
+        The plotting feature is typically
+        suitable for models with fewer than
         three predictors.
 
     Parameter Modification
@@ -2866,7 +2898,7 @@ class Ridge(LinearModel, Regressor):
             tol = 1e-6,
             C = 0.5,
             max_iter = 100,
-            solver = 'Newton',
+            solver = 'newton',
         )
 
     .. hint::
@@ -2892,7 +2924,7 @@ class Ridge(LinearModel, Regressor):
             tol = 1e-6,
             C = 0.5,
             max_iter = 100,
-            solver = 'Newton',
+            solver = 'newton',
         )
 
     Model Training
@@ -3062,8 +3094,10 @@ class Ridge(LinearModel, Regressor):
     Plots
     ^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example,
-    regression plots can be found in the :ref:`chart_gallery.regression_plot`.
+    If the model allows, you can also
+    generate relevant plots. For example,
+    regression plots can be found in the
+    :ref:`chart_gallery.regression_plot`.
 
     .. code-block:: python
 
@@ -3071,11 +3105,13 @@ class Ridge(LinearModel, Regressor):
 
     .. important::
 
-        The plotting feature is typically suitable for models with fewer than
+        The plotting feature is typically
+        suitable for models with fewer than
         three predictors.
 
-    **Contour plot** is another useful plot that can be produced
-    for models with two predictors.
+    **Contour plot** is another useful
+    plot that can be produced for models
+    with two predictors.
 
     .. code-block:: python
 
@@ -3083,11 +3119,16 @@ class Ridge(LinearModel, Regressor):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+    Machine learning models with two
+    predictors can usually benefit
+    from their own contour plot. This
+    visual representation aids in
+    exploring predictions and gaining
+    a deeper understanding of how these
+    models perform in different scenarios.
+    Please refer to
+    :ref:`chart_gallery.contour`
+    for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -3487,7 +3528,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         model = LogisticRegression(
             tol = 1e-6,
             max_iter = 100,
-            solver = 'Newton',
+            solver = 'newton',
             fit_intercept = True,
         )
 
@@ -3513,7 +3554,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         model = LogisticRegression(
             tol = 1e-6,
             max_iter = 100,
-            solver = 'Newton',
+            solver = 'newton',
             fit_intercept = True,
         )
 
@@ -3827,8 +3868,9 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         The plotting feature is typically suitable for models with
         fewer than three predictors.
 
-    **Contour plot** is another useful plot that can be produced
-    for models with two predictors.
+    **Contour plot** is another useful
+    plot that can be produced for models
+    with two predictors.
 
     .. code-block:: python
 
@@ -3836,11 +3878,16 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+    Machine learning models with two
+    predictors can usually benefit
+    from their own contour plot. This
+    visual representation aids in
+    exploring predictions and gaining
+    a deeper understanding of how these
+    models perform in different scenarios.
+    Please refer to
+    :ref:`chart_gallery.contour`
+    for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^

@@ -427,8 +427,10 @@ class LinearSVR(LinearModel, Regressor):
     Plots
     ^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example,
-    regression plots can be found in the :ref:`chart_gallery.regression_plot`.
+    If the model allows, you can also
+    generate relevant plots. For example,
+    regression plots can be found in the
+    :ref:`chart_gallery.regression_plot`.
 
     .. code-block:: python
 
@@ -436,7 +438,8 @@ class LinearSVR(LinearModel, Regressor):
 
     .. important::
 
-        The plotting feature is typically suitable for models with fewer than
+        The plotting feature is typically
+        suitable for models with fewer than
         three predictors.
 
     **Contour plot** is another useful plot that can be produced

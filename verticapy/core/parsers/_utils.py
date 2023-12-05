@@ -20,8 +20,53 @@ from typing import Literal
 
 def extract_col_dt_from_query(query: str, field: str) -> tuple:
     """
-    Extracts the column's data type from the INFER_DDL
+    Extracts the column's data
+    type from the INFER_DDL
     generated SQL statement.
+
+    Parameters
+    ----------
+    query: str
+        SQL query.
+    field: str
+        Field to extract.
+
+    Returns
+    -------
+    tuple
+        column's data type.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy.core.parsers._utils import extract_col_dt_from_query
+
+        # SQL INFER_DDL Query
+        sql = 'create table "restaurants"('
+        sql += '\n"chain" bool,'
+        sql += '\n"cuisine" varchar,'
+        sql += '\n"hours" Array[UNKNWON],'
+        sql += '\n"location_city" Array[varchar],'
+        sql += '\n"menu" Array[Row('
+        sql += '\n"item" varchar,'
+        sql += '\n"price" numeric'
+        sql += '\n)],'
+        sql += '\n"name" varchar'
+        sql += '\n);"'
+
+        # Example
+        extract_col_dt_from_query(sql, field = 'location_city')
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     n, m = len(query), len(field) + 2
     for i in range(n - m):
@@ -43,7 +88,43 @@ def extract_compression(
     path: str,
 ) -> Literal["GZIP", "BZIP", "LZO", "ZSTD", "UNCOMPRESSED"]:
     """
-    Extracts and returns the compression extension.
+    Extracts and returns the
+    compression extension.
+
+    Parameters
+    ----------
+    path: str
+        File name.
+
+    Returns
+    -------
+    str
+        File extension.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy.core.parsers._utils import extract_compression
+
+        # GZIP
+        extract_compression('my_file.gz')
+
+        # BZIP
+        extract_compression('my_file.bz')
+
+        # UNCOMPRESSED
+        extract_compression('my_file')
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     file_extension = path.split(".")[-1].lower()
     lookup_table = {"gz": "GZIP", "bz": "BZIP", "lz": "LZO", "zs": "ZSTD"}
@@ -55,7 +136,42 @@ def extract_compression(
 
 def get_first_file(path: str, ext: str) -> str:
     """
-    Returns the first file having the input extension.
+    Returns the first file
+    having the input extension.
+
+    Parameters
+    ----------
+    path: str
+        Folder path.
+    ext: str
+        File extension.
+
+    Returns
+    -------
+    str
+        File name.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. code-block:: python
+
+        # Import the function.
+        from verticapy.core.parsers._utils import get_first_file
+
+        # Example
+        get_first_file('my_path', 'csv')
+
+        # -> It will return the first CSV file
+        #### in the 'my_path' folder.
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     directory_name = os.path.dirname(path)
     files = os.listdir(directory_name)
