@@ -418,7 +418,7 @@ class XGBoost(Tree):
                      "citric_acid",
                      "residual_sugar",
                      "chlorides",
-                     "density"
+                     "density",
                  ],
                  "quality",
                  test,
@@ -461,62 +461,79 @@ Algorithms used for regression.
 
 class RandomForestRegressor(Regressor, RandomForest):
     """
-    Creates a RandomForestRegressor object using the
-    Vertica RF_REGRESSOR function. It is an ensemble
-    learning method for regression  that operates by
-    constructing a multitude of decision trees  at
-    training-time and outputting a class with the
-    mode.
+    Creates a ``RandomForestRegressor``
+    object using the Vertica RF_REGRESSOR
+    function. It is an ensemble learning
+    method for regression that operates
+    by constructing a multitude of decision
+    trees at training-time and outputting
+    a class with the mode.
 
     Parameters
     ----------
     name: str, optional
-        Name of the model. The model is stored in the
-        database.
+        Name  of the  model.
+        The model is stored
+        in the DB.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     n_estimators: int, optional
-        The number of trees  in the forest, an integer
-        between 1 and 1000, inclusive.
-    max_features: int / str, optional
-        The  number  of randomly chosen features  from
-        which  to pick the best feature to split a
-        given  tree node. It can be an integer or  one
-        of the two following methods.
+        The number of trees  in the
+        forest, an ``integer`` between
+        ``1`` and ``1000``, inclusive.
+    max_features: int | str, optional
+        The number of randomly chosen
+        features from which to pick the
+        best feature to split a given
+        tree node. It can be an ``integer``
+        or one of the two following methods.
 
         - auto:
-            square root  of the total number of predictors.
+            square root of the total
+            number of predictors.
         - max :
             number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes for a tree in
-        the forest, an integer between 1 and 1e9,
-        inclusive.
+        The maximum number of leaf
+        nodes for a tree in the forest,
+        an ``integerv between ``1`` and
+        ``1e9``, inclusive.
     sample: float, optional
-        The  portion  of  the  input  data set that  is
-        randomly selected for training each tree, a
-        float between 0.0 and 1.0, inclusive.
-    max_depth: int, optional
-        The  maximum  depth  for growing each tree,  an
-        integer between 1 and 100, inclusive.
-    min_samples_leaf: int, optional
-        The minimum number of  samples each branch must
-        have after splitting a node, an integer between
-        1 and 1e6, inclusive. A split that results in
-        remaining samples less than this value
-        is discarded.
-    min_info_gain: PythonNumber, optional
-        The  minimum threshold for including a split, a
-        float  between 0.0 and 1.0, inclusive. A  split
-        with information gain  less than this threshold
-        is discarded.
-    nbins: int, optional
-        The  number  of  bins  to  use  for  continuous
-        features,   an  integer  between  2  and  1000,
+        The portion of the input data
+        set that is randomly selected
+        for training each tree, a ``float``
+        between ``0.0`` and ``1.0``,
         inclusive.
+    max_depth: int, optional
+        aximum depth of each tree,
+        an ``integer`` between ``1``
+        and ``100``, inclusive.
+    min_samples_leaf: int, optional
+        The minimum number of samples
+        each branch must have after
+        splitting a node, an ``integer``
+        between ``1`` and ``1e6``,
+        inclusive. A split that results
+        in remaining samples less than
+        this value is discarded.
+    min_info_gain: PythonNumber, optional
+        The minimum threshold for
+        including a split, a ``float``
+        between ``0.0`` and ``1.0``,
+        inclusive. A split with
+        information gain less than
+        this threshold is discarded.
+    nbins: int, optional
+        Number of bins used to find
+        splits in each column, where
+        more splits leads to a longer
+        runtime but more fine-grained,
+        possibly better splits. Must
+        be an ``integer`` between ``2``
+        and ``1000``, inclusive.
 
     Attributes
     ----------
@@ -524,11 +541,12 @@ class RandomForestRegressor(Regressor, RandomForest):
     during the fitting phase.
 
     trees_: list of BinaryTreeRegressor
-        Tree models are instances of ``BinaryTreeRegressor``,
-        each possessing various attributes. For more
-        detailed information, refer to the documentation
-        for
-        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+        Tree models are instances of `
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`,
+        each possessing various attributes.
+        For more detailed information, refer
+        to the documentation for
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -683,7 +701,7 @@ class RandomForestRegressor(Regressor, RandomForest):
             max_depth = 3,
             min_samples_leaf = 5,
             min_info_gain = 0.0,
-            nbins = 32
+            nbins = 32,
         )
 
     .. hint::
@@ -717,7 +735,7 @@ class RandomForestRegressor(Regressor, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -737,7 +755,8 @@ class RandomForestRegressor(Regressor, RandomForest):
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
 
-    We can conveniently get the features importance:
+    We can conveniently get
+    the features importance:
 
     .. ipython:: python
         :suppress:
@@ -811,7 +830,7 @@ class RandomForestRegressor(Regressor, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -829,7 +848,7 @@ class RandomForestRegressor(Regressor, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -1107,13 +1126,15 @@ class RandomForestRegressor(Regressor, RandomForest):
 
 class XGBRegressor(Regressor, XGBoost):
     """
-    Creates  an  XGBRegressor  object  using the  Vertica
+    Creates an ``XGBRegressor``
+    object using the Vertica
     XGB_REGRESSOR algorithm.
 
     Parameters
     ----------
     name: str, optional
-        Name  of the  model.  The  model  is  stored
+        Name  of the  model.
+        The model is stored
         in the DB.
     overwrite_model: bool, optional
         If set to ``True``, training a
@@ -1123,46 +1144,64 @@ class XGBRegressor(Regressor, XGBoost):
     max_ntree: int, optional
         Maximum  number  of trees that  can be  created.
     max_depth: int, optional
-        Maximum depth  of each tree, an  integer between 1
-        and 20, inclusive.
+        aximum depth of each tree,
+        an ``integer`` between ``1``
+        and ``20``, inclusive.
     nbins: int, optional
-        Number of bins used to find splits in each column,
-        where more splits  leads to a longer runtime but
-        more  fine-grained, possibly  better splits. Must
-        be an integer between 2 and 1000, inclusive.
+        Number of bins used to find
+        splits in each column, where
+        more splits leads to a longer
+        runtime but more fine-grained,
+        possibly better splits. Must
+        be an ``integer`` between ``2``
+        and ``1000``, inclusive.
     split_proposal_method: str, optional
-        Approximate  splitting  strategy, either 'global'
-        or 'local' (not yet supported).
+        Approximate splitting strategy,
+        either ``global`` or ``local``
+        (not yet supported).
     tol: float, optional
-        Approximation error of quantile summary structures
-        used in the approximate split finding method.
+        Approximation error of quantile
+        summary structures used in the
+        approximate split finding method.
     learning_rate: float, optional
-        Weight applied to each tree's prediction. This
-        reduces each  tree's impact, allowing for  later
-        trees  to contribute and keeping earlier trees from
-        dominating.
+        Weight applied to each tree's
+        prediction. This reduces each
+        tree's impact, allowing for
+        later trees  to contribute
+        and keeping earlier trees
+        from dominating.
     min_split_loss: float, optional
-        Each  split  must improve the model's objective
-        function value by  at least this much in order
-        to avoid pruning.  A value  of  0 is the same  as
-        turning off this parameter (trees are still pruned
-        based  on  positive / negative  objective function
-        values).
+        Each  split  must improve the
+        model's objective function
+        value by at least this much
+        in order to avoid pruning.
+        A value of ``0`` is the same
+        as turning off this parameter
+        (trees are still pruned
+        based  on  positive / negative
+        objective function values).
     weight_reg: float, optional
-        Regularization term that is applied to the weights
-        of  the leaves in the regression tree. A higher
-        value leads to more sparse/smooth weights, which
+        Regularization term that is
+        applied to the weights of
+        the leaves in the regression
+        tree. A higher value leads to
+        more sparse/smooth weights, which
         often helps to prevent overfitting.
     sample: float, optional
-        Fraction of rows used per iteration in training.
+        Fraction of rows used
+        per iteration in training.
     col_sample_by_tree: float, optional
-        Float  in  the  range  (0,1]  that  specifies  the
-        fraction of columns (features), chosen at  random,
-        to use when building each tree.
+        ``float`` in the  range ``(0,1]``
+        that specifies the fraction of
+        columns (features), chosen at
+        random, to use when building
+        each tree.
     col_sample_by_node: float, optional
-        Float  in  the  range  (0,1]  that  specifies  the
-        fraction of columns (features), chosen at  random,
-        to use when evaluating each split.
+        ``float`` in the range ``(0,1]``
+        that specifies the fraction of
+        columns (features), chosen at
+        random, to use when evaluating
+        each split.
 
     Attributes
     ----------
@@ -1170,11 +1209,12 @@ class XGBRegressor(Regressor, XGBoost):
     during the fitting phase.
 
     trees_: list of BinaryTreeRegressor
-        Tree models are instances of ``BinaryTreeRegressor``,
-        each possessing various attributes. For more
-        detailed information, refer to the documentation
-        for
-        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+        Tree models are instances of `
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`,
+        each possessing various attributes.
+        For more detailed information, refer
+        to the documentation for
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the average gain of each tree. To determine
@@ -1379,7 +1419,7 @@ class XGBRegressor(Regressor, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -1399,7 +1439,8 @@ class XGBRegressor(Regressor, XGBoost):
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
 
-    We can conveniently get the features importance:
+    We can conveniently get
+    the features importance:
 
     .. ipython:: python
         :suppress:
@@ -1473,7 +1514,7 @@ class XGBRegressor(Regressor, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -1491,7 +1532,7 @@ class XGBRegressor(Regressor, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -1802,61 +1843,79 @@ Algorithms used for classification.
 
 class RandomForestClassifier(MulticlassClassifier, RandomForest):
     """
-    Creates a RandomForestClassifier object using the
-    Vertica  RF_CLASSIFIER function. It is an ensemble
-    learning method for classification that operates
-    by constructing a multitude of decision trees  at
-    training-time and outputting a class with the mode.
+    Creates a ``RandomForestClassifier``
+    object using the Vertica RF_CLASSIFIER
+    function. It is an ensemble learning
+    method for classification that operates
+    by constructing a multitude of decision
+    trees at training-time and outputting a
+    class with the mode.
 
     Parameters
     ----------
     name: str, optional
-        Name of the model. The model is stored in the
-        database.
+        Name  of the  model.
+        The model is stored
+        in the DB.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     n_estimators: int, optional
-        The number of trees  in the forest, an integer
-        between 1 and 1000, inclusive.
-    max_features: int / str, optional
-        The  number  of randomly chosen features  from
-        which  to pick the best feature to split  a
-        given  tree node. It can be an integer or  one
-        of the two following methods.
+        The number of trees  in the
+        forest, an ``integer`` between
+        ``1`` and ``1000``, inclusive.
+    max_features: int | str, optional
+        The number of randomly chosen
+        features from which to pick the
+        best feature to split a given
+        tree node. It can be an ``integer``
+        or one of the two following methods.
 
         - auto:
-            square root  of the total number of predictors.
+            square root of the total
+            number of predictors.
         - max :
             number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes for a tree in
-        the forest, an integer between 1 and 1e9,
-        inclusive.
+        The maximum number of leaf
+        nodes for a tree in the forest,
+        an ``integerv between ``1`` and
+        ``1e9``, inclusive.
     sample: float, optional
-        The  portion  of  the  input  data set that  is
-        randomly selected for training each tree, a
-        float between 0.0 and 1.0, inclusive.
-    max_depth: int, optional
-        The  maximum  depth  for growing each tree,  an
-        integer between 1 and 100, inclusive.
-    min_samples_leaf: int, optional
-        The minimum number of  samples each branch must
-        have after splitting a node, an integer between
-        1 and 1e6, inclusive. A split that results in
-        remaining samples less than this value
-        is discarded.
-    min_info_gain: PythonNumber, optional
-        The  minimum threshold for including a split, a
-        float  between 0.0 and 1.0, inclusive. A  split
-        with information gain  less than this threshold
-        is discarded.
-    nbins: int, optional
-        The  number  of  bins  to  use  for  continuous
-        features,   an  integer  between  2  and  1000,
+        The portion of the input data
+        set that is randomly selected
+        for training each tree, a ``float``
+        between ``0.0`` and ``1.0``,
         inclusive.
+    max_depth: int, optional
+        aximum depth of each tree,
+        an ``integer`` between ``1``
+        and ``100``, inclusive.
+    min_samples_leaf: int, optional
+        The minimum number of samples
+        each branch must have after
+        splitting a node, an ``integer``
+        between ``1`` and ``1e6``,
+        inclusive. A split that results
+        in remaining samples less than
+        this value is discarded.
+    min_info_gain: PythonNumber, optional
+        The minimum threshold for
+        including a split, a ``float``
+        between ``0.0`` and ``1.0``,
+        inclusive. A split with
+        information gain less than
+        this threshold is discarded.
+    nbins: int, optional
+        Number of bins used to find
+        splits in each column, where
+        more splits leads to a longer
+        runtime but more fine-grained,
+        possibly better splits. Must
+        be an ``integer`` between ``2``
+        and ``1000``, inclusive.
 
     Attributes
     ----------
@@ -1864,11 +1923,12 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     during the fitting phase.
 
     trees_: list of BinaryTreeClassifier
-        Tree models are instances of ``BinaryTreeClassifier``,
-        each possessing various attributes. For more
-        detailed information, refer to the documentation
-        for
-        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+        Tree models are instances of `
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`,
+        each possessing various attributes.
+        For more detailed information, refer
+        to the documentation for
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -2102,7 +2162,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
             max_depth = 3,
             min_samples_leaf = 5,
             min_info_gain = 0.0,
-            nbins = 32
+            nbins = 32,
         )
 
     .. hint::
@@ -2136,7 +2196,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "good",
             test,
@@ -2156,7 +2216,8 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
 
-    We can conveniently get the features importance:
+    We can conveniently get
+    the features importance:
 
     .. ipython:: python
         :suppress:
@@ -2250,7 +2311,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2268,7 +2329,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2306,7 +2367,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2324,7 +2385,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -2704,14 +2765,16 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
 class XGBClassifier(MulticlassClassifier, XGBoost):
     """
-    Creates  an  XGBClassifier  object using the  Vertica
+    Creates an ``XGBClassifier``
+    object using the Vertica
     XGB_CLASSIFIER algorithm.
 
     Parameters
     ----------
     name: str, optional
-        Name  of the  model. The model  is  stored in the
-        database.
+        Name  of the  model.
+        The model is stored
+        in the DB.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
@@ -2720,46 +2783,64 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     max_ntree: int, optional
         Maximum  number  of trees that can be  created.
     max_depth: int, optional
-        Maximum depth  of each tree, an  integer between 1
-        and 20, inclusive.
+        aximum depth of each tree,
+        an ``integer`` between ``1``
+        and ``20``, inclusive.
     nbins: int, optional
-        Number of bins used to find splits in each column,
-        where more splits  leads to a longer runtime but
-        more  fine-grained, possibly  better splits. Must
-        be an integer between 2 and 1000, inclusive.
+        Number of bins used to find
+        splits in each column, where
+        more splits leads to a longer
+        runtime but more fine-grained,
+        possibly better splits. Must
+        be an ``integer`` between ``2``
+        and ``1000``, inclusive.
     split_proposal_method: str, optional
-        Approximate  splitting  strategy, either 'global'
-        or 'local' (not yet supported)
+        Approximate splitting strategy,
+        either ``global`` or ``local``
+        (not yet supported).
     tol: float, optional
-        Approximation error of quantile summary structures
-        used in the approximate split finding method.
+        Approximation error of quantile
+        summary structures used in the
+        approximate split finding method.
     learning_rate: float, optional
-        Weight applied to each tree's prediction. This
-        reduces each  tree's impact, allowing for  later
-        trees  to contribute and keeping earlier trees from
-        dominating.
+        Weight applied to each tree's
+        prediction. This reduces each
+        tree's impact, allowing for
+        later trees  to contribute
+        and keeping earlier trees
+        from dominating.
     min_split_loss: float, optional
-        Each  split  must improve the model's objective
-        function value by  at least this much in order
-        to avoid pruning.  A value  of  0 is the same  as
-        turning off this parameter (trees are still pruned
-        based  on  positive / negative  objective function
-        values).
+        Each  split  must improve the
+        model's objective function
+        value by at least this much
+        in order to avoid pruning.
+        A value of ``0`` is the same
+        as turning off this parameter
+        (trees are still pruned
+        based  on  positive / negative
+        objective function values).
     weight_reg: float, optional
-        Regularization term that is applied to the weights
-        of  the leaves in the regression tree. A higher
-        value leads to more sparse/smooth weights, which
+        Regularization term that is
+        applied to the weights of
+        the leaves in the regression
+        tree. A higher value leads to
+        more sparse/smooth weights, which
         often helps to prevent overfitting.
     sample: float, optional
-        Fraction of rows used per iteration in training.
+        Fraction of rows used
+        per iteration in training.
     col_sample_by_tree: float, optional
-        Float  in  the  range  (0,1]  that  specifies  the
-        fraction of columns (features), chosen at  random,
-        to use when building each tree.
+        ``float`` in the  range ``(0,1]``
+        that specifies the fraction of
+        columns (features), chosen at
+        random, to use when building
+        each tree.
     col_sample_by_node: float, optional
-        Float  in  the  range  (0,1]  that  specifies  the
-        fraction of columns (features), chosen at  random,
-        to use when evaluating each split.
+        ``float`` in the range ``(0,1]``
+        that specifies the fraction of
+        columns (features), chosen at
+        random, to use when evaluating
+        each split.
 
     Attributes
     ----------
@@ -2767,11 +2848,12 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     during the fitting phase.
 
     trees_: list of BinaryTreeClassifier
-        Tree models are instances of ``BinaryTreeClassifier``,
-        each possessing various attributes. For more
-        detailed information, refer to the documentation
-        for
-        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+        Tree models are instances of `
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`,
+        each possessing various attributes.
+        For more detailed information, refer
+        to the documentation for
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the average gain of each tree. To determine
@@ -3057,7 +3139,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "good",
             test,
@@ -3077,7 +3159,8 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     Features Importance
     ^^^^^^^^^^^^^^^^^^^^
 
-    We can conveniently get the features importance:
+    We can conveniently get
+    the features importance:
 
     .. ipython:: python
         :suppress:
@@ -3171,7 +3254,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3189,7 +3272,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3227,7 +3310,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3245,7 +3328,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -3671,38 +3754,49 @@ Algorithms used for anomaly detection.
 
 class IsolationForest(Clustering, Tree):
     """
-    Creates an IsolationForest object using the Vertica
+    Creates an ``IsolationForest``
+    object using the Vertica
     IFOREST algorithm.
 
     Parameters
     ----------
     name: str, optional
-        Name  of  the model. The model  is stored in the
-        database.
+        Name  of the  model.
+        The model is stored
+        in the DB.
     overwrite_model: bool, optional
         If set to ``True``, training a
         model with the same name as an
         existing model overwrites the
         existing model.
     n_estimators: int, optional
-        The number  of  trees in the forest,  an integer
-        between 1 and 1000, inclusive.
+        The number of trees  in the
+        forest, an ``integer`` between
+        ``1`` and ``1000``, inclusive.
     max_depth: int, optional
-        Maximum  depth of each tree,  an integer between
-        1 and 100, inclusive.
+        Maximum depth of each tree,
+        an ``integer`` between ``1``
+        and ``100``, inclusive.
     nbins: int, optional
-        Number of bins used to find splits in each column,
-        where more splits  leads to a longer runtime but
-        more  fine-grained, possibly  better splits. Must
-        be an integer between 2 and 1000, inclusive.
+        Number of bins used to find
+        splits in each column, where
+        more splits leads to a longer
+        runtime but more fine-grained,
+        possibly better splits. Must
+        be an ``integer`` between ``2``
+        and ``1000``, inclusive.
     sample: float, optional
-        The  portion  of  the input  data  set  that  is
-        randomly  selected  for  training  each tree,  a
-        float between 0.0 and 1.0, inclusive.
+        The portion of the input data
+        set that is randomly selected
+        for training each tree, a ``float``
+        between ``0.0`` and ``1.0``,
+        inclusive.
     col_sample_by_tree: float, optional
-        Float  in  the  range (0,1] that  specifies  the
-        fraction of columns (features), chosen at random,
-        used when building each tree.
+        ``float`` in the  range ``(0,1]``
+        that specifies the fraction of
+        columns (features), chosen at
+        random, to use when building
+        each tree.
 
     Attributes
     ----------
@@ -3710,11 +3804,12 @@ class IsolationForest(Clustering, Tree):
     during the fitting phase.
 
     trees_: list of BinaryTreeAnomaly
-        Tree models are instances of ``BinaryTreeAnomaly``,
-        each possessing various attributes. For more
-        detailed information, refer to the documentation
-        for
-        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`.
+        Tree models are instances of `
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`,
+        each possessing various attributes.
+        For more detailed information, refer
+        to the documentation for
+        :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`.
     psy_: int
         Sampling size used to compute the final score.
     n_estimators_: int

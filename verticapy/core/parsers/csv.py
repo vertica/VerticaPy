@@ -667,19 +667,22 @@ def read_csv(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_parsers_csv2.html
 
-    Let's ingest multiple CSV files
-    into the Vertica database.
+    .. note::
 
-    .. code-block:: python
+        You can ingest multiple CSV
+        files into the Vertica database
+        by using the following syntax.
 
-        read_csv(
-            path = "*.csv",
-            table_name = "titanic_multi_files",
-            schema = "public",
-            quotechar = '"',
-            sep = ",",
-            na_rep = "",
-        )
+        .. code-block:: python
+
+            read_csv(
+                path = "*.csv",
+                table_name = "titanic_multi_files",
+                schema = "public",
+                quotechar = '"',
+                sep = ",",
+                na_rep = "",
+            )
 
     .. ipython:: python
         :suppress:
