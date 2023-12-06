@@ -23,12 +23,14 @@ from verticapy.connection.utils import get_confparser, get_connection_file
 
 def change_auto_connection(name: str) -> None:
     """
-    Changes the current auto connection.
+    Changes the current
+    auto connection.
 
     Parameters
     ----------
     name: str
-        Name of the new auto connection.
+        Name of the new
+        auto connection.
 
     Examples
     --------
@@ -50,11 +52,17 @@ def change_auto_connection(name: str) -> None:
             auto = False,
         )
 
-    Change the auto connection to "my_auto_connection":
+    Change the auto connection
+    to "my_auto_connection":
 
     .. code-block:: python
 
         change_auto_connection("my_auto_connection")
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
     """
     gb_conn = get_global_connection()
 
@@ -144,6 +152,11 @@ def delete_connection(name: str) -> bool:
         available_connections()
 
     ``['VerticaDSN']``
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
     """
     gb_conn = get_global_connection()
 
@@ -176,19 +189,22 @@ def new_connection(
 ) -> None:
     """
     Saves the new connection in the VerticaPy
-    connection file.
-    The information is saved as plaintext in the
-    local machine.
-    The function 'get_connection_file' returns
-    the associated connection file path.
-    If you want a temporary connection, you can
-    use the 'set_connection' function.
+    connection file. The information is saved
+    as plaintext in the local machine.
+    The function
+    :py:func:`verticapy.connection.utils.get_connection_file`
+    returns the associated connection file
+    path. If you want a temporary connection,
+    you can use the
+    :py:func:`verticapy.connection.connect.set_connection`
+    function.
 
     Parameters
     ----------
     conn_info: dict
-        Dictionnary containing the information to
-        set up the connection.
+        ``dictionnary`` containing
+        the information to set up
+        the connection.
 
          - database:
             Database Name.
@@ -252,6 +268,13 @@ def new_connection(
         }
 
         new_connection(conn_info, name = "VerticaDSN")
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.utils.get_connection_file` :
+            Gets the VerticaPy connection file.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     path = get_connection_file()
     confparser = get_confparser()

@@ -70,6 +70,11 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
             rowset = 500,
             symbol = "&",
         )
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
     """
     gb_conn = get_global_connection()
     gb_conn.set_external_connections(symbol, cid, rowset)
