@@ -150,9 +150,9 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.core.parsers.read_csv` :
+        | :py:func:`verticapy.core.parsers.read_csv` :
             Ingests a CSV file into the Vertica DB.
-        | :py:meth:`verticapy.core.parsers.read_json` :
+        | :py:func:`verticapy.core.parsers.read_json` :
             Ingests a JSON file into the Vertica DB.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
@@ -584,8 +584,15 @@ def read_json(
 
     .. seealso::
 
-        | :py:meth:`verticapy.core.parsers.read_csv` :
+        | :py:func:`verticapy.core.parsers.read_file` :
+            Ingests an input file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_avro` :
+            Ingests a AVRO file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_csv` :
             Ingests a CSV file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_pandas` :
+            Ingests the ``pandas.DataFrame``
+            into the Vertica DB.
     """
     new_name = format_type(new_name, dtype=dict)
     usecols = format_type(usecols, dtype=list)

@@ -42,7 +42,8 @@ def read_avro(
     use_complex_dt: bool = False,
 ) -> vDataFrame:
     """
-    Ingests an AVRO file using flex tables.
+    Ingests an AVRO file
+    using flex tables.
 
     Parameters
     ----------
@@ -163,7 +164,8 @@ def read_avro(
     Returns
     -------
     vDataFrame
-        The vDataFrame of the relation.
+        The :py:class:`vDataFrame`
+        of the relation.
 
     Examples
     --------
@@ -190,7 +192,7 @@ def read_avro(
         without interfering with functions from other
         libraries.
 
-    Let's download  the AVRO file.
+    Let's download the AVRO file.
 
     .. ipython:: python
 
@@ -264,6 +266,20 @@ def read_avro(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_parsers_avro2.html
 
+    .. note::
+
+        You can ingest multiple AVRO
+        files into the Vertica database
+        by using the following syntax.
+
+        .. code-block:: python
+
+            read_avro(
+                path = "*.avro",
+                table_name = "variants_multi_files",
+                schema = "public",
+            )
+
     .. ipython:: python
         :suppress:
         :okexcept:
@@ -277,8 +293,15 @@ def read_avro(
 
     .. seealso::
 
-        | :py:meth:`verticapy.core.parsers.read_csv` :
+        | :py:func:`verticapy.core.parsers.read_csv` :
             Ingests a CSV file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_file` :
+            Ingests an input file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_json` :
+            Ingests a JSON file into the Vertica DB.
+        | :py:func:`verticapy.core.parsers.read_pandas` :
+            Ingests the ``pandas.DataFrame``
+            into the Vertica DB.
     """
     return read_json(
         **locals(),

@@ -31,22 +31,70 @@ def read_shp(
     table_name: Optional[str] = None,
 ) -> vDataFrame:
     """
-    Ingests a SHP file.  At the moment, only files
-    located in  the Vertica server can be ingested.
+    Ingests a SHP file. At the
+    moment, only files located
+    in the Vertica server can
+    be ingested.
 
     Parameters
     ----------
     path: str
-        Absolute path where the SHP file is located.
+        Absolute path where
+        the SHP file is located.
     schema: str, optional
-        Schema where the SHP  file will be ingested.
+        Schema where the SHP
+        file will be ingested.
     table_name: str, optional
         Final relation name.
 
     Returns
     -------
     vDataFrame
-        The vDataFrame of the relation.
+        The :py:class:`vDataFrame`
+        of the relation.
+
+    Examples
+    --------
+    Let's consider you have access
+    to the following shape file
+    located in the server:
+    ``/shapefiles/tl_2010_us_state10.shp``
+
+    You can easily ingest it in
+    the table 'my_table' in the
+    'my_schema' schema:
+
+    .. code-block:: python
+
+        read_shp(
+            path = '/shapefiles/tl_2010_us_state10.shp',
+            schema = 'my_schema',
+            table_name = 'my_table',
+        )
+
+    The file will be parsed and
+    store in the database.
+    The output will be a
+    :py:class:`vDataFrame`.
+
+    .. note::
+
+        VerticaPy provides a set of
+        geospatial functions in the
+        :py:mod:`verticapy.sql.geo`
+        module.
+
+    .. seealso::
+
+        | :py:func:`verticapy.sql.geo.index.create_index` :
+            Creates the geo index.
+        | :py:func:`verticapy.sql.geo.index.describe_index` :
+            Describes the geo index.
+        | :py:func:`verticapy.sql.geo.functions.intersect` :
+            Spatially intersects a point
+            or points with a set of polygons.
+        | :py:func:`verticapy.sql.geo.index.rename_index` :
+            Renames the geo index.
     """
     if not (schema):
         schema = conf.get_option("temp_schema")

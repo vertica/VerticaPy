@@ -34,8 +34,14 @@ Connecting to the DB.
 
 def auto_connect() -> None:
     """
-    Automatically creates a connection using the
+    Automatically creates
+    a connection using the
     auto-connection.
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.read.available_connections` :
+            Displays all available connections.
     """
     gb_conn = get_global_connection()
     confparser = get_confparser()
@@ -61,11 +67,13 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
     Parameters
     ----------
     section: str
-        Name  of the  section in the  configuration
-        file.
+        Name of the section in the
+        configuration file.
     dsn: str, optional
-        Path to the file containing the credentials.
-        If empty, the  Connection File will be used.
+        Path to the file containing
+        the credentials. If empty,
+        the Connection File will be
+        used.
 
     Examples
     --------
@@ -86,6 +94,17 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         from verticapy.connection import connect
 
         connect("VerticaDSN")
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.read.available_connections` :
+            Displays all available connections.
+        | :py:func:`verticapy.connection.utils.get_connection_file` :
+            Gets the VerticaPy connection file.
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
     prev_conn = gb_conn.get_connection()
@@ -110,24 +129,31 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
 
 def set_connection(conn: Connection) -> None:
     """
-    Saves a custom  connection to the VerticaPy object.
-    This allows you to specify,  for example, a JDBC or
-    ODBC connection. This should not be confused with a
-    native   VerticaPy   connection  created   by   the
-    'new_connection' function.
+    Saves a custom connection to the
+    VerticaPy object. This allows you
+    to specify, for example, a JDBC or
+    ODBC connection. This should not be
+    confused with a native VerticaPy
+    connection created by the
+    :py:func:`verticapy.connection.write.new_connection`
+    function.
 
     Examples
     --------
-    Create a connection using the official Vertica Python
-    client:
+    Create a connection using the
+    official Vertica Python client:
 
     .. note::
 
-        You can use any connector (ODBC, JDBC, etc.) as long
-        it has both `fetchone` and `fetchall` methods. However,
-        note that VerticaPy works most efficiently with the
-        native client because of its support for various complex
-        data types and certain Vertica optimizations.
+        You can use any connector (ODBC,
+        JDBC, etc.) as long it has both
+        ``fetchone`` and ``fetchall``
+        methods. However, note that
+        VerticaPy works most efficiently
+        with the native client because
+        of its support for various complex
+        data types and certain Vertica
+        optimizations.
 
     .. code-block:: python
 
@@ -146,17 +172,26 @@ def set_connection(conn: Connection) -> None:
 
     .. warning::
 
-        As this connector is used throughout the entire API,
-        if it's closed, you'll need to create a new one. This
-        is why, in some cases, it's better to use auto-connection,
-        which automatically create a new connection if the current
-        one is closed.
+        As this connector is used
+        throughout the entire API,
+        if it's closed, you'll need
+        to create a new one. This is
+        why, in some cases, it's better
+        to use auto-connection, which
+        automatically create a new
+        connection if the current one
+        is closed.
 
     .. code-block:: python
 
         from verticapy.connection import set_connection
 
         set_connection(conn)
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
     """
     try:
         conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
@@ -175,7 +210,8 @@ Closing DB Connection.
 
 def close_connection() -> None:
     """
-    Closes the connection to the database.
+    Closes the connection
+    to the database.
 
     Examples
     --------
@@ -183,8 +219,9 @@ def close_connection() -> None:
 
     .. warning::
 
-        When you close the connection, your session will
-        terminate and all temporary elements will be
+        When you close the connection,
+        your session will terminate and
+        all temporary elements will be
         automatically dropped.
 
     .. code-block:: python
@@ -192,6 +229,13 @@ def close_connection() -> None:
         from verticapy.connection import close_connection
 
         close_connection()
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.connect.current_connection` :
+            Returns the current VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
     connection = gb_conn.get_connection()
@@ -208,16 +252,20 @@ Connections & Cursors Objects.
 
 def current_connection() -> GlobalConnection:
     """
-    Returns the current  database connection. If the
-    connection  is  closed,  VerticaPy  attempts  to
-    reconnect with the existing connection.
+    Returns the current database
+    connection. If the connection
+    is closed, VerticaPy attempts
+    to reconnect with the existing
+    connection.
 
-    If  the  connection   attempt  fails,  VerticaPy
-    attempts to reconnect using  stored  credentials.
-    If  this  also  fails,   VerticaPy  attempts  to
-    connect  using  an  auto  connection.  Otherwise,
-    VerticaPy  attempts  to connect to a  VerticaLab
-    Environment.
+    If the connection attempt fails,
+    VerticaPy attempts to reconnect
+    using stored credentials.
+    If this also fails, VerticaPy
+    attempts to connect using an
+    auto connection. Otherwise,
+    VerticaPy attempts to connect
+    to a VerticaLab Environment.
 
     Examples
     --------
@@ -232,19 +280,30 @@ def current_connection() -> GlobalConnection:
 
     ``<vertica_python.vertica.connection.Connection at 0x118c1f8d0>``
 
-    After the connection is established, you can execute SQL
-    queries directly:
+    After the connection is
+    established, you can execute
+    SQL queries directly:
 
     .. note::
 
-        Please refer to your connector's API reference for a
-        comprehensive list of its functionalities.
+        Please refer to your connector's
+        API reference for a comprehensive
+        list of its functionalities.
 
     .. code-block:: python
 
         conn.cursor().execute("SELECT version();").fetchone()
 
     ``['Vertica Analytic Database v12.0.4-0']``
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.connect.current_cursor` :
+            Returns the current VerticaPy cursor.
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
     conn = gb_conn.get_connection()
@@ -280,7 +339,8 @@ def current_connection() -> GlobalConnection:
 
 def current_cursor() -> Cursor:
     """
-    Returns the current database cursor.
+    Returns the current
+    database cursor.
 
     Examples
     --------
@@ -302,6 +362,15 @@ def current_cursor() -> Cursor:
         cur.execute("SELECT version();").fetchone()
 
     ``['Vertica Analytic Database v12.0.4-0']``
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.connect.current_connection` :
+            Returns the current VerticaPy connection.
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     return current_connection().cursor()
 
@@ -311,17 +380,21 @@ def current_cursor() -> Cursor:
 
 def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     """
-    Reads the input DSN and creates a Vertica Database
+    Reads the input DSN and
+    creates a Vertica Database
     connection.
 
     Parameters
     ----------
     section: str
-        Name of the section in  the configuration file.
+        Name of the section in
+        the configuration file.
     dsn: str, optional
-        Path  to the file containing  the  credentials.
-        If empty, the VERTICAPY_CONNECTION environment
-        variable will be used.
+        Path to the file containing
+        the credentials. If empty,
+        the ``VERTICAPY_CONNECTION``
+        environment variable will
+        be used.
 
     Returns
     -------
@@ -334,11 +407,13 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
 
     .. note::
 
-        This example utilizes a Data Source Name (DSN)
-        to establish the connection, which is stored in
-        the file specified by the global variable
-        VERTICAPY_CONNECTION. However, if you prefer a
-        customized file with a different location, you
+        This example utilizes a Data
+        Source Name (DSN) to establish
+        the connection, which is stored
+        in the file specified by the
+        global variable ``VERTICAPY_CONNECTION``.
+        However, if you prefer a customized
+        file with a different location, you
         can specify the file path accordingly.
 
     .. code-block:: python
@@ -348,6 +423,15 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
         vertica_connection("VerticaDSN")
 
     ``<vertica_python.vertica.connection.Connection at 0x106526198>``
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.connect.current_connection` :
+            Returns the current VerticaPy connection.
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     return vertica_python.connect(**read_dsn(section, dsn))
 
@@ -357,7 +441,8 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
 
 def verticapylab_connection() -> Connection:
     """
-    Returns the VerticaPyLab connection, if possible.
+    Returns the VerticaPyLab
+    connection, if possible.
 
     Returns
     -------
@@ -370,11 +455,14 @@ def verticapylab_connection() -> Connection:
 
     .. note::
 
-        VerticaPyLab is a Dockerized environment designed
-        for seamlessly using VerticaPy. This function
-        returns the connection to the Vertica instance
-        within the lab, allowing for necessary environment
-        customization.
+        VerticaPyLab is a Dockerized
+        environment designed for
+        seamlessly using VerticaPy.
+        This function returns the
+        connection to the Vertica
+        instance within the lab,
+        allowing for necessary
+        environment customization.
 
     .. code-block:: python
 
@@ -383,6 +471,18 @@ def verticapylab_connection() -> Connection:
         verticalab_connection()
 
     ``<vertica_python.vertica.connection.Connection at 0x106526198>``
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.connect.current_connection` :
+            Returns the current VerticaPy connection.
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.vertica_connection` :
+            Reads the input DSN and creates a
+            Vertica Database connection.
     """
     gb_conn = get_global_connection()
     conn_info = {

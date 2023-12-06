@@ -40,6 +40,15 @@ def available_connections() -> list[str]:
         from verticapy.connection import available_connections
 
         available_connections()
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.utils.get_connection_file` :
+            Gets the VerticaPy connection file.
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
 
@@ -55,28 +64,34 @@ available_auto_connection = available_connections
 
 def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     """
-    Reads the DSN information from the VERTICAPY_
-    CONNECTION environment variable or the input
-    file.
+    Reads the DSN information from
+    the ``VERTICAPY_CONNECTION``
+    environment variable or the
+    input file.
 
     Parameters
     ----------
     section: str
-        Name of the section in the configuration file
-        that contains the credentials.
+        Name of the section in the
+        configuration file that contains
+        the credentials.
     dsn: str, optional
-        Path to the file containing the credentials.
-        If empty, the VERTICAPY_CONNECTION environment
-        variable is used.
+        Path to the file containing the
+        credentials.If empty, the
+        ``VERTICAPY_CONNECTION``
+        environment variable is
+        used.
 
     Returns
     -------
     dict
-        dictionary with all the credentials.
+        ``dictionary`` with
+        all the credentials.
 
     Examples
     --------
-    Read the DSN information from the ODBCINI environment
+    Read the DSN information
+    from the ODBCINI environment
     variable:
 
     .. code-block:: python
@@ -118,6 +133,15 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     | ``'vp_test_port': '5433',``
     | ``'vp_test_user': 'dbadmin'``
     | ``}``
+
+    .. seealso::
+
+        | :py:func:`verticapy.connection.utils.get_connection_file` :
+            Gets the VerticaPy connection file.
+        | :py:func:`verticapy.connection.write.new_connection` :
+            Creates a new VerticaPy connection.
+        | :py:func:`verticapy.connection.connect.set_connection` :
+            Sets the VerticaPy connection.
     """
     confparser = get_confparser(dsn)
 
