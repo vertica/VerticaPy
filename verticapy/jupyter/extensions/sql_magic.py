@@ -1014,9 +1014,8 @@ def sql_magic(
                     try:
                         result = create_new_vdf(
                             query,
-                            _is_sql_magic=True,
+                            _is_sql_magic=1,
                         )
-                        result._vars["sql_magic_result"] = True
                         # Display parameters
                         if "-nrows" in options:
                             result._vars["max_rows"] = options["-nrows"]

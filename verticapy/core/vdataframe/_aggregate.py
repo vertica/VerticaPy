@@ -16,8 +16,9 @@ permissions and limitations under the License.
 """
 import decimal
 import multiprocessing
-import warnings
 from typing import Literal, Optional, Union
+import warnings
+
 from tqdm.auto import tqdm
 
 from vertica_python.errors import QueryError

@@ -554,7 +554,7 @@ class vDataFrame(vDFAnimatedPlot):
         symbol: str = "$",
         sql_push_ext: bool = True,
         _empty: bool = False,
-        _is_sql_magic: bool = False,
+        _is_sql_magic: int = 0,
     ) -> None:
         self._vars = {
             "allcols_ind": -1,
