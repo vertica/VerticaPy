@@ -18,13 +18,16 @@ import copy
 from typing import Any, Callable, Literal, Optional, Union
 import warnings
 
+from tqdm.auto import tqdm
+
 from verticapy.errors import QueryError
 
 from verticapy.core.vdataframe import vDataFrame
 
+import verticapy._config.config as conf
 from verticapy._typing import NoneType, PlottingObject, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query, format_query
+from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
@@ -691,6 +694,10 @@ class QueryProfiler:
 
     @staticmethod
     def _v_table_dict() -> dict:
+        """
+        Tables used by the ``QueryProfiler``
+        object and their linked schema.
+        """
         return {
             "dc_requests_issued": "v_internal",
             "dc_query_executions": "v_internal",
@@ -698,16 +705,33 @@ class QueryProfiler:
             "query_plan_profiles": "v_monitor",
             "query_profiles": "v_monitor",
             "execution_engine_profiles": "v_monitor",
-            # "resource_pool_status": "v_monitor",
-            # "host_resources": "v_monitor",
+            "resource_pool_status": "v_monitor",
+            "host_resources": "v_monitor",
         }
+
+    @staticmethod
+    def _v_config_table_list() -> list:
+        """
+        Config Tables do not use a
+        ``transaction_id`` and a 
+        ``statement_is``.
+        """
+        return [
+            "resource_pool_status",
+            "host_resources",
+        ]
 
     def _create_copy_v_table(self, create_table: bool = True) -> None:
         v_table_names = {}
         v_temp_table_dict = self._v_table_dict()
-        for table in v_temp_table_dict:
+        v_config_table_list = self._v_config_table_list()
+        loop = v_temp_table_dict.items()
+        if conf.get_option("print_info") and create_table:
+            print("Creating a copy of the performance tables...")
+        if conf.get_option("tqdm"):
+            loop = tqdm(loop, total=len(loop))
+        for table, schema in loop:
             sql = "CREATE "
-            schema = v_temp_table_dict[table]
             if (
                 not (isinstance(self.v_schema_names, NoneType))
                 and schema in self.v_schema_names
@@ -719,10 +743,13 @@ class QueryProfiler:
                 else:
                     sql += f"TABLE {new_schema}.{new_table}"
                 sql += f" AS SELECT * FROM {schema}.{table}"
-                sql += f" WHERE transaction_id={self.transaction_id} "
-                sql += f"AND statement_id={self.statement_id}"
+                if table not in self._v_config_table_list():
+                    sql += f" WHERE transaction_id={self.transaction_id} "
+                    sql += f"AND statement_id={self.statement_id}"
                 v_table_names[table] = new_table
             if create_table:
+                if conf.get_option("print_info"):
+                    print(f"Copy of {schema}.{table} created in {new_schema}.{new_table}")
                 _executeSQL(
                     sql,
                     title="Creating performance tables",
@@ -1411,7 +1438,7 @@ class QueryProfiler:
     # Step 14B: Query execution chart
     def get_qexecution(
         self,
-        node_name: str,
+        node_name: Union[str, list],
         metric: Literal[
             "exec_time_ms",
             "est_rows",
@@ -1436,8 +1463,10 @@ class QueryProfiler:
 
         Parameters
         ----------
-        node_name: str
-            Node name.
+        node_name: str | list
+            Node(s) name(s).
+            It can be a simple node ``str``
+            or a ``list`` of nodes.
         metric: str
             Metric to use. One of the following:
              - exec_time_ms
@@ -1511,7 +1540,11 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
-        cond = f"node_name = '{node_name}'"
+        node_name = format_type(node_name, dtype=list, na_out=None)
+        if isinstance(node_name, NoneType):
+            raise ValueError("Parameter 'node_name' can not be empty.")
+        node_name = [f"'{nn}'" for nn in node_name]
+        cond = f"node_name IN ({', '.join(node_name)})"
         if not (isinstance(path_id, NoneType)):
             cond += f" AND path_id = {path_id}"
         vdf = self.get_qexecution_report().search(cond)

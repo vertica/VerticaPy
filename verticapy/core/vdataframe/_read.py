@@ -129,8 +129,8 @@ class vDFRead(vDFUtils):
         return self._repr_object()._repr_html_(interactive)
 
     def _repr_object(self, interactive: bool = False) -> TableSample:
-        if self._vars["sql_magic_result"]:
-            self._vars["sql_magic_result"] = False
+        if 0 < self._vars["sql_magic_result"] < 3:
+            self._vars["sql_magic_result"] += 1
             query = extract_subquery(self._genSQL())
             query = clean_query(query)
             sql_on_init = conf.get_option("sql_on")
