@@ -39,7 +39,7 @@ __license__: str = "Apache License, Version 2.0"
 __version__: str = "1.0.0"
 __iteration__: int = 1
 __date__: str = "12072023"
-__last_commit___ = "8fec9ed378b84a55a5c9d92f4178639a9560ed43"
+__last_commit___: str = "8fec9ed378b84a55a5c9d92f4178639a9560ed43"
 __long_version__: str = f"{__version__}-{__iteration__}—{__date__}-{__last_commit___}"
 
 from verticapy._config.config import get_option, set_option
