@@ -95,6 +95,10 @@ class QueryProfiler:
 
             This parameter is used only when ``request`` is
             defined.
+    v_schema_names: dict, optional
+        Name of the schema to use to store all
+        the Vertica monitor and internal
+        meta-tables.
     create_copy: bool, optional
         If set to ``True``, tables or local temporary
         tables will be created by using the schema
@@ -107,15 +111,6 @@ class QueryProfiler:
             This parameter is used only when
             ``create_local_temporary_copy``
             is set to ``False``.
-    v_schema_names: dict, optional
-        Name of the schema to use to store all
-        the Vertica monitor and internal
-        meta-tables.
-
-        .. note::
-
-            This parameter is used only when
-            ``create_copy`` is set to ``True``.
     create_local_temporary_copy: bool, optional
         If set to ``True``, local temporary tables
         will be created to store all the Vertica
@@ -514,8 +509,8 @@ class QueryProfiler:
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
         add_profile: bool = True,
-        create_copy: bool = False,
         v_schema_names: Optional[dict] = None,
+        create_copy: bool = False,
         create_local_temporary_copy: bool = False,
     ) -> None:
         if create_local_temporary_copy and create_copy:
@@ -598,6 +593,17 @@ class QueryProfiler:
             )
         else:
             self.statement_id = statement_id
+
+        # Building the v_schema_names
+        if create_local_temporary_copy:
+            self.v_schema_names = self._v_temp_schema_dict()
+            create_table = True
+        else:
+            self.v_schema_names = copy.deepcopy(v_schema_names)
+            create_table = create_copy
+        self._create_copy_v_table(create_table=create_table)
+
+        # Getting the request
         if not (hasattr(self, "request")):
             query = f"""
                 SELECT 
@@ -618,13 +624,6 @@ class QueryProfiler:
                     f"and statement_id={statement_id} was found in the "
                     "v_internal.dc_requests_issued table."
                 )
-        if create_local_temporary_copy:
-            self.v_schema_names = self._v_temp_schema_dict()
-            create_table = True
-        else:
-            self.v_schema_names = copy.deepcopy(v_schema_names)
-            create_table = create_copy
-        self._create_copy_v_table(create_table=create_table)
 
     # Tools
 
@@ -672,7 +671,9 @@ class QueryProfiler:
             ValueError("Incorrect parameter 'chart_type'.")
 
     def _replace_schema_in_query(self, query: SQLExpression) -> SQLExpression:
-        if isinstance(self.v_schema_names, NoneType):
+        if not (hasattr(self, "v_schema_names")) or isinstance(
+            self.v_schema_names, NoneType
+        ):
             return query
         fquery = copy.deepcopy(query)
         for sch in self.v_schema_names:
