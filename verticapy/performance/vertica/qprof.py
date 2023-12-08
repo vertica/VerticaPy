@@ -713,7 +713,7 @@ class QueryProfiler:
     def _v_config_table_list() -> list:
         """
         Config Tables do not use a
-        ``transaction_id`` and a 
+        ``transaction_id`` and a
         ``statement_is``.
         """
         return [
@@ -749,7 +749,9 @@ class QueryProfiler:
                 v_table_names[table] = new_table
             if create_table:
                 if conf.get_option("print_info"):
-                    print(f"Copy of {schema}.{table} created in {new_schema}.{new_table}")
+                    print(
+                        f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
+                    )
                 _executeSQL(
                     sql,
                     title="Creating performance tables",
