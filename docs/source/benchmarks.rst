@@ -24,14 +24,13 @@ against
 Dataset
 ^^^^^^^
 
-.. important::
-
-  Ask Vikash about dataset details??
-
+The dataset was artifically created using a Linear model with some random noise.
 
 
 Test Environment
 ^^^^^^^^^^^^^^^^^ 
+
+**Vertica Version:** 23.3.0-5
 
 Below are the machine details on which the tests were carried out:
 
@@ -302,10 +301,6 @@ Higgs Boson dataset analysis
 10.5 Million Rows
 ------------------
 
-.. important::
-
-  Vikash - why are sagemaker and redshift separate? whereas one a DB and one is ML tool.
-
 .. csv-table:: 10.5 M Rows
   :file: /_static/benchmark_xgboost.csv
   :header-rows: 2
@@ -445,7 +440,7 @@ Experiments
 
 .. csv-table:: Custom Parameters
   :file: /_static/benchmark_xgboost_exp_custom.csv
-  :header-rows: 2
+  :header-rows: 1
 
 
 .. ipython:: python
@@ -780,17 +775,6 @@ Spark ML
 Dataset
 --------
 
-DELETE This
-
-.. important::
-
-  `LINK <https://confluence.verticacorp.com/display/DEV/Spark+ML+vs+Vertica+Comparison>`_
-
-NEED MORE INFO!
-
-.. important::
-
-  NEED MORE DETAILS of test data.
 
 **Amazon**
 
@@ -1131,12 +1115,51 @@ Comparison
 Naive Bayes Multinomial
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+The purpose is to compare the `Spark Naive Bayes Algorithm <\\wsl.localhost\Ubuntu\home\ughumman\VerticaPyLab\project\data\VerticaPy\docs\source\benchmarks.rst>`_.
+
 Dataset
 ^^^^^^^^
 
+**Amazon**
 
-Test Envcironment
+Size: 25 M
+
+Number of columns : 106
+
+Datatypes of data: Float
+
+Number of feature columns: 105
+
+Test Environment
 ^^^^^^^^^^^^^^^^^^^
+
+
+
+**Single Node**
+
+.. important::
+
+  Tarun - confirm the machine specs! Inlcuding Spark-submit params.
+
++-------------+---------------------------+-----------------------+------------------------+----------------------------+-----------------------------+
+| Cluster     | OS                        | OS Version            | RAM (per node)         | Processor freq. (per node) | Processor cores (per node)  |
++=============+===========================+=======================+========================+============================+=============================+
+| 2 nodes     | Red Hat Enterprise Linux  | 8.3 (Ootpa)           | 32728552 kB            | 2.4 GHz                    | 4                           |
++-------------+---------------------------+-----------------------+------------------------+----------------------------+-----------------------------+
+
+
+**Multi Node**
+
+.. important::
+
+  Are processor cores PER NODE?
+
++-------------+---------------------------+-----------------------+------------------------+----------------------------+-----------------------------+
+| Cluster     | OS                        | OS Version            | RAM (per node)         | Processor freq. (per node) | Processor cores (per node)  |
++=============+===========================+=======================+========================+============================+=============================+
+| 2 nodes     | Red Hat Enterprise Linux  | 8.3 (Ootpa)           | 32728552 kB            | 2.4 GHz                    | 4                           |
++-------------+---------------------------+-----------------------+------------------------+----------------------------+-----------------------------+
+
 
 Comparison
 ^^^^^^^^^^^
@@ -1407,7 +1430,7 @@ Dataset
 
 For this dataset, we created an artifical dataset from a Linear Regression model with some noise.
 
-Test Envcironment
+Test Environment
 ^^^^^^^^^^^^^^^^^^^
 
 
@@ -1427,11 +1450,151 @@ Test Envcironment
     - 2.4GHz
     - 36, 2 threads per core
 
+Spark: ``max iter = 100``, ``e = 10^-6``
+
+Vertica: ``max iter = 100``, ``e = 10^-6``
 
 
 Comparison
 ^^^^^^^^^^^
 
+.. csv-table:: Vertica vs. Spark
+  :file: /_static/benchmark_lr_table.csv
+  :header-rows: 2
+
+.. ipython:: python
+  :suppress:
+
+  import plotly.graph_objects as go
+  data = {
+      'Size': ['1M', '10M'],
+      'Vertica BFGS': [4.49, 26.39],
+      'Vertica Newton': [4.81, 26.04],
+      'Spark BFGS': [1.43, 96.98],
+      'Spark Newton': [0.7, 2.09],
+  }
+  fig = go.Figure()
+  bar_width = 0.22  # Set the width of each bar
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica BFGS'],
+      width=bar_width,
+      text=data['Vertica BFGS'],
+      textposition='outside',
+      marker_color="black",
+      name='Vertica BFGS',
+      offset=-0.5
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica Newton'],
+      width=bar_width,
+      text=data['Vertica Newton'],
+      textposition='outside',
+      marker_color="blue",
+      name='Vertica Newton',
+      offset=-0.25
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Spark BFGS'],
+      width=bar_width,
+      text=data['Spark BFGS'],
+      textposition='outside',
+      marker_color="red",
+      name='Spark BFGS',
+      offset=0
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Spark Newton'],
+      width=bar_width,
+      text=data['Spark Newton'],
+      textposition='outside',
+      marker_color="green",
+      name='Spark Newton',
+      offset=0.25
+  ))
+  fig.update_layout(
+      title='Time Comparison (100 Columns)',
+      xaxis=dict(title='Size'),
+      yaxis=dict(title='Time (seconds)'),
+      # barmode='group',
+      # bargap=0.8,
+      width=600,
+      height=500
+  )
+  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html")
+
+.. raw:: html
+  :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html
+
+
+
+.. ipython:: python
+  :suppress:
+
+  import plotly.graph_objects as go
+  data = {
+      'Size': ['100M', '1B'],
+      'Vertica BFGS': [84.7, 1748.51],
+      'Vertica Newton': [85.93, 1808.56],
+      'Spark BFGS': [216, 2568.68],
+      'Spark Newton': [68.47, 1788.75],
+  }
+  fig = go.Figure()
+  bar_width = 0.22  # Set the width of each bar
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica BFGS'],
+      width=bar_width,
+      text=data['Vertica BFGS'],
+      textposition='outside',
+      marker_color="black",
+      name='Vertica BFGS',
+      offset=-0.5
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica Newton'],
+      width=bar_width,
+      text=data['Vertica Newton'],
+      textposition='outside',
+      marker_color="blue",
+      name='Vertica Newton',
+      offset=-0.25
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Spark BFGS'],
+      width=bar_width,
+      text=data['Spark BFGS'],
+      textposition='outside',
+      marker_color="red",
+      name='Spark BFGS',
+      offset=0
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Spark Newton'],
+      width=bar_width,
+      text=data['Spark Newton'],
+      textposition='outside',
+      marker_color="green",
+      name='Spark Newton',
+      offset=0.25
+  ))
+  fig.update_layout(
+      title='Time Comparison (100 Columns)',
+      xaxis=dict(title='Size'),
+      yaxis=dict(title='Time (seconds)'),
+      width=600,
+      height=500
+  )
+  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html")
+
+.. raw:: html
+  :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html
 
 Logistic Regression
 ~~~~~~~~~~~~~~~~~~~
@@ -1443,7 +1606,7 @@ Dataset
 For this dataset, we created an artifical dataset from a Linear Regression model with some noise.
 
 
-Test Envcironment
+Test Environment
 ^^^^^^^^^^^^^^^^^^^
 
 
@@ -1465,8 +1628,126 @@ Test Envcironment
 
 
 
+
+
 Comparison
 ^^^^^^^^^^^
 
 
+.. csv-table:: Vertica vs. Spark
+  :file: /_static/benchmark_logr_table.csv
+  :header-rows: 2
+
+.. ipython:: python
+  :suppress:
+
+  import plotly.graph_objects as go
+  data = {
+      'Size': ['1M', '10M'],
+      'Vertica BFGS': [14.74, 45.15],
+      'Vertica Newton': [6.7, 28.98],
+      'Spark': [4.52, 12.05],
+  }
+  fig = go.Figure()
+  bar_width = 0.22  # Set the width of each bar
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica BFGS'],
+      width=bar_width,
+      text=data['Vertica BFGS'],
+      textposition='outside',
+      marker_color="black",
+      name='Vertica BFGS',
+      offset=-0.5
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica Newton'],
+      width=bar_width,
+      text=data['Vertica Newton'],
+      textposition='outside',
+      marker_color="blue",
+      name='Vertica Newton',
+      offset=-0.25
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Spark'],
+      width=bar_width,
+      text=data['Spark'],
+      textposition='outside',
+      marker_color="red",
+      name='Spark',
+      offset=0
+  ))
+
+  fig.update_layout(
+      title='Time Comparison (100 Columns)',
+      xaxis=dict(title='Size'),
+      yaxis=dict(title='Time (seconds)'),
+      # barmode='group',
+      # bargap=0.8,
+      width=600,
+      height=500
+  )
+  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time.html")
+
+.. raw:: html
+  :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time.html
+
+
+
+.. ipython:: python
+  :suppress:
+
+  import plotly.graph_objects as go
+  data = {
+      'Size': ['100M', '1B'],
+      'Vertica BFGS': [36.54, 388.89],
+      'Vertica Newton': [194.5, 2389],
+      'Spark': [367.27, 2222],
+  }
+  fig = go.Figure()
+  bar_width = 0.22  # Set the width of each bar
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica BFGS'],
+      width=bar_width,
+      text=data['Vertica BFGS'],
+      textposition='outside',
+      marker_color="black",
+      name='Vertica BFGS',
+      offset=-0.5
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Vertica Newton'],
+      width=bar_width,
+      text=data['Vertica Newton'],
+      textposition='outside',
+      marker_color="blue",
+      name='Vertica Newton',
+      offset=-0.25
+  ))
+  fig.add_trace(go.Bar(
+      x=data['Size'],
+      y=data['Spark'],
+      width=bar_width,
+      text=data['Spark'],
+      textposition='outside',
+      marker_color="red",
+      name='Spark',
+      offset=0
+  ))
+  fig.update_layout(
+      title='Time Comparison (100 Columnsa)',
+      xaxis=dict(title='Size'),
+      yaxis=dict(title='Time (seconds)'),
+      width=600,
+      height=500
+  )
+  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time_2.html")
+
+.. raw:: html
+  :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time_2.html
 
