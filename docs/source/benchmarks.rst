@@ -1740,7 +1740,7 @@ Comparison
       offset=0
   ))
   fig.update_layout(
-      title='Time Comparison (100 Columnsa)',
+      title='Time Comparison (100 Columns)',
       xaxis=dict(title='Size'),
       yaxis=dict(title='Time (seconds)'),
       width=600,
