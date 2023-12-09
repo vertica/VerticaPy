@@ -121,9 +121,11 @@ class NestedPieChart(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_trace_style = {
-            "hovertemplate": "<b>Fraction: %{percentEntry:.2f} </b> <extra></extra>",
-        }
+        self.init_trace_style = {}
+        if self.layout["method"] in ("count", "density"):
+            self.init_trace_style = {
+                "hovertemplate": "<b>Fraction: %{percentEntry:.2f} </b> <extra></extra>",
+            }
 
     # Draw.
 
@@ -144,7 +146,7 @@ class NestedPieChart(PlotlyBase):
         if "colors" in style_kwargs:
             del style_kwargs["colors"]
         ids, labels, parents, values = self._convert_labels_and_get_counts(
-            self.data["groups"][0]
+            self.data["groups"][0], self.layout["method"]
         )
         trace = go.Sunburst(
             ids=ids,

@@ -1445,6 +1445,8 @@ class QueryProfiler:
             "barh",
         ] = "bar",
         reverse: bool = False,
+        sort_by: Literal["x", "y", "c"] = "x",
+        desc: bool = True,
         show: bool = True,
     ) -> Union[PlottingObject, vDataFrame]:
         """
@@ -1461,11 +1463,26 @@ class QueryProfiler:
                 Horizontal Bar Chart.
 
         reverse: bool, optional
-            If set to True, the Plotting object
-            is returned.
+            If set to ``True``, the
+            chart will be reversed.
+        sort_by: str, optional
+            How to sort the bars.
+
+            - c:
+                Categories.
+            - x:
+                X axis.
+            - y:
+                Y axis.
+        desc: bool, optional
+            Only used when ``sort_by='x'``
+            or ``sort_by='y'``.
+            Sorts using the descending
+            order. Otherwise, it uses
+            the ascending order.
         show: bool, optional
-            If set to True, the Plotting object
-            is returned.
+            If set to ``True``, the
+            Plotting object is returned.
 
         Returns
         -------
@@ -1525,7 +1542,12 @@ class QueryProfiler:
             columns.reverse()
         if show:
             fun = self._get_chart_method(vdf, chart_type)
-            return fun(columns=columns, method="SUM(counter_value) AS cet")
+            return fun(
+                columns=columns,
+                method="SUM(counter_value) AS cet",
+                sort_by=sort_by,
+                desc=desc,
+            )
         return vdf
 
     # Step 14A: Query execution report
@@ -1631,7 +1653,8 @@ class QueryProfiler:
             "bar",
             "barh",
             "pie",
-        ] = "barh",
+        ] = "pie",
+        multi: bool = True,
         show: bool = True,
     ) -> Union[PlottingObject, vDataFrame]:
         """
@@ -1662,15 +1685,23 @@ class QueryProfiler:
             Chart Type.
 
             - bar:
-                Bar Chart.
+                Drilldown Bar Chart.
             - barh:
-                Horizontal Bar Chart.
+                Horizontal Drilldown
+                Bar Chart.
             - pie:
                 Pie Chart.
 
+        multi: bool, optional
+            If set to ``True``, a multi
+            variable chart is drawn by
+            using 'operator_name' and
+            'path_id'. Otherwise, a
+            single plot using 'operator_name'
+            is drawn.
         show: bool, optional
-            If set to True, the Plotting object
-            is returned.
+            If set to ``True``, the
+            Plotting object is returned.
 
         Returns
         -------
@@ -1760,8 +1791,21 @@ class QueryProfiler:
             cond += f"path_id = {path_id}"
         vdf = self.get_qexecution_report().search(cond)
         if show:
-            fun = self._get_chart_method(vdf["operator_name"], chart_type)
-            return fun(method="sum", of=metric)
+            if multi:
+                vdf["path_id"].apply("'path_id=' || {}::VARCHAR")
+                fun = self._get_chart_method(vdf, chart_type)
+                other_params = {}
+                if chart_type != "pie":
+                    other_params = {"kind": "drilldown"}
+                return fun(
+                    columns=["operator_name", "path_id"],
+                    method="sum",
+                    of=metric,
+                    **other_params,
+                )
+            else:
+                fun = self._get_chart_method(vdf["operator_name"], chart_type)
+                return fun(method="sum", of=metric)
         return vdf[["operator_name", metric]]
 
     # Step 20: Getting Cluster configuration

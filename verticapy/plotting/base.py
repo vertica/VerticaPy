@@ -335,6 +335,24 @@ class PlottingBase(PlottingBaseSQL):
     # Formatting Methods.
 
     @staticmethod
+    def sort_by_axis(
+        X: np.array, x_labels: list, y_labels: list, axis: int = 0, desc: bool = True
+    ) -> tuple[np.array, list, list]:
+        max_values = np.max(X, axis=axis)
+        sorted_indices = np.argsort(max_values)
+        if desc:
+            sorted_indices = sorted_indices[::-1]
+        if axis == 1:
+            sorted_X = X[sorted_indices]
+            sorted_x_labels = [x_labels[i] for i in sorted_indices]
+            sorted_y_labels = y_labels
+        else:
+            sorted_X = X[:, sorted_indices]
+            sorted_x_labels = x_labels
+            sorted_y_labels = [y_labels[i] for i in sorted_indices]
+        return sorted_X, sorted_x_labels, sorted_y_labels
+
+    @staticmethod
     def _map_method(method: str, of: str) -> tuple[str, str, Optional[Callable], bool]:
         is_standard = True
         fun_map = {
@@ -895,6 +913,8 @@ class PlottingBase(PlottingBaseSQL):
         h: tuple[Optional[float], Optional[float]] = (None, None),
         max_cardinality: tuple[int, int] = (20, 20),
         fill_none: float = 0.0,
+        sort_by: Literal["x", "y", "c"] = "c",
+        desc: bool = True,
     ) -> None:
         """
         Computes a pivot table.
@@ -1050,6 +1070,11 @@ class PlottingBase(PlottingBaseSQL):
                 i = x_labels.index(str(item[0]))
                 j = y_labels.index(str(item[1]))
                 X[i][j] = item[2]
+        if sort_by != "c":
+            axis = 1 if sort_by == "x" else 0
+            X, x_labels, y_labels = self.sort_by_axis(
+                X, x_labels, y_labels, axis=axis, desc=desc
+            )
         self.data = {
             "X": X,
         }
@@ -1066,6 +1091,8 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
+            "sort_by": sort_by,
+            "desc": desc,
         }
 
     def _compute_contour_grid(
@@ -1725,7 +1752,7 @@ class PlottingBase(PlottingBaseSQL):
                 max_cardinality = (6,) * n
             else:
                 max_cardinality = (max_cardinality,) * n
-        vdf_tmp = vdf[columns]
+        vdf_tmp = vdf.copy()
         for idx, column in enumerate(columns):
             vdf_tmp[column].discretize(h=h[idx])
             vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
