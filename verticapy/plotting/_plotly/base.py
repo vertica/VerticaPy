@@ -28,6 +28,7 @@ class PlotlyBase(PlottingBase):
     @staticmethod
     def _convert_labels_and_get_counts(
         pivot_array: ArrayLike,
+        method: str,
     ) -> tuple[list, list, list, list]:
         pivot_array = np.where(pivot_array == None, "NULL", pivot_array)
         pivot_array = pivot_array.astype("<U21")
@@ -49,7 +50,27 @@ class PlotlyBase(PlottingBase):
                 current_label = pivot_array[-2][i]
                 if current_label not in labels_count:
                     labels_count[current_label] = 0
-                labels_count[current_label] += int(pivot_array[-1][i])
+                if method == "min":
+                    labels_count[current_label] = min(
+                        labels_count[current_label], float(pivot_array[-1][i])
+                    )
+                elif method == "max":
+                    labels_count[current_label] = max(
+                        labels_count[current_label], float(pivot_array[-1][i])
+                    )
+                elif method == "max":
+                    labels_count[current_label] = max(
+                        labels_count[current_label], float(pivot_array[-1][i])
+                    )
+                elif method == "count":
+                    labels_count[current_label] += int(pivot_array[-1][i])
+                elif method == "mean":
+                    labels_count[current_label] += (
+                        float(pivot_array[-1][i]) / pivot_array.shape[0]
+                    )
+                else:
+                    labels_count[current_label] += float(pivot_array[-1][i])
+
                 if pivot_array.shape[0] > 2:
                     labels_father[current_label] = pivot_array[-3][i]
                 else:

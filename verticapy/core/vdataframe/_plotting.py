@@ -195,6 +195,8 @@ class vDFPlot(vDFMachineLearning):
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
         kind: Literal["auto", "drilldown", "stacked"] = "auto",
+        sort_by: Literal["x", "y", "c"] = "c",
+        desc: bool = True,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -205,31 +207,38 @@ class vDFPlot(vDFMachineLearning):
         Parameters
         ----------
         columns: SQLColumns
-            List of  the vDataColumns names.  The list must
-            have one or two elements.
+            ``list`` of the
+            :py:class:`vDataColumns`
+            names.
         method: str, optional
             The method used to aggregate the data.
 
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
-            It can also be a cutomized aggregation, for example:
-            AVG(column1) + 5
+            It can also be a cutomized aggregation,
+            for example: ``AVG(column1) + 5``
         of: str, optional
-            The  vDataColumn used to compute the  aggregation.
+            The :py:class:`vDataColumns` used
+            to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements for vDataColumns
             1  and  2  to be used as categorical. For these
@@ -244,6 +253,8 @@ class vDFPlot(vDFMachineLearning):
 
             - auto:
                 Regular Bar Chart  based on 1 or 2 vDataColumns.
+            - drilldown:
+                Drilldown Bar Chart.
             - pyramid:
                 Pyramid  Density  Bar  Chart. Only works if one
                 of the two vDataColumns is binary and the
@@ -252,6 +263,21 @@ class vDFPlot(vDFMachineLearning):
                 Stacked  Bar  Chart   based  on  2 vDataColumns.
             - fully_stacked:
                 Fully Stacked Bar Chart based on 2 vDataColumns.
+        sort_by: str, optional
+            How to sort the bars.
+
+            - c:
+                Categories.
+            - x:
+                X axis.
+            - y:
+                Y axis.
+        desc: bool, optional
+            Only used when ``sort_by='x'``
+            or ``sort_by='y'``.
+            Sorts using the descending
+            order. Otherwise, it uses
+            the ascending order.
 
         chart: PlottingObject, optional
             The chart object to plot on.
@@ -368,6 +394,8 @@ class vDFPlot(vDFMachineLearning):
                 of=of,
                 h=h,
                 max_cardinality=max_cardinality,
+                sort_by=sort_by,
+                desc=desc,
             ).draw(**kwargs)
         else:
             vpy_plt, kwargs = self.get_plotting_lib(
@@ -383,6 +411,8 @@ class vDFPlot(vDFMachineLearning):
                 h=h,
                 max_cardinality=max_cardinality,
                 misc_layout={"kind": kind},
+                sort_by=sort_by,
+                desc=desc,
             ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -395,6 +425,7 @@ class vDFPlot(vDFMachineLearning):
         h: tuple[PythonNumber, PythonNumber] = (None, None),
         kind: Literal[
             "auto",
+            "drilldown",
             "fully_stacked",
             "stacked",
             "fully",
@@ -402,6 +433,8 @@ class vDFPlot(vDFMachineLearning):
             "pyramid",
             "density",
         ] = "auto",
+        sort_by: Literal["x", "y", "c"] = "c",
+        desc: bool = True,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -412,31 +445,38 @@ class vDFPlot(vDFMachineLearning):
         Parameters
         ----------
         columns: SQLColumns
-            List of  the vDataColumns names.  The list must
-            have one or two elements.
+            ``list`` of the
+            :py:class:`vDataColumns`
+            names.
         method: str, optional
             The method used to aggregate the data.
 
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
-            It can also be a cutomized aggregation, for example:
-            AVG(column1) + 5
+            It can also be a cutomized aggregation,
+            for example: ``AVG(column1) + 5``
         of: str, optional
-            The  vDataColumn used to compute the  aggregation.
+            The :py:class:`vDataColumns` used
+            to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements for vDataColumns
             1  and  2  to be used as categorical. For these
@@ -451,6 +491,8 @@ class vDFPlot(vDFMachineLearning):
 
             - auto:
                 Regular Bar Chart  based on 1 or 2 vDataColumns.
+            - drilldown:
+                Drilldown Bar Chart.
             - pyramid:
                 Pyramid  Density  Bar  Chart. Only works if one
                 of the two vDataColumns is binary and the
@@ -460,6 +502,21 @@ class vDFPlot(vDFMachineLearning):
             - fully_stacked:
                 Fully Stacked Bar Chart based on 2 vDataColumns.
 
+        sort_by: str, optional
+            How to sort the bars.
+
+            - c:
+                Categories.
+            - x:
+                X axis.
+            - y:
+                Y axis.
+        desc: bool, optional
+            Only used when ``sort_by='x'``
+            or ``sort_by='y'``.
+            Sorts using the descending
+            order. Otherwise, it uses
+            the ascending order.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -577,6 +634,8 @@ class vDFPlot(vDFMachineLearning):
                 of=of,
                 h=h,
                 max_cardinality=max_cardinality,
+                sort_by=sort_by,
+                desc=desc,
             ).draw(**kwargs)
         else:
             if kind in ("fully", "fully stacked"):
@@ -596,42 +655,79 @@ class vDFPlot(vDFMachineLearning):
                 max_cardinality=max_cardinality,
                 h=h,
                 misc_layout={"kind": kind},
+                sort_by=sort_by,
+                desc=desc,
             ).draw(**kwargs)
 
     @save_verticapy_logs
     def pie(
         self,
         columns: SQLColumns,
+        method: str = "count",
+        of: Optional[str] = None,
         max_cardinality: Union[None, int, tuple] = None,
         h: Union[None, int, tuple] = None,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws the nested density pie chart of the input
-        vDataColumns.
+        Draws the nested pie chart of
+        the input :py:class:`vDataColumns`.
 
         Parameters
         ----------
         columns: SQLColumns
-            List of the vDataColumns names.
-        max_cardinality: int / tuple, optional
-            Maximum number of distinct elements for
-            vDataColumns 1  and  2  to be used as
-            categorical. For these elements, no  h
+            ``list`` of the
+            :py:class:`vDataColumns`
+            names.
+        method: str, optional
+            The method used to aggregate the data.
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage of the distribution.
+            - mean:
+                Average of the
+                :py:class:`vDataColumns` ``of``.
+            - min:
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
+            - max:
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
+            - sum:
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
+            - q%:
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
+                (ex: 50% to get the median).
+
+            It can also be a cutomized aggregation,
+            for example: ``AVG(column1) + 5``
+        of: str, optional
+            The :py:class:`vDataColumns` used
+            to compute the  aggregation.
+        max_cardinality: int | tuple, optional
+            Maximum number of distinct elements
+            for :py:class:`vDataColumns` 1 and 2
+            to be used as categorical. For these
+            elements, no  ``h
             is picked or computed.
             If  of type tuple, represents the
             'max_cardinality' of each column.
-        h: int / tuple, optional
-            Interval  width  of the bar. If empty,  an
-            optimized h will be computed.
-            If  of type tuple, it must represent  each
-            column's 'h'.
+        h: int | tuple, optional
+            Interval width of the bar.
+            If empty, an optimized ``h``
+            will be computed.
+            If  of type tuple, it must
+            represent each column's ``h``.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass to  the
-            plotting functions.
+            Any optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -722,9 +818,10 @@ class vDFPlot(vDFMachineLearning):
         return vpy_plt.NestedPieChart(
             vdf=self,
             columns=columns,
+            method=method,
+            of=of,
             max_cardinality=max_cardinality,
             h=h,
-            method="count",
         ).draw(**kwargs)
 
     # Histogram & Density.
@@ -746,31 +843,39 @@ class vDFPlot(vDFMachineLearning):
         Parameters
         ----------
         columns: SQLColumns
-            List of  the vDataColumns names.  The list must
-            have less than 5 elements.
+            ``list`` of  the
+            :py:class:`vDataColumns` names.
+            The ``list``  must have less
+            than 5 elements.
         method: str, optional
             The method used to aggregate the data.
 
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
-            It can also be a cutomized aggregation, for example:
-            AVG(column1) + 5
+            It can also be a cutomized aggregation,
+            for example: ``AVG(column1) + 5``
         of: str, optional
-            The  vDataColumn used to compute the  aggregation.
+            The :py:class:`vDataColumns` used
+            to compute the  aggregation.
         h: tuple, optional
             Interval width of the  input vDataColumns. Optimized
             h  will be  computed if  the  parameter  is empty or
@@ -1406,17 +1511,22 @@ class vDFPlot(vDFMachineLearning):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation,
@@ -1493,17 +1603,22 @@ class vDFPlot(vDFMachineLearning):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -1772,17 +1887,22 @@ class vDFPlot(vDFMachineLearning):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -1922,17 +2042,22 @@ class vDFPlot(vDFMachineLearning):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
         of: str, optional
@@ -2743,17 +2868,22 @@ class vDCPlot(vDCScaler):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -2886,17 +3016,22 @@ class vDCPlot(vDCScaler):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -3027,17 +3162,22 @@ class vDCPlot(vDCScaler):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
             It   can  also  be  a  cutomized   aggregation
             (ex: AVG(column1) + 5).
@@ -3164,17 +3304,22 @@ class vDCPlot(vDCScaler):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It   can  also  be  a  cutomized   aggregation
@@ -3300,17 +3445,22 @@ class vDCPlot(vDCScaler):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -3635,17 +3785,22 @@ class vDCPlot(vDCScaler):
             - count:
                 Number of elements.
             - density:
-                Percentage  of  the  distribution.
+                Percentage of the distribution.
             - mean:
-                Average  of the  vDataColumn ``of``.
+                Average of the
+                :py:class:`vDataColumns` ``of``.
             - min:
-                Minimum  of the  vDataColumn ``of``.
+                Minimum of the
+                :py:class:`vDataColumns` ``of``.
             - max:
-                Maximum  of the  vDataColumn ``of``.
+                Maximum of the
+                :py:class:`vDataColumns` ``of``.
             - sum:
-                Sum of the vDataColumn ``of``.
+                Sum of the
+                :py:class:`vDataColumns` ``of``.
             - q%:
-                q Quantile of the vDataColumn ``of``
+                q Quantile of the
+                :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It   can  also  be  a  cutomized   aggregation
