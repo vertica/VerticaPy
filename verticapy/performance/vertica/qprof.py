@@ -99,8 +99,8 @@ class QueryProfiler:
             This parameter is used only when ``request`` is
             defined.
     v_schema_names: dict, optional
-        Name of the schema to use to store all
-        the Vertica monitor and internal
+        Name of the schema to use to store
+        all the Vertica monitor and internal
         meta-tables.
     create_copy: bool, optional
         If set to ``True``, tables or local temporary
@@ -132,6 +132,14 @@ class QueryProfiler:
         Transaction ID.
     statement_id: int
         Statement ID.
+    v_schema_names: dict
+        Name of the schema used to store
+        all the Vertica monitor and internal
+        meta-tables.
+    v_table_names: dict
+        Name of the tables used to store
+        all the Vertica monitor and internal
+        meta-tables.
 
     Examples
     --------
@@ -139,7 +147,9 @@ class QueryProfiler:
     Initialization
     ^^^^^^^^^^^^^^^
 
-    First, let's import the QueryProfiler object.
+    First, let's import the
+    :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+    object.
 
     .. ipython:: python
 
@@ -154,8 +164,8 @@ class QueryProfiler:
 
     **Transaction ID and Statement ID**
 
-    In this example, we run a groupby command on the
-    amazon dataset.
+    In this example, we run a groupby
+    command on the amazon dataset.
 
     First, let us import the dataset:
 
@@ -192,13 +202,13 @@ class QueryProfiler:
 
     .. hint::
 
-        Above we use the ``WHERE`` command in order to filter
-        only those results that match our query above.
-        You can use these filters to sift through the list
-        of queries.
+        Above we use the ``WHERE`` command in order
+        to filter only those results that match our
+        query above. You can use these filters to
+        sift through the list of queries.
 
-    Once we have the ``transaction_id`` and ``statement_id``
-    we can directly use it:
+    Once we have the ``transaction_id`` and
+    ``statement_id`` we can directly use it:
 
     .. code-block:: python
 
@@ -247,8 +257,9 @@ class QueryProfiler:
             " order by request_duration desc limit 10;"
         )
 
-    The query is then executed, and you can easily retrieve the
-    statement and transaction IDs.
+    The query is then executed, and you
+    can easily retrieve the statement
+    and transaction IDs.
 
     .. ipython:: python
 
@@ -256,12 +267,37 @@ class QueryProfiler:
         sid = qprof.statement_id
         print(f"tid={tid};sid={sid}")
 
-    To avoid recomputing a query, you can also directly use a
-    statement ID and a transaction ID.
+    To avoid recomputing a query, you
+    can also directly use a statement
+    ID and a transaction ID.
 
     .. ipython:: python
 
-        qprof = QueryProfiler(transaction_id=tid, statement_id=sid)
+        qprof = QueryProfiler(
+            transaction_id = tid,
+            statement_id = sid,
+        )
+
+    Accessing the different Performance Tables
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We can easily look at any Vertica
+    Performance Tables easily:
+
+    .. code-block:: python
+
+        qprof.get_v_table('dc_requests_issued')
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_v_table('dc_requests_issued')
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_v_table_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_v_table_1.html
 
     Executing a QPROF step
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -278,16 +314,17 @@ class QueryProfiler:
 
     .. note::
 
-        To explore all available methods, please refer
-        to the 'Methods' section. For additional information,
-        you can also utilize the ``help`` function.
+        To explore all available methods, please
+        refer to the 'Methods' section. For
+        additional information, you can also
+        utilize the ``help`` function.
 
-    It is possible to access the same step by using the
-    ``step`` method.
+    It is possible to access the same
+    step by using the ``step`` method.
 
     .. ipython:: python
 
-        qprof.step(idx=0)
+        qprof.step(idx = 0)
 
     .. note::
 
@@ -317,8 +354,9 @@ class QueryProfiler:
 
     .. note::
 
-        You can change the unit to "m" to get the
-        result in minutes.
+        You can change the unit to
+        "m" to get the result in
+        minutes.
 
     **Query Execution Time Plots**
 
@@ -331,6 +369,7 @@ class QueryProfiler:
         qprof.get_qsteps(chart_type="pie")
 
     .. ipython:: python
+        :suppress:
 
         import verticapy as vp
         vp.set_option("plotting_lib", "plotly")
@@ -356,14 +395,15 @@ class QueryProfiler:
 
     **Query Plan Profile**
 
-    To visualize the time consumption of
-    query profile plan:
+    To visualize the time consumption
+    of query profile plan:
 
     .. code-block:: python
 
-        qprof.get_qplan_profile(chart_type="pie")
+        qprof.get_qplan_profile(chart_type = "pie")
 
     .. ipython:: python
+        :suppress:
 
         fig = qprof.get_qplan_profile(chart_type="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html")
@@ -387,6 +427,7 @@ class QueryProfiler:
         qprof.get_cpu_time(chart_type="bar")
 
     .. ipython:: python
+        :suppress:
 
         fig = qprof.get_qplan_profile(chart_type="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html")
@@ -440,18 +481,47 @@ class QueryProfiler:
 
     **Nodes**
 
-    To get node-wise performance information,
-    ``get_qexecution`` can be used:
+    To get node-wise performance
+    information, ``get_qexecution``
+    can be used:
 
     .. code-block:: python
 
-        qprof.get_qexecution(
-            node_name="v_vdash_node0003",
-            metric="exec_time_ms",
-            chart_type="pie",
-        )
+        qprof.get_qexecution()
+
+    .. ipython:: python
+        :suppress:
+
+        fig = qprof.get_qexecution()
+        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html
 
     .. note::
+
+        To use one specific node:
+
+        .. code-block:: python
+
+            qprof.get_qexecution(
+                node_name = "v_vdash_node0003",
+                metric = "exec_time_ms",
+                chart_type = "pie",
+            )
+
+        To use multiple nodes:
+
+        .. code-block:: python
+
+            qprof.get_qexecution(
+                node_name = [
+                    "v_vdash_node0001",
+                    "v_vdash_node0003",
+                ],
+                metric = "exec_time_ms",
+                chart_type = "pie",
+            )
 
         The node name is different for different
         configurations. You can search for the node
@@ -459,8 +529,8 @@ class QueryProfiler:
 
     **Cluster**
 
-    To get cluster configuration details, we can
-    use:
+    To get cluster configuration
+    details, we can use:
 
     .. code-block:: python
 
@@ -477,8 +547,8 @@ class QueryProfiler:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table.html
 
-    The Cluster Report can also be conveniently
-    extracted:
+    The Cluster Report can also
+    be conveniently extracted:
 
     .. code-block:: python
 
@@ -497,9 +567,11 @@ class QueryProfiler:
 
     .. important::
 
-        Each method may have multiple parameters and options. It is
-        essential to refer to the documentation of each method to
-        understand its usage.
+        Each method may have multiple
+        parameters and options. It is
+        essential to refer to the
+        documentation of each method
+        to understand its usage.
     """
 
     # Init Functions
@@ -787,6 +859,92 @@ class QueryProfiler:
         }
         return steps_id[idx](*args, **kwargs)
 
+    # Tables
+
+    def get_v_table(self, table_name: Optional[str] = None) -> Union[list, vDataFrame]:
+        """
+        Returns the associated Vertica
+        Table. This function allows easy
+        data exploration of all the
+        performance meta-tables.
+
+        Parameters
+        ----------
+        table_name: str, optional
+            Vertica DC Table to return.
+            If empty, the list of all
+            the tables is returned to
+            simplify the selection.
+
+            Examples:
+
+             - dc_requests_issued
+             - dc_query_executions
+             - dc_explain_plans
+             - query_plan_profiles
+             - query_profiles
+             - execution_engine_profiles
+             - resource_pool_status
+             - host_resources
+
+        Returns
+        -------
+        vDataFrame
+            Vertica DC Table.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily look at any Vertica
+        Performance Tables easily:
+
+        .. code-block:: python
+
+            qprof.get_v_table('dc_requests_issued')
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_v_table_1.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+        """
+        tables = list(self._v_table_dict().keys())
+        if isinstance(table_name, NoneType):
+            return tables
+        elif table_name not in tables:
+            raise ValueError(
+                f"Did not find the Query Profiler Table {table_name}.\n"
+                f"Please choose one in {', '.join(tables)}"
+            )
+        else:
+            tables_schema = self._v_table_dict()
+            if len(self.v_table_names) == 0:
+                sc, tb = tables_schema[table_name], table_name
+            else:
+                tb = self.v_table_names[table_name]
+                schema = tables_schema[table_name]
+                sc = self.v_schema_names[schema]
+            return vDataFrame(f"SELECT * FROM {sc}.{tb}")
+
     # Steps
 
     # Step 0: Vertica Version
@@ -802,9 +960,11 @@ class QueryProfiler:
             MAJOR, MINOR, PATCH, POST
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. ipython:: python
 
@@ -867,9 +1027,11 @@ class QueryProfiler:
             SQL query.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -932,9 +1094,11 @@ class QueryProfiler:
             Query duration.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1027,9 +1191,11 @@ class QueryProfiler:
             Plotting Object.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1103,9 +1269,11 @@ class QueryProfiler:
             Query Plan.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1207,9 +1375,11 @@ class QueryProfiler:
             Plotting Object.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1303,9 +1473,11 @@ class QueryProfiler:
             Plotting Object.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1367,9 +1539,11 @@ class QueryProfiler:
             report.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1440,7 +1614,7 @@ class QueryProfiler:
     # Step 14B: Query execution chart
     def get_qexecution(
         self,
-        node_name: Union[str, list],
+        node_name: Union[None, str, list] = None,
         metric: Literal[
             "exec_time_ms",
             "est_rows",
@@ -1451,7 +1625,7 @@ class QueryProfiler:
             "pstall_us",
             "mem_res_mb",
             "mem_all_mb",
-        ],
+        ] = "exec_time_ms",
         path_id: Optional[int] = None,
         chart_type: Literal[
             "bar",
@@ -1465,13 +1639,15 @@ class QueryProfiler:
 
         Parameters
         ----------
-        node_name: str | list
+        node_name: str | list, optional
             Node(s) name(s).
             It can be a simple node ``str``
             or a ``list`` of nodes.
-        metric: str
+            If empty, all the nodes are
+            used.
+        metric: str, optional
             Metric to use. One of the following:
-             - exec_time_ms
+             - exec_time_ms (default)
              - est_rows
              - proc_rows
              - prod_rows
@@ -1502,9 +1678,11 @@ class QueryProfiler:
             Plotting Object.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1520,18 +1698,47 @@ class QueryProfiler:
                 " order by request_duration desc limit 10;"
             )
 
-        To get node-wise performance infomation,
-        ``get_qexecution`` can be used:
+        To get node-wise performance
+        information, ``get_qexecution``
+        can be used:
 
         .. code-block:: python
 
-            qprof.get_qexecution(
-                node_name="v_vdash_node0003",
-                metric="exec_time_ms",
-                chart_type="pie",
-            )
+            qprof.get_qexecution()
+
+        .. ipython:: python
+            :suppress:
+
+            fig = qprof.get_qexecution()
+            fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html
 
         .. note::
+
+            To use one specific node:
+
+            .. code-block:: python
+
+                qprof.get_qexecution(
+                    node_name = "v_vdash_node0003",
+                    metric = "exec_time_ms",
+                    chart_type = "pie",
+                )
+
+            To use multiple nodes:
+
+            .. code-block:: python
+
+                qprof.get_qexecution(
+                    node_name = [
+                        "v_vdash_node0001",
+                        "v_vdash_node0003",
+                    ],
+                    metric = "exec_time_ms",
+                    chart_type = "pie",
+                )
 
             The node name is different for different
             configurations. You can search for the node
@@ -1543,12 +1750,14 @@ class QueryProfiler:
             :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         node_name = format_type(node_name, dtype=list, na_out=None)
-        if isinstance(node_name, NoneType):
-            raise ValueError("Parameter 'node_name' can not be empty.")
-        node_name = [f"'{nn}'" for nn in node_name]
-        cond = f"node_name IN ({', '.join(node_name)})"
+        cond = ""
+        if len(node_name) != 0:
+            node_name = [f"'{nn}'" for nn in node_name]
+            cond = f"node_name IN ({', '.join(node_name)})"
         if not (isinstance(path_id, NoneType)):
-            cond += f" AND path_id = {path_id}"
+            if cond != "":
+                cond += " AND "
+            cond += f"path_id = {path_id}"
         vdf = self.get_qexecution_report().search(cond)
         if show:
             fun = self._get_chart_method(vdf["operator_name"], chart_type)
@@ -1566,9 +1775,11 @@ class QueryProfiler:
             report.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
@@ -1614,9 +1825,11 @@ class QueryProfiler:
             report.
 
         Examples
-        ---------
+        --------
 
-        First, let's import the :py:class:`QueryProfiler` object.
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
 
         .. code-block:: python
 
