@@ -43,22 +43,29 @@ For this dataset, we created an artifical dataset from a Linear Regression model
 Test Environment
 ^^^^^^^^^^^^^^^^^^^
 
-
 .. list-table:: 
-  :header-rows: 1
+    :header-rows: 1
 
-  * - Cluster
-    - OS
-    - OS Version
-    - RAM
-    - Processor frequency
-    - Processor cores
-  * - 3 node cluster
-    - Red Hat Enterprise Linux 
-    - 8.7 (Ootpa)
-    - 755 GB
-    - 2.4GHz
-    - 36, 2 threads per core
+    * - Version
+      - Instance Type
+      - Cluster
+      - vCPU(per node)
+      - Memory(per node)
+      - Deploy Mode
+      - OS
+      - OS Version
+      - Processor freq. (per node)
+      - Processor cores (per node) 
+    * - ???
+      - ???
+      - 3 node cluster
+      - ???
+      - 755 GB
+      - ???
+      - Red Hat Enterprise Linux 
+      - 8.7 (Ootpa)
+      - 2.4GHz
+      - 36, 2 threads per core
 
 Spark: ``max iter = 100``, ``e = 10^-6``
 
@@ -68,140 +75,145 @@ Vertica: ``max iter = 100``, ``e = 10^-6``
 Comparison
 ^^^^^^^^^^^
 
-.. csv-table:: Vertica vs. Spark
+.. csv-table::
   :file: /_static/benchmark_lr_table.csv
   :header-rows: 2
 
-.. ipython:: python
-  :suppress:
-
-  import plotly.graph_objects as go
-  data = {
-      'Size': ['1M', '10M'],
-      'Vertica BFGS': [4.49, 26.39],
-      'Vertica Newton': [4.81, 26.04],
-      'Spark BFGS': [1.43, 96.98],
-      'Spark Newton': [0.7, 2.09],
-  }
-  fig = go.Figure()
-  bar_width = 0.22  # Set the width of each bar
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Vertica BFGS'],
-      width=bar_width,
-      text=data['Vertica BFGS'],
-      textposition='outside',
-      marker_color="black",
-      name='Vertica BFGS',
-      offset=-0.5
-  ))
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Vertica Newton'],
-      width=bar_width,
-      text=data['Vertica Newton'],
-      textposition='outside',
-      marker_color="blue",
-      name='Vertica Newton',
-      offset=-0.25
-  ))
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Spark BFGS'],
-      width=bar_width,
-      text=data['Spark BFGS'],
-      textposition='outside',
-      marker_color="red",
-      name='Spark BFGS',
-      offset=0
-  ))
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Spark Newton'],
-      width=bar_width,
-      text=data['Spark Newton'],
-      textposition='outside',
-      marker_color="green",
-      name='Spark Newton',
-      offset=0.25
-  ))
-  fig.update_layout(
-      title='Time Comparison (100 Columns)',
-      xaxis=dict(title='Size'),
-      yaxis=dict(title='Time (seconds)'),
-      # barmode='group',
-      # bargap=0.8,
-      width=600,
-      height=500
-  )
-  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html")
-
-.. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html
+Browse throught the tabs to see the time comparison:
 
 
+.. tab:: 100m and 1B
 
-.. ipython:: python
-  :suppress:
+    .. ipython:: python
+        :suppress:
 
-  import plotly.graph_objects as go
-  data = {
-      'Size': ['100M', '1B'],
-      'Vertica BFGS': [84.7, 1748.51],
-      'Vertica Newton': [85.93, 1808.56],
-      'Spark BFGS': [216, 2568.68],
-      'Spark Newton': [68.47, 1788.75],
-  }
-  fig = go.Figure()
-  bar_width = 0.22  # Set the width of each bar
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Vertica BFGS'],
-      width=bar_width,
-      text=data['Vertica BFGS'],
-      textposition='outside',
-      marker_color="black",
-      name='Vertica BFGS',
-      offset=-0.5
-  ))
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Vertica Newton'],
-      width=bar_width,
-      text=data['Vertica Newton'],
-      textposition='outside',
-      marker_color="blue",
-      name='Vertica Newton',
-      offset=-0.25
-  ))
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Spark BFGS'],
-      width=bar_width,
-      text=data['Spark BFGS'],
-      textposition='outside',
-      marker_color="red",
-      name='Spark BFGS',
-      offset=0
-  ))
-  fig.add_trace(go.Bar(
-      x=data['Size'],
-      y=data['Spark Newton'],
-      width=bar_width,
-      text=data['Spark Newton'],
-      textposition='outside',
-      marker_color="green",
-      name='Spark Newton',
-      offset=0.25
-  ))
-  fig.update_layout(
-      title='Time Comparison (100 Columns)',
-      xaxis=dict(title='Size'),
-      yaxis=dict(title='Time (seconds)'),
-      width=600,
-      height=500
-  )
-  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html")
+        import plotly.graph_objects as go
+        data = {
+            'Size': ['100M', '1B'],
+            'Vertica BFGS': [84.7, 1748.51],
+            'Vertica Newton': [85.93, 1808.56],
+            'Spark BFGS': [216, 2568.68],
+            'Spark Newton': [68.47, 1788.75],
+        }
+        fig = go.Figure()
+        bar_width = 0.22  # Set the width of each bar
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Vertica BFGS'],
+            width=bar_width,
+            text=data['Vertica BFGS'],
+            textposition='outside',
+            marker_color="black",
+            name='Vertica BFGS',
+            offset=-0.5
+        ))
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Vertica Newton'],
+            width=bar_width,
+            text=data['Vertica Newton'],
+            textposition='outside',
+            marker_color="blue",
+            name='Vertica Newton',
+            offset=-0.25
+        ))
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Spark BFGS'],
+            width=bar_width,
+            text=data['Spark BFGS'],
+            textposition='outside',
+            marker_color="red",
+            name='Spark BFGS',
+            offset=0
+        ))
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Spark Newton'],
+            width=bar_width,
+            text=data['Spark Newton'],
+            textposition='outside',
+            marker_color="green",
+            name='Spark Newton',
+            offset=0.25
+        ))
+        fig.update_layout(
+            title='Time Comparison (100 Columns)',
+            xaxis=dict(title='Size'),
+            yaxis=dict(title='Time (seconds)'),
+            width=600,
+            height=500
+        )
+        fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html")
 
-.. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html
+    .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html
+
+.. tab:: 1M and 100M
+
+    .. ipython:: python
+        :suppress:
+
+        import plotly.graph_objects as go
+        data = {
+            'Size': ['1M', '10M'],
+            'Vertica BFGS': [4.49, 26.39],
+            'Vertica Newton': [4.81, 26.04],
+            'Spark BFGS': [1.43, 96.98],
+            'Spark Newton': [0.7, 2.09],
+        }
+        fig = go.Figure()
+        bar_width = 0.22  # Set the width of each bar
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Vertica BFGS'],
+            width=bar_width,
+            text=data['Vertica BFGS'],
+            textposition='outside',
+            marker_color="black",
+            name='Vertica BFGS',
+            offset=-0.5
+        ))
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Vertica Newton'],
+            width=bar_width,
+            text=data['Vertica Newton'],
+            textposition='outside',
+            marker_color="blue",
+            name='Vertica Newton',
+            offset=-0.25
+        ))
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Spark BFGS'],
+            width=bar_width,
+            text=data['Spark BFGS'],
+            textposition='outside',
+            marker_color="red",
+            name='Spark BFGS',
+            offset=0
+        ))
+        fig.add_trace(go.Bar(
+            x=data['Size'],
+            y=data['Spark Newton'],
+            width=bar_width,
+            text=data['Spark Newton'],
+            textposition='outside',
+            marker_color="green",
+            name='Spark Newton',
+            offset=0.25
+        ))
+        fig.update_layout(
+            title='Time Comparison (100 Columns)',
+            xaxis=dict(title='Size'),
+            yaxis=dict(title='Time (seconds)'),
+            # barmode='group',
+            # bargap=0.8,
+            width=600,
+            height=500
+        )
+        fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html")
+
+    .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html

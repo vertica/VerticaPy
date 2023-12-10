@@ -35,12 +35,30 @@ Test Environment
 
 Below are the machine details on which the tests were carried out:
 
+.. list-table:: 
+    :header-rows: 1
 
-+-------------+---------------------------+-----------------------+------------------------+----------------------------+-----------------------------+
-| Cluster     | OS                        | OS Version            | RAM (per node)         | Processor freq. (per node) | Processor cores (per node)  |
-+=============+===========================+=======================+========================+============================+=============================+
-| 4 node      | Red Hat Enterprise Linux  | 8.7 (Ootpa)           | 755 GB                 | 2.3 GHz                    | 36, 2 threads per core      |
-+-------------+---------------------------+-----------------------+------------------------+----------------------------+-----------------------------+
+    * - Version
+      - Instance Type
+      - Cluster
+      - vCPU(per node)
+      - Memory(per node)
+      - Deploy Mode
+      - OS
+      - OS Version
+      - Processor freq. (per node)
+      - Processor cores (per node) 
+    * - 23.3.0-5
+      - ???
+      - 4 node 
+      - ???
+      - 755 GB
+      - Deploy Mode
+      - Red Hat Enterprise Linux  
+      - 8.7 (Ootpa)   
+      - 2.3 GHz  
+      - 36, 2 threads per core
+
 
 **Parameters:** p = 5, d = 1, q = 1
 
@@ -55,75 +73,72 @@ Below are the machine details on which the tests were carried out:
 Comparison
 ^^^^^^^^^^^
 
-Training Run Time
-------------------
+Browse throught the different tabs to see the results:
 
-.. ipython:: python
-  :suppress:
+.. tab:: Training Run Time
 
-  import plotly.express as px
-  import pandas as pd
-  df = pd.DataFrame({
-      "Size": ["10K", "100K", "1M", "10M", "100M"],
-      "Vertica": [0.022, 0.055, 0.515, 4.775, 157.763],
-      "Python": [0.064, 0.745, 8.923, 93.307, 1123.966]
-  })
-  fig = px.line(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
-                labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-                line_shape="linear", render_mode="svg")
-  fig.update_layout(width = 550)
-  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train.html")
+  .. ipython:: python
+    :suppress:
 
-.. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train.html
+    import plotly.express as px
+    import pandas as pd
+    df = pd.DataFrame({
+        "Size": ["10K", "100K", "1M", "10M", "100M"],
+        "Vertica": [0.022, 0.055, 0.515, 4.775, 157.763],
+        "Python": [0.064, 0.745, 8.923, 93.307, 1123.966]
+    })
+    fig = px.line(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
+                  labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
+                  line_shape="linear", render_mode="svg")
+    fig.update_layout(width = 550)
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train.html")
 
+  .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train.html
 
-Prediction Run Time
---------------------
+.. tab:: Prediction Run Time
 
-.. ipython:: python
-  :suppress:
+  .. ipython:: python
+    :suppress:
 
-  import plotly.express as px
-  import pandas as pd
-  df = pd.DataFrame({
-      "Size": ["10K", "100K", "1M", "10M", "100M"],
-      "Vertica": [0.028, 0.056, 0.364, 3.785, 57.052],
-      "Python": [0.006, 0.019, 0.027, 0.333, 5.422]
-  })
+    import plotly.express as px
+    import pandas as pd
+    df = pd.DataFrame({
+        "Size": ["10K", "100K", "1M", "10M", "100M"],
+        "Vertica": [0.028, 0.056, 0.364, 3.785, 57.052],
+        "Python": [0.006, 0.019, 0.027, 0.333, 5.422]
+    })
 
-  fig = px.line(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
-                labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-                line_shape="linear", render_mode="svg")
-  fig.update_layout(width = 550)
-  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction.html")
+    fig = px.line(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
+                  labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
+                  line_shape="linear", render_mode="svg")
+    fig.update_layout(width = 550)
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction.html")
 
-.. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction.html
-
+  .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction.html
 
 
-Mean Squared Error
---------------------
+.. tab:: Mean Squared Error
 
-.. ipython:: python
-  :suppress:
+  .. ipython:: python
+    :suppress:
 
-  import plotly.express as px
-  import pandas as pd
-  df = pd.DataFrame({
-      "Size": ["10K", "100K", "1M", "10M", "100M"],
-      "Vertica": [24.54, 30.53, 27.94, 28.52, 32.66],
-      "Python": [24.6, 24.97, 25, 24.99, 24.99]
-  })
+    import plotly.express as px
+    import pandas as pd
+    df = pd.DataFrame({
+        "Size": ["10K", "100K", "1M", "10M", "100M"],
+        "Vertica": [24.54, 30.53, 27.94, 28.52, 32.66],
+        "Python": [24.6, 24.97, 25, 24.99, 24.99]
+    })
 
-  fig = px.line(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
-                labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-                line_shape="linear", render_mode="svg")
-  fig.update_layout(width = 550)
-  fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse.html")
+    fig = px.line(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
+                  labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
+                  line_shape="linear", render_mode="svg")
+    fig.update_layout(width = 550)
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse.html")
 
-.. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse.html
+  .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse.html
 
 
