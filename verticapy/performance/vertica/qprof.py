@@ -1159,6 +1159,13 @@ class QueryProfiler:
             "barh",
             "pie",
         ] = "pie",
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "total descending",
         show: bool = True,
     ) -> Union[PlottingObject, vDataFrame]:
         """
@@ -1189,6 +1196,16 @@ class QueryProfiler:
 
             - pie:
                 Pie Chart.
+
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
 
         show: bool, optional
             If set to True, the Plotting object
@@ -1251,7 +1268,11 @@ class QueryProfiler:
         vdf = vDataFrame(query)
         if show:
             fun = self._get_chart_method(vdf["execution_step"], kind)
-            return fun(method="max", of="elapsed")
+            return fun(
+                method="max",
+                of="elapsed",
+                categoryorder=categoryorder,
+            )
         return vdf
 
     # Step 5: Query plan
@@ -1347,6 +1368,13 @@ class QueryProfiler:
             "barh",
             "pie",
         ] = "pie",
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "total descending",
         show: bool = True,
     ) -> Union[PlottingObject, vDataFrame]:
         """
@@ -1373,6 +1401,16 @@ class QueryProfiler:
                 Horizontal Bar Chart.
             - pie:
                 Pie Chart.
+
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
 
         show: bool, optional
             If set to True, the Plotting object
@@ -1443,7 +1481,11 @@ class QueryProfiler:
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         if show:
             fun = self._get_chart_method(vdf["path_line"], kind)
-            return fun(method="sum", of="running_time")
+            return fun(
+                method="sum",
+                of="running_time",
+                categoryorder=categoryorder,
+            )
         return vdf
 
     # Step 12: CPU Time by node and path_id
@@ -1454,8 +1496,23 @@ class QueryProfiler:
             "barh",
         ] = "bar",
         reverse: bool = False,
-        sort_by: Literal["x", "y", "c"] = "x",
-        desc: bool = True,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "max descending",
         show: bool = True,
     ) -> Union[PlottingObject, vDataFrame]:
         """
@@ -1474,21 +1531,26 @@ class QueryProfiler:
         reverse: bool, optional
             If set to ``True``, the
             chart will be reversed.
-        sort_by: str, optional
+        categoryorder: str, optional
             How to sort the bars.
+            One of the following options:
 
-            - c:
-                Categories.
-            - x:
-                X axis.
-            - y:
-                Y axis.
-        desc: bool, optional
-            Only used when ``sort_by='x'``
-            or ``sort_by='y'``.
-            Sorts using the descending
-            order. Otherwise, it uses
-            the ascending order.
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
+
         show: bool, optional
             If set to ``True``, the
             Plotting object is returned.
@@ -1554,8 +1616,7 @@ class QueryProfiler:
             return fun(
                 columns=columns,
                 method="SUM(counter_value) AS cet",
-                sort_by=sort_by,
-                desc=desc,
+                categoryorder=categoryorder,
             )
         return vdf
 
@@ -1665,6 +1726,23 @@ class QueryProfiler:
             "pie",
         ] = "pie",
         multi: bool = True,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "max descending",
         show: bool = True,
     ) -> Union[PlottingObject, vDataFrame]:
         """
@@ -1709,6 +1787,26 @@ class QueryProfiler:
             'path_id'. Otherwise, a
             single plot using 'operator_name'
             is drawn.
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
+
         show: bool, optional
             If set to ``True``, the
             Plotting object is returned.
@@ -1815,6 +1913,7 @@ class QueryProfiler:
                         path_id=path_id,
                         kind=kind,
                         multi=multi,
+                        categoryorder=categoryorder,
                         show=True,
                     )
                 ]
@@ -1849,6 +1948,7 @@ class QueryProfiler:
                     columns=["operator_name", "path_id"],
                     method="sum",
                     of=metric,
+                    categoryorder=categoryorder,
                     **other_params,
                 )
             else:
