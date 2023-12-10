@@ -1926,7 +1926,6 @@ class QueryProfiler:
                         kind=kind,
                         multi=multi,
                         categoryorder=categoryorder,
-                        max_cardinality=1000,
                         show=True,
                     )
                 ]
