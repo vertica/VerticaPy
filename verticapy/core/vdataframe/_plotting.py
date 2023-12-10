@@ -195,8 +195,23 @@ class vDFPlot(vDFMachineLearning):
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
         kind: Literal["auto", "drilldown", "stacked"] = "auto",
-        sort_by: Literal["x", "y", "c"] = "c",
-        desc: bool = True,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "max descending",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -263,21 +278,25 @@ class vDFPlot(vDFMachineLearning):
                 Stacked  Bar  Chart   based  on  2 vDataColumns.
             - fully_stacked:
                 Fully Stacked Bar Chart based on 2 vDataColumns.
-        sort_by: str, optional
+        categoryorder: str, optional
             How to sort the bars.
+            One of the following options:
 
-            - c:
-                Categories.
-            - x:
-                X axis.
-            - y:
-                Y axis.
-        desc: bool, optional
-            Only used when ``sort_by='x'``
-            or ``sort_by='y'``.
-            Sorts using the descending
-            order. Otherwise, it uses
-            the ascending order.
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
 
         chart: PlottingObject, optional
             The chart object to plot on.
@@ -394,8 +413,7 @@ class vDFPlot(vDFMachineLearning):
                 of=of,
                 h=h,
                 max_cardinality=max_cardinality,
-                sort_by=sort_by,
-                desc=desc,
+                categoryorder=categoryorder,
             ).draw(**kwargs)
         else:
             vpy_plt, kwargs = self.get_plotting_lib(
@@ -411,8 +429,7 @@ class vDFPlot(vDFMachineLearning):
                 h=h,
                 max_cardinality=max_cardinality,
                 misc_layout={"kind": kind},
-                sort_by=sort_by,
-                desc=desc,
+                categoryorder=categoryorder,
             ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -433,8 +450,23 @@ class vDFPlot(vDFMachineLearning):
             "pyramid",
             "density",
         ] = "auto",
-        sort_by: Literal["x", "y", "c"] = "c",
-        desc: bool = True,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "max descending",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -502,21 +534,26 @@ class vDFPlot(vDFMachineLearning):
             - fully_stacked:
                 Fully Stacked Bar Chart based on 2 vDataColumns.
 
-        sort_by: str, optional
+        categoryorder: str, optional
             How to sort the bars.
+            One of the following options:
 
-            - c:
-                Categories.
-            - x:
-                X axis.
-            - y:
-                Y axis.
-        desc: bool, optional
-            Only used when ``sort_by='x'``
-            or ``sort_by='y'``.
-            Sorts using the descending
-            order. Otherwise, it uses
-            the ascending order.
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -634,8 +671,7 @@ class vDFPlot(vDFMachineLearning):
                 of=of,
                 h=h,
                 max_cardinality=max_cardinality,
-                sort_by=sort_by,
-                desc=desc,
+                categoryorder=categoryorder,
             ).draw(**kwargs)
         else:
             if kind in ("fully", "fully stacked"):
@@ -655,8 +691,7 @@ class vDFPlot(vDFMachineLearning):
                 max_cardinality=max_cardinality,
                 h=h,
                 misc_layout={"kind": kind},
-                sort_by=sort_by,
-                desc=desc,
+                categoryorder=categoryorder,
             ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -668,6 +703,13 @@ class vDFPlot(vDFMachineLearning):
         max_cardinality: Union[None, int, tuple] = None,
         h: Union[None, int, tuple] = None,
         chart: Optional[PlottingObject] = None,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "total descending",
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -822,6 +864,7 @@ class vDFPlot(vDFMachineLearning):
             of=of,
             max_cardinality=max_cardinality,
             h=h,
+            categoryorder=categoryorder,
         ).draw(**kwargs)
 
     # Histogram & Density.
@@ -2853,6 +2896,13 @@ class vDCPlot(vDCScaler):
         h: PythonNumber = 0,
         categorical: bool = True,
         bargap: float = 0.06,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "total descending",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -2909,6 +2959,16 @@ class vDCPlot(vDCScaler):
             proportion  taken out of each bar to render the
             chart. This proportion creates gaps between each
             bar. The bigger the value, the bigger the gap.
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -2989,6 +3049,7 @@ class vDCPlot(vDCScaler):
             h=h,
             pie=categorical,
             bargap=bargap,
+            categoryorder=categoryorder,
         ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -3001,6 +3062,13 @@ class vDCPlot(vDCScaler):
         h: PythonNumber = 0,
         categorical: bool = True,
         bargap: float = 0.06,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "total descending",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -3057,6 +3125,16 @@ class vDCPlot(vDCScaler):
             proportion  taken out of each bar to render the
             chart. This proportion creates between  each bar.
             The  bigger the value,  the bigger the gap.
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -3137,6 +3215,7 @@ class vDCPlot(vDCScaler):
             h=h,
             pie=categorical,
             bargap=bargap,
+            categoryorder=categoryorder,
         ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -3147,6 +3226,13 @@ class vDCPlot(vDCScaler):
         max_cardinality: int = 6,
         h: PythonNumber = 0,
         kind: Literal["auto", "donut", "rose", "3d"] = "auto",
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "total descending",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -3179,8 +3265,9 @@ class vDCPlot(vDCScaler):
                 q Quantile of the
                 :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
-            It   can  also  be  a  cutomized   aggregation
-            (ex: AVG(column1) + 5).
+
+            It can also be a cutomized aggregation
+            (ex: ``AVG(column1) + 5``).
         of: str, optional
             The vDataColumn used to compute the aggregation.
         max_cardinality: int, optional
@@ -3192,12 +3279,24 @@ class vDCPlot(vDCScaler):
             h is computed.
         kind: str, optional
             The type of pie chart.
-                auto   : Regular pie chart.
-                donut  : Donut chart.
-                rose   : Rose chart.
-                3d     : 3D Pie.
-            It   can    also   be  a  cutomized   aggregation
-            (ex: AVG(column1) + 5).
+
+            - auto:
+                Regular pie chart.
+            - donut:
+                Donut chart.
+            - rose:
+                Rose chart.
+            - 3d: 3D Pie.
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -3277,6 +3376,7 @@ class vDCPlot(vDCScaler):
             h=h,
             pie=True,
             misc_layout={"kind": kind},
+            categoryorder=categoryorder,
         ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -3322,8 +3422,8 @@ class vDCPlot(vDCScaler):
                 :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
-            It   can  also  be  a  cutomized   aggregation
-            (ex: AVG(column1) + 5).
+            It can also be a cutomized aggregation
+            (ex: ``AVG(column1) + 5``).
         of: str, optional
             The vDataColumn used to compute the aggregation.
         max_cardinality: int, optional
@@ -3803,8 +3903,8 @@ class vDCPlot(vDCScaler):
                 :py:class:`vDataColumns` ``of``
                 (ex: 50% to get the median).
 
-            It   can  also  be  a  cutomized   aggregation
-            (ex: AVG(column1) + 5).
+            It can also be a cutomized aggregation
+            (ex: ``AVG(column1) + 5``).
         q: tuple, optional
             Tuple including the  2 quantiles used to draw the
             Plot.

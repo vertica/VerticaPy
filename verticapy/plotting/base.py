@@ -332,25 +332,110 @@ class PlottingBase(PlottingBaseSQL):
                 args += [["#FFFFFF", color]]
             return cmap_from_list(*args, **kwargs)
 
-    # Formatting Methods.
+    # Sorting Methods.
 
     @staticmethod
-    def sort_by_axis(
-        X: np.array, x_labels: list, y_labels: list, axis: int = 0, desc: bool = True
-    ) -> tuple[np.array, list, list]:
-        max_values = np.max(X, axis=axis)
-        sorted_indices = np.argsort(max_values)
+    def get_category_desc(categoryorder: str) -> tuple[str, Optional[bool]]:
+        if " " in categoryorder:
+            metric, desc = categoryorder.split(" ")
+            desc = desc.startswith("desc")
+        else:
+            metric = categoryorder
+            desc = None
+        return metric, desc
+
+    @staticmethod
+    def supported_metrics() -> list:
+        return [
+            "trace",
+            "category",
+            "cat",
+            "total",
+            "min",
+            "minimum",
+            "max",
+            "maximum",
+            "sum",
+            "mean",
+            "median",
+            "avg",
+            "average",
+            "total",
+            "tot",
+        ]
+
+    def check_metric(self, metric: str):
+        metrics = self.supported_metrics()
+        if metric not in metrics:
+            metrics = [f"'{m}'" for m in metrics]
+            raise ValueError(
+                f"The metric '{metric}' is not supported.\n"
+                f"Use one of the following: {', '.join(metrics)}.\n"
+                "For most of the metrics, you can use the 'asc/ascending'"
+                " or 'desc/descending' keyword.\nExample: 'min ascending',"
+                " 'mean descending' or 'median asc'."
+            )
+        if metric in ["avg", "average"]:
+            return "mean"
+        elif metric in ["minimum"]:
+            return "min"
+        elif metric in ["maximum"]:
+            return "max"
+        elif metric in ["cat"]:
+            return "category"
+        elif metric in ["tot"]:
+            return "total"
+        return metric
+
+    def sort_chart_1d(
+        self, x: list, labels: list, metric: str, desc: bool = True
+    ) -> tuple[list, list]:
+        metric = self.check_metric(metric)
+        if metric == "trace":
+            return x, labels
+        elif not (metric.startswith("cat")):
+            sorted_indices = np.argsort(x)
+        else:
+            sorted_indices = np.argsort(labels)
         if desc:
             sorted_indices = sorted_indices[::-1]
-        if axis == 1:
-            sorted_X = X[sorted_indices]
-            sorted_x_labels = [x_labels[i] for i in sorted_indices]
-            sorted_y_labels = y_labels
+        sorted_x = np.array(x)[sorted_indices]
+        sorted_x_labels = [labels[i] for i in sorted_indices]
+        return list(sorted_x), sorted_x_labels
+
+    def sort_chart_2d(
+        self,
+        X: np.array,
+        x_labels: list,
+        y_labels: list,
+        metric: str,
+        desc: bool = True,
+    ) -> tuple[np.array, list, list]:
+        metric = self.check_metric(metric)
+        if metric == "total":
+            metric = "sum"
+        if metric == "trace":
+            return X, x_labels, y_labels
+        elif not (metric.startswith("cat")):
+            look_up = {
+                "max": np.max,
+                "min": np.min,
+                "sum": np.sum,
+                "mean": np.mean,
+                "median": np.median,
+            }
+            max_values = look_up[metric](X, axis=1)
+            sorted_indices = np.argsort(max_values)
         else:
-            sorted_X = X[:, sorted_indices]
-            sorted_x_labels = x_labels
-            sorted_y_labels = [y_labels[i] for i in sorted_indices]
+            sorted_indices = np.argsort(x_labels)
+        if desc:
+            sorted_indices = sorted_indices[::-1]
+        sorted_X = X[sorted_indices]
+        sorted_x_labels = [x_labels[i] for i in sorted_indices]
+        sorted_y_labels = y_labels
         return sorted_X, sorted_x_labels, sorted_y_labels
+
+    # Formatting Methods.
 
     @staticmethod
     def _map_method(method: str, of: str) -> tuple[str, str, Optional[Callable], bool]:
@@ -478,6 +563,13 @@ class PlottingBase(PlottingBaseSQL):
         h: float = 0.0,
         pie: bool = False,
         bargap: float = 0.06,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "trace",
     ) -> None:
         """
         Computes the aggregations needed to draw a 1D graphic.
@@ -673,6 +765,8 @@ class PlottingBase(PlottingBaseSQL):
         if pie:
             y.reverse()
             labels.reverse()
+        metric, desc = self.get_category_desc(categoryorder)
+        y, labels = self.sort_chart_1d(y, labels=labels, metric=metric, desc=desc)
         self.data = {
             "x": x,
             "y": y,
@@ -691,6 +785,7 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
+            "categoryorder": categoryorder,
         }
 
     # HISTOGRAMS
@@ -913,8 +1008,21 @@ class PlottingBase(PlottingBaseSQL):
         h: tuple[Optional[float], Optional[float]] = (None, None),
         max_cardinality: tuple[int, int] = (20, 20),
         fill_none: float = 0.0,
-        sort_by: Literal["x", "y", "c"] = "c",
-        desc: bool = True,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "trace",
     ) -> None:
         """
         Computes a pivot table.
@@ -1070,11 +1178,14 @@ class PlottingBase(PlottingBaseSQL):
                 i = x_labels.index(str(item[0]))
                 j = y_labels.index(str(item[1]))
                 X[i][j] = item[2]
-        if sort_by != "c":
-            axis = 1 if sort_by == "x" else 0
-            X, x_labels, y_labels = self.sort_by_axis(
-                X, x_labels, y_labels, axis=axis, desc=desc
-            )
+        metric, desc = self.get_category_desc(categoryorder)
+        X, x_labels, y_labels = self.sort_chart_2d(
+            X,
+            x_labels,
+            y_labels,
+            metric=metric,
+            desc=desc,
+        )
         self.data = {
             "X": X,
         }
@@ -1091,8 +1202,7 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
-            "sort_by": sort_by,
-            "desc": desc,
+            "categoryorder": categoryorder,
         }
 
     def _compute_contour_grid(
@@ -1741,8 +1851,13 @@ class PlottingBase(PlottingBaseSQL):
         of: Optional[str] = None,
         max_cardinality: Union[int, tuple, list] = None,
         h: Union[int, tuple, list] = None,
-        sort_by: Literal["x", "y", "c"] = "c",  # ignored
-        desc: bool = True,  # ignored
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+        ] = "trace",
     ) -> None:
         columns = format_type(columns, dtype=list)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
@@ -1759,13 +1874,36 @@ class PlottingBase(PlottingBaseSQL):
             vdf_tmp[column].discretize(h=h[idx])
             vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
         groups = []
+        metric, desc = self.get_category_desc(categoryorder)
         for i in range(0, n):
-            groups += [
-                vdf_tmp.groupby(columns[: n - i], [aggregate])
-                .sort(columns[: n - i])
-                .to_numpy()
-                .T
-            ]
+            vdf_tmp_i = vdf_tmp.groupby(columns[: n - i], [aggregate])
+            if metric != "trace":
+                if metric.startswith("cat") and not (desc):
+                    sort_values = columns[: n - i]
+                elif metric.startswith("cat"):
+                    sort_values = {col: "desc" for col in columns[: n - i]}
+                elif metric.startswith("tot") and not (desc):
+                    sort_values = [vdf_tmp_i.get_columns()[-1]]
+                elif metric.startswith("tot"):
+                    sort_values = {vdf_tmp_i.get_columns()[-1]: "desc"}
+                else:
+                    metrics = [
+                        "trace",
+                        "total",
+                        "tot",
+                        "category",
+                        "cat",
+                    ]
+                    metrics = [f"'{m}'" for m in metrics]
+                    raise ValueError(
+                        f"The metric '{metric}' is not supported.\n"
+                        f"Use one of the following: {', '.join(metrics)}.\n"
+                        "Except for 'trace', you can use the 'asc/ascending'"
+                        " or 'desc/descending' keyword.\nExample: 'tot ascending',"
+                        " 'total descending' or 'cat asc'."
+                    )
+                vdf_tmp_i = vdf_tmp_i.sort(sort_values)
+            groups += [vdf_tmp_i.to_numpy().T]
         self.data = {"groups": np.array(groups, dtype=object)}
         self.layout = {
             "columns": self._clean_quotes(columns),
