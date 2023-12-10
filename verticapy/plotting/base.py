@@ -1741,6 +1741,8 @@ class PlottingBase(PlottingBaseSQL):
         of: Optional[str] = None,
         max_cardinality: Union[int, tuple, list] = None,
         h: Union[int, tuple, list] = None,
+        sort_by: Literal["x", "y", "c"] = "c",  # ignored
+        desc: bool = True,  # ignored
     ) -> None:
         columns = format_type(columns, dtype=list)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)

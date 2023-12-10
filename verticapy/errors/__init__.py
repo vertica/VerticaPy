@@ -349,12 +349,12 @@ class OptionError(Exception):
 
         from verticapy.errors import OptionError
 
-        def is_supported_chart(chart_type: str):
+        def is_supported_chart(kind: str):
 
-            if chart_type not in ('bar', 'pie'):
+            if kind not in ('bar', 'pie'):
 
                 raise OptionError(
-                    f"The option '{chart_type}' is not supported."
+                    f"The option '{kind}' is not supported."
                 )
 
     .. note::

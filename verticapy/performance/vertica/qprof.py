@@ -20,7 +20,7 @@ import warnings
 
 from tqdm.auto import tqdm
 
-from verticapy.errors import QueryError
+from verticapy.errors import ExtensionError, QueryError
 
 from verticapy.core.vdataframe import vDataFrame
 
@@ -30,6 +30,8 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
+
+from verticapy.plotting._utils import PlottingUtils
 
 
 class QueryProfiler:
@@ -98,10 +100,12 @@ class QueryProfiler:
 
             This parameter is used only when ``request`` is
             defined.
-    v_schema_names: dict, optional
-        Name of the schema to use to store
+    v_schema_names: str | dict, optional
+        Name of the schemas to use to store
         all the Vertica monitor and internal
-        meta-tables.
+        meta-tables. It can be a single
+        schema or a ``dictionary`` of schema
+        used to map all the Vertica DC tables.
     create_copy: bool, optional
         If set to ``True``, tables or local temporary
         tables will be created by using the schema
@@ -366,14 +370,14 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_qsteps(chart_type="pie")
+        qprof.get_qsteps(kind="pie")
 
     .. ipython:: python
         :suppress:
 
         import verticapy as vp
         vp.set_option("plotting_lib", "plotly")
-        fig = qprof.get_qsteps(chart_type="pie")
+        fig = qprof.get_qsteps(kind="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html")
 
     .. raw:: html
@@ -382,7 +386,7 @@ class QueryProfiler:
     .. note::
 
         The same plot can also be plotted using
-        a bar plot by switching the ``chart_type``
+        a bar plot by switching the ``kind``
         to "bar".
 
     **Query Plan**
@@ -400,12 +404,12 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_qplan_profile(chart_type = "pie")
+        qprof.get_qplan_profile(kind = "pie")
 
     .. ipython:: python
         :suppress:
 
-        fig = qprof.get_qplan_profile(chart_type="pie")
+        fig = qprof.get_qplan_profile(kind="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html")
 
     .. raw:: html
@@ -414,7 +418,7 @@ class QueryProfiler:
     .. note::
 
         The same plot can also be plotted using
-        a bar plot by switching the ``chart_type``
+        a bar plot by switching the ``kind``
         to "bar".
 
     **CPU Time by Node and Path ID**
@@ -424,12 +428,12 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_cpu_time(chart_type="bar")
+        qprof.get_cpu_time(kind="bar")
 
     .. ipython:: python
         :suppress:
 
-        fig = qprof.get_qplan_profile(chart_type="pie")
+        fig = qprof.get_qplan_profile(kind="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html")
 
     .. raw:: html
@@ -507,7 +511,7 @@ class QueryProfiler:
             qprof.get_qexecution(
                 node_name = "v_vdash_node0003",
                 metric = "exec_time_ms",
-                chart_type = "pie",
+                kind = "pie",
             )
 
         To use multiple nodes:
@@ -520,7 +524,7 @@ class QueryProfiler:
                     "v_vdash_node0003",
                 ],
                 metric = "exec_time_ms",
-                chart_type = "pie",
+                kind = "pie",
             )
 
         The node name is different for different
@@ -584,7 +588,7 @@ class QueryProfiler:
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
         add_profile: bool = True,
-        v_schema_names: Optional[dict] = None,
+        v_schema_names: Union[None, str, dict] = None,
         create_copy: bool = False,
         create_local_temporary_copy: bool = False,
     ) -> None:
@@ -674,7 +678,12 @@ class QueryProfiler:
             self.v_schema_names = self._v_temp_schema_dict()
             create_table = True
         else:
-            self.v_schema_names = copy.deepcopy(v_schema_names)
+            if isinstance(v_schema_names, str):
+                self.v_schema_names = {}
+                for schema in self._v_temp_schema_dict():
+                    self.v_schema_names[schema] = v_schema_names
+            else:
+                self.v_schema_names = copy.deepcopy(v_schema_names)
             create_table = create_copy
         self._create_copy_v_table(create_table=create_table)
 
@@ -729,21 +738,21 @@ class QueryProfiler:
     def _get_chart_method(
         self,
         v_object: Any,
-        chart_type: Literal[
+        kind: Literal[
             "bar",
             "barh",
             "pie",
         ],
     ) -> Callable:
-        chart_type = str(chart_type).lower()
-        if chart_type == "pie":
+        kind = str(kind).lower()
+        if kind == "pie":
             return v_object.pie
-        elif chart_type == "bar":
+        elif kind == "bar":
             return v_object.bar
-        elif chart_type == "barh":
+        elif kind == "barh":
             return v_object.barh
         else:
-            ValueError("Incorrect parameter 'chart_type'.")
+            ValueError("Incorrect parameter 'kind'.")
 
     def _replace_schema_in_query(self, query: SQLExpression) -> SQLExpression:
         if not (hasattr(self, "v_schema_names")) or isinstance(
@@ -1145,7 +1154,7 @@ class QueryProfiler:
     def get_qsteps(
         self,
         unit: Literal["s", "m", "h"] = "s",
-        chart_type: Literal[
+        kind: Literal[
             "bar",
             "barh",
             "pie",
@@ -1169,7 +1178,7 @@ class QueryProfiler:
             - h:
                 hour
 
-        chart_type: str, optional
+        kind: str, optional
             Chart Type.
 
             - bar:
@@ -1217,7 +1226,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_qsteps(chart_type="pie")
+            qprof.get_qsteps(kind="pie")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
@@ -1241,7 +1250,7 @@ class QueryProfiler:
         query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query)
         if show:
-            fun = self._get_chart_method(vdf["execution_step"], chart_type)
+            fun = self._get_chart_method(vdf["execution_step"], kind)
             return fun(method="max", of="elapsed")
         return vdf
 
@@ -1333,7 +1342,7 @@ class QueryProfiler:
     def get_qplan_profile(
         self,
         unit: Literal["s", "m", "h"] = "s",
-        chart_type: Literal[
+        kind: Literal[
             "bar",
             "barh",
             "pie",
@@ -1355,7 +1364,7 @@ class QueryProfiler:
             - h:
                 hour.
 
-        chart_type: str, optional
+        kind: str, optional
             Chart Type.
 
             - bar:
@@ -1399,7 +1408,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_qplan_profile(chart_type="pie")
+            qprof.get_qplan_profile(kind="pie")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html
@@ -1433,14 +1442,14 @@ class QueryProfiler:
         query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         if show:
-            fun = self._get_chart_method(vdf["path_line"], chart_type)
+            fun = self._get_chart_method(vdf["path_line"], kind)
             return fun(method="sum", of="running_time")
         return vdf
 
     # Step 12: CPU Time by node and path_id
     def get_cpu_time(
         self,
-        chart_type: Literal[
+        kind: Literal[
             "bar",
             "barh",
         ] = "bar",
@@ -1454,7 +1463,7 @@ class QueryProfiler:
 
         Parameters
         ----------
-        chart_type: str, optional
+        kind: str, optional
             Chart Type.
 
             - bar:
@@ -1514,7 +1523,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_cpu_time(chart_type="bar")
+            qprof.get_cpu_time(kind="bar")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html
@@ -1541,7 +1550,7 @@ class QueryProfiler:
         if reverse:
             columns.reverse()
         if show:
-            fun = self._get_chart_method(vdf, chart_type)
+            fun = self._get_chart_method(vdf, kind)
             return fun(
                 columns=columns,
                 method="SUM(counter_value) AS cet",
@@ -1638,6 +1647,7 @@ class QueryProfiler:
         self,
         node_name: Union[None, str, list] = None,
         metric: Literal[
+            "all",
             "exec_time_ms",
             "est_rows",
             "proc_rows",
@@ -1649,7 +1659,7 @@ class QueryProfiler:
             "mem_all_mb",
         ] = "exec_time_ms",
         path_id: Optional[int] = None,
-        chart_type: Literal[
+        kind: Literal[
             "bar",
             "barh",
             "pie",
@@ -1681,7 +1691,7 @@ class QueryProfiler:
              - mem_all_mb
         path_id: str
             Path ID.
-        chart_type: str, optional
+        kind: str, optional
             Chart Type.
 
             - bar:
@@ -1755,7 +1765,7 @@ class QueryProfiler:
                 qprof.get_qexecution(
                     node_name = "v_vdash_node0003",
                     metric = "exec_time_ms",
-                    chart_type = "pie",
+                    kind = "pie",
                 )
 
             To use multiple nodes:
@@ -1768,7 +1778,7 @@ class QueryProfiler:
                         "v_vdash_node0003",
                     ],
                     metric = "exec_time_ms",
-                    chart_type = "pie",
+                    kind = "pie",
                 )
 
             The node name is different for different
@@ -1780,6 +1790,44 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
+        if metric == "all" and show:
+            if conf.get_option("plotting_lib") != "plotly":
+                raise ExtensionError(
+                    "Plots with metric='all' is only available for Plotly Integration."
+                )
+            figs = []
+            all_metrics = [
+                "exec_time_ms",
+                "est_rows",
+                "proc_rows",
+                "prod_rows",
+                "rle_prod_rows",
+                "cstall_us",
+                "pstall_us",
+                "mem_res_mb",
+                "mem_all_mb",
+            ]
+            for metric in all_metrics:
+                figs += [
+                    self.get_qexecution(
+                        node_name=node_name,
+                        metric=metric,
+                        path_id=path_id,
+                        kind=kind,
+                        multi=multi,
+                        show=True,
+                    )
+                ]
+            vpy_plt = PlottingUtils().get_plotting_lib(
+                class_name="draw_subplots",
+            )[0]
+            return vpy_plt.draw_subplots(
+                figs=figs,
+                rows=3,
+                cols=3,
+                kind=kind,
+                subplot_titles=all_metrics,
+            )
         node_name = format_type(node_name, dtype=list, na_out=None)
         cond = ""
         if len(node_name) != 0:
@@ -1793,9 +1841,9 @@ class QueryProfiler:
         if show:
             if multi:
                 vdf["path_id"].apply("'path_id=' || {}::VARCHAR")
-                fun = self._get_chart_method(vdf, chart_type)
+                fun = self._get_chart_method(vdf, kind)
                 other_params = {}
-                if chart_type != "pie":
+                if kind != "pie":
                     other_params = {"kind": "drilldown"}
                 return fun(
                     columns=["operator_name", "path_id"],
@@ -1804,7 +1852,7 @@ class QueryProfiler:
                     **other_params,
                 )
             else:
-                fun = self._get_chart_method(vdf["operator_name"], chart_type)
+                fun = self._get_chart_method(vdf["operator_name"], kind)
                 return fun(method="sum", of=metric)
         return vdf[["operator_name", metric]]
 
