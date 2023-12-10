@@ -1288,11 +1288,11 @@ class QueryProfiler:
         Parameters
         ----------
         return_report: bool, optional
-            If set to True, the query plan
-            report is returned.
+            If set to ``True``, the query
+            plan report is returned.
         print_plan: bool, optional
-            If set to True, the query plan
-            is printed.
+            If set to ``True``, the query
+            plan is printed.
 
         Returns
         -------
