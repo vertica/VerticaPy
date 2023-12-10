@@ -1878,13 +1878,14 @@ class PlottingBase(PlottingBaseSQL):
         for i in range(0, n):
             vdf_tmp_i = vdf_tmp.groupby(columns[: n - i], [aggregate])
             if metric != "trace":
+                supported_metrics = self.supported_metrics()
                 if metric.startswith("cat") and not (desc):
                     sort_values = columns[: n - i]
                 elif metric.startswith("cat"):
                     sort_values = {col: "desc" for col in columns[: n - i]}
-                elif metric.startswith("tot") and not (desc):
+                elif metric in supported_metrics and not (desc):
                     sort_values = [vdf_tmp_i.get_columns()[-1]]
-                elif metric.startswith("tot"):
+                elif metric in supported_metrics:
                     sort_values = {vdf_tmp_i.get_columns()[-1]: "desc"}
                 else:
                     metrics = [

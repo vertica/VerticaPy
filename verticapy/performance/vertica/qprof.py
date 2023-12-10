@@ -100,7 +100,7 @@ class QueryProfiler:
 
             This parameter is used only when ``request`` is
             defined.
-    v_schema_names: str | dict, optional
+    target_schema: str | dict, optional
         Name of the schemas to use to store
         all the Vertica monitor and internal
         meta-tables. It can be a single
@@ -109,7 +109,7 @@ class QueryProfiler:
     create_copy: bool, optional
         If set to ``True``, tables or local temporary
         tables will be created by using the schema
-        definition of ``v_schema_names`` parameter
+        definition of ``target_schema`` parameter
         to store all the Vertica monitor and internal
         meta-tables.
 
@@ -136,11 +136,11 @@ class QueryProfiler:
         Transaction ID.
     statement_id: int
         Statement ID.
-    v_schema_names: dict
+    target_schema: dict
         Name of the schema used to store
         all the Vertica monitor and internal
         meta-tables.
-    v_table_names: dict
+    target_tables: dict
         Name of the tables used to store
         all the Vertica monitor and internal
         meta-tables.
@@ -588,7 +588,7 @@ class QueryProfiler:
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
         add_profile: bool = True,
-        v_schema_names: Union[None, str, dict] = None,
+        target_schema: Union[None, str, dict] = None,
         create_copy: bool = False,
         create_local_temporary_copy: bool = False,
     ) -> None:
@@ -597,17 +597,17 @@ class QueryProfiler:
                 "'create_copy' and 'create_local_temporary_copy'"
                 " can not be both set to True."
             )
-        if create_copy and isinstance(v_schema_names, NoneType):
+        if create_copy and isinstance(target_schema, NoneType):
             warning_message = (
-                "'create_copy' is set to True but 'v_schema_names' "
+                "'create_copy' is set to True but 'target_schema' "
                 " is empty. The parameters will be both ignored."
             )
             warnings.warn(warning_message, Warning)
-        if create_local_temporary_copy and not (isinstance(v_schema_names, NoneType)):
+        if create_local_temporary_copy and not (isinstance(target_schema, NoneType)):
             warning_message = (
                 "'create_local_temporary_copy' is set to True but "
-                "'v_schema_names' is not empty.\nThe parameter "
-                "'v_schema_names' will be ignored."
+                "'target_schema' is not empty.\nThe parameter "
+                "'target_schema' will be ignored."
             )
             warnings.warn(warning_message, Warning)
         if not (isinstance(request, NoneType)) and (
@@ -673,17 +673,17 @@ class QueryProfiler:
         else:
             self.statement_id = statement_id
 
-        # Building the v_schema_names
+        # Building the target_schema
         if create_local_temporary_copy:
-            self.v_schema_names = self._v_temp_schema_dict()
+            self.target_schema = self._v_temp_schema_dict()
             create_table = True
         else:
-            if isinstance(v_schema_names, str):
-                self.v_schema_names = {}
+            if isinstance(target_schema, str):
+                self.target_schema = {}
                 for schema in self._v_temp_schema_dict():
-                    self.v_schema_names[schema] = v_schema_names
+                    self.target_schema[schema] = target_schema
             else:
-                self.v_schema_names = copy.deepcopy(v_schema_names)
+                self.target_schema = copy.deepcopy(target_schema)
             create_table = create_copy
         self._create_copy_v_table(create_table=create_table)
 
@@ -755,15 +755,15 @@ class QueryProfiler:
             ValueError("Incorrect parameter 'kind'.")
 
     def _replace_schema_in_query(self, query: SQLExpression) -> SQLExpression:
-        if not (hasattr(self, "v_schema_names")) or isinstance(
-            self.v_schema_names, NoneType
+        if not (hasattr(self, "target_schema")) or isinstance(
+            self.target_schema, NoneType
         ):
             return query
         fquery = copy.deepcopy(query)
-        for sch in self.v_schema_names:
-            fquery = fquery.replace(sch, self.v_schema_names[sch])
-        for table in self.v_table_names:
-            fquery = fquery.replace(table, self.v_table_names[table])
+        for sch in self.target_schema:
+            fquery = fquery.replace(sch, self.target_schema[sch])
+        for table in self.target_tables:
+            fquery = fquery.replace(table, self.target_tables[table])
         return fquery
 
     @staticmethod
@@ -803,7 +803,7 @@ class QueryProfiler:
         ]
 
     def _create_copy_v_table(self, create_table: bool = True) -> None:
-        v_table_names = {}
+        target_tables = {}
         v_temp_table_dict = self._v_table_dict()
         v_config_table_list = self._v_config_table_list()
         loop = v_temp_table_dict.items()
@@ -814,10 +814,10 @@ class QueryProfiler:
         for table, schema in loop:
             sql = "CREATE "
             if (
-                not (isinstance(self.v_schema_names, NoneType))
-                and schema in self.v_schema_names
+                not (isinstance(self.target_schema, NoneType))
+                and schema in self.target_schema
             ):
-                new_schema = self.v_schema_names[schema]
+                new_schema = self.target_schema[schema]
                 new_table = f"{table}_{self.statement_id}_{self.transaction_id}"
                 if new_schema == "v_temp_schema":
                     sql += f"LOCAL TEMPORARY TABLE {new_table} ON COMMIT PRESERVE ROWS "
@@ -827,7 +827,7 @@ class QueryProfiler:
                 if table not in self._v_config_table_list():
                     sql += f" WHERE transaction_id={self.transaction_id} "
                     sql += f"AND statement_id={self.statement_id}"
-                v_table_names[table] = new_table
+                target_tables[table] = new_table
             if create_table:
                 if conf.get_option("print_info"):
                     print(
@@ -837,7 +837,7 @@ class QueryProfiler:
                     sql,
                     title="Creating performance tables",
                 )
-        self.v_table_names = v_table_names
+        self.target_tables = target_tables
 
     # Main Method
 
@@ -946,12 +946,12 @@ class QueryProfiler:
             )
         else:
             tables_schema = self._v_table_dict()
-            if len(self.v_table_names) == 0:
+            if len(self.target_tables) == 0:
                 sc, tb = tables_schema[table_name], table_name
             else:
-                tb = self.v_table_names[table_name]
+                tb = self.target_tables[table_name]
                 schema = tables_schema[table_name]
-                sc = self.v_schema_names[schema]
+                sc = self.target_schema[schema]
             return vDataFrame(f"SELECT * FROM {sc}.{tb}")
 
     # Steps
@@ -1272,6 +1272,7 @@ class QueryProfiler:
                 method="max",
                 of="elapsed",
                 categoryorder=categoryorder,
+                max_cardinality=1000,
             )
         return vdf
 
@@ -1485,6 +1486,7 @@ class QueryProfiler:
                 method="sum",
                 of="running_time",
                 categoryorder=categoryorder,
+                max_cardinality=1000,
             )
         return vdf
 
@@ -1617,6 +1619,7 @@ class QueryProfiler:
                 columns=columns,
                 method="SUM(counter_value) AS cet",
                 categoryorder=categoryorder,
+                max_cardinality=1000,
             )
         return vdf
 
@@ -1743,6 +1746,8 @@ class QueryProfiler:
             "median ascending",
             "median descending",
         ] = "max descending",
+        rows: int = 3,
+        cols: int = 3,
         show: bool = True,
     ) -> Union[PlottingObject, vDataFrame]:
         """
@@ -1758,6 +1763,7 @@ class QueryProfiler:
             used.
         metric: str, optional
             Metric to use. One of the following:
+             - all (all metrics are used).
              - exec_time_ms (default)
              - est_rows
              - proc_rows
@@ -1807,6 +1813,12 @@ class QueryProfiler:
             - median ascending
             - median descending
 
+        rows: int, optional
+            Only used when ``metric='all'``.
+            Number of rows of the subplot.
+        cols: int, optional
+            Only used when ``metric='all'``.
+            Number of columns of the subplot.
         show: bool, optional
             If set to ``True``, the
             Plotting object is returned.
@@ -1914,6 +1926,7 @@ class QueryProfiler:
                         kind=kind,
                         multi=multi,
                         categoryorder=categoryorder,
+                        max_cardinality=1000,
                         show=True,
                     )
                 ]
@@ -1922,8 +1935,8 @@ class QueryProfiler:
             )[0]
             return vpy_plt.draw_subplots(
                 figs=figs,
-                rows=3,
-                cols=3,
+                rows=rows,
+                cols=cols,
                 kind=kind,
                 subplot_titles=all_metrics,
             )
@@ -1949,6 +1962,7 @@ class QueryProfiler:
                     method="sum",
                     of=metric,
                     categoryorder=categoryorder,
+                    max_cardinality=1000,
                     **other_params,
                 )
             else:

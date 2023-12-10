@@ -19,7 +19,13 @@ from plotly.subplots import make_subplots
 
 
 def draw_subplots(
-    figs: list[Figure], subplot_titles: list[str], rows: int, cols: int, kind: str
+    figs: list[Figure],
+    subplot_titles: list[str],
+    rows: int,
+    cols: int,
+    kind: str,
+    height: int = 600,
+    width: int = 800,
 ) -> Figure:
     """
     Draws multiple subplot
@@ -31,8 +37,8 @@ def draw_subplots(
     n, k = len(figs), len(subplot_titles)
     titles = [t for t in subplot_titles] + ["" for i in range(n - k)]
     fig = make_subplots(rows=rows, cols=cols, subplot_titles=subplot_titles, **param)
-    for i in range(1, rows + 1):
-        for j in range(1, cols + 1):
+    for i in range(1, cols + 1):
+        for j in range(1, rows + 1):
             k = (i - 1) * 3 + j - 1
             if k < n:
                 fig_tmp = figs[(i - 1) * 3 + j - 1]
@@ -41,4 +47,5 @@ def draw_subplots(
                 else:
                     for trace in fig_tmp.data:
                         fig.add_trace(trace, row=i, col=j)
+    fig.update_layout(height=height, width=width, margin=dict(l=0, r=60, b=60, t=0))
     return fig
