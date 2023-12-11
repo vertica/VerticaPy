@@ -14,9 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, Union
+import math
+from typing import Literal, Optional, Union
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 
 if conf.get_import_success("graphviz"):
     import graphviz
@@ -35,6 +37,18 @@ class PerformanceTree:
     rows: str
         ``str`` representing
         the Query Plan.
+    root: int, optional
+        A path ID used to filter
+        the tree elements by
+        starting from it.
+    metric: str, optional
+        The metric used to color
+        the tree nodes. One of
+        the following:
+
+        - cost
+        - rows
+        - None (no specific color)
 
     Examples
     --------
@@ -67,6 +81,8 @@ class PerformanceTree:
     def __init__(
         self,
         rows: str,
+        root: int = 1,
+        metric: Literal[None, "cost", "rows"] = "rows",
     ) -> None:
         qplan = rows.split("\n")
         n = len(qplan)
@@ -76,6 +92,61 @@ class PerformanceTree:
                 self.rows += ["\n".join(tmp_rows)]
                 tmp_rows = []
             tmp_rows += [qplan[i]]
+        self.rows += ["\n".join(tmp_rows)]
+        if isinstance(root, int) and root > 0:
+            self.root = root
+        else:
+            raise ValueError(
+                "Wrong value for parameter 'root': "
+                "It has to be a strictly positive int.\n"
+                f"Found {root}."
+            )
+        if metric in [None, "cost", "rows"]:
+            self.metric = metric
+        else:
+            raise ValueError(
+                "Wrong value for parameter 'metric': "
+                "It has to be one of the following: None, 'cost', 'rows'.\n"
+                f"Found {metric}."
+            )
+
+    # Utils
+
+    @staticmethod
+    def _generate_gradient_color(intensity: float) -> str:
+        """
+        Generates a green-red
+        gradient based on an
+        'intensity'.
+        """
+        # Ensure intensity is between 0 and 1
+        intensity = max(0, min(1, intensity))
+
+        # Calculate RGB values based on intensity
+        red = int(255 * intensity)
+        green = int(255 * (1 - intensity))
+        blue = 0
+
+        # Format the color string
+        color = f"#{red:02X}{green:02X}{blue:02X}"
+
+        return color
+
+    @staticmethod
+    def _map_unit(unit: str):
+        """
+        Maps the input unit.
+        """
+        if unit == "K":
+            return 1000
+        elif unit == "M":
+            return 1000000
+        elif unit == "B":
+            return 1000000000
+        elif unit.isalpha():
+            return 1000000000000
+        else:
+            return None
 
     # Special Methods
 
@@ -111,7 +182,7 @@ class PerformanceTree:
         return res
 
     @staticmethod
-    def _get_level(row: str) -> tuple[int, bool]:
+    def _get_level(row: str) -> int:
         """
         Gets the level of the
         specific row.
@@ -123,8 +194,8 @@ class PerformanceTree:
 
         Returns
         -------
-        tuple
-            level, is_initiator
+        int
+            level.
 
         Examples
         --------
@@ -137,6 +208,37 @@ class PerformanceTree:
             res += row[i]
             i += 1
         return res.count("|")
+
+    def _get_metric(self, row: str) -> int:
+        """
+        Gets the metric of the
+        specific row.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+
+        Returns
+        -------
+        int
+            metric
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if self.metric == "rows" and "Rows: " in row:
+            res = row.split("Rows: ")[1].split(" ")[0]
+        elif self.metric == "cost" and "Cost: " in row:
+            res = row.split("Cost: ")[1].split(",")[0]
+        else:
+            return None
+        unit = self._map_unit(res[-1])
+        if isinstance(unit, NoneType):
+            return int(res)
+        return int(res[:-1]) * unit
 
     def _get_all_level_initiator(self, level: int) -> list[int]:
         """
@@ -211,9 +313,17 @@ class PerformanceTree:
         """
         res = ""
         n = len(self.rows)
+        if not (isinstance(self.metric, NoneType)):
+            all_metrics = [math.log(self._get_metric(self.rows[i])) for i in range(n)]
+            m_min, m_max = min(all_metrics), max(all_metrics)
         for i in range(n):
+            if not (isinstance(self.metric, NoneType)):
+                alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                color = self._generate_gradient_color(alpha)
+            else:
+                color = "lightblue"
             label = self._get_label(self.rows[i])
-            res += f'\t{i} [label="{label}"];\n'
+            res += f'\t{i} [label="{label}", style="filled", fillcolor="{color}"];\n'
         return res
 
     def _gen_links(self) -> str:

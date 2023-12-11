@@ -1361,6 +1361,8 @@ class QueryProfiler:
 
     def get_qplan_tree(
         self,
+        root: int = 1,
+        metric: Literal[None, "cost", "rows"] = "rows",
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
     ) -> Union["Source", str]:
@@ -1369,6 +1371,19 @@ class QueryProfiler:
 
         Parameters
         ----------
+        root: int, optional
+            A path ID used to filter
+            the tree elements by
+            starting from it.
+        metric: str, optional
+            The metric used to color
+            the tree nodes. One of
+            the following:
+
+            - cost
+            - rows
+            - None (no specific color)
+
         pic_path: str, optional
             Absolute path to save
             the image of the tree.
@@ -1415,7 +1430,11 @@ class QueryProfiler:
             :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
-        obj = PerformanceTree(rows)
+        obj = PerformanceTree(
+            rows,
+            root=root,
+            metric=metric,
+        )
         if return_graphviz:
             return obj.to_graphviz()
         return obj.plot_tree(pic_path)
