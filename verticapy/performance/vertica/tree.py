@@ -160,10 +160,10 @@ class PerformanceTree:
         for more information.
         """
         res = [0]
-        for row in self.rows:
+        for idx, row in enumerate(self.rows):
             row_level = self._get_level(row)
             if row_level + 1 == level:
-                res += [row_level]
+                res += [idx]
         return res
 
     @staticmethod
