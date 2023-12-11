@@ -16,11 +16,14 @@ permissions and limitations under the License.
 """
 import inspect
 import importlib
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 import numpy as np
 
-from verticapy._typing import NoneType
+from verticapy._typing import PlottingObject, NoneType
 from verticapy._utils._object import create_new_vdf
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 def count_functions_classes_methods(
@@ -141,7 +144,8 @@ def count_verticapy_functions():
         ("SQL Functions", "verticapy.sql.functions", None),
         ("SQL Statements", "verticapy.sql", None),
         ("SQL Geo Extensions", "verticapy.sql.geo", None),
-        ("Datasets", "verticapy.datasets", None),
+        ("Loaders", "verticapy.datasets.loaders", None),
+        ("Generators", "verticapy.datasets.generators", None),
     ]
     res = {}
     for fun, mod, class_ in all_funs:
@@ -183,7 +187,8 @@ def summarise_verticapy_functions():
     """
     f = count_verticapy_functions()
     res = []
-    res += [("Loaders & Generators", "Datasets", f["Datasets"][0])]
+    res += [("Loaders & Generators", "Loaders", f["Loaders"][0])]
+    res += [("Loaders & Generators", "Generators", f["Generators"][0])]
     res += [("Data Visualization Functions", "Matplotlib", f["Plotting Matplotlib"][1])]
     res += [("Data Visualization Functions", "Highcharts", f["Plotting Highcharts"][1])]
     res += [("Data Visualization Functions", "Plotly", f["Plotting Plotly"][1])]
@@ -206,11 +211,109 @@ def summarise_verticapy_functions():
     res += [("Machine Learning", "Extensions", f["inMemoryModels"][1])]
     res += [("Machine Learning", "Metrics", f["Metrics"][0])]
     res += [("Machine Learning", "Evaluation Functions", f["Model Selection"][0])]
-    res += [("Total", sum([x[-1] for x in res]))]
+    res += [("", "Total", sum([x[-1] for x in res]))]
     return res
 
 
-def verticapy_stats_vdf():
+def gen_rst_summary_table() -> str:
+    """
+    Returns a summary of the
+    entire VerticaPy module
+    in the RST format.
+
+    Returns
+    -------
+    str
+        RST summary.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._inspect_statistics import gen_rst_summary_table
+
+        # Example.
+        print(gen_rst_summary_table())
+
+    .. note::
+
+        These functions serve as utilities to
+        generate some elements in the Sphinx
+        documentation.
+    """
+    # Header
+    table = "+----------------------------------------+-----------------------+--------------+\n"
+    table += "| Category                               | Subcategory           | Functions    |\n"
+    table += "+========================================+=======================+==============+\n"
+
+    # Data rows
+    current_category = None
+    total_functions = 0
+    data = summarise_verticapy_functions()
+
+    for category, subcategory, functions in data:
+        if category != current_category:
+            # New category, print total functions for the previous one
+            if current_category is not None:
+                table += f"| {''.ljust(39)}| {'Total'.ljust(22)}| {str(total_functions).ljust(13)}|\n"
+                table += "+----------------------------------------+-----------------------+--------------+\n"
+
+            # Start a new category
+            current_category = category
+            total_functions = 0
+
+            # Print the current category for the first row
+            table += f"| {category.ljust(39)}| {subcategory.ljust(22)}| {str(functions).ljust(13)}|\n"
+        else:
+            # Print subsequent rows for the same category without repeating category
+            table += f"| {''.ljust(39)}| {subcategory.ljust(22)}| {str(functions).ljust(13)}|\n"
+
+        # Accumulate total functions
+        total_functions += functions
+
+    # Print total functions for the last category
+    if current_category is not None:
+        if subcategory != "Total":
+            table += f"| {''.ljust(39)}| {'Total'.ljust(22)}| {str(total_functions).ljust(13)}|\n"
+        table += "+----------------------------------------+-----------------------+--------------+\n"
+
+    return table
+
+
+def verticapy_stats_vdf() -> "vDataFrame":
+    """
+    Returns a summary of the
+    entire VerticaPy as a
+    :py:class:`vDataFrame`.
+
+    Returns
+    -------
+    vDataFrame
+        summary of the module.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._inspect_statistics import verticapy_stats_vdf
+
+        # Example.
+        verticapy_stats_vdf()
+
+    .. note::
+
+        These functions serve as utilities to
+        generate some elements in the Sphinx
+        documentation.
+    """
     stats = summarise_verticapy_functions()[:-1]
     res = {
         "category": [x[0] for x in stats],
@@ -220,8 +323,61 @@ def verticapy_stats_vdf():
     return create_new_vdf(res)
 
 
-def summarise_verticapy_pie():
+def summarise_verticapy_chart(kind: str = "barh") -> PlottingObject:
+    """
+    Returns a summary of the
+    entire VerticaPy as a
+    :py:class:`vDataFrame`.
+
+    Returns
+    -------
+    obj
+        Plotting Object.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._inspect_statistics import summarise_verticapy_chart
+
+        # Example.
+        summarise_verticapy_chart()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "highcharts")
+        fig = summarise_verticapy_chart()
+        html_text = fig.htmlcontent.replace("container", "plotting_highcharts_barh_1D")
+        with open("SPHINX_DIRECTORY/figures/plotting_summarise_verticapy_chart.html", "w") as file:
+            file.write(html_text)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_summarise_verticapy_chart.html
+
+    .. note::
+
+        These functions serve as utilities to
+        generate some elements in the Sphinx
+        documentation.
+    """
     vdf = verticapy_stats_vdf()
-    return vdf.pie(
-        ["category", "subcategory"], method="sum", of="number", max_cardinality=1000
-    )
+    if kind == "barh":
+        return vdf.barh(
+            ["category", "subcategory"],
+            method="sum",
+            of="number",
+            max_cardinality=1000,
+            kind="drilldown",
+            categoryorder="total desc",
+        )
+    elif kind == "pie":
+        return vdf.pie(
+            ["category", "subcategory"], method="sum", of="number", max_cardinality=1000
+        )
+    else:
+        raise ValueError("Invalid option.")
