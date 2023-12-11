@@ -211,7 +211,7 @@ class vDFPlot(vDFMachineLearning):
             "mean descending",
             "median ascending",
             "median descending",
-        ] = "max descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -255,29 +255,48 @@ class vDFPlot(vDFMachineLearning):
             The :py:class:`vDataColumns` used
             to compute the  aggregation.
         max_cardinality: tuple, optional
-            Maximum number of distinct elements for vDataColumns
-            1  and  2  to be used as categorical. For these
-            elements, no  h is picked or computed.
+            Maximum number of distinct elements
+            for :py:class:`vDataColumns` 1 and
+            2 to be used as categorical. For
+            these elements, no ``h`` is picked
+            or computed.
+
+            .. important::
+
+                This parameter is only used for
+                categorical data types. For numerics
+                use ``h`` to discretize them first
         h: tuple, optional
-            Interval width of  the vDataColumns 1 and 2 bars.
-            Only  valid if the  vDataColumns are  numerical.
-            Optimized  h will be  computed  if the parameter  is
-            empty or invalid.
+            Interval width of the
+            :py:class:`vDataColumns`
+            1 and 2 bars.
+
+            .. important::
+
+                Only valid if the
+                :py:class:`vDataColumns` are
+                numerical. Optimized ``h`` will
+                be computed if the parameter is
+                empty or invalid.
         kind: str, optional
             The BarChart Type.
 
             - auto:
-                Regular Bar Chart  based on 1 or 2 vDataColumns.
+                Regular Bar Chart based on 1
+                or 2 :py:class:`vDataColumns`.
             - drilldown:
                 Drilldown Bar Chart.
             - pyramid:
-                Pyramid  Density  Bar  Chart. Only works if one
-                of the two vDataColumns is binary and the
-                'method' is set to 'density'.
+                Pyramid Density Bar Chart.
+                Only works if one of the two
+                :py:class:`vDataColumns` is
+                binary and the ``method='density'``.
             - stacked:
-                Stacked  Bar  Chart   based  on  2 vDataColumns.
+                Stacked Bar Chart based on 2
+                :py:class:`vDataColumns`.
             - fully_stacked:
-                Fully Stacked Bar Chart based on 2 vDataColumns.
+                Fully Stacked Bar Chart based
+                on 2 :py:class:`vDataColumns`.
         categoryorder: str, optional
             How to sort the bars.
             One of the following options:
@@ -301,8 +320,8 @@ class vDFPlot(vDFMachineLearning):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the plotting
-            functions.
+            Any optional parameter to
+            pass  to the plotting functions.
 
         Returns
         -------
@@ -398,6 +417,7 @@ class vDFPlot(vDFMachineLearning):
                 of=of,
                 max_cardinality=max_cardinality[0],
                 h=h[0],
+                categoryorder=categoryorder,
                 **style_kwargs,
             )
         elif kind == "drilldown":
@@ -466,13 +486,14 @@ class vDFPlot(vDFMachineLearning):
             "mean descending",
             "median ascending",
             "median descending",
-        ] = "max descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws  the  horizontal  bar  chart  of  the  input
-        vDataColumns based on an aggregation.
+        Draws the horizontal bar chart of the
+        input :py:class:`vDataColumns` based
+        on an aggregation.
 
         Parameters
         ----------
@@ -510,29 +531,48 @@ class vDFPlot(vDFMachineLearning):
             The :py:class:`vDataColumns` used
             to compute the  aggregation.
         max_cardinality: tuple, optional
-            Maximum number of distinct elements for vDataColumns
-            1  and  2  to be used as categorical. For these
-            elements, no  h is picked or computed.
+            Maximum number of distinct elements
+            for :py:class:`vDataColumns` 1 and
+            2 to be used as categorical. For
+            these elements, no ``h`` is picked
+            or computed.
+
+            .. important::
+
+                This parameter is only used for
+                categorical data types. For numerics
+                use ``h`` to discretize them first
         h: tuple, optional
-            Interval width of  the vDataColumns 1 and 2 bars.
-            Only  valid if the  vDataColumns are  numerical.
-            Optimized  h will be  computed  if the parameter  is
-            empty or invalid.
+            Interval width of the
+            :py:class:`vDataColumns`
+            1 and 2 bars.
+
+            .. important::
+
+                Only valid if the
+                :py:class:`vDataColumns` are
+                numerical. Optimized ``h`` will
+                be computed if the parameter is
+                empty or invalid.
         kind: str, optional
             The BarChart Type.
 
             - auto:
-                Regular Bar Chart  based on 1 or 2 vDataColumns.
+                Regular Bar Chart based
+                on 1 or 2 :py:class:`vDataColumns`.
             - drilldown:
                 Drilldown Bar Chart.
             - pyramid:
-                Pyramid  Density  Bar  Chart. Only works if one
-                of the two vDataColumns is binary and the
-                'method' is set to 'density'.
+                Pyramid Density Bar Chart.
+                Only works if one of the two
+                :py:class:`vDataColumns` is
+                binary and the ``method='density'``.
             - stacked:
-                Stacked  Bar  Chart   based  on  2 vDataColumns.
+                Stacked Bar Chart based on 2
+                :py:class:`vDataColumns`.
             - fully_stacked:
-                Fully Stacked Bar Chart based on 2 vDataColumns.
+                Fully Stacked Bar Chart based
+                on 2 :py:class:`vDataColumns`.
 
         categoryorder: str, optional
             How to sort the bars.
@@ -557,8 +597,8 @@ class vDFPlot(vDFMachineLearning):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the plotting
-            functions.
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -656,6 +696,7 @@ class vDFPlot(vDFMachineLearning):
                 max_cardinality=max_cardinality[0],
                 h=h[0],
                 chart=chart,
+                categoryorder=categoryorder,
                 **style_kwargs,
             )
         elif kind == "drilldown":
@@ -709,7 +750,7 @@ class vDFPlot(vDFMachineLearning):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -2902,7 +2943,7 @@ class vDCPlot(vDCScaler):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -3068,7 +3109,7 @@ class vDCPlot(vDCScaler):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -3232,7 +3273,7 @@ class vDCPlot(vDCScaler):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:

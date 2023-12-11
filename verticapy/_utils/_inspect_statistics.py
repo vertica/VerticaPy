@@ -16,10 +16,16 @@ permissions and limitations under the License.
 """
 import inspect
 import importlib
+from typing import Optional
 import numpy as np
 
+from verticapy._typing import NoneType
+from verticapy._utils._object import create_new_vdf
 
-def count_functions_classes_methods(module_name: str) -> np.ndarray:
+
+def count_functions_classes_methods(
+    module_name: str, class_: Optional[str] = None
+) -> np.ndarray:
     """
     Counts the number of functions,
     classes and methods in a specific
@@ -30,6 +36,8 @@ def count_functions_classes_methods(module_name: str) -> np.ndarray:
     module_name: str
         Name of the module
         to inspect.
+    class_: str, optional
+        Class to inspect.
 
     Returns
     -------
@@ -67,7 +75,9 @@ def count_functions_classes_methods(module_name: str) -> np.ndarray:
 
     attribute_count = 0
     for name, member in members:
-        if inspect.isclass(member):
+        if inspect.isclass(member) and (
+            isinstance(class_, NoneType) or class_ in str(member)
+        ):
             class_members = inspect.getmembers(member)
             attribute_count += sum(
                 [
@@ -113,27 +123,29 @@ def count_verticapy_functions():
         documentation.
     """
     all_funs = [
-        ("vDataFrame", "verticapy.core.vdataframe"),
-        ("TableSample", "verticapy.core.tablesample"),
-        ("VerticaModels", "verticapy.machine_learning.vertica"),
-        ("inMemoryModels", "verticapy.machine_learning.memmodel"),
-        ("Metrics", "verticapy.machine_learning.metrics"),
-        ("Model Selection", "verticapy.machine_learning.model_selection"),
+        ("vDataFrame", "verticapy.core.vdataframe", "vDataFrame"),
+        ("vDataColumn", "verticapy.core.vdataframe", "vDataColumn"),
+        ("TableSample", "verticapy.core.tablesample", "TableSample"),
+        ("VerticaModels", "verticapy.machine_learning.vertica", None),
+        ("inMemoryModels", "verticapy.machine_learning.memmodel", None),
+        ("Metrics", "verticapy.machine_learning.metrics", None),
+        ("Model Selection", "verticapy.machine_learning.model_selection", None),
         (
             "Statistical Tests",
             "verticapy.machine_learning.model_selection.statistical_tests",
+            None,
         ),
-        ("Plotting Matplotlib", "verticapy.plotting._matplotlib"),
-        ("Plotting Highcharts", "verticapy.plotting._highcharts"),
-        ("Plotting Plotly", "verticapy.plotting._plotly"),
-        ("SQL Functions", "verticapy.sql.functions"),
-        ("SQL Statements", "verticapy.sql"),
-        ("SQL Geo Extensions", "verticapy.sql.geo"),
-        ("Datasets", "verticapy.datasets"),
+        ("Plotting Matplotlib", "verticapy.plotting._matplotlib", None),
+        ("Plotting Highcharts", "verticapy.plotting._highcharts", None),
+        ("Plotting Plotly", "verticapy.plotting._plotly", None),
+        ("SQL Functions", "verticapy.sql.functions", None),
+        ("SQL Statements", "verticapy.sql", None),
+        ("SQL Geo Extensions", "verticapy.sql.geo", None),
+        ("Datasets", "verticapy.datasets", None),
     ]
     res = {}
-    for fun, mod in all_funs:
-        res[fun] = count_functions_classes_methods(mod)
+    for fun, mod, class_ in all_funs:
+        res[fun] = count_functions_classes_methods(mod, class_)
     return res
 
 
@@ -171,15 +183,45 @@ def summarise_verticapy_functions():
     """
     f = count_verticapy_functions()
     res = []
-    res += [("Number of Datasets", f["Datasets"][0])]
-    cnt = f["Plotting Matplotlib"] + f["Plotting Highcharts"] + f["Plotting Plotly"]
-    res += [("Number of Data Exploration Functions", cnt[1])]
-    res += [("Number of Data Preparation Functions", f["vDataFrame"][2])]
-    cnt = f["SQL Functions"] + f["SQL Statements"] + f["SQL Geo Extensions"]
-    res += [("Number of SQL Functions", cnt[0])]
-    res += [("Number of Statistical Tests", f["Statistical Tests"][0])]
-    res += [("Number of ML Algorithms", f["VerticaModels"][1])]
-    res += [("Number of ML Extensions", f["inMemoryModels"][1])]
-    res += [("Number of ML Metrics", f["Metrics"][0])]
-    res += [("Number of ML Evaluation", f["Model Selection"][0])]
+    res += [("Loaders & Generators", "Datasets", f["Datasets"][0])]
+    res += [("Data Visualization Functions", "Matplotlib", f["Plotting Matplotlib"][1])]
+    res += [("Data Visualization Functions", "Highcharts", f["Plotting Highcharts"][1])]
+    res += [("Data Visualization Functions", "Plotly", f["Plotting Plotly"][1])]
+    res += [
+        ("Data Preparation/Exploration Functions", "vDataFrame", f["vDataFrame"][2])
+    ]
+    res += [
+        ("Data Preparation/Exploration Functions", "vDataColumn", f["vDataColumn"][2])
+    ]
+    res += [
+        ("Data Preparation/Exploration Functions", "TableSample", f["TableSample"][2])
+    ]
+    res += [("SQL Functions & Extensions", "SQL Functions", f["SQL Functions"][0])]
+    res += [("SQL Functions & Extensions", "SQL Statements", f["SQL Statements"][0])]
+    res += [
+        ("SQL Functions & Extensions", "SQL Geo Extensions", f["SQL Geo Extensions"][0])
+    ]
+    res += [("Machine Learning", "Statistical Tests", f["Statistical Tests"][0])]
+    res += [("Machine Learning", "Algorithms/Functions", sum(f["VerticaModels"][0:2]))]
+    res += [("Machine Learning", "Extensions", f["inMemoryModels"][1])]
+    res += [("Machine Learning", "Metrics", f["Metrics"][0])]
+    res += [("Machine Learning", "Evaluation Functions", f["Model Selection"][0])]
+    res += [("Total", sum([x[-1] for x in res]))]
     return res
+
+
+def verticapy_stats_vdf():
+    stats = summarise_verticapy_functions()[:-1]
+    res = {
+        "category": [x[0] for x in stats],
+        "subcategory": [x[1] for x in stats],
+        "number": [x[2] for x in stats],
+    }
+    return create_new_vdf(res)
+
+
+def summarise_verticapy_pie():
+    vdf = verticapy_stats_vdf()
+    return vdf.pie(
+        ["category", "subcategory"], method="sum", of="number", max_cardinality=1000
+    )

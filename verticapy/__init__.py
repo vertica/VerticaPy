@@ -37,10 +37,11 @@ __description__: str = (
 __url__: str = "https://github.com/vertica/verticapy/"
 __license__: str = "Apache License, Version 2.0"
 __version__: str = "1.0.0"
-__iteration__: int = 4
-__date__: str = "12102023"
-__last_commit___: str = "bcffd62c18e1a93cdb7fb149a32238ba7ad0479c"
+__iteration__: int = 1
+__date__: str = "12112023"
+__last_commit___: str = "df728551eb4077881d7aff85e7858ff3f0993b2c"
 __long_version__: str = f"{__version__}-{__iteration__}—{__date__}-{__last_commit___}"
+__codecov__: float = 0.8316
 
 from verticapy._config.config import get_option, set_option
 from verticapy._utils._sql._vertica_version import vertica_version
