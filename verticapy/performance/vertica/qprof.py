@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
 import warnings
 
 from tqdm.auto import tqdm
@@ -31,7 +31,11 @@ from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
+from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.plotting._utils import PlottingUtils
+
+if TYPE_CHECKING and conf.get_import_success("graphviz"):
+    from graphviz import Source
 
 
 class QueryProfiler:
@@ -290,18 +294,18 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_v_table('dc_requests_issued')
+        qprof.get_table('dc_requests_issued')
 
     .. ipython:: python
         :suppress:
 
-        result = qprof.get_v_table('dc_requests_issued')
-        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_v_table_1.html", "w")
+        result = qprof.get_table('dc_requests_issued')
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_v_table_1.html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html
 
     Executing a QPROF step
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -870,7 +874,7 @@ class QueryProfiler:
 
     # Tables
 
-    def get_v_table(self, table_name: Optional[str] = None) -> Union[list, vDataFrame]:
+    def get_table(self, table_name: Optional[str] = None) -> Union[list, vDataFrame]:
         """
         Returns the associated Vertica
         Table. This function allows easy
@@ -926,10 +930,10 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_v_table('dc_requests_issued')
+            qprof.get_table('dc_requests_issued')
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_v_table_1.html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html
 
         .. note::
 
@@ -966,11 +970,10 @@ class QueryProfiler:
         -------
         tuple
             List containing the version information.
-            MAJOR, MINOR, PATCH, POST
+            ``MAJOR, MINOR, PATCH, POST``
 
         Examples
         --------
-
         First, let's import the
         :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
         object.
@@ -1037,7 +1040,6 @@ class QueryProfiler:
 
         Examples
         --------
-
         First, let's import the
         :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
         object.
@@ -1104,7 +1106,6 @@ class QueryProfiler:
 
         Examples
         --------
-
         First, let's import the
         :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
         object.
@@ -1218,7 +1219,6 @@ class QueryProfiler:
 
         Examples
         --------
-
         First, let's import the
         :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
         object.
@@ -1301,7 +1301,6 @@ class QueryProfiler:
 
         Examples
         --------
-
         First, let's import the
         :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
         object.
@@ -1359,6 +1358,67 @@ class QueryProfiler:
             return res
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         return vdf
+
+    def get_qplan_tree(
+        self,
+        pic_path: Optional[str] = None,
+        return_graphviz: bool = False,
+    ) -> Union["Source", str]:
+        """
+        Draws the Query Plan tree.
+
+        Parameters
+        ----------
+        pic_path: str, optional
+            Absolute path to save
+            the image of the tree.
+        return_graphviz: bool, optional
+            If set to ``True``, the
+            ``str`` Graphviz tree is
+            returned.
+
+        Returns
+        -------
+        graphviz.Source
+            graphviz object.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily call the function
+        to get the query plan Graphviz:
+
+            .. ipython:: python
+
+                qprof.get_qplan_tree(return_graphviz = True)
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+        """
+        rows = self.get_qplan(print_plan=False)
+        obj = PerformanceTree(rows)
+        if return_graphviz:
+            return obj.to_graphviz()
+        return obj.plot_tree(pic_path)
 
     # Step 6: Query plan profile
     def get_qplan_profile(

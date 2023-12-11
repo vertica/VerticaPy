@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 import verticapy._config.config as conf
 
 if conf.get_import_success("graphviz"):
@@ -93,8 +95,11 @@ class PerformanceTree:
         """
         res = row
         while len(res) > 0 and res[0] in ("+", "-", " ", "|", ">"):
-            res = res[1:2]
-        return res
+            res = res[1:]
+        i, n = 0, len(res)
+        while i < n and (res[i].isalpha() or res[i] in (" ",)):
+            i += 1
+        return res[:i]
 
     @staticmethod
     def _get_level(row: str) -> tuple[int, bool]:
@@ -221,7 +226,7 @@ class PerformanceTree:
         n = len(self.rows)
         for i in range(n):
             id_initiator = self._get_level(self.rows[i])[0]
-            level_initiators = self._get_all_level_initiator(self.rows, id_initiator)
+            level_initiators = self._get_all_level_initiator(id_initiator)
             id_initiator = self._get_last_initiator(level_initiators, id_initiator)
             if i != id_initiator:
                 res += f"\t{id_initiator} -> {i};\n"
@@ -242,11 +247,11 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        res = "digraph BinaryTree {\n"
-        res += "\tnode [shape=circle, style=filled, fillcolor=lightblue, fontcolor=black];\n"
+        res = "digraph Tree {\n"
+        res += "\tnode [shape=circle, style=filled, fillcolor=lightblue, fontcolor=black, width=0.6, height=0.6];\n"
         res += "\tedge [color=black, style=solid];\n\n"
-        res += self._gen_labels(self.rows) + "\n"
-        res += self._gen_links(self.rows) + "\n"
+        res += self._gen_labels() + "\n"
+        res += self._gen_links() + "\n"
         res += "}"
         return res
 
@@ -255,7 +260,7 @@ class PerformanceTree:
         pic_path: Optional[str] = None,
     ) -> "Source":
         """
-        Draws the input tree.
+        Draws the tree.
         Requires the graphviz
         module.
 
