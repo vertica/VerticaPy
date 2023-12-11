@@ -211,7 +211,7 @@ class vDFPlot(vDFMachineLearning):
             "mean descending",
             "median ascending",
             "median descending",
-        ] = "max descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -398,6 +398,7 @@ class vDFPlot(vDFMachineLearning):
                 of=of,
                 max_cardinality=max_cardinality[0],
                 h=h[0],
+                categoryorder=categoryorder,
                 **style_kwargs,
             )
         elif kind == "drilldown":
@@ -466,7 +467,7 @@ class vDFPlot(vDFMachineLearning):
             "mean descending",
             "median ascending",
             "median descending",
-        ] = "max descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -656,6 +657,7 @@ class vDFPlot(vDFMachineLearning):
                 max_cardinality=max_cardinality[0],
                 h=h[0],
                 chart=chart,
+                categoryorder=categoryorder,
                 **style_kwargs,
             )
         elif kind == "drilldown":
@@ -709,7 +711,7 @@ class vDFPlot(vDFMachineLearning):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -2902,7 +2904,7 @@ class vDCPlot(vDCScaler):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -3068,7 +3070,7 @@ class vDCPlot(vDCScaler):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -3232,7 +3234,7 @@ class vDCPlot(vDCScaler):
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+        ] = "trace",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:

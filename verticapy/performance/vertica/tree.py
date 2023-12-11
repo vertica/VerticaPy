@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Optional, Union
 
 import verticapy._config.config as conf
 
@@ -68,12 +68,19 @@ class PerformanceTree:
         self,
         rows: str,
     ) -> None:
-        self.rows = rows.split("\n")
+        qplan = rows.split("\n")
+        n = len(qplan)
+        self.rows, tmp_rows = [], []
+        for i in range(n):
+            if "PATH ID: " in qplan[i] and i > 0:
+                self.rows += ["\n".join(tmp_rows)]
+                tmp_rows = []
+            tmp_rows += [qplan[i]]
 
     # Special Methods
 
     @staticmethod
-    def _get_label(row: str) -> str:
+    def _get_label(row: str, return_path_id: bool = True) -> Union[str, int]:
         """
         Gets the label from
         Query Plan chart.
@@ -82,6 +89,9 @@ class PerformanceTree:
         ----------
         row: str
             Tree row.
+        return_path_id: bool, optional
+            If set to ``True`` returns
+            the path ID instead.
 
         Returns
         -------
@@ -96,10 +106,9 @@ class PerformanceTree:
         res = row
         while len(res) > 0 and res[0] in ("+", "-", " ", "|", ">"):
             res = res[1:]
-        i, n = 0, len(res)
-        while i < n and (res[i].isalpha() or res[i] in (" ",)):
-            i += 1
-        return res[:i]
+        if return_path_id:
+            res = int(res.split("PATH ID: ")[1].split(")")[0])
+        return res
 
     @staticmethod
     def _get_level(row: str) -> tuple[int, bool]:
@@ -127,7 +136,7 @@ class PerformanceTree:
         while i < n and row[i] in ("+", "-", " ", "|", ">"):
             res += row[i]
             i += 1
-        return (res.count("|") + res.count("+-") - 1, "+-" in res)
+        return res.count("|")
 
     def _get_all_level_initiator(self, level: int) -> list[int]:
         """
@@ -150,11 +159,11 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        res = []
+        res = [0]
         for row in self.rows:
-            level_initiator = self._get_level(row)
-            if level_initiator[0] == level and level_initiator[1]:
-                res += [level]
+            row_level = self._get_level(row)
+            if row_level + 1 == level:
+                res += [row_level]
         return res
 
     @staticmethod
@@ -225,7 +234,7 @@ class PerformanceTree:
         res = ""
         n = len(self.rows)
         for i in range(n):
-            id_initiator = self._get_level(self.rows[i])[0]
+            id_initiator = self._get_level(self.rows[i])
             level_initiators = self._get_all_level_initiator(id_initiator)
             id_initiator = self._get_last_initiator(level_initiators, id_initiator)
             if i != id_initiator:
