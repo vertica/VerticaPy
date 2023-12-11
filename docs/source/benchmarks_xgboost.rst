@@ -80,128 +80,123 @@ Number of feature columns: 105
 Test Environment details
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Below are the configurations for each 
+algorithm that was tested:
 
-Vertica
-----------
+.. tab:: Vertica
 
+  **Parameters:**
+  - Version: 23.3.0-5
+  - PlannedConcurrency (general pool): 72
+  - Memory budget for each query (general pool): ~10GB
 
-**Parameters:**
-- Version: 23.3.0-5
-- PlannedConcurrency (general pool): 72
-- Memory budget for each query (general pool): ~10GB
+  Amazon Redshift
+  ----------------
 
-Amazon Redshift
-----------------
+  **Parameters:**
 
-**Parameters:**
+  .. list-table:: 
+      :header-rows: 1
 
-.. list-table:: 
-    :header-rows: 1
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+      * - ???
+        - ra3.16xlarge
+        - 4 node
+        - 48
+        - 384
+        - N/A
 
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-    * - ???
-      - ra3.16xlarge
-      - 4 node
-      - 48
-      - 384
-      - N/A
+.. tab:: Amazon Sagemaker
 
+  **Parameters:**
 
-Amazon Sagemaker
-------------------
+  .. list-table:: 
+      :header-rows: 1
 
-**Parameters:**
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+      * - ???
+        - ml.m5.24xlarge
+        - 1 node
+        - 96
+        - 384
+        - N/A
 
-.. list-table:: 
-    :header-rows: 1
+  But for **1 Billion rows** we have a different configuraiton:
 
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-    * - ???
-      - ml.m5.24xlarge
-      - 1 node
-      - 96
-      - 384
-      - N/A
+  .. list-table:: 
+      :header-rows: 1
 
-But for **1 Billion rows** we have a different configuraiton:
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+      * - ???
+        - ml.m5.24xlarge
+        - 3 nodes
+        - 96
+        - 384
+        - N/A
 
-.. list-table:: 
-    :header-rows: 1
+.. tab:: Python
 
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-    * - ???
-      - ml.m5.24xlarge
-      - 3 nodes
-      - 96
-      - 384
-      - N/A
+  **Parameters:**
 
+  .. list-table:: 
+      :header-rows: 1
 
-Python
----------
-**Parameters:**
-
-.. list-table:: 
-    :header-rows: 1
-
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-    * - 3.9.15
-      - N/A
-      - N/A
-      - N/A
-      - ???
-      - N/A
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+      * - 3.9.15
+        - N/A
+        - N/A
+        - N/A
+        - ???
+        - N/A
 
 
+.. tab:: Pyspark
 
-PySPark
---------
+  **Parameters:**
 
-**Parameters:**
+  We have used PySpark Xgboost 1.7.0 version.
 
-We have used PySpark Xgboost 1.7.0 version.
+  .. list-table:: 
+      :header-rows: 1
 
-.. list-table:: 
-    :header-rows: 1
-
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy mode
-      - Executor Memory
-      - Driver Memory
-      - Total Executor Cores
-    * - 3.3.1
-      - ???
-      - ???
-      - ???
-      - ???
-      - client
-      - 70GB
-      - 50GB
-      - 36 ( Per Worker)
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy mode
+        - Executor Memory
+        - Driver Memory
+        - Total Executor Cores
+      * - 3.3.1
+        - ???
+        - ???
+        - ???
+        - ???
+        - client
+        - 70GB
+        - 50GB
+        - 36 ( Per Worker)
 
 
 Higgs Boson dataset analysis
@@ -446,7 +441,7 @@ Amazon dataset analysis
   Ask Xiaozhong Zhang about difference in accuracy for Vertica ???
 
 Below are the results from different experiments of parameters. 
-Browse throught the tabs to look at each one.
+Browse through the tabs to look at each one.
 
 .. tab:: Custom Parameters
 
@@ -457,7 +452,6 @@ Browse throught the tabs to look at each one.
     :header-rows: 2
 
   Since the accuracy is similar, we will only show the runtime comparison below:
-
 
 
   .. ipython:: python
@@ -507,7 +501,7 @@ Browse throught the tabs to look at each one.
 
     import plotly.graph_objects as go
     labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
-    heights = [40.53, 7, 9.83, 119.09]
+    heights = [6.105, 7, 9.78, 122.08]
     colors = ['blue', 'green', 'cyan']
     fig = go.Figure()
     for label, height, color in zip(labels, heights, colors):

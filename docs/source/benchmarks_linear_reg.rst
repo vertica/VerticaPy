@@ -43,33 +43,63 @@ For this dataset, we created an artifical dataset from a Linear Regression model
 Test Environment
 ^^^^^^^^^^^^^^^^^^^
 
-.. list-table:: 
-    :header-rows: 1
+.. tab:: Vertica
 
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-      - OS
-      - OS Version
-      - Processor freq. (per node)
-      - Processor cores (per node) 
-    * - ???
-      - ???
-      - 3 node cluster
-      - ???
-      - 755 GB
-      - ???
-      - Red Hat Enterprise Linux 
-      - 8.7 (Ootpa)
-      - 2.4GHz
-      - 36, 2 threads per core
+    .. list-table:: 
+        :header-rows: 1
 
-Spark: ``max iter = 100``, ``e = 10^-6``
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - ???
+          - ???
+          - 3 node cluster
+          - ???
+          - 755 GB
+          - ???
+          - Red Hat Enterprise Linux 
+          - 8.7 (Ootpa)
+          - 2.4GHz
+          - 36, 2 threads per core
 
-Vertica: ``max iter = 100``, ``e = 10^-6``
+    Vertica: ``max iter = 100``, ``e = 10^-6``
+
+.. tab:: Spark
+
+    .. list-table:: 
+        :header-rows: 1
+
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - ???
+          - ???
+          - ???
+          - ???
+          - 755 GB
+          - ???
+          - Red Hat Enterprise Linux 
+          - 8.7 (Ootpa)
+          - 2.4GHz
+          - 36, 2 threads per core
+
+    Spark: ``max iter = 100``, ``e = 10^-6``
+
+
 
 
 Comparison
@@ -82,7 +112,7 @@ Comparison
 Browse throught the tabs to see the time comparison:
 
 
-.. tab:: 100m and 1B
+.. tab:: 100M and 1B
 
     .. ipython:: python
         :suppress:
@@ -147,7 +177,7 @@ Browse throught the tabs to see the time comparison:
         fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html")
 
     .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html
+        :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html
 
 .. tab:: 1M and 100M
 
@@ -216,4 +246,4 @@ Browse throught the tabs to see the time comparison:
         fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html")
 
     .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html
+        :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html

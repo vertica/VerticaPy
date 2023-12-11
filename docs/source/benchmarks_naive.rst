@@ -179,7 +179,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         width=bar_width,
         text=data['Spark'],
         textposition='outside',
-        marker_color= "blue",
+        marker_color= "black",
         name='Spark'
     ))
     fig.add_trace(go.Bar(
@@ -189,7 +189,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         text=data['Vertica'],
         textposition='outside',
         name='Vertica',
-        marker_color= "black",
+        marker_color= "blue",
         offset=0.15
     ))
     fig.update_layout(
@@ -226,7 +226,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         width=bar_width,
         text=data['Spark'],
         textposition='outside',
-        marker_color= "blue",
+        marker_color= "black",
         name='Spark'
     ))
     fig.add_trace(go.Bar(
@@ -236,7 +236,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         text=data['Vertica'],
         textposition='outside',
         name='Vertica',
-        marker_color= "black",
+        marker_color= "blue",
         offset=0.15
     ))
     fig.update_layout(
@@ -312,7 +312,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         width=bar_width,
         text=data['Spark'],
         textposition='outside',
-        marker_color= "blue",
+        marker_color= "black",
         name='Spark'
     ))
     fig.add_trace(go.Bar(
@@ -322,7 +322,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         text=data['Vertica'],
         textposition='outside',
         name='Vertica',
-        marker_color= "black",
+        marker_color= "blue",
         offset=0.15
     ))
     fig.update_layout(
@@ -359,7 +359,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         width=bar_width,
         text=data['Spark'],
         textposition='outside',
-        marker_color= "blue",
+        marker_color= "black",
         name='Spark'
     ))
     fig.add_trace(go.Bar(
@@ -369,7 +369,7 @@ Browse throught the tabs to see the time and accuracy comparison:
         text=data['Vertica'],
         textposition='outside',
         name='Vertica',
-        marker_color= "black",
+        marker_color= "blue",
         offset=0.15
     ))
     fig.update_layout(

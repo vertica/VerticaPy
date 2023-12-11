@@ -44,32 +44,57 @@ For this dataset, we created an artifical dataset from a Linear Regression model
 Test Environment
 ^^^^^^^^^^^^^^^^^^^
 
+.. tab:: Vertica
 
-.. list-table:: 
-    :header-rows: 1
+    .. list-table:: 
+        :header-rows: 1
 
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-      - OS
-      - OS Version
-      - Processor freq. (per node)
-      - Processor cores (per node) 
-    * - ???
-      - ???
-      - 3 node cluster
-      - ???
-      - 755 GB
-      - ???
-      - Red Hat Enterprise Linux 
-      - 8.7 (Ootpa)
-      - 2.4GHz
-      - 36, 2 threads per core
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - ???
+          - ???
+          - 3 node cluster
+          - ???
+          - 755 GB
+          - ???
+          - Red Hat Enterprise Linux 
+          - 8.7 (Ootpa)
+          - 2.4GHz
+          - 36, 2 threads per core
 
+.. tab:: Spark
 
+    .. list-table:: 
+        :header-rows: 1
+
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - ???
+          - ???
+          - ???
+          - ???
+          - 755 GB
+          - ???
+          - Red Hat Enterprise Linux 
+          - 8.7 (Ootpa)
+          - 2.4GHz
+          - 36, 2 threads per core
 
 
 
@@ -84,7 +109,7 @@ Comparison
 Browse throught the tabs to see the time comparison:
 
 
-.. tab:: 100m and 1B
+.. tab:: 100M and 1B
 
   .. ipython:: python
       :suppress:
@@ -200,4 +225,7 @@ Browse throught the tabs to see the time comparison:
 
   .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time.html
+
+
+
 

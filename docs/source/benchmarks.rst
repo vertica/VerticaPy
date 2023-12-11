@@ -1751,3 +1751,15 @@ Comparison
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time_2.html
 
+
+
+.. toctree::
+    :maxdepth: 1
+    :titlesonly:
+
+    benchmarks_arima
+    benchmarks_xgboost
+    benchmarks_naive
+    benchmarks_random_forest
+    benchmarks_linear_reg
+    benchmarks_logistic_reg

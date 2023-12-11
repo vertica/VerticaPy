@@ -64,7 +64,37 @@ Single Node
 
   Tarun - confirm the machine specs! Inlcuding Spark-submit params.
 
-.. list-table:: 
+.. tab:: Vertica
+
+  .. list-table:: 
+      :header-rows: 1
+
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+        - OS
+        - OS Version
+        - Processor freq. (per node)
+        - Processor cores (per node) 
+      * - 11.1.0-0
+        - ???
+        - 2 nodes
+        - ???
+        - 32728552 kB 
+        - ???
+        - Red Hat Enterprise Linux
+        - 8.3 (Ootpa)   
+        - 2.4 GHz
+        - 4
+
+.. tab:: Spark
+    
+  **Spark-submit parameters:**
+
+  .. list-table:: 
     :header-rows: 1
 
     * - Version
@@ -76,32 +106,25 @@ Single Node
       - OS
       - OS Version
       - Processor freq. (per node)
-      - Processor cores (per node) 
-    * - 11.1.0-0
+      - Processor cores (per node)
+      - Executor memory
+      - Driver memory
+      - Total executor cores
+      - Class 
+    * - ???
       - ???
-      - 2 nodes
       - ???
-      - 32728552 kB 
       - ???
-      - Red Hat Enterprise Linux
-      - 8.3 (Ootpa)   
-      - 2.4 GHz
+      - ???
+      - Client
+      - ???
+      - ???
+      - ???
       - 4
-**Spark-submit parameters:**
-
-.. list-table:: 
-  :header-rows: 1
-
-  * - Deploy mode
-    - Executor memory
-    - Driver memory
-    - Total executor cores
-    - Class
-  * - client
-    - 20 GB
-    - 5 GB
-    - 4
-    - pyspark.ml.classification
+      - 20 GB
+      - 5 GB
+      - 4
+      - pyspark.ml.classification
 
 
 Multi Node
@@ -111,7 +134,39 @@ Multi Node
 
   Are processor cores PER NODE?
 
-.. list-table:: 
+.. tab:: Vertica
+
+  .. list-table:: 
+      :header-rows: 1
+
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+        - OS
+        - OS Version
+        - Processor freq. (per node)
+        - Processor cores (per node) 
+      * - 11.1.0-0
+        - ???
+        - 2 nodes
+        - ???
+        - 32728552 kB 
+        - ???
+        - Red Hat Enterprise Linux
+        - 8.3 (Ootpa)   
+        - 2.4 GHz
+        - 4
+
+.. tab:: Spark
+    
+  **Spark-submit parameters:**
+
+  **Spark-submit parameters:**
+
+  .. list-table:: 
     :header-rows: 1
 
     * - Version
@@ -123,32 +178,25 @@ Multi Node
       - OS
       - OS Version
       - Processor freq. (per node)
-      - Processor cores (per node) 
-    * - 11.1.0-0
+      - Processor cores (per node)
+      - Executor memory
+      - Driver memory
+      - Total executor cores
+      - Class 
+    * - ???
       - ???
-      - 2 nodes
       - ???
-      - 32728552 kB 
       - ???
-      - Red Hat Enterprise Linux
-      - 8.3 (Ootpa)   
-      - 2.4 GHz
+      - ???
+      - Client
+      - ???
+      - ???
+      - ???
       - 4
-**Spark-submit parameters:**
-
-.. list-table:: 
-  :header-rows: 1
-
-  * - Deploy mode
-    - Executor memory
-    - Driver memory
-    - Total executor cores
-    - Class
-  * - client
-    - 20 GB
-    - 5 GB
-    - 4
-    - pyspark.ml.classification
+      - 20 GB
+      - 5 GB
+      - 4
+      - pyspark.ml.classification
 
 
 Comparison

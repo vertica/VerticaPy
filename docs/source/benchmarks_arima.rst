@@ -33,31 +33,59 @@ Test Environment
 
   **Vertica Version:** 23.3.0-5
 
-Below are the machine details on which the tests were carried out:
+Below are the configuration on which the tests were carried out:
 
-.. list-table:: 
-    :header-rows: 1
+.. tab:: Vertica
 
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-      - OS
-      - OS Version
-      - Processor freq. (per node)
-      - Processor cores (per node) 
-    * - 23.3.0-5
-      - ???
-      - 4 node 
-      - ???
-      - 755 GB
-      - Deploy Mode
-      - Red Hat Enterprise Linux  
-      - 8.7 (Ootpa)   
-      - 2.3 GHz  
-      - 36, 2 threads per core
+  .. list-table:: 
+      :header-rows: 1
+
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+        - OS
+        - OS Version
+        - Processor freq. (per node)
+        - Processor cores (per node) 
+      * - 23.3.0-5
+        - ???
+        - 4 node 
+        - ???
+        - 755 GB
+        - ???
+        - Red Hat Enterprise Linux  
+        - 8.7 (Ootpa)   
+        - 2.3 GHz  
+        - 36, 2 threads per core
+
+.. tab:: Python
+
+  .. list-table:: 
+      :header-rows: 1
+
+      * - Version
+        - Instance Type
+        - Cluster
+        - vCPU(per node)
+        - Memory(per node)
+        - Deploy Mode
+        - OS
+        - OS Version
+        - Processor freq. (per node)
+        - Processor cores (per node) 
+      * - ???
+        - ???
+        - ???
+        - ???
+        - 755 GB
+        - ???
+        - Red Hat Enterprise Linux  
+        - 8.7 (Ootpa)   
+        - 2.3 GHz  
+        - ???
 
 
 **Parameters:** p = 5, d = 1, q = 1
