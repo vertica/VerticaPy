@@ -41,6 +41,7 @@ __iteration__: int = 1
 __date__: str = "12112023"
 __last_commit___: str = "df728551eb4077881d7aff85e7858ff3f0993b2c"
 __long_version__: str = f"{__version__}-{__iteration__}—{__date__}-{__last_commit___}"
+__codecov__: float = 0.8316
 
 from verticapy._config.config import get_option, set_option
 from verticapy._utils._sql._vertica_version import vertica_version
