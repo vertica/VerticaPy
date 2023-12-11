@@ -18,23 +18,24 @@ import inspect
 import importlib
 import numpy as np
 
+
 def count_functions_classes_methods(module_name: str) -> np.ndarray:
     """
     Counts the number of functions,
     classes and methods in a specific
     module.
-    
+
     Parameters
     ----------
     module_name: str
         Name of the module
         to inspect.
-    
+
     Returns
     -------
     np.ndarray
         ``functions,classes,methods``
-    
+
     Examples
     --------
     The following code demonstrates the
@@ -68,16 +69,22 @@ def count_functions_classes_methods(module_name: str) -> np.ndarray:
     for name, member in members:
         if inspect.isclass(member):
             class_members = inspect.getmembers(member)
-            attribute_count += sum([int(not(str(l[0]).startswith("_"))) for l in inspect.getmembers(member)])
-            
+            attribute_count += sum(
+                [
+                    int(not (str(l[0]).startswith("_")))
+                    for l in inspect.getmembers(member)
+                ]
+            )
+
     return np.array([function_count, class_count, attribute_count])
+
 
 def count_verticapy_functions():
     """
     Counts the number of functions,
     classes and methods in many
     verticapy modules.
-    
+
     Returns
     -------
     dict
@@ -85,10 +92,10 @@ def count_verticapy_functions():
         section name and the
         number of elements:
         ``functions,classes,methods``
-    
+
     Examples
     --------
-    The following code demonstrates 
+    The following code demonstrates
     the usage of the function.
 
     .. ipython:: python
@@ -112,7 +119,10 @@ def count_verticapy_functions():
         ("inMemoryModels", "verticapy.machine_learning.memmodel"),
         ("Metrics", "verticapy.machine_learning.metrics"),
         ("Model Selection", "verticapy.machine_learning.model_selection"),
-        ("Statistical Tests", "verticapy.machine_learning.model_selection.statistical_tests"),
+        (
+            "Statistical Tests",
+            "verticapy.machine_learning.model_selection.statistical_tests",
+        ),
         ("Plotting Matplotlib", "verticapy.plotting._matplotlib"),
         ("Plotting Highcharts", "verticapy.plotting._highcharts"),
         ("Plotting Plotly", "verticapy.plotting._plotly"),
@@ -126,11 +136,12 @@ def count_verticapy_functions():
         res[fun] = count_functions_classes_methods(mod)
     return res
 
+
 def summarise_verticapy_functions():
     """
     Returns a summary of the
     entire VerticaPy module.
-    
+
     Returns
     -------
     list
@@ -138,10 +149,10 @@ def summarise_verticapy_functions():
         section name and the
         number of elements:
         ``title,nb_functions``
-    
+
     Examples
     --------
-    The following code demonstrates 
+    The following code demonstrates
     the usage of the function.
 
     .. ipython:: python
@@ -160,15 +171,15 @@ def summarise_verticapy_functions():
     """
     f = count_verticapy_functions()
     res = []
-    res += [("Number of Datasets", f['Datasets'][0])]
-    cnt = f['Plotting Matplotlib'] + f['Plotting Highcharts'] + f['Plotting Plotly']
+    res += [("Number of Datasets", f["Datasets"][0])]
+    cnt = f["Plotting Matplotlib"] + f["Plotting Highcharts"] + f["Plotting Plotly"]
     res += [("Number of Data Exploration Functions", cnt[1])]
-    res += [("Number of Data Preparation Functions", f['vDataFrame'][2])]
-    cnt = f['SQL Functions'] + f['SQL Statements'] + f['SQL Geo Extensions']
+    res += [("Number of Data Preparation Functions", f["vDataFrame"][2])]
+    cnt = f["SQL Functions"] + f["SQL Statements"] + f["SQL Geo Extensions"]
     res += [("Number of SQL Functions", cnt[0])]
-    res += [("Number of Statistical Tests", f['Statistical Tests'][0])]
-    res += [("Number of ML Algorithms", f['VerticaModels'][1])]
-    res += [("Number of ML Extensions", f['inMemoryModels'][1])]
-    res += [("Number of ML Metrics", f['Metrics'][0])]
-    res += [("Number of ML Evaluation", f['Model Selection'][0])]
+    res += [("Number of Statistical Tests", f["Statistical Tests"][0])]
+    res += [("Number of ML Algorithms", f["VerticaModels"][1])]
+    res += [("Number of ML Extensions", f["inMemoryModels"][1])]
+    res += [("Number of ML Metrics", f["Metrics"][0])]
+    res += [("Number of ML Evaluation", f["Model Selection"][0])]
     return res
