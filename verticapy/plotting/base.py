@@ -1876,7 +1876,7 @@ class PlottingBase(PlottingBaseSQL):
         groups = []
         metric, desc = self.get_category_desc(categoryorder)
         for i in range(0, n):
-            vdf_tmp_i = vdf_tmp.groupby(columns[: n - i], [aggregate])
+            vdf_tmp_i = vdf_tmp.groupby(columns[: n - i], [f"COALESCE({aggregate}, 0)"])
             if metric != "trace":
                 supported_metrics = self.supported_metrics()
                 if metric.startswith("cat") and not (desc):

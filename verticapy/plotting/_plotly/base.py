@@ -28,7 +28,7 @@ class PlotlyBase(PlottingBase):
     @staticmethod
     def _convert_labels_and_get_counts(
         pivot_array: ArrayLike,
-        method: str,
+        method: Optional[str] = None,
     ) -> tuple[list, list, list, list]:
         pivot_array = np.where(pivot_array == None, "NULL", pivot_array)
         pivot_array = pivot_array.astype("<U21")
