@@ -167,7 +167,7 @@ class PerformanceTree:
         return res
 
     @staticmethod
-    def _get_last_initiator(level_initiators: list[int], level: int) -> int:
+    def _get_last_initiator(level_initiators: list[int], tree_id: int) -> int:
         """
         Gets the last level initiator
         of a specific level.
@@ -176,8 +176,8 @@ class PerformanceTree:
         ----------
         level_initiators: list
             ``list`` of initiators.
-        level: int
-            Tree level.
+        tree_id: int
+            Tree ID.
 
         Returns
         -------
@@ -190,7 +190,7 @@ class PerformanceTree:
         for more information.
         """
         for i, l in enumerate(level_initiators):
-            if level > l:
+            if int(tree_id) < l:
                 return level_initiators[i - 1]
         return level_initiators[-1]
 
@@ -234,9 +234,9 @@ class PerformanceTree:
         res = ""
         n = len(self.rows)
         for i in range(n):
-            id_initiator = self._get_level(self.rows[i])
-            level_initiators = self._get_all_level_initiator(id_initiator)
-            id_initiator = self._get_last_initiator(level_initiators, id_initiator)
+            level = self._get_level(self.rows[i])
+            level_initiators = self._get_all_level_initiator(level)
+            id_initiator = self._get_last_initiator(level_initiators, i)
             if i != id_initiator:
                 res += f"\t{id_initiator} -> {i};\n"
         return res
