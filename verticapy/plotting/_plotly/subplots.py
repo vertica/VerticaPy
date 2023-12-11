@@ -47,5 +47,5 @@ def draw_subplots(
                 else:
                     for trace in fig_tmp.data:
                         fig.add_trace(trace, row=i, col=j)
-    fig.update_layout(height=height, width=width, margin=dict(l=0, r=60, b=60, t=0))
+    fig.update_layout(height=height, width=width, margin=dict(l=60, r=60, b=60, t=60))
     return fig
