@@ -1412,6 +1412,7 @@ class QueryProfiler:
         metric: Literal[None, "cost", "rows"] = "rows",
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
+        **tree_style,
     ) -> Union["Source", str]:
         """
         Draws the Query Plan tree.
@@ -1442,6 +1443,41 @@ class QueryProfiler:
             If set to ``True``, the
             ``str`` Graphviz tree is
             returned.
+        tree_style: dict, optional
+            ``dictionary`` used to
+            customize the tree.
+
+            - color_low:
+                Color used as the lower
+                bound of the gradient.
+                Default: '#00FF00' (green)
+            - color_high:
+                Color used as the upper
+                bound of the gradient.
+                Default: '#FF0000' (red)
+            - fontcolor:
+                Font color.
+                Default: #000000 (black)
+            - fillcolor:
+                Color used to fill the
+                nodes in case no gradient
+                is computed: ``metric=None``.
+                Default: #ADD8E6 (lightblue)
+            - edge_color:
+                Edge color.
+                Default: #000000 (black)
+            - edge_style:
+                Edge Style.
+                Default: 'solid'.
+            - shape:
+                Node shape.
+                Default: 'circle'.
+            - width:
+                Node width.
+                Default: 0.6.
+            - height:
+                Node height.
+                Default: 0.6.
 
         Returns
         -------
@@ -1486,6 +1522,7 @@ class QueryProfiler:
             show_ancestors=show_ancestors,
             root=path_id,
             metric=metric,
+            style=tree_style,
         )
         if return_graphviz:
             return obj.to_graphviz()
