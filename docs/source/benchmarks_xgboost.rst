@@ -304,7 +304,7 @@ Browse throught the tabs to look at each one.
 
   .. important::
 
-    Amason Redshift is only considering a sample data of size 33,617 for training.
+    Amazon Redshift is only considering a sample data of size 33,617 for training.
 
   .. ipython:: python
     :suppress:
@@ -348,7 +348,7 @@ Browse throught the tabs to look at each one.
 
   .. important::
 
-    Amason Redshift is only considering a sample data of size 33,617 for training.
+    Amazon Redshift is only considering a sample data of size 33,617 for training.
 
   .. ipython:: python
     :suppress:
@@ -393,7 +393,7 @@ Browse throught the tabs to look at each one.
 
   .. important::
 
-    Amason Redshift is only considering a sample data of size 33,617 for training.
+    Amazon Redshift is only considering a sample data of size 33,617 for training.
 
   .. ipython:: python
     :suppress:
@@ -518,10 +518,6 @@ Browse throught the tabs to look at each one.
 Amazon dataset analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-
-.. important::
-
-  Ask Xiaozhong Zhang about difference in accuracy for Vertica ???
 
 Below are the results from different experiments of parameters. 
 Browse through the tabs to look at each one.
