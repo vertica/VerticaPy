@@ -410,7 +410,7 @@ def codecov_verticapy_chart():
 
     .. ipython:: python
         :suppress:
-        
+
         import verticapy as vp
         from verticapy._utils._inspect_statistics import codecov_verticapy_chart
         vp.set_option("plotting_lib", "plotly")
