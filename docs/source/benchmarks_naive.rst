@@ -21,7 +21,9 @@ Spark
 
 .. important::
 
-    **Vertica Version:** 11.1.0-0
+  |  *Version Details*
+  |  **Vertica:** 23.3.0-5
+  |  **Spark:** ???
 
 The goal is to assess the performance of Vertica's 
 Naive Bayes algorithm in direct comparison with the 

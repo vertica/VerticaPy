@@ -22,7 +22,9 @@ Spark
 
 .. important::
 
-    **Vertica Version:** ???
+  |  *Version Details*
+  |  **Vertica:** 23.3.0-5
+  |  **Spark:** ???
 
 In this benchmark, we strive to assess the performance 
 of Vertica's Logistic Regression algorithm in 
@@ -106,126 +108,131 @@ Comparison
   :file: /_static/benchmark_logr_table.csv
   :header-rows: 2
 
-Browse throught the tabs to see the time comparison:
+Browse through the tabs to see the time comparison:
 
 
-.. tab:: 100M and 1B
+.. tab:: BFGS
 
-  .. ipython:: python
-      :suppress:
+    .. tab:: 1B
+        
+        .. ipython:: python
+            :suppress:
 
-      import plotly.graph_objects as go
-      data = {
-          'Size': ['100M', '1B'],
-          'Vertica BFGS': [36.54, 388.89],
-          'Vertica Newton': [194.5, 2389],
-          'Spark': [367.27, 2222],
-      }
-      fig = go.Figure()
-      bar_width = 0.22  # Set the width of each bar
-      fig.add_trace(go.Bar(
-          x=data['Size'],
-          y=data['Vertica BFGS'],
-          width=bar_width,
-          text=data['Vertica BFGS'],
-          textposition='outside',
-          marker_color="black",
-          name='Vertica BFGS',
-          offset=-0.5
-      ))
-      fig.add_trace(go.Bar(
-          x=data['Size'],
-          y=data['Vertica Newton'],
-          width=bar_width,
-          text=data['Vertica Newton'],
-          textposition='outside',
-          marker_color="blue",
-          name='Vertica Newton',
-          offset=-0.25
-      ))
-      fig.add_trace(go.Bar(
-          x=data['Size'],
-          y=data['Spark'],
-          width=bar_width,
-          text=data['Spark'],
-          textposition='outside',
-          marker_color="red",
-          name='Spark',
-          offset=0
-      ))
-      fig.update_layout(
-          title='Time Comparison (100 Columns)',
-          xaxis=dict(title='Size'),
-          yaxis=dict(title='Time (seconds)'),
-          width=600,
-          height=500
-      )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time_2.html")
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [388.89, 2222]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 1 B',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+                )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1b.html")
 
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time_2.html
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1b.html
 
+    .. tab:: 100M
 
+        .. ipython:: python
+            :suppress:
 
-.. tab:: 1M and 100M
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [36.54, 367.27]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 100 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_100m.html")
 
-  .. ipython:: python
-      :suppress:
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_100m.html
+    
+    .. tab:: 10M
 
-      import plotly.graph_objects as go
-      data = {
-          'Size': ['1M', '10M'],
-          'Vertica BFGS': [14.74, 45.15],
-          'Vertica Newton': [6.7, 28.98],
-          'Spark': [4.52, 12.05],
-      }
-      fig = go.Figure()
-      bar_width = 0.22  # Set the width of each bar
-      fig.add_trace(go.Bar(
-          x=data['Size'],
-          y=data['Vertica BFGS'],
-          width=bar_width,
-          text=data['Vertica BFGS'],
-          textposition='outside',
-          marker_color="black",
-          name='Vertica BFGS',
-          offset=-0.5
-      ))
-      fig.add_trace(go.Bar(
-          x=data['Size'],
-          y=data['Vertica Newton'],
-          width=bar_width,
-          text=data['Vertica Newton'],
-          textposition='outside',
-          marker_color="blue",
-          name='Vertica Newton',
-          offset=-0.25
-      ))
-      fig.add_trace(go.Bar(
-          x=data['Size'],
-          y=data['Spark'],
-          width=bar_width,
-          text=data['Spark'],
-          textposition='outside',
-          marker_color="red",
-          name='Spark',
-          offset=0
-      ))
+        .. ipython:: python
+            :suppress:
 
-      fig.update_layout(
-          title='Time Comparison (100 Columns)',
-          xaxis=dict(title='Size'),
-          yaxis=dict(title='Time (seconds)'),
-          # barmode='group',
-          # bargap=0.8,
-          width=600,
-          height=500
-      )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time.html")
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [45.15, 12.05]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 10 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_10m.html")
 
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_time.html
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_10m.html
 
+    .. tab:: 1M
 
+        .. ipython:: python
+            :suppress:
 
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [14.74, 4.52]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 1 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1m.html")
 
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1m.html

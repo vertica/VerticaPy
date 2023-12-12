@@ -23,7 +23,9 @@ Spark ML
 
 .. important::
 
-    **Vertica Version:** 11.1.0-0
+  |  *Version Details*
+  |  **Vertica:** 23.3.0-5
+  |  **Spark:** ???
 
 In this benchmark, we aim to evaluate the performance of 
 Vertica's Random Forest algorithm in comparison to the 
@@ -57,16 +59,43 @@ Number of feature columns: 105
 Test Environemnt
 ^^^^^^^^^^^^^^^^^
 
-Single Node
-------------
+.. tab:: Single Node
 
-.. important::
+  .. important::
 
-  Tarun - confirm the machine specs! Inlcuding Spark-submit params.
+    Tarun - confirm the machine specs! Inlcuding Spark-submit params.
 
-.. tab:: Vertica
+  .. tab:: Vertica
 
-  .. list-table:: 
+    .. list-table:: 
+        :header-rows: 1
+
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - 11.1.0-0
+          - ???
+          - 2 nodes
+          - ???
+          - 32728552 kB 
+          - ???
+          - Red Hat Enterprise Linux
+          - 8.3 (Ootpa)   
+          - 2.4 GHz
+          - 4
+
+  .. tab:: Spark
+      
+    **Spark-submit parameters:**
+
+    .. list-table:: 
       :header-rows: 1
 
       * - Version
@@ -78,65 +107,65 @@ Single Node
         - OS
         - OS Version
         - Processor freq. (per node)
-        - Processor cores (per node) 
-      * - 11.1.0-0
+        - Processor cores (per node)
+        - Executor memory
+        - Driver memory
+        - Total executor cores
+        - Class 
+      * - ???
         - ???
-        - 2 nodes
         - ???
-        - 32728552 kB 
         - ???
-        - Red Hat Enterprise Linux
-        - 8.3 (Ootpa)   
-        - 2.4 GHz
+        - ???
+        - Client
+        - ???
+        - ???
+        - ???
         - 4
+        - 20 GB
+        - 5 GB
+        - 4
+        - pyspark.ml.classification
 
-.. tab:: Spark
-    
-  **Spark-submit parameters:**
+.. tab:: Multi Node
 
-  .. list-table:: 
-    :header-rows: 1
+  .. important::
 
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-      - OS
-      - OS Version
-      - Processor freq. (per node)
-      - Processor cores (per node)
-      - Executor memory
-      - Driver memory
-      - Total executor cores
-      - Class 
-    * - ???
-      - ???
-      - ???
-      - ???
-      - ???
-      - Client
-      - ???
-      - ???
-      - ???
-      - 4
-      - 20 GB
-      - 5 GB
-      - 4
-      - pyspark.ml.classification
+    Are processor cores PER NODE?
 
+  .. tab:: Vertica
 
-Multi Node
-------------
+    .. list-table:: 
+        :header-rows: 1
 
-.. important::
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - 11.1.0-0
+          - ???
+          - 2 nodes
+          - ???
+          - 32728552 kB 
+          - ???
+          - Red Hat Enterprise Linux
+          - 8.3 (Ootpa)   
+          - 2.4 GHz
+          - 4
 
-  Are processor cores PER NODE?
+  .. tab:: Spark
+      
+    **Spark-submit parameters:**
 
-.. tab:: Vertica
+    **Spark-submit parameters:**
 
-  .. list-table:: 
+    .. list-table:: 
       :header-rows: 1
 
       * - Version
@@ -148,324 +177,291 @@ Multi Node
         - OS
         - OS Version
         - Processor freq. (per node)
-        - Processor cores (per node) 
-      * - 11.1.0-0
+        - Processor cores (per node)
+        - Executor memory
+        - Driver memory
+        - Total executor cores
+        - Class 
+      * - ???
         - ???
-        - 2 nodes
         - ???
-        - 32728552 kB 
         - ???
-        - Red Hat Enterprise Linux
-        - 8.3 (Ootpa)   
-        - 2.4 GHz
+        - ???
+        - Client
+        - ???
+        - ???
+        - ???
         - 4
-
-.. tab:: Spark
-    
-  **Spark-submit parameters:**
-
-  **Spark-submit parameters:**
-
-  .. list-table:: 
-    :header-rows: 1
-
-    * - Version
-      - Instance Type
-      - Cluster
-      - vCPU(per node)
-      - Memory(per node)
-      - Deploy Mode
-      - OS
-      - OS Version
-      - Processor freq. (per node)
-      - Processor cores (per node)
-      - Executor memory
-      - Driver memory
-      - Total executor cores
-      - Class 
-    * - ???
-      - ???
-      - ???
-      - ???
-      - ???
-      - Client
-      - ???
-      - ???
-      - ???
-      - 4
-      - 20 GB
-      - 5 GB
-      - 4
-      - pyspark.ml.classification
+        - 20 GB
+        - 5 GB
+        - 4
+        - pyspark.ml.classification
 
 
 Comparison
 ^^^^^^^^^^^^
 
-Single Node
-----------------
+.. tab:: Sinlge Node
 
-.. list-table:: Time in secs
-  :header-rows: 1
+  .. list-table:: Time in secs
+    :header-rows: 1
 
-  * - 
-    - Training
-    - Prediction - 25 M
-    - Accuracy
-    - AUC
-  * - Spark
-    - 1096
-    - 1581
-    - 248.4
-    - 240.6
-  * - Vertica
-    - 650.27
-    - 150.09
-    - 1.24
-    - 1.11
-
-
-.. list-table:: 
-  :header-rows: 1
-
-  * - Metrics
-    - Vertica
-    - Spark
-  * - Accuracy
-    - 0.90
-    - 0.89
-  * - AUC
-    - 0.94
-    - 0.75
-
-Browse throught the tabs to see the time and accuracy comparison:
-
-.. tab:: Time
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    data = {
-        'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
-        'Spark': [1096, 1581, 248.4, 240.6],
-        'Vertica': [650.27, 150.09, 1.24, 1.11]
-    }
-    fig = go.Figure()
-    bar_width = 0.22  # Set the width of each bar
-    gap_width = 0.00  # Set the gap width between bars
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Spark'],
-        width=bar_width,
-        text=data['Spark'],
-        textposition='outside',
-        marker_color= "blue",
-        name='Spark'
-    ))
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Vertica'],
-        width=bar_width,
-        text=data['Vertica'],
-        textposition='outside',
-        name='Vertica',
-        marker_color= "black",
-        offset=0.15
-    ))
-    fig.update_layout(
-        title='Time Comaprison (Spark vs. Vertica)',
-        xaxis=dict(title='Metrics'),
-        yaxis=dict(title='Time (seconds)'),
-        barmode='group',
-        bargap=gap_width,
-        width=550,
-        height=600
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_time.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_time.html
-
-.. tab:: Accuracy
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    data = {
-        'Metric': ['Accuracy', 'AUC'],
-        'Spark': [0.89, 0.75],
-        'Vertica': [0.90, 0.94]
-    }
-    fig = go.Figure()
-    bar_width = 0.22  # Set the width of each bar
-    gap_width = 0.00  # Set the gap width between bars
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Spark'],
-        width=bar_width,
-        text=data['Spark'],
-        textposition='outside',
-        marker_color= "blue",
-        name='Spark'
-    ))
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Vertica'],
-        width=bar_width,
-        text=data['Vertica'],
-        textposition='outside',
-        name='Vertica',
-        marker_color= "black",
-        offset=0.15
-    ))
-    fig.update_layout(
-        title='Accuracy Comaprison (Spark vs. Vertica)',
-        xaxis=dict(title='Metrics'),
-        yaxis=dict(title='Time (seconds)'),
-        barmode='group',
-        bargap=gap_width,
-        width=550,
-        height=600
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_accuracy.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_accuracy.html
+    * - 
+      - Training
+      - Prediction - 25 M
+      - Accuracy
+      - AUC
+    * - Spark
+      - 1096
+      - 1581
+      - 248.4
+      - 240.6
+    * - Vertica
+      - 650.27
+      - 150.09
+      - 1.24
+      - 1.11
 
 
-Multi Node
-------------
+  .. list-table:: 
+    :header-rows: 1
 
-.. list-table:: Time in secs
-  :header-rows: 1
+    * - Metrics
+      - Vertica
+      - Spark
+    * - Accuracy
+      - 0.90
+      - 0.89
+    * - AUC
+      - 0.94
+      - 0.75
 
-  * - 
-    - Training
-    - Prediction- 25 M
-    - Accuracy
-    - AUC
-  * - Spark
-    - 409.5
-    - 1326.3
-    - 70.72
-    - 66.93
-  * - Vertica
-    - 249.64
-    - 69.25
-    - 1.26
-    - 0.43
+  Browse throught the tabs to see the time and accuracy comparison:
+
+  .. tab:: Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      data = {
+          'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
+          'Spark': [1096, 1581, 248.4, 240.6],
+          'Vertica': [650.27, 150.09, 1.24, 1.11]
+      }
+      fig = go.Figure()
+      bar_width = 0.22  # Set the width of each bar
+      gap_width = 0.00  # Set the gap width between bars
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Spark'],
+          width=bar_width,
+          text=data['Spark'],
+          textposition='outside',
+          marker_color= "blue",
+          name='Spark'
+      ))
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Vertica'],
+          width=bar_width,
+          text=data['Vertica'],
+          textposition='outside',
+          name='Vertica',
+          marker_color= "black",
+          offset=0.15
+      ))
+      fig.update_layout(
+          title='Time Comaprison (Spark vs. Vertica)',
+          xaxis=dict(title='Metrics'),
+          yaxis=dict(title='Time (seconds)'),
+          barmode='group',
+          bargap=gap_width,
+          width=550,
+          height=600
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_time.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_time.html
+
+  .. tab:: Accuracy
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      data = {
+          'Metric': ['Accuracy', 'AUC'],
+          'Spark': [0.89, 0.75],
+          'Vertica': [0.90, 0.94]
+      }
+      fig = go.Figure()
+      bar_width = 0.22  # Set the width of each bar
+      gap_width = 0.00  # Set the gap width between bars
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Spark'],
+          width=bar_width,
+          text=data['Spark'],
+          textposition='outside',
+          marker_color= "blue",
+          name='Spark'
+      ))
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Vertica'],
+          width=bar_width,
+          text=data['Vertica'],
+          textposition='outside',
+          name='Vertica',
+          marker_color= "black",
+          offset=0.15
+      ))
+      fig.update_layout(
+          title='Accuracy Comaprison (Spark vs. Vertica)',
+          xaxis=dict(title='Metrics'),
+          yaxis=dict(title='Time (seconds)'),
+          barmode='group',
+          bargap=gap_width,
+          width=550,
+          height=600
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_accuracy.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_accuracy.html
+
+.. tab:: Multi Node
+
+  .. list-table:: Time in secs
+    :header-rows: 1
+
+    * - 
+      - Training
+      - Prediction- 25 M
+      - Accuracy
+      - AUC
+    * - Spark
+      - 409.5
+      - 1326.3
+      - 70.72
+      - 66.93
+    * - Vertica
+      - 249.64
+      - 69.25
+      - 1.26
+      - 0.43
 
 
-.. list-table:: 
-  :header-rows: 1
+  .. list-table:: 
+    :header-rows: 1
 
-  * - Metrics
-    - Vertica
-    - Spark
-  * - Accuracy
-    - 0.90
-    - 0.89
-  * - AUC
-    - 0.95
-    - 0.75
+    * - Metrics
+      - Vertica
+      - Spark
+    * - Accuracy
+      - 0.90
+      - 0.89
+    * - AUC
+      - 0.95
+      - 0.75
 
-Browse throught the tabs to see the time and accuracy comparison:
+  Browse throught the tabs to see the time and accuracy comparison:
 
-.. tab:: Time
+  .. tab:: Time
 
-  .. ipython:: python
-    :suppress:
+    .. ipython:: python
+      :suppress:
 
-    import plotly.graph_objects as go
-    data = {
-        'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
-        'Spark': [409.5, 1326.3, 70.72, 66.93],
-        'Vertica': [249.64, 69.25, 1.26, 0.43]
-    }
-    fig = go.Figure()
-    bar_width = 0.22  # Set the width of each bar
-    gap_width = 0.00  # Set the gap width between bars
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Spark'],
-        width=bar_width,
-        text=data['Spark'],
-        textposition='outside',
-        marker_color= "blue",
-        name='Spark'
-    ))
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Vertica'],
-        width=bar_width,
-        text=data['Vertica'],
-        textposition='outside',
-        name='Vertica',
-        marker_color= "black",
-        offset=0.15
-    ))
-    fig.update_layout(
-        title='Time Comaprison (Spark vs. Vertica)',
-        xaxis=dict(title='Metrics'),
-        yaxis=dict(title='Time (seconds)'),
-        barmode='group',
-        bargap=gap_width,
-        width=550,
-        height=600
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_time.html")
+      import plotly.graph_objects as go
+      data = {
+          'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
+          'Spark': [409.5, 1326.3, 70.72, 66.93],
+          'Vertica': [249.64, 69.25, 1.26, 0.43]
+      }
+      fig = go.Figure()
+      bar_width = 0.22  # Set the width of each bar
+      gap_width = 0.00  # Set the gap width between bars
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Spark'],
+          width=bar_width,
+          text=data['Spark'],
+          textposition='outside',
+          marker_color= "blue",
+          name='Spark'
+      ))
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Vertica'],
+          width=bar_width,
+          text=data['Vertica'],
+          textposition='outside',
+          name='Vertica',
+          marker_color= "black",
+          offset=0.15
+      ))
+      fig.update_layout(
+          title='Time Comaprison (Spark vs. Vertica)',
+          xaxis=dict(title='Metrics'),
+          yaxis=dict(title='Time (seconds)'),
+          barmode='group',
+          bargap=gap_width,
+          width=550,
+          height=600
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_time.html")
 
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_time.html
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_time.html
 
-.. tab:: Accuracy
+  .. tab:: Accuracy
 
-  .. ipython:: python
-    :suppress:
+    .. ipython:: python
+      :suppress:
 
-    import plotly.graph_objects as go
-    data = {
-        'Metric': ['Accuracy', 'AUC'],
-        'Spark': [0.89, 0.75],
-        'Vertica': [0.90, 0.95]
-    }
-    fig = go.Figure()
-    bar_width = 0.22  # Set the width of each bar
-    gap_width = 0.00  # Set the gap width between bars
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Spark'],
-        width=bar_width,
-        text=data['Spark'],
-        textposition='outside',
-        marker_color= "blue",
-        name='Spark'
-    ))
-    fig.add_trace(go.Bar(
-        x=data['Metric'],
-        y=data['Vertica'],
-        width=bar_width,
-        text=data['Vertica'],
-        textposition='outside',
-        name='Vertica',
-        marker_color= "black",
-        offset=0.15
-    ))
-    fig.update_layout(
-        title='Accuracy Comaprison (Spark vs. Vertica)',
-        xaxis=dict(title='Metrics'),
-        yaxis=dict(title='Time (seconds)'),
-        barmode='group',
-        bargap=gap_width,
-        width=550,
-        height=600
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_accuracy.html")
+      import plotly.graph_objects as go
+      data = {
+          'Metric': ['Accuracy', 'AUC'],
+          'Spark': [0.89, 0.75],
+          'Vertica': [0.90, 0.95]
+      }
+      fig = go.Figure()
+      bar_width = 0.22  # Set the width of each bar
+      gap_width = 0.00  # Set the gap width between bars
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Spark'],
+          width=bar_width,
+          text=data['Spark'],
+          textposition='outside',
+          marker_color= "blue",
+          name='Spark'
+      ))
+      fig.add_trace(go.Bar(
+          x=data['Metric'],
+          y=data['Vertica'],
+          width=bar_width,
+          text=data['Vertica'],
+          textposition='outside',
+          name='Vertica',
+          marker_color= "black",
+          offset=0.15
+      ))
+      fig.update_layout(
+          title='Accuracy Comaprison (Spark vs. Vertica)',
+          xaxis=dict(title='Metrics'),
+          yaxis=dict(title='Time (seconds)'),
+          barmode='group',
+          bargap=gap_width,
+          width=550,
+          height=600
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_accuracy.html")
 
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_accuracy.html
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_accuracy.html
 
 
 

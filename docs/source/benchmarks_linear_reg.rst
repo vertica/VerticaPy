@@ -21,7 +21,9 @@ Spark
 
 .. important::
 
-    **Vertica Version:** ???
+  |  *Version Details*
+  |  **Vertica:** 23.3.0-5
+  |  **Spark:** ???
 
 This benchmark aims to evaluate the performance of 
 Vertica's Linear Regression algorithm in comparison 
@@ -109,141 +111,258 @@ Comparison
   :file: /_static/benchmark_lr_table.csv
   :header-rows: 2
 
-Browse throught the tabs to see the time comparison:
+Browse through the tabs to see the time comparison:
 
 
-.. tab:: 100M and 1B
+.. tab:: BFGS
 
-    .. ipython:: python
-        :suppress:
+    .. tab:: 1B
+        
+        .. ipython:: python
+            :suppress:
 
-        import plotly.graph_objects as go
-        data = {
-            'Size': ['100M', '1B'],
-            'Vertica BFGS': [84.7, 1748.51],
-            'Vertica Newton': [85.93, 1808.56],
-            'Spark BFGS': [216, 2568.68],
-            'Spark Newton': [68.47, 1788.75],
-        }
-        fig = go.Figure()
-        bar_width = 0.22  # Set the width of each bar
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Vertica BFGS'],
-            width=bar_width,
-            text=data['Vertica BFGS'],
-            textposition='outside',
-            marker_color="black",
-            name='Vertica BFGS',
-            offset=-0.5
-        ))
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Vertica Newton'],
-            width=bar_width,
-            text=data['Vertica Newton'],
-            textposition='outside',
-            marker_color="blue",
-            name='Vertica Newton',
-            offset=-0.25
-        ))
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Spark BFGS'],
-            width=bar_width,
-            text=data['Spark BFGS'],
-            textposition='outside',
-            marker_color="red",
-            name='Spark BFGS',
-            offset=0
-        ))
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Spark Newton'],
-            width=bar_width,
-            text=data['Spark Newton'],
-            textposition='outside',
-            marker_color="green",
-            name='Spark Newton',
-            offset=0.25
-        ))
-        fig.update_layout(
-            title='Time Comparison (100 Columns)',
-            xaxis=dict(title='Size'),
-            yaxis=dict(title='Time (seconds)'),
-            width=600,
-            height=500
-        )
-        fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html")
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [1748.51, 2568.68]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 1 B',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+                )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1b.html")
 
-    .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time_2.html
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1b.html
 
-.. tab:: 1M and 100M
+    .. tab:: 100M
 
-    .. ipython:: python
-        :suppress:
+        .. ipython:: python
+            :suppress:
 
-        import plotly.graph_objects as go
-        data = {
-            'Size': ['1M', '10M'],
-            'Vertica BFGS': [4.49, 26.39],
-            'Vertica Newton': [4.81, 26.04],
-            'Spark BFGS': [1.43, 96.98],
-            'Spark Newton': [0.7, 2.09],
-        }
-        fig = go.Figure()
-        bar_width = 0.22  # Set the width of each bar
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Vertica BFGS'],
-            width=bar_width,
-            text=data['Vertica BFGS'],
-            textposition='outside',
-            marker_color="black",
-            name='Vertica BFGS',
-            offset=-0.5
-        ))
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Vertica Newton'],
-            width=bar_width,
-            text=data['Vertica Newton'],
-            textposition='outside',
-            marker_color="blue",
-            name='Vertica Newton',
-            offset=-0.25
-        ))
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Spark BFGS'],
-            width=bar_width,
-            text=data['Spark BFGS'],
-            textposition='outside',
-            marker_color="red",
-            name='Spark BFGS',
-            offset=0
-        ))
-        fig.add_trace(go.Bar(
-            x=data['Size'],
-            y=data['Spark Newton'],
-            width=bar_width,
-            text=data['Spark Newton'],
-            textposition='outside',
-            marker_color="green",
-            name='Spark Newton',
-            offset=0.25
-        ))
-        fig.update_layout(
-            title='Time Comparison (100 Columns)',
-            xaxis=dict(title='Size'),
-            yaxis=dict(title='Time (seconds)'),
-            # barmode='group',
-            # bargap=0.8,
-            width=600,
-            height=500
-        )
-        fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html")
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [84.7, 216]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 100 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_100m.html")
 
-    .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_time.html
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_100m.html
+    
+    .. tab:: 10M
+
+        .. ipython:: python
+            :suppress:
+
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [26.39, 96.98]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 10 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_10m.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_10m.html
+
+    .. tab:: 1M
+
+        .. ipython:: python
+            :suppress:
+
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [4.49, 1.43]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 1 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1m.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1m.html
+
+
+.. tab:: Newton
+
+    .. tab:: 1B
+
+        .. ipython:: python
+            :suppress:
+
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [1808.56, 1788.75]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 1 B',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1b.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1b.html
+
+    .. tab:: 100M
+
+        .. ipython:: python
+            :suppress:
+
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [85.93, 68.47]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 100 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_100m.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_100m.html
+    
+    .. tab:: 10M
+
+        .. ipython:: python
+            :suppress:
+
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [826.04, 2.09]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 10 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_10m.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_10m.html
+
+    .. tab:: 1M
+
+        .. ipython:: python
+            :suppress:
+
+            import plotly.graph_objects as go
+            labels = ['Vertica 23.3.0-5', 'Spark']
+            heights = [4.81, 0.7]
+            colors = ['blue', 'cyan']
+            fig = go.Figure()
+            for label, height, color in zip(labels, heights, colors):
+                fig.add_trace(go.Bar(
+                    x=[label],
+                    y=[height],
+                    marker_color=color,
+                    text=[height],
+                    textposition='outside',
+                    name=label,
+                ))
+            fig.update_layout(
+                title='Data Size: 1 M',
+                yaxis=dict(title='Time (seconds)'),
+                bargap=0.2,
+                width = 600,
+                height = 500
+            )
+            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1m.html")
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1m.html

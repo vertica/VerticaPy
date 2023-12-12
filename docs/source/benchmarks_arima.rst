@@ -16,6 +16,12 @@ time series.
 Python Statsmodels
 ~~~~~~~~~~~~~~~~~~~
 
+.. important::
+
+  |  *Version Details*
+  |  **Vertica:** 23.3.0-5
+  |  **Python Statsmodel:** ???
+
 The aim of this benchmark is to compare Vertica algorithm performance 
 against 
 `python statsmodels <https://www.statsmodels.org/stable/generated/statsmodels.tsa.arima.model.ARIMA.html>`_.
