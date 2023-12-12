@@ -1549,49 +1549,47 @@ class QueryProfiler:
                 max_cardinality=1000,
             )
         return vdf
-
+    
     # Step 10: Query events
-    def get_query_events(
-            self) -> vDataFrame:
-    """
-    Returns a vDataFrame that contains a table listing query events
+    def get_query_events(self) -> vDataFrame:
+        """
+        Returns a vDataFrame that contains a table listing query events
 
-    Parameters
-    ----------
-    None
+        Parameters
+        ----------
+        None
 
-    Returns
-    -------
-    A vDataframe that contains a table listing query events
+        Returns
+        -------
+        A vDataframe that contains a table listing query events
 
-    Examples
-    --------
-    To be completed
+        Examples
+        --------
+        To be completed
 
-    """
-
-    query = f"""
-    SELECT
-        event_timestamp,
-        node_name,
-        event_category,
-        event_type,
-        event_description,
-        operator_name,
-        path_id,
-        event_details,
-        suggested_action
-    FROM
-        v_monitor.query_events
-    WHERE
-        transaction_id={self.transaction_id} AND
-        statement_id={self.statement_id}
-    ORDER BY
-        1
-    ;"""
-    query = self._replace_schema_in_query(query)
-    vdf = vDataframe(query)
-    return vdf
+        """
+        query = f"""
+        SELECT
+            event_timestamp,
+            node_name,
+            event_category,
+            event_type,
+            event_description,
+            operator_name,
+            path_id,
+            event_details,
+            suggested_action
+        FROM
+            v_monitor.query_events
+        WHERE
+            transaction_id={self.transaction_id} AND
+            statement_id={self.statement_id}
+        ORDER BY
+            1;
+        """
+        query = self._replace_schema_in_query(query)
+        vdf = vDataFrame(query)
+        return vdf
 
     # Step 12: CPU Time by node and path_id
     def get_cpu_time(
