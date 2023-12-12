@@ -13,6 +13,9 @@ def vp_connect_get_name():
     logging.info("Trying to connect")
     info_map = get_connection_info()
     connection_name = "pytest connection"
+    # TODO: when this fails, the error message has
+    # verbose stack information, but not instructions
+    # for how to fix things
     vp.new_connection(info_map,
                       name="pytest connection")
     logging.info("Connection complete")
