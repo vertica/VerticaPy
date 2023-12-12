@@ -32,7 +32,7 @@ class PerformanceTree:
     export of the Query Plan
     to graphviz.
 
-    Attributes
+    Parameters
     ----------
     rows: str
         ``str`` representing
@@ -49,6 +49,15 @@ class PerformanceTree:
         - cost
         - rows
         - None (no specific color)
+    show_ancestors: bool, optional
+        If set to ``True`` the
+        ancestors are also
+        displayed.
+
+    Attributes
+    ----------
+    The attributes are the same
+    as the parameters.
 
     Examples
     --------
@@ -83,6 +92,7 @@ class PerformanceTree:
         rows: str,
         root: int = 1,
         metric: Literal[None, "cost", "rows"] = "rows",
+        show_ancestors: bool = True,
     ) -> None:
         qplan = rows.split("\n")
         n = len(qplan)
@@ -109,6 +119,7 @@ class PerformanceTree:
                 "It has to be one of the following: None, 'cost', 'rows'.\n"
                 f"Found {metric}."
             )
+        self.show_ancestors = show_ancestors
 
     # Utils
 
@@ -316,7 +327,7 @@ class PerformanceTree:
         Returns
         -------
         list
-            list of children.
+            list of descendants.
 
         Examples
         --------
@@ -342,6 +353,55 @@ class PerformanceTree:
         find_recursive(node)
 
         return descendants
+
+    @staticmethod
+    def _find_ancestors(node: int, relationships: list[tuple[int, int]]) -> list:
+        """
+        Method used to find all ancestors
+        (parents, grandparents, and so on)
+        of a specific node in a tree-like
+        structure represented by parent-child
+        relationships.
+
+        Parameters
+        ----------
+        node: int
+            Node ID.
+        relationships: list
+            ``list`` of tuple
+            ``(parent, child)``
+
+        Returns
+        -------
+        list
+            list of ancestors.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if node == 0:
+            return []
+
+        ancestors = []
+
+        # Recursive function to find ancestors
+        def find_recursive(current_node):
+            if current_node == 0:
+                return
+            nonlocal ancestors
+            parents = [
+                parent for parent, child in relationships if child == current_node
+            ]
+            ancestors.extend(parents)
+            for parent in parents:
+                find_recursive(parent)
+
+        # Start the recursive search from the specified node
+        find_recursive(node)
+
+        return ancestors
 
     def _gen_relationships(self) -> list[tuple[int, int]]:
         """
@@ -390,7 +450,9 @@ class PerformanceTree:
             ]
             m_min, m_max = min(all_metrics), max(all_metrics)
         relationships = self._gen_relationships()
-        children = self._find_descendants(self.root, relationships) + [self.root]
+        links = self._find_descendants(self.root, relationships) + [self.root]
+        if self.show_ancestors:
+            links += self._find_ancestors(self.root, relationships)
         for i in range(n):
             if not (isinstance(self.metric, NoneType)):
                 alpha = (all_metrics[i] - m_min) / (m_max - m_min)
@@ -398,10 +460,22 @@ class PerformanceTree:
             else:
                 color = "lightblue"
             label = self._get_label(self.rows[i])
-            if i in children:
-                res += (
-                    f'\t{i} [label="{label}", style="filled", fillcolor="{color}"];\n'
-                )
+            if i in links:
+                row = self.rows[i].replace('"', "'")
+                res += f'\t{i} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
+            if i == self.root and i > 0 and self.show_ancestors:
+                row = self.rows[self.root].replace('"', "'")
+                res += f'\t{n} [label="{self.root + 1}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
+        return res
+
+    def _gen_tooltips(self) -> str:
+        res, n = "", len(self.rows)
+        for i in range(n):
+            row = self.rows[i].replace('"', "'")
+            res += f'\t{i} tooltip="{row}"'
+        if self.show_ancestors and self.root > 0:
+            row = self.rows[self.root].replace('"', "'")
+            res += f'\t{n} tooltip="{row}"'
         return res
 
     def _gen_links(self) -> str:
@@ -421,11 +495,15 @@ class PerformanceTree:
         """
         res, n = "", len(self.rows)
         relationships = self._gen_relationships()
-        children = self._find_descendants(self.root, relationships)
+        links = self._find_descendants(self.root, relationships)
+        if self.show_ancestors:
+            links += self._find_ancestors(self.root, relationships)
         for i in range(n):
             parent, child = relationships[i]
-            if parent != child and child in children:
-                res += f"\t{parent} -> {child};\n"
+            if parent != child and child in links:
+                res += f"\t{parent} -> {child} [dir=back];\n"
+            if child == self.root and i > 0 and self.show_ancestors:
+                res += f"\t{parent} -> {n} [dir=back];\n"
         return res
 
     def to_graphviz(self) -> str:

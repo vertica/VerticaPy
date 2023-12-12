@@ -110,6 +110,10 @@ class QueryProfiler:
         meta-tables. It can be a single
         schema or a ``dictionary`` of schema
         used to map all the Vertica DC tables.
+        If the tables do not exist, VerticaPy
+        will try to create them automatically.
+        You can ensure this operation by setting
+        ``create_copy=True``.
     create_copy: bool, optional
         If set to ``True``, tables or local temporary
         tables will be created by using the schema
@@ -829,6 +833,7 @@ class QueryProfiler:
             loop = tqdm(loop, total=len(loop))
         for table, schema in loop:
             sql = "CREATE "
+            exists = True
             if (
                 not (isinstance(self.target_schema, NoneType))
                 and schema in self.target_schema
@@ -844,7 +849,15 @@ class QueryProfiler:
                     sql += f" WHERE transaction_id={self.transaction_id} "
                     sql += f"AND statement_id={self.statement_id}"
                 target_tables[table] = new_table
-            if create_table:
+                if not (create_table):
+                    try:
+                        _executeSQL(
+                            f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
+                            title="Looking if the relation exists.",
+                        )
+                    except:
+                        exists = False
+            if create_table and exists:
                 if conf.get_option("print_info"):
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
@@ -1395,6 +1408,7 @@ class QueryProfiler:
     def get_qplan_tree(
         self,
         path_id: int = 1,
+        show_ancestors: bool = True,
         metric: Literal[None, "cost", "rows"] = "rows",
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
@@ -1408,6 +1422,10 @@ class QueryProfiler:
             A path ID used to filter
             the tree elements by
             starting from it.
+        show_ancestors: bool, optional
+            If set to ``True`` the
+            ancestors of ``path_id``
+            are also displayed.
         metric: str, optional
             The metric used to color
             the tree nodes. One of
@@ -1465,6 +1483,7 @@ class QueryProfiler:
         rows = self.get_qplan(print_plan=False)
         obj = PerformanceTree(
             rows,
+            show_ancestors=show_ancestors,
             root=path_id,
             metric=metric,
         )
