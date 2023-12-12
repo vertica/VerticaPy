@@ -119,4 +119,5 @@ class BarChart2D(PlotlyBase):
         fig_base.update_xaxes(type="category")
         if self.layout["kind"] == "stacked":
             fig_base.update_layout(barmode="stack")
+        fig_base.update_layout(hoverlabel_namelength=-1)
         return fig_base

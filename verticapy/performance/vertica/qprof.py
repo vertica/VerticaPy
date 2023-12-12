@@ -120,8 +120,7 @@ class QueryProfiler:
         .. note::
 
             This parameter is used only when
-            ``create_local_temporary_copy``
-            is set to ``False``.
+            ``create_local_temporary_copy=False``.
     create_local_temporary_copy: bool, optional
         If set to ``True``, local temporary tables
         will be created to store all the Vertica
@@ -130,7 +129,15 @@ class QueryProfiler:
         .. note::
 
             This parameter is used only when
-            ``create_copy`` is set to ``False``.
+            ``create_copy=False``.
+    overwrite: bool
+        If set to ``True`` overwrites the
+        existing performance tables.
+
+        .. note::
+
+            This parameter is used only when
+            ``create_local_temporary_copy=True``.
 
     Attributes
     ----------
@@ -148,6 +155,9 @@ class QueryProfiler:
         Name of the tables used to store
         all the Vertica monitor and internal
         meta-tables.
+    overwrite: bool
+        If set to ``True`` overwrites the
+        existing performance tables.
 
     Examples
     --------
@@ -595,6 +605,7 @@ class QueryProfiler:
         target_schema: Union[None, str, dict] = None,
         create_copy: bool = False,
         create_local_temporary_copy: bool = False,
+        overwrite: bool = False,
     ) -> None:
         if create_local_temporary_copy and create_copy:
             raise ValueError(
@@ -712,6 +723,7 @@ class QueryProfiler:
                     f"and statement_id={statement_id} was found in the "
                     "v_internal.dc_requests_issued table."
                 )
+        self.overwrite = overwrite
 
     # Tools
 
@@ -837,10 +849,26 @@ class QueryProfiler:
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
                     )
-                _executeSQL(
-                    sql,
-                    title="Creating performance tables",
-                )
+                try:
+                    if self.overwrite:
+                        _executeSQL(
+                            f"DROP TABLE IF EXISTS {new_schema}.{new_table}",
+                            title="Dropping the performance table.",
+                        )
+                    _executeSQL(
+                        sql,
+                        title="Creating performance tables.",
+                    )
+                except Exception as e:
+                    warning_message = (
+                        "An error occurs during the creation "
+                        f"of the relation {new_schema}.{new_table}.\n"
+                        "Tips: To overwrite the tables, set the parameter "
+                        "overwrite=True.\nYou can also set create_table=False"
+                        " to skip the table creation and to use the existing "
+                        "ones.\n\nError Details:\n" + str(e)
+                    )
+                    warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
 
     # Main Method
@@ -1168,6 +1196,7 @@ class QueryProfiler:
             "total descending",
         ] = "total descending",
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query Execution Steps chart.
@@ -1211,6 +1240,9 @@ class QueryProfiler:
         show: bool, optional
             If set to True, the Plotting object
             is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -1273,6 +1305,7 @@ class QueryProfiler:
                 of="elapsed",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                **style_kwargs,
             )
         return vdf
 
@@ -1361,7 +1394,7 @@ class QueryProfiler:
 
     def get_qplan_tree(
         self,
-        root: int = 1,
+        path_id: int = 1,
         metric: Literal[None, "cost", "rows"] = "rows",
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
@@ -1371,7 +1404,7 @@ class QueryProfiler:
 
         Parameters
         ----------
-        root: int, optional
+        path_id: int, optional
             A path ID used to filter
             the tree elements by
             starting from it.
@@ -1432,7 +1465,7 @@ class QueryProfiler:
         rows = self.get_qplan(print_plan=False)
         obj = PerformanceTree(
             rows,
-            root=root,
+            root=path_id,
             metric=metric,
         )
         if return_graphviz:
@@ -1456,6 +1489,7 @@ class QueryProfiler:
             "total descending",
         ] = "total descending",
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query Plan chart.
@@ -1495,6 +1529,9 @@ class QueryProfiler:
         show: bool, optional
             If set to True, the Plotting object
             is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -1566,6 +1603,7 @@ class QueryProfiler:
                 of="running_time",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                **style_kwargs,
             )
         return vdf
 
@@ -1595,6 +1633,7 @@ class QueryProfiler:
             "median descending",
         ] = "max descending",
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the CPU Time by node and path_id chart.
@@ -1635,6 +1674,9 @@ class QueryProfiler:
         show: bool, optional
             If set to ``True``, the
             Plotting object is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -1699,6 +1741,7 @@ class QueryProfiler:
                 method="SUM(counter_value) AS cet",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                **style_kwargs,
             )
         return vdf
 
@@ -1828,6 +1871,7 @@ class QueryProfiler:
         rows: int = 3,
         cols: int = 3,
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query execution chart.
@@ -1901,6 +1945,9 @@ class QueryProfiler:
         show: bool, optional
             If set to ``True``, the
             Plotting object is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -2006,6 +2053,7 @@ class QueryProfiler:
                         multi=multi,
                         categoryorder=categoryorder,
                         show=True,
+                        **style_kwargs,
                     )
                 ]
             vpy_plt = PlottingUtils().get_plotting_lib(
@@ -2042,6 +2090,7 @@ class QueryProfiler:
                     categoryorder=categoryorder,
                     max_cardinality=1000,
                     **other_params,
+                    **style_kwargs,
                 )
             else:
                 fun = self._get_chart_method(vdf["operator_name"], kind)

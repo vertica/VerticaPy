@@ -14,8 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 from plotly.graph_objs._figure import Figure
 from plotly.subplots import make_subplots
+
+from verticapy._typing import NoneType
 
 
 def draw_subplots(
@@ -24,13 +28,17 @@ def draw_subplots(
     rows: int,
     cols: int,
     kind: str,
-    height: int = 600,
-    width: int = 800,
+    height: Optional[int] = None,
+    width: Optional[int] = None,
 ) -> Figure:
     """
     Draws multiple subplot
     in the same Figure.
     """
+    if isinstance(height, NoneType):
+        height = 600 + 70 * rows
+    if isinstance(width, NoneType):
+        width = 800 + 130 * cols
     param = {}
     if kind == "pie":
         param = {"specs": [[{"type": "pie"} for i in range(rows)] for j in range(cols)]}

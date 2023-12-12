@@ -141,4 +141,5 @@ class HorizontalBarChart2D(PlotlyBase):
             fig_base.update_layout(
                 barmode="relative", xaxis_title="Note: Negative signs should be ignored"
             )
+        fig_base.update_layout(hoverlabel_namelength=-1)
         return fig_base

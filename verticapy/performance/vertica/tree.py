@@ -94,7 +94,7 @@ class PerformanceTree:
             tmp_rows += [qplan[i]]
         self.rows += ["\n".join(tmp_rows)]
         if isinstance(root, int) and root > 0:
-            self.root = root
+            self.root = root - 1
         else:
             raise ValueError(
                 "Wrong value for parameter 'root': "
@@ -296,6 +296,78 @@ class PerformanceTree:
                 return level_initiators[i - 1]
         return level_initiators[-1]
 
+    @staticmethod
+    def _find_descendants(node: int, relationships: list[tuple[int, int]]) -> list:
+        """
+        Method used to find all descendants
+        (children, grandchildren, and so on)
+        of a specific node in a tree-like
+        structure represented by parent-child
+        relationships.
+
+        Parameters
+        ----------
+        node: int
+            Node ID.
+        relationships: list
+            ``list`` of tuple
+            ``(parent, child)``
+
+        Returns
+        -------
+        list
+            list of children.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if node == 0:
+            return [x[0] for x in relationships] + [x[1] for x in relationships]
+
+        descendants = []
+
+        # Recursive function to find descendants
+        def find_recursive(current_node):
+            nonlocal descendants
+            children = [
+                child for parent, child in relationships if parent == current_node
+            ]
+            descendants.extend(children)
+            for child in children:
+                find_recursive(child)
+
+        # Start the recursive search from the specified node
+        find_recursive(node)
+
+        return descendants
+
+    def _gen_relationships(self) -> list[tuple[int, int]]:
+        """
+        Generates the relationships
+        ``list``.
+
+        Returns
+        -------
+        list
+            list of the different
+            relationships.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        n = len(self.rows)
+        relationships = []
+        for i in range(n):
+            level = self._get_level(self.rows[i])
+            level_initiators = self._get_all_level_initiator(level)
+            id_initiator = self._get_last_initiator(level_initiators, i)
+            relationships += [(id_initiator, i)]
+        return relationships
+
     def _gen_labels(self) -> str:
         """
         Generates the Graphviz
@@ -311,11 +383,14 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        res = ""
-        n = len(self.rows)
+        n, res = len(self.rows), ""
         if not (isinstance(self.metric, NoneType)):
-            all_metrics = [math.log(self._get_metric(self.rows[i])) for i in range(n)]
+            all_metrics = [
+                math.log(1 + self._get_metric(self.rows[i])) for i in range(n)
+            ]
             m_min, m_max = min(all_metrics), max(all_metrics)
+        relationships = self._gen_relationships()
+        children = self._find_descendants(self.root, relationships) + [self.root]
         for i in range(n):
             if not (isinstance(self.metric, NoneType)):
                 alpha = (all_metrics[i] - m_min) / (m_max - m_min)
@@ -323,7 +398,10 @@ class PerformanceTree:
             else:
                 color = "lightblue"
             label = self._get_label(self.rows[i])
-            res += f'\t{i} [label="{label}", style="filled", fillcolor="{color}"];\n'
+            if i in children:
+                res += (
+                    f'\t{i} [label="{label}", style="filled", fillcolor="{color}"];\n'
+                )
         return res
 
     def _gen_links(self) -> str:
@@ -341,14 +419,13 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        res = ""
-        n = len(self.rows)
+        res, n = "", len(self.rows)
+        relationships = self._gen_relationships()
+        children = self._find_descendants(self.root, relationships)
         for i in range(n):
-            level = self._get_level(self.rows[i])
-            level_initiators = self._get_all_level_initiator(level)
-            id_initiator = self._get_last_initiator(level_initiators, i)
-            if i != id_initiator:
-                res += f"\t{id_initiator} -> {i};\n"
+            parent, child = relationships[i]
+            if parent != child and child in children:
+                res += f"\t{parent} -> {child};\n"
         return res
 
     def to_graphviz(self) -> str:
@@ -366,9 +443,27 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
+        n = len(self.rows)
+        all_metrics = [math.log(1 + self._get_metric(self.rows[i])) for i in range(n)]
+        m_min, m_max = min(all_metrics), max(all_metrics)
+        cats = [0.0, 0.25, 0.5, 0.75, 1.0]
+        cats = [int(math.exp(x * (m_max - m_min) + m_min) - 1) for x in cats]
+        alpha0 = self._generate_gradient_color(0.0)
+        alpha025 = self._generate_gradient_color(0.25)
+        alpha050 = self._generate_gradient_color(0.5)
+        alpha075 = self._generate_gradient_color(0.75)
+        alpha1 = self._generate_gradient_color(1.0)
         res = "digraph Tree {\n"
         res += "\tnode [shape=circle, style=filled, fillcolor=lightblue, fontcolor=black, width=0.6, height=0.6];\n"
-        res += "\tedge [color=black, style=solid];\n\n"
+        res += "\tedge [color=black, style=solid];\n"
+        res += '\tlegend [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
+        res += '<tr><td bgcolor="#FFFFFF">Legend</td></tr>'
+        res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha050}">{cats[2]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha075}">{cats[3]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha1}">{cats[4]}</td></tr>'
+        res += "</table>>]\n\n"
         res += self._gen_labels() + "\n"
         res += self._gen_links() + "\n"
         res += "}"
