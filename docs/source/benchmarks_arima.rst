@@ -20,7 +20,7 @@ Python Statsmodels
 
   |  *Version Details*
   |  **Vertica:** 23.3.0-5
-  |  **Python Statsmodel:** ???
+  |  **Python Statsmodel:** 0.14.0
 
 The aim of this benchmark is to compare Vertica algorithm performance 
 against 
@@ -82,7 +82,7 @@ Below are the configuration on which the tests were carried out:
         - OS Version
         - Processor freq. (per node)
         - Processor cores (per node) 
-      * - ???
+      * - 0.14.0
         - ???
         - ???
         - ???

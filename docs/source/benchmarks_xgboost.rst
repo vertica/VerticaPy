@@ -433,6 +433,11 @@ Experiments
 Below are the results from different experiments. 
 Browse throught the tabs to look at each one.
 
+- Custom Parameters:
+  - number of trees = 10, 
+  - tree depth = 10 
+  - number of bins = 150
+
 
 .. tab:: Default Parameters
 
