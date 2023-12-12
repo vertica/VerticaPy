@@ -19,6 +19,7 @@ import importlib
 from typing import Optional, TYPE_CHECKING
 import numpy as np
 
+import verticapy as vp
 from verticapy._typing import PlottingObject, NoneType
 from verticapy._utils._object import create_new_vdf
 
@@ -339,7 +340,7 @@ def summarise_verticapy_chart(kind: str = "barh") -> PlottingObject:
     The following code demonstrates
     the usage of the function.
 
-    .. ipython:: python
+    .. code-block:: python
 
         # Import the function.
         from verticapy._utils._inspect_statistics import summarise_verticapy_chart
@@ -350,6 +351,7 @@ def summarise_verticapy_chart(kind: str = "barh") -> PlottingObject:
     .. ipython:: python
         :suppress:
 
+        from verticapy._utils._inspect_statistics import summarise_verticapy_chart
         vp.set_option("plotting_lib", "highcharts")
         fig = summarise_verticapy_chart()
         html_text = fig.htmlcontent.replace("container", "plotting_highcharts_barh_1D")
@@ -381,3 +383,52 @@ def summarise_verticapy_chart(kind: str = "barh") -> PlottingObject:
         )
     else:
         raise ValueError("Invalid option.")
+
+
+def codecov_verticapy_chart():
+    """
+    Returns the VerticaPy
+    codecov chart.
+
+    Returns
+    -------
+    obj
+        Plotting Object.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. code-block:: python
+
+        # Import the function.
+        from verticapy._utils._inspect_statistics import codecov_verticapy_chart
+
+        # Example.
+        codecov_verticapy_chart()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy._utils._inspect_statistics import codecov_verticapy_chart
+        vp.set_option("plotting_lib", "plotly")
+        fig = codecov_verticapy_chart()
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_codecov_verticapy_chart.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_codecov_verticapy_chart.html
+
+    .. note::
+
+        These functions serve as utilities to
+        generate some elements in the Sphinx
+        documentation.
+    """
+    vdf = create_new_vdf(
+        {
+            "category": ["Covered", "Not Covered"],
+            "number": [100 * vp.__codecov__, 100 * (1 - vp.__codecov__)],
+        }
+    )
+    return vdf["category"].pie(method="avg", of="number")
