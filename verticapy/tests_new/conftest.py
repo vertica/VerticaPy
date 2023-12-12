@@ -41,7 +41,6 @@ from verticapy.datasets import (
     load_laliga,
 )
 from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.tests_new.machine_learning.vertica.conftest import *
 
 DUMMY_TEST_SIZE = 100
 
