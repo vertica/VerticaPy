@@ -1408,6 +1408,7 @@ class QueryProfiler:
     def get_qplan_tree(
         self,
         path_id: int = 1,
+        path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
         metric: Literal[None, "cost", "rows"] = "rows",
         pic_path: Optional[str] = None,
@@ -1423,6 +1424,10 @@ class QueryProfiler:
             A path ID used to filter
             the tree elements by
             starting from it.
+        path_id_info: list, optional
+            ``list`` of path_id used
+            to display the different
+            query information.
         show_ancestors: bool, optional
             If set to ``True`` the
             ancestors of ``path_id``
@@ -1478,6 +1483,11 @@ class QueryProfiler:
             - height:
                 Node height.
                 Default: 0.6.
+            - info_color:
+                Color of the information box.
+            - info_fontcolor:
+                Fontcolor of the information
+                box.
 
         Returns
         -------
@@ -1520,6 +1530,7 @@ class QueryProfiler:
         obj = PerformanceTree(
             rows,
             show_ancestors=show_ancestors,
+            show_nodes_info=path_id_info,
             root=path_id,
             metric=metric,
             style=tree_style,

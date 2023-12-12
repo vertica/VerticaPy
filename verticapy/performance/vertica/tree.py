@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+import html
 import math
 from typing import Literal, Optional, Union
 import numpy as np
@@ -55,6 +56,10 @@ class PerformanceTree:
         If set to ``True`` the
         ancestors are also
         displayed.
+    show_nodes_info: list, optional
+        List of nodes for which
+        a tooltip node will be
+        created.
 
     Attributes
     ----------
@@ -95,6 +100,7 @@ class PerformanceTree:
         root: int = 1,
         metric: Literal[None, "cost", "rows"] = "rows",
         show_ancestors: bool = True,
+        show_nodes_info: Optional[list] = None,
         style: dict = {},
     ) -> None:
         qplan = rows.split("\n")
@@ -146,7 +152,15 @@ class PerformanceTree:
             d["edge_color"] = "#000000"
         if "edge_style" not in d:
             d["edge_style"] = "solid"
+        if "info_color" not in d:
+            d["info_color"] = "#DFDFDF"
+        if "info_fontcolor" not in d:
+            d["info_fontcolor"] = "#000000"
         self.style = d
+        if isinstance(show_nodes_info, list):
+            self.show_nodes_info = [i - 1 for i in show_nodes_info]
+        else:
+            self.show_nodes_info = []
 
     # Utils
     @staticmethod
@@ -616,7 +630,19 @@ class PerformanceTree:
             label = self._get_label(self.rows[i])
             if i in links:
                 row = self._format_row(self.rows[i].replace('"', "'"))
-                res += f'\t{i} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
+                res += f'\t{i} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}", fixedsize=true];\n'
+                if i in self.show_nodes_info:
+                    info_color = self.style["info_color"]
+                    info_fontcolor = self.style["info_fontcolor"]
+                    html_content = html.escape(row).replace(
+                        "\n", '</td></tr><tr><td align="left">'
+                    )
+                    label = (
+                        '<<table border="0" cellborder="0" cellspacing="0" width="40">'
+                    )
+                    label += f'\t<tr><td align="left">{html_content}</td></tr>\n'
+                    label += "</table>>"
+                    res += f'\t{10000 - i} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.6, height=0.6, fontsize=8, label={label}];\n'
             if i == self.root and i > 0 and self.show_ancestors:
                 row = self._format_row(self.rows[self.root].replace('"', "'"))
                 res += f'\t{n} [label="{self.root + 1}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
@@ -640,6 +666,7 @@ class PerformanceTree:
         res, n = "", len(self.rows)
         relationships = self._gen_relationships()
         links = self._find_descendants(self.root, relationships)
+        info_color = self.style["info_color"]
         if self.show_ancestors:
             links += self._find_ancestors(self.root, relationships)
         for i in range(n):
@@ -648,6 +675,8 @@ class PerformanceTree:
                 res += f"\t{parent} -> {child} [dir=back];\n"
             if child == self.root and i > 0 and self.show_ancestors:
                 res += f"\t{parent} -> {n} [dir=back];\n"
+            if i in self.show_nodes_info:
+                res += f'\t{10000 - i} -> {i} [dir=none, color="{info_color}"];\n'
         return res
 
     def _gen_legend(self) -> str:
@@ -679,7 +708,7 @@ class PerformanceTree:
         alpha075 = self._generate_gradient_color(0.75)
         alpha1 = self._generate_gradient_color(1.0)
         res = '\tlegend [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
-        res += '<tr><td bgcolor="#DFDFDF">Legend</td></tr>'
+        res += f'<tr><td bgcolor="#DFDFDF">Legend</td></tr>'
         res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha050}">{cats[2]}</td></tr>'
