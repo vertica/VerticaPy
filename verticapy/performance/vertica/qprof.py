@@ -1448,11 +1448,11 @@ class QueryProfiler:
             customize the tree.
 
             - color_low:
-                Color used as the lower 
+                Color used as the lower
                 bound of the gradient.
                 Default: '#00FF00' (green)
             - color_high:
-                Color used as the upper 
+                Color used as the upper
                 bound of the gradient.
                 Default: '#FF0000' (red)
             - fontcolor:

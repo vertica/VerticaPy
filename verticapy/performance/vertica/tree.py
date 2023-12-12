@@ -172,7 +172,7 @@ class PerformanceTree:
         """
 
         # Check if the string starts with '#', remove it if present
-        color_string = color_string.lstrip('#')
+        color_string = color_string.lstrip("#")
 
         # Convert the hexadecimal string to RGB values
         r = int(color_string[0:2], 16)
@@ -184,7 +184,7 @@ class PerformanceTree:
 
     def _generate_gradient_color(self, intensity: float) -> str:
         """
-        Generates a gradient 
+        Generates a gradient
         color based on an
         ``intensity``.
 
@@ -207,7 +207,9 @@ class PerformanceTree:
         intensity = max(0, min(1, intensity))
 
         # Computing the color
-        colors = np.array(self.style["color_high"]) * intensity + np.array(self.style["color_low"]) * (1 - intensity)
+        colors = np.array(self.style["color_high"]) * intensity + np.array(
+            self.style["color_low"]
+        ) * (1 - intensity)
 
         # Calculate RGB values based on intensity
         red = int(colors[0])
@@ -303,13 +305,13 @@ class PerformanceTree:
         if nb < 1e3:
             return str(int(nb))
         if nb < 1e6:
-            return f'{round(nb / 1e3)}K'
+            return f"{round(nb / 1e3)}K"
         elif nb < 1e9:
-            return f'{round(nb / 1e6)}M'
+            return f"{round(nb / 1e6)}M"
         elif nb < 1e12:
-            return f'{round(nb / 1e9)}B'
+            return f"{round(nb / 1e9)}B"
         else:
-            return f'{round(nb / 1e12)}T'
+            return f"{round(nb / 1e12)}T"
 
     # Special Methods
 
@@ -667,7 +669,10 @@ class PerformanceTree:
         all_metrics = [math.log(1 + self._get_metric(self.rows[i])) for i in range(n)]
         m_min, m_max = min(all_metrics), max(all_metrics)
         cats = [0.0, 0.25, 0.5, 0.75, 1.0]
-        cats = [self._format_number(int(math.exp(x * (m_max - m_min) + m_min) - 1)) for x in cats]
+        cats = [
+            self._format_number(int(math.exp(x * (m_max - m_min) + m_min) - 1))
+            for x in cats
+        ]
         alpha0 = self._generate_gradient_color(0.0)
         alpha025 = self._generate_gradient_color(0.25)
         alpha050 = self._generate_gradient_color(0.5)
@@ -682,7 +687,6 @@ class PerformanceTree:
         res += f'<tr><td bgcolor="{alpha1}">{cats[4]}</td></tr>'
         res += "</table>>]\n\n"
         return res
-
 
     def to_graphviz(self) -> str:
         """
