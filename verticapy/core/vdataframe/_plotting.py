@@ -78,8 +78,8 @@ class vDFPlot(vDFMachineLearning):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional parameter to  pass to the plotting
-            functions.
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------

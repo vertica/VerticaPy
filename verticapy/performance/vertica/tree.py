@@ -14,9 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, Union
+import copy
+import math
+from typing import Literal, Optional, Union
+import numpy as np
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 
 if conf.get_import_success("graphviz"):
     import graphviz
@@ -30,11 +34,32 @@ class PerformanceTree:
     export of the Query Plan
     to graphviz.
 
-    Attributes
+    Parameters
     ----------
     rows: str
         ``str`` representing
         the Query Plan.
+    root: int, optional
+        A path ID used to filter
+        the tree elements by
+        starting from it.
+    metric: str, optional
+        The metric used to color
+        the tree nodes. One of
+        the following:
+
+        - cost
+        - rows
+        - None (no specific color)
+    show_ancestors: bool, optional
+        If set to ``True`` the
+        ancestors are also
+        displayed.
+
+    Attributes
+    ----------
+    The attributes are the same
+    as the parameters.
 
     Examples
     --------
@@ -67,6 +92,10 @@ class PerformanceTree:
     def __init__(
         self,
         rows: str,
+        root: int = 1,
+        metric: Literal[None, "cost", "rows"] = "rows",
+        show_ancestors: bool = True,
+        style: dict = {},
     ) -> None:
         qplan = rows.split("\n")
         n = len(qplan)
@@ -76,6 +105,213 @@ class PerformanceTree:
                 self.rows += ["\n".join(tmp_rows)]
                 tmp_rows = []
             tmp_rows += [qplan[i]]
+        self.rows += ["\n".join(tmp_rows)]
+        if isinstance(root, int) and root > 0:
+            self.root = root - 1
+        else:
+            raise ValueError(
+                "Wrong value for parameter 'root': "
+                "It has to be a strictly positive int.\n"
+                f"Found {root}."
+            )
+        if metric in [None, "cost", "rows"]:
+            self.metric = metric
+        else:
+            raise ValueError(
+                "Wrong value for parameter 'metric': "
+                "It has to be one of the following: None, 'cost', 'rows'.\n"
+                f"Found {metric}."
+            )
+        self.show_ancestors = show_ancestors
+        d = copy.deepcopy(style)
+        for color in ("color_low", "color_high"):
+            if color not in d:
+                if color == "color_low":
+                    d[color] = (0, 255, 0)
+                else:
+                    d[color] = (255, 0, 0)
+            elif isinstance(d[color], str):
+                d[color] = self._color_string_to_tuple(d[color])
+        if "fillcolor" not in d:
+            d["fillcolor"] = "#ADD8E6"
+        if "shape" not in d:
+            d["shape"] = "circle"
+        if "fontcolor" not in d:
+            d["fontcolor"] = "#000000"
+        if "width" not in d:
+            d["width"] = 0.6
+        if "height" not in d:
+            d["height"] = 0.6
+        if "edge_color" not in d:
+            d["edge_color"] = "#000000"
+        if "edge_style" not in d:
+            d["edge_style"] = "solid"
+        self.style = d
+
+    # Utils
+    @staticmethod
+    def _color_string_to_tuple(color_string: str) -> tuple[int, int, int]:
+        """
+        Converts a color ``str``
+        to a ``tuple``.
+
+        Parameters
+        ----------
+        color_string: str
+            color.
+
+        Returns
+        -------
+        tuple
+            color ``r,g,b``.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+
+        # Check if the string starts with '#', remove it if present
+        color_string = color_string.lstrip("#")
+
+        # Convert the hexadecimal string to RGB values
+        r = int(color_string[0:2], 16)
+        g = int(color_string[2:4], 16)
+        b = int(color_string[4:6], 16)
+
+        # Return the RGB tuple
+        return r, g, b
+
+    def _generate_gradient_color(self, intensity: float) -> str:
+        """
+        Generates a gradient
+        color based on an
+        ``intensity``.
+
+        Parameters
+        ----------
+        intensity: float
+            Intensity.
+
+        Returns
+        -------
+        str
+            color.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        # Ensure intensity is between 0 and 1
+        intensity = max(0, min(1, intensity))
+
+        # Computing the color
+        colors = np.array(self.style["color_high"]) * intensity + np.array(
+            self.style["color_low"]
+        ) * (1 - intensity)
+
+        # Calculate RGB values based on intensity
+        red = int(colors[0])
+        green = int(colors[1])
+        blue = int(colors[2])
+
+        # Format the color string
+        color = f"#{red:02X}{green:02X}{blue:02X}"
+
+        return color
+
+    @staticmethod
+    def _map_unit(unit: str):
+        """
+        Maps the input unit.
+
+        Parameters
+        ----------
+        unit: str
+            Unit.
+
+        Returns
+        -------
+        str
+            range: ``K``, ``M``,
+            ``B`` or ``None``.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if unit == "K":
+            return 1000
+        elif unit == "M":
+            return 1000000
+        elif unit == "B":
+            return 1000000000
+        elif unit.isalpha():
+            return 1000000000000
+        else:
+            return None
+
+    @staticmethod
+    def _format_row(row: str) -> str:
+        """
+        Format the input row.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+
+        Returns
+        -------
+        str
+            formatted row.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        rows = row.split("\n")
+        n = len(rows)
+        for i in range(n):
+            x = rows[i]
+            while len(x) > 0 and x[0] in ("+", "-", " ", "|", ">"):
+                x = x[1:]
+            rows[i] = x
+        return ("\n".join(rows)).replace("\n", "\n\n")
+
+    @staticmethod
+    def _format_number(nb: int) -> str:
+        """
+        Format the input number.
+
+        Parameters
+        ----------
+        nb: int
+            Number.
+
+        Returns
+        -------
+        str
+            formatted number.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if nb < 1e3:
+            return str(int(nb))
+        if nb < 1e6:
+            return f"{round(nb / 1e3)}K"
+        elif nb < 1e9:
+            return f"{round(nb / 1e6)}M"
+        elif nb < 1e12:
+            return f"{round(nb / 1e9)}B"
+        else:
+            return f"{round(nb / 1e12)}T"
 
     # Special Methods
 
@@ -111,7 +347,7 @@ class PerformanceTree:
         return res
 
     @staticmethod
-    def _get_level(row: str) -> tuple[int, bool]:
+    def _get_level(row: str) -> int:
         """
         Gets the level of the
         specific row.
@@ -123,8 +359,8 @@ class PerformanceTree:
 
         Returns
         -------
-        tuple
-            level, is_initiator
+        int
+            level.
 
         Examples
         --------
@@ -137,6 +373,37 @@ class PerformanceTree:
             res += row[i]
             i += 1
         return res.count("|")
+
+    def _get_metric(self, row: str) -> int:
+        """
+        Gets the metric of the
+        specific row.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+
+        Returns
+        -------
+        int
+            metric
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if self.metric == "rows" and "Rows: " in row:
+            res = row.split("Rows: ")[1].split(" ")[0]
+        elif self.metric == "cost" and "Cost: " in row:
+            res = row.split("Cost: ")[1].split(",")[0]
+        else:
+            return None
+        unit = self._map_unit(res[-1])
+        if isinstance(unit, NoneType):
+            return int(res)
+        return int(res[:-1]) * unit
 
     def _get_all_level_initiator(self, level: int) -> list[int]:
         """
@@ -160,14 +427,14 @@ class PerformanceTree:
         for more information.
         """
         res = [0]
-        for row in self.rows:
+        for idx, row in enumerate(self.rows):
             row_level = self._get_level(row)
             if row_level + 1 == level:
-                res += [row_level]
+                res += [idx]
         return res
 
     @staticmethod
-    def _get_last_initiator(level_initiators: list[int], level: int) -> int:
+    def _get_last_initiator(level_initiators: list[int], tree_id: int) -> int:
         """
         Gets the last level initiator
         of a specific level.
@@ -176,8 +443,8 @@ class PerformanceTree:
         ----------
         level_initiators: list
             ``list`` of initiators.
-        level: int
-            Tree level.
+        tree_id: int
+            Tree ID.
 
         Returns
         -------
@@ -190,9 +457,130 @@ class PerformanceTree:
         for more information.
         """
         for i, l in enumerate(level_initiators):
-            if level > l:
+            if int(tree_id) < l:
                 return level_initiators[i - 1]
         return level_initiators[-1]
+
+    @staticmethod
+    def _find_descendants(node: int, relationships: list[tuple[int, int]]) -> list:
+        """
+        Method used to find all descendants
+        (children, grandchildren, and so on)
+        of a specific node in a tree-like
+        structure represented by parent-child
+        relationships.
+
+        Parameters
+        ----------
+        node: int
+            Node ID.
+        relationships: list
+            ``list`` of tuple
+            ``(parent, child)``
+
+        Returns
+        -------
+        list
+            list of descendants.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if node == 0:
+            return [x[0] for x in relationships] + [x[1] for x in relationships]
+
+        descendants = []
+
+        # Recursive function to find descendants
+        def find_recursive(current_node):
+            nonlocal descendants
+            children = [
+                child for parent, child in relationships if parent == current_node
+            ]
+            descendants.extend(children)
+            for child in children:
+                find_recursive(child)
+
+        # Start the recursive search from the specified node
+        find_recursive(node)
+
+        return descendants
+
+    @staticmethod
+    def _find_ancestors(node: int, relationships: list[tuple[int, int]]) -> list:
+        """
+        Method used to find all ancestors
+        (parents, grandparents, and so on)
+        of a specific node in a tree-like
+        structure represented by parent-child
+        relationships.
+
+        Parameters
+        ----------
+        node: int
+            Node ID.
+        relationships: list
+            ``list`` of tuple
+            ``(parent, child)``
+
+        Returns
+        -------
+        list
+            list of ancestors.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if node == 0:
+            return []
+
+        ancestors = []
+
+        # Recursive function to find ancestors
+        def find_recursive(current_node):
+            if current_node == 0:
+                return
+            nonlocal ancestors
+            parents = [
+                parent for parent, child in relationships if child == current_node
+            ]
+            ancestors.extend(parents)
+            for parent in parents:
+                find_recursive(parent)
+
+        # Start the recursive search from the specified node
+        find_recursive(node)
+
+        return ancestors
+
+    def _gen_relationships(self) -> list[tuple[int, int]]:
+        """
+        Generates the relationships
+        ``list``.
+
+        Returns
+        -------
+        list
+            list of the different
+            relationships.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        n = len(self.rows)
+        relationships = []
+        for i in range(n):
+            level = self._get_level(self.rows[i])
+            level_initiators = self._get_all_level_initiator(level)
+            id_initiator = self._get_last_initiator(level_initiators, i)
+            relationships += [(id_initiator, i)]
+        return relationships
 
     def _gen_labels(self) -> str:
         """
@@ -209,11 +597,29 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        res = ""
-        n = len(self.rows)
+        n, res = len(self.rows), ""
+        if not (isinstance(self.metric, NoneType)):
+            all_metrics = [
+                math.log(1 + self._get_metric(self.rows[i])) for i in range(n)
+            ]
+            m_min, m_max = min(all_metrics), max(all_metrics)
+        relationships = self._gen_relationships()
+        links = self._find_descendants(self.root, relationships) + [self.root]
+        if self.show_ancestors:
+            links += self._find_ancestors(self.root, relationships)
         for i in range(n):
+            if not (isinstance(self.metric, NoneType)):
+                alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                color = self._generate_gradient_color(alpha)
+            else:
+                color = self.style["fillcolor"]
             label = self._get_label(self.rows[i])
-            res += f'\t{i} [label="{label}"];\n'
+            if i in links:
+                row = self._format_row(self.rows[i].replace('"', "'"))
+                res += f'\t{i} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
+            if i == self.root and i > 0 and self.show_ancestors:
+                row = self._format_row(self.rows[self.root].replace('"', "'"))
+                res += f'\t{n} [label="{self.root + 1}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
         return res
 
     def _gen_links(self) -> str:
@@ -231,14 +637,55 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        res = ""
-        n = len(self.rows)
+        res, n = "", len(self.rows)
+        relationships = self._gen_relationships()
+        links = self._find_descendants(self.root, relationships)
+        if self.show_ancestors:
+            links += self._find_ancestors(self.root, relationships)
         for i in range(n):
-            id_initiator = self._get_level(self.rows[i])
-            level_initiators = self._get_all_level_initiator(id_initiator)
-            id_initiator = self._get_last_initiator(level_initiators, id_initiator)
-            if i != id_initiator:
-                res += f"\t{id_initiator} -> {i};\n"
+            parent, child = relationships[i]
+            if parent != child and child in links:
+                res += f"\t{parent} -> {child} [dir=back];\n"
+            if child == self.root and i > 0 and self.show_ancestors:
+                res += f"\t{parent} -> {n} [dir=back];\n"
+        return res
+
+    def _gen_legend(self) -> str:
+        """
+        Generates the Graphviz
+        legend.
+
+        Returns
+        -------
+        str
+            Graphviz legend.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        n = len(self.rows)
+        all_metrics = [math.log(1 + self._get_metric(self.rows[i])) for i in range(n)]
+        m_min, m_max = min(all_metrics), max(all_metrics)
+        cats = [0.0, 0.25, 0.5, 0.75, 1.0]
+        cats = [
+            self._format_number(int(math.exp(x * (m_max - m_min) + m_min) - 1))
+            for x in cats
+        ]
+        alpha0 = self._generate_gradient_color(0.0)
+        alpha025 = self._generate_gradient_color(0.25)
+        alpha050 = self._generate_gradient_color(0.5)
+        alpha075 = self._generate_gradient_color(0.75)
+        alpha1 = self._generate_gradient_color(1.0)
+        res = '\tlegend [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
+        res += '<tr><td bgcolor="#DFDFDF">Legend</td></tr>'
+        res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha050}">{cats[2]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha075}">{cats[3]}</td></tr>'
+        res += f'<tr><td bgcolor="{alpha1}">{cats[4]}</td></tr>'
+        res += "</table>>]\n\n"
         return res
 
     def to_graphviz(self) -> str:
@@ -256,9 +703,20 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
+        fillcolor = self.style["fillcolor"]
+        shape = self.style["shape"]
+        fontcolor = self.style["fontcolor"]
+        width = self.style["width"]
+        height = self.style["height"]
+        edge_color = self.style["edge_color"]
+        edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
-        res += "\tnode [shape=circle, style=filled, fillcolor=lightblue, fontcolor=black, width=0.6, height=0.6];\n"
-        res += "\tedge [color=black, style=solid];\n\n"
+        res += f'\tnode [shape={shape}, style=filled, fillcolor="{fillcolor}", fontcolor="{fontcolor}", width={width}, height={height}];\n'
+        res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
+        if not (isinstance(self.metric, NoneType)):
+            res += self._gen_legend()
+        else:
+            res += "\n"
         res += self._gen_labels() + "\n"
         res += self._gen_links() + "\n"
         res += "}"

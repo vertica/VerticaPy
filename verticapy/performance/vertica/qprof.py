@@ -110,6 +110,10 @@ class QueryProfiler:
         meta-tables. It can be a single
         schema or a ``dictionary`` of schema
         used to map all the Vertica DC tables.
+        If the tables do not exist, VerticaPy
+        will try to create them automatically.
+        You can ensure this operation by setting
+        ``create_copy=True``.
     create_copy: bool, optional
         If set to ``True``, tables or local temporary
         tables will be created by using the schema
@@ -120,8 +124,7 @@ class QueryProfiler:
         .. note::
 
             This parameter is used only when
-            ``create_local_temporary_copy``
-            is set to ``False``.
+            ``create_local_temporary_copy=False``.
     create_local_temporary_copy: bool, optional
         If set to ``True``, local temporary tables
         will be created to store all the Vertica
@@ -130,7 +133,15 @@ class QueryProfiler:
         .. note::
 
             This parameter is used only when
-            ``create_copy`` is set to ``False``.
+            ``create_copy=False``.
+    overwrite: bool
+        If set to ``True`` overwrites the
+        existing performance tables.
+
+        .. note::
+
+            This parameter is used only when
+            ``create_local_temporary_copy=True``.
 
     Attributes
     ----------
@@ -148,6 +159,9 @@ class QueryProfiler:
         Name of the tables used to store
         all the Vertica monitor and internal
         meta-tables.
+    overwrite: bool
+        If set to ``True`` overwrites the
+        existing performance tables.
 
     Examples
     --------
@@ -595,6 +609,7 @@ class QueryProfiler:
         target_schema: Union[None, str, dict] = None,
         create_copy: bool = False,
         create_local_temporary_copy: bool = False,
+        overwrite: bool = False,
     ) -> None:
         if create_local_temporary_copy and create_copy:
             raise ValueError(
@@ -712,6 +727,7 @@ class QueryProfiler:
                     f"and statement_id={statement_id} was found in the "
                     "v_internal.dc_requests_issued table."
                 )
+        self.overwrite = overwrite
 
     # Tools
 
@@ -817,6 +833,7 @@ class QueryProfiler:
             loop = tqdm(loop, total=len(loop))
         for table, schema in loop:
             sql = "CREATE "
+            exists = True
             if (
                 not (isinstance(self.target_schema, NoneType))
                 and schema in self.target_schema
@@ -832,15 +849,39 @@ class QueryProfiler:
                     sql += f" WHERE transaction_id={self.transaction_id} "
                     sql += f"AND statement_id={self.statement_id}"
                 target_tables[table] = new_table
-            if create_table:
+                if not (create_table):
+                    try:
+                        _executeSQL(
+                            f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
+                            title="Looking if the relation exists.",
+                        )
+                    except:
+                        exists = False
+            if create_table and exists:
                 if conf.get_option("print_info"):
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
                     )
-                _executeSQL(
-                    sql,
-                    title="Creating performance tables",
-                )
+                try:
+                    if self.overwrite:
+                        _executeSQL(
+                            f"DROP TABLE IF EXISTS {new_schema}.{new_table}",
+                            title="Dropping the performance table.",
+                        )
+                    _executeSQL(
+                        sql,
+                        title="Creating performance tables.",
+                    )
+                except Exception as e:
+                    warning_message = (
+                        "An error occurs during the creation "
+                        f"of the relation {new_schema}.{new_table}.\n"
+                        "Tips: To overwrite the tables, set the parameter "
+                        "overwrite=True.\nYou can also set create_table=False"
+                        " to skip the table creation and to use the existing "
+                        "ones.\n\nError Details:\n" + str(e)
+                    )
+                    warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
 
     # Main Method
@@ -1168,6 +1209,7 @@ class QueryProfiler:
             "total descending",
         ] = "total descending",
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query Execution Steps chart.
@@ -1211,6 +1253,9 @@ class QueryProfiler:
         show: bool, optional
             If set to True, the Plotting object
             is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -1273,6 +1318,7 @@ class QueryProfiler:
                 of="elapsed",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                **style_kwargs,
             )
         return vdf
 
@@ -1361,14 +1407,35 @@ class QueryProfiler:
 
     def get_qplan_tree(
         self,
+        path_id: int = 1,
+        show_ancestors: bool = True,
+        metric: Literal[None, "cost", "rows"] = "rows",
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
+        **tree_style,
     ) -> Union["Source", str]:
         """
         Draws the Query Plan tree.
 
         Parameters
         ----------
+        path_id: int, optional
+            A path ID used to filter
+            the tree elements by
+            starting from it.
+        show_ancestors: bool, optional
+            If set to ``True`` the
+            ancestors of ``path_id``
+            are also displayed.
+        metric: str, optional
+            The metric used to color
+            the tree nodes. One of
+            the following:
+
+            - cost
+            - rows
+            - None (no specific color)
+
         pic_path: str, optional
             Absolute path to save
             the image of the tree.
@@ -1376,6 +1443,41 @@ class QueryProfiler:
             If set to ``True``, the
             ``str`` Graphviz tree is
             returned.
+        tree_style: dict, optional
+            ``dictionary`` used to
+            customize the tree.
+
+            - color_low:
+                Color used as the lower
+                bound of the gradient.
+                Default: '#00FF00' (green)
+            - color_high:
+                Color used as the upper
+                bound of the gradient.
+                Default: '#FF0000' (red)
+            - fontcolor:
+                Font color.
+                Default: #000000 (black)
+            - fillcolor:
+                Color used to fill the
+                nodes in case no gradient
+                is computed: ``metric=None``.
+                Default: #ADD8E6 (lightblue)
+            - edge_color:
+                Edge color.
+                Default: #000000 (black)
+            - edge_style:
+                Edge Style.
+                Default: 'solid'.
+            - shape:
+                Node shape.
+                Default: 'circle'.
+            - width:
+                Node width.
+                Default: 0.6.
+            - height:
+                Node height.
+                Default: 0.6.
 
         Returns
         -------
@@ -1415,7 +1517,13 @@ class QueryProfiler:
             :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
-        obj = PerformanceTree(rows)
+        obj = PerformanceTree(
+            rows,
+            show_ancestors=show_ancestors,
+            root=path_id,
+            metric=metric,
+            style=tree_style,
+        )
         if return_graphviz:
             return obj.to_graphviz()
         return obj.plot_tree(pic_path)
@@ -1437,6 +1545,7 @@ class QueryProfiler:
             "total descending",
         ] = "total descending",
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query Plan chart.
@@ -1476,6 +1585,9 @@ class QueryProfiler:
         show: bool, optional
             If set to True, the Plotting object
             is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -1547,6 +1659,7 @@ class QueryProfiler:
                 of="running_time",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                **style_kwargs,
             )
         return vdf
     
@@ -1617,6 +1730,7 @@ class QueryProfiler:
             "median descending",
         ] = "max descending",
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the CPU Time by node and path_id chart.
@@ -1657,6 +1771,9 @@ class QueryProfiler:
         show: bool, optional
             If set to ``True``, the
             Plotting object is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -1721,6 +1838,7 @@ class QueryProfiler:
                 method="SUM(counter_value) AS cet",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                **style_kwargs,
             )
         return vdf
 
@@ -1850,6 +1968,7 @@ class QueryProfiler:
         rows: int = 3,
         cols: int = 3,
         show: bool = True,
+        **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query execution chart.
@@ -1923,6 +2042,9 @@ class QueryProfiler:
         show: bool, optional
             If set to ``True``, the
             Plotting object is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
 
         Returns
         -------
@@ -2028,6 +2150,7 @@ class QueryProfiler:
                         multi=multi,
                         categoryorder=categoryorder,
                         show=True,
+                        **style_kwargs,
                     )
                 ]
             vpy_plt = PlottingUtils().get_plotting_lib(
@@ -2064,6 +2187,7 @@ class QueryProfiler:
                     categoryorder=categoryorder,
                     max_cardinality=1000,
                     **other_params,
+                    **style_kwargs,
                 )
             else:
                 fun = self._get_chart_method(vdf["operator_name"], kind)
