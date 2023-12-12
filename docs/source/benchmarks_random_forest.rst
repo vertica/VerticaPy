@@ -25,7 +25,7 @@ Spark ML
 
   |  *Version Details*
   |  **Vertica:** 23.3.0-5
-  |  **Spark:** ???
+  |  **Spark:** 3.2.1
 
 In this benchmark, we aim to evaluate the performance of 
 Vertica's Random Forest algorithm in comparison to the 
@@ -59,13 +59,10 @@ Number of feature columns: 105
 Test Environemnt
 ^^^^^^^^^^^^^^^^^
 
-.. tab:: Single Node
+.. tab:: Vertica
 
-  .. important::
+  .. tab:: Single Node
 
-    Tarun - confirm the machine specs! Inlcuding Spark-submit params.
-
-  .. tab:: Vertica
 
     .. list-table:: 
         :header-rows: 1
@@ -81,59 +78,17 @@ Test Environemnt
           - Processor freq. (per node)
           - Processor cores (per node) 
         * - 11.1.0-0
+          - On-Premises VM
+          - 1 node
           - ???
-          - 2 nodes
-          - ???
-          - 32728552 kB 
-          - ???
+          - 20393864 kB
+          - Enterprise
           - Red Hat Enterprise Linux
-          - 8.3 (Ootpa)   
-          - 2.4 GHz
-          - 4
+          - 7.6 (Maipo)
+          - 2.3 GHz
+          - 8
 
-  .. tab:: Spark
-      
-    **Spark-submit parameters:**
-
-    .. list-table:: 
-      :header-rows: 1
-
-      * - Version
-        - Instance Type
-        - Cluster
-        - vCPU(per node)
-        - Memory(per node)
-        - Deploy Mode
-        - OS
-        - OS Version
-        - Processor freq. (per node)
-        - Processor cores (per node)
-        - Executor memory
-        - Driver memory
-        - Total executor cores
-        - Class 
-      * - ???
-        - ???
-        - ???
-        - ???
-        - ???
-        - Client
-        - ???
-        - ???
-        - ???
-        - 4
-        - 20 GB
-        - 5 GB
-        - 4
-        - pyspark.ml.classification
-
-.. tab:: Multi Node
-
-  .. important::
-
-    Are processor cores PER NODE?
-
-  .. tab:: Vertica
+  .. tab:: Multi Node
 
     .. list-table:: 
         :header-rows: 1
@@ -149,53 +104,71 @@ Test Environemnt
           - Processor freq. (per node)
           - Processor cores (per node) 
         * - 11.1.0-0
+          - On-Premises VM
+          - 4 nodes
           - ???
-          - 2 nodes
-          - ???
-          - 32728552 kB 
-          - ???
+          - 20393864 kB 
+          - Enterprise
           - Red Hat Enterprise Linux
-          - 8.3 (Ootpa)   
-          - 2.4 GHz
-          - 4
+          - 7.6 (Maipo)
+          - 2.3 GHz
+          - 8
 
-  .. tab:: Spark
-      
-    **Spark-submit parameters:**
 
-    **Spark-submit parameters:**
+.. tab:: Spark
+
+  .. tab:: Single Node
+
 
     .. list-table:: 
-      :header-rows: 1
+        :header-rows: 1
 
-      * - Version
-        - Instance Type
-        - Cluster
-        - vCPU(per node)
-        - Memory(per node)
-        - Deploy Mode
-        - OS
-        - OS Version
-        - Processor freq. (per node)
-        - Processor cores (per node)
-        - Executor memory
-        - Driver memory
-        - Total executor cores
-        - Class 
-      * - ???
-        - ???
-        - ???
-        - ???
-        - ???
-        - Client
-        - ???
-        - ???
-        - ???
-        - 4
-        - 20 GB
-        - 5 GB
-        - 4
-        - pyspark.ml.classification
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - 3.2.1
+          - On-Premises VM
+          - 1 node
+          - ???
+          - 20393864 kB
+          - NA
+          - Red Hat Enterprise Linux
+          - 7.6 (Maipo)
+          - 2.3 GHz
+          - 8
+
+  .. tab:: Multi Node
+
+    .. list-table:: 
+        :header-rows: 1
+
+        * - Version
+          - Instance Type
+          - Cluster
+          - vCPU(per node)
+          - Memory(per node)
+          - Deploy Mode
+          - OS
+          - OS Version
+          - Processor freq. (per node)
+          - Processor cores (per node) 
+        * - 3.2.1
+          - On-Premises VM
+          - 4 nodes
+          - ???
+          - 20393864 kB 
+          - NA
+          - Red Hat Enterprise Linux
+          - 7.6 (Maipo)
+          - 2.3 GHz
+          - 8
 
 
 Comparison
@@ -518,4 +491,6 @@ Test Environment
 Comparison
 ^^^^^^^^^^^
 
-It was running for more than 11 hours so the test was abondoned.
+.. important::
+
+  Since all tests were failing so the test was abondoned.
