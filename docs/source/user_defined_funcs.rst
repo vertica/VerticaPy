@@ -97,15 +97,17 @@ separate zygote process. This separation ensures that
 User-Defined Extension (UDx) crashes do not adversely 
 impact the core Vertica process.
 
-- *Pro:* Protected
-- *Con:* Slower
+| ✓ **Pro:** :bdg-success:`Protected`
+| ✗ **Con:** :bdg-danger:`Slower`
+
 
 Conversely, in Unfenced Mode, the safety of zygote 
 processes is not guaranteed. However, it excels in 
 performance as data does not need to move back and forth.
 
-- *Pro:* Faster
-- *Con:* Unprotected - can crashes
+
+| ✓ **Pro:** :bdg-success:`Faster`
+| ✗ **Con:** :bdg-danger:`Unprotected`
 
 Let's have a look at some use-cases to see the difference
 in speed for both the modes:
@@ -114,7 +116,13 @@ in speed for both the modes:
 
     **Size:** 
 
-    31.29M rows & 2559 columns.
+    .. list-table:: 
+        :header-rows: 1
+
+        * - Rows
+          - Columns
+        * - 31.29M
+          - 2559
 
     **Query:**
 
@@ -156,7 +164,14 @@ in speed for both the modes:
 
     **Size:** 
 
-    100M rows & 2 columns.
+    .. list-table:: 
+        :header-rows: 1
+
+        * - Rows
+          - Columns
+        * - 100M
+          - 2
+
 
     **Query:**
 
@@ -204,7 +219,13 @@ in speed for both the modes:
     
     **Size:** 
 
-    100M rows & 2 columns.
+    .. list-table:: 
+        :header-rows: 1
+
+        * - Rows
+          - Columns
+        * - 100M
+          - 2
 
     **Query:**
 
@@ -334,3 +355,9 @@ mathematical closeness calculations.
 For more in-depth detail on the uses of User-Defined
 Functions please refer to 
 :ref:`user_guide.full_stack`.
+
+.. seealso::
+
+    | `Vertica Python SDK <https://www.vertica.com/docs/10.1.x/HTML/PythonSDK/sdk_documentation.html>`_
+    | :ref:`user_guide.full_stack`
+    | `Python SDK doc <https://docs.vertica.com/23.4.x/en/extending/developing-udxs/developing-with-sdk/python-sdk/>`_
