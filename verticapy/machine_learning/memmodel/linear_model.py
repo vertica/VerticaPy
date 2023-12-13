@@ -348,7 +348,7 @@ class LinearModel(InMemoryModel):
 
         .. ipython:: python
 
-            model_lm.predict_sql(cnames)
+            model_lmc.predict_sql(cnames)
 
         .. note::
 
@@ -643,7 +643,7 @@ class LinearModelClassifier(LinearModel):
 
         .. ipython:: python
 
-            model_lmc = LinearModelClassifier(coefficients, intercept)
+            model_lm = LinearModelClassifier(coefficients, intercept)
 
         Let's use the following column names:
 
