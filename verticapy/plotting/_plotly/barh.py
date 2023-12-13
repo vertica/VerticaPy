@@ -133,6 +133,7 @@ class HorizontalBarChart2D(PlotlyBase):
             fig_base.add_trace(fig)
         params = self._update_dict(self.init_layout_style, style_kwargs)
         fig_base.update_layout(**params)
+        fig_base.update_yaxes(type="category")
         if self.layout["kind"] == "stacked" or self.layout["kind"] == "fully_stacked":
             fig_base.update_layout(barmode="stack")
         if self.layout["kind"] == "density":
@@ -140,4 +141,5 @@ class HorizontalBarChart2D(PlotlyBase):
             fig_base.update_layout(
                 barmode="relative", xaxis_title="Note: Negative signs should be ignored"
             )
+        fig_base.update_layout(hoverlabel_namelength=-1)
         return fig_base
