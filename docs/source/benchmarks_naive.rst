@@ -256,7 +256,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "blue",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(
@@ -303,7 +303,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "blue",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(
@@ -388,7 +388,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "blue",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(
@@ -435,7 +435,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "blue",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(

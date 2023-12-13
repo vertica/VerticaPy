@@ -250,7 +250,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "blue",
+          marker_color= "black",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -260,7 +260,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "black",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(
@@ -297,7 +297,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "blue",
+          marker_color= "black",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -307,7 +307,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "black",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(
@@ -381,7 +381,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "blue",
+          marker_color= "black",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -391,7 +391,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "black",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(
@@ -428,7 +428,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "blue",
+          marker_color= "black",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -438,7 +438,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= "black",
+          marker_color= #1A6AFF,
           offset=0.15
       ))
       fig.update_layout(
@@ -456,9 +456,6 @@ Comparison
       :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_accuracy.html
 
 
-
-
-
 Madlib
 ~~~~~~
 
@@ -472,16 +469,45 @@ Dataset
 ^^^^^^^^
 
 
-**Amazon**
+.. tab:: Amazon
 
-Train: 20,210,579
-Test: 5,052,646
+  .. ipython:: python
+    :suppress:
 
-Number of columns : 106
+    import plotly.express as px
+    import pandas as pd
+    training_data_count = 20210579
+    testing_data_count = 5052646
+    data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
+    df = pd.DataFrame(data)
+    fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
+    fig.update_traces(textinfo='value')
+    fig.update_layout(width = 550)
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data.html")
 
-Datatypes of data: Float
+  .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data.html
 
-Number of feature columns: 105
+
+
+  .. ipython:: python
+    :suppress:
+
+    import plotly.express as px
+    col_des = ['No. of Columns', 'No. of Feature Columns']
+    vals = [106, 105] 
+    df = pd.DataFrame({'des': col_des, 'vals': vals})
+    fig = px.bar(df, x='des', y='vals', 
+      color='des')
+    fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data_cols.html")
+
+  .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data_cols.html
+
+
+  Datatypes of data: :bdg-primary-line:`Float`
 
 .. note::
 

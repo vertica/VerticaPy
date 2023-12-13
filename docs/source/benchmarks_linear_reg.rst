@@ -122,9 +122,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [1748.51, 2568.68]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -153,9 +153,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [84.7, 216]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -184,9 +184,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [26.39, 96.98]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -215,9 +215,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [4.49, 1.43]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -249,9 +249,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [1808.56, 1788.75]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -280,9 +280,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [85.93, 68.47]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -311,9 +311,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [826.04, 2.09]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -342,9 +342,9 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 8.01', 'Spark']
+            labels = ['Vertica', 'Spark']
             heights = [4.81, 0.7]
-            colors = ['blue', 'cyan']
+            colors = [#1A6AFF, 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(

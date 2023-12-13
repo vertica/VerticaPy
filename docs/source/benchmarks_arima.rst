@@ -125,7 +125,8 @@ Browse throught the different tabs to see the results:
       })
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-        barmode="group"  # Set barmode to "group" for grouped bars
+        barmode="group",
+        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
       )
       fig.update_layout(width = 550)
       fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_1m.html")
@@ -148,7 +149,8 @@ Browse throught the different tabs to see the results:
 
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-        barmode="group"  # Set barmode to "group" for grouped bars
+        barmode="group",
+        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
       )
       fig.update_layout(width = 550)
       fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_1m.html")
@@ -171,7 +173,8 @@ Browse throught the different tabs to see the results:
       })
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-        barmode="group"  # Set barmode to "group" for grouped bars
+        barmode="group",
+        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
       )
       fig.update_layout(width = 550)
       fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_1m.html")
@@ -197,7 +200,8 @@ Browse throught the different tabs to see the results:
       })
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-        barmode="group"  # Set barmode to "group" for grouped bars
+        barmode="group",
+        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
       )
       fig.update_layout(width = 550)
       fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_100m.html")
@@ -220,7 +224,8 @@ Browse throught the different tabs to see the results:
 
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-        barmode="group"  # Set barmode to "group" for grouped bars
+        barmode="group",
+        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
       )
       fig.update_layout(width = 550)
       fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_100m.html")
@@ -243,7 +248,8 @@ Browse throught the different tabs to see the results:
       })
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
-        barmode="group"  # Set barmode to "group" for grouped bars
+        barmode="group",
+        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
       )
       fig.update_layout(width = 550)
       fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_100m.html")

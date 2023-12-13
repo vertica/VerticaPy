@@ -70,7 +70,7 @@ Datasets
     data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
     df = pd.DataFrame(data)
     fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
-      labels={'Count': 'Data Count'})
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
     fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data.html")
@@ -110,13 +110,13 @@ Datasets
     data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
     df = pd.DataFrame(data)
     fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
-      labels={'Count': 'Data Count'})
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data.html")
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data.html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data.html
 
 
 
@@ -130,10 +130,10 @@ Datasets
     fig = px.bar(df, x='des', y='vals', 
       color='des')
     fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data_cols.html")
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data_cols.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data_cols.html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data_cols.html
 
 
   Datatypes of data: :bdg-primary-line:`Float`
@@ -284,326 +284,330 @@ algorithm that was tested:
         - 36 ( Per Worker)
 
 
-Higgs Boson dataset analysis
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-**Parameters:**
-- Number of trees: 10, 
-- tree depth=10, 
-- number of bins=150
-
-Below are the results from different dataset sizes. 
-Browse throught the tabs to look at each one.
-
-.. tab:: 1 Billion
+Analysis
+^^^^^^^^^^
+
+The comparison analysis on both datasets follows:
 
+.. tab:: Higgs Boson dataset analysis
 
-  .. csv-table:: 1 B Rows
-    :file: /_static/benchmark_xgboost_1b.csv
-    :header-rows: 2
+  **Parameters:**
+  - Number of trees: 10, 
+  - tree depth=10, 
+  - number of bins=150
 
-  Since the accuracy is similar, we will only show the runtime comparison below:
+  Below are the results from different dataset sizes. 
+  Browse throught the tabs to look at each one.
 
-  .. important::
+  .. tab:: 1 Billion
 
-    Amazon Redshift is only considering a sample data of size 33,617 for training.
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    labels = ['Vertica v23.4', 'PySpark']
-    heights = [107.45, 1085.84]
-    colors = ['blue', 'cyan']
-    fig = go.Figure()
-    for label, height, color in zip(labels, heights, colors):
-      fig.add_trace(go.Bar(
-        x=[label],
-        y=[height],
-        marker_color=color,
-        text=[height],
-        textposition='outside',
-        name=label,
-      ))
-    fig.update_layout(
-      title='Data Size: 1 B',
-      #xaxis=dict(title='XGBoost Implementations'),
-      yaxis=dict(title='Execution Time (minutes)'),
-      bargap=0.2,
-      width = 600,
-      height = 500
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_1b.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_1b.html
-
-
-.. tab:: 100 Million
-
-
-  .. csv-table:: 100 M Rows
-    :file: /_static/benchmark_xgboost_100m.csv
-    :header-rows: 2
-
-  Since the accuracy is similar, we will only show the runtime comparison below:
-
-  .. important::
 
-    Amazon Redshift is only considering a sample data of size 33,617 for training.
+    .. csv-table:: 1 B Rows
+      :file: /_static/benchmark_xgboost_1b.csv
+      :header-rows: 2
 
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    labels = ['Vertica v23.4', 'Amazon Sagemaker', 'Python', 'PySpark']
-    heights = [13.76, 9.11, 5.69, 96.8]
-    colors = ['blue', 'orange', 'red', 'cyan']
-    fig = go.Figure()
-    for label, height, color in zip(labels, heights, colors):
-      fig.add_trace(go.Bar(
-        x=[label],
-        y=[height],
-        marker_color=color,
-        text=[height],
-        textposition='outside',
-        name=label,
-      ))
-    fig.update_layout(
-      title='Data Size: 100 M',
-      #xaxis=dict(title='XGBoost Implementations'),
-      yaxis=dict(title='Execution Time (minutes)'),
-      bargap=0.2,
-      width = 600,
-      height = 500
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_100m.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_100m.html
-
-
-
-
-.. tab:: 10.5 Million
-
-  .. csv-table:: 10.5 M Rows
-    :file: /_static/benchmark_xgboost.csv
-    :header-rows: 2
-
-  Since the accuracy is similar, we will only show the runtime comparison below:
-
-  .. important::
-
-    Amazon Redshift is only considering a sample data of size 33,617 for training.
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    labels = ['Vertica v23.4', 'Amazon Sagemaker', 'Python', 'PySpark']
-    heights = [6.1, 2.08, 0.47, 7.26]
-    colors = ['blue', 'orange', 'red', 'cyan']
-    fig = go.Figure()
-    for label, height, color in zip(labels, heights, colors):
-      fig.add_trace(go.Bar(
-        x=[label],
-        y=[height],
-        marker_color=color,
-        text=[height],
-        textposition='outside',
-        name=label,
-      ))
-    fig.update_layout(
-      title='Data Size: 10.5M',
-      #xaxis=dict(title='XGBoost Implementations'),
-      yaxis=dict(title='Execution Time (minutes)'),
-      bargap=0.2,
-      width = 600,
-      height = 500
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_10m.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_10m.html
-
-
-
-Experiments
-------------
-
-Below are the results from different experiments. 
-Browse throught the tabs to look at each one.
-
-- Custom Parameters:
-  - number of trees = 10, 
-  - tree depth = 10 
-  - number of bins = 150
-
-
-.. tab:: Default Parameters
-
-  .. csv-table:: Default Parameters
-    :file: /_static/benchmark_xgboost_exp_default.csv
-    :header-rows: 2
-
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
-    heights = [1.27, 8, 3.84, 51.77]
-    colors = ['blue', 'green', 'cyan']
-    fig = go.Figure()
-    for label, height, color in zip(labels, heights, colors):
-      fig.add_trace(go.Bar(
-        x=[label],
-        y=[height],
-        marker_color=color,
-        text=[height],
-        textposition='outside',
-        name=label,
-      ))
-    fig.update_layout(
-      title='Data Size: 10.5M',
-      #xaxis=dict(title='XGBoost Implementations'),
-      yaxis=dict(title='Execution Time (minutes)'),
-      bargap=0.2,
-      width = 600,
-      height = 500
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html
-
-.. tab:: Custom Parameters
-
-  .. csv-table:: Custom Parameters
-    :file: /_static/benchmark_xgboost_exp_custom.csv
-    :header-rows: 1
-
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
-    heights = [24.95, 7, 4.33, 56.7]
-    colors = ['blue', 'green', 'cyan']
-    fig = go.Figure()
-    for label, height, color in zip(labels, heights, colors):
-      fig.add_trace(go.Bar(
-        x=[label],
-        y=[height],
-        marker_color=color,
-        text=[height],
-        textposition='outside',
-        name=label,
-      ))
-    fig.update_layout(
-      title='Data Size: 10.5M',
-      #xaxis=dict(title='XGBoost Implementations'),
-      yaxis=dict(title='Execution Time (minutes)'),
-      bargap=0.2,
-      width = 600,
-      height = 500
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html
-
-
-
-Amazon dataset analysis
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-Below are the results from different experiments of parameters. 
-Browse through the tabs to look at each one.
-
-
-.. tab:: Default Parameters
-
-  **Training time Taken**
-
-  .. csv-table:: Default Parameters
-    :file: /_static/benchmark_xgboost_amazon_default.csv
-    :header-rows: 2
-
-  Since the accuracy is similar, we will only show the runtime comparison below:
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
-    heights = [6.105, 7, 9.78, 122.08]
-    colors = ['blue', 'green', 'cyan']
-    fig = go.Figure()
-    for label, height, color in zip(labels, heights, colors):
-      fig.add_trace(go.Bar(
-        x=[label],
-        y=[height],
-        marker_color=color,
-        text=[height],
-        textposition='outside',
-        name=label,
-      ))
-    fig.update_layout(
-      title='Data Size: 10.5M',
-      #xaxis=dict(title='XGBoost Implementations'),
-      yaxis=dict(title='Execution Time (minutes)'),
-      bargap=0.2,
-      width = 600,
-      height = 500
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_default.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_default.html
-
-.. tab:: Custom Parameters
-
-  **Training time Taken**
-
-  .. csv-table:: Custom Parameters
-    :file: /_static/benchmark_xgboost_amazon_custom.csv
-    :header-rows: 2
-
-  Since the accuracy is similar, we will only show the runtime comparison below:
-
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.graph_objects as go
-    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
-    heights = [40.53, 7, 9.83, 119.09]
-    colors = ['blue', 'green', 'cyan']
-    fig = go.Figure()
-    for label, height, color in zip(labels, heights, colors):
-      fig.add_trace(go.Bar(
-        x=[label],
-        y=[height],
-        marker_color=color,
-        text=[height],
-        textposition='outside',
-        name=label,
-      ))
-    fig.update_layout(
-      title='Data Size: 10.5M',
-      #xaxis=dict(title='XGBoost Implementations'),
-      yaxis=dict(title='Execution Time (minutes)'),
-      bargap=0.2,
-      width = 600,
-      height = 500
-    )
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_custom.html")
-
-  .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_custom.html
+    Since the accuracy is similar, we will only show the runtime comparison below:
+
+    .. important::
+
+      Amazon Redshift is only considering a sample data of size 33,617 for training.
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'PySpark']
+      heights = [107.45, 1085.84]
+      colors = [#1A6AFF, 'black']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+        fig.add_trace(go.Bar(
+          x=[label],
+          y=[height],
+          marker_color=color,
+          text=[height],
+          textposition='outside',
+          name=label,
+        ))
+      fig.update_layout(
+        title='Data Size: 1 B',
+        #xaxis=dict(title='XGBoost Implementations'),
+        yaxis=dict(title='Execution Time (minutes)'),
+        bargap=0.2,
+        width = 600,
+        height = 500
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_1b.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_1b.html
+
+
+  .. tab:: 100 Million
+
+
+    .. csv-table:: 100 M Rows
+      :file: /_static/benchmark_xgboost_100m.csv
+      :header-rows: 2
+
+    Since the accuracy is similar, we will only show the runtime comparison below:
+
+    .. important::
+
+      Amazon Redshift is only considering a sample data of size 33,617 for training.
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
+      heights = [13.76, 9.11, 5.69, 96.8]
+      colors = [#1A6AFF, #ee145b, #f0d917, 'black']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+        fig.add_trace(go.Bar(
+          x=[label],
+          y=[height],
+          marker_color=color,
+          text=[height],
+          textposition='outside',
+          name=label,
+        ))
+      fig.update_layout(
+        title='Data Size: 100 M',
+        #xaxis=dict(title='XGBoost Implementations'),
+        yaxis=dict(title='Execution Time (minutes)'),
+        bargap=0.2,
+        width = 600,
+        height = 500
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_100m.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_100m.html
+
+
+
+
+  .. tab:: 10.5 Million
+
+    .. csv-table:: 10.5 M Rows
+      :file: /_static/benchmark_xgboost.csv
+      :header-rows: 2
+
+    Since the accuracy is similar, we will only show the runtime comparison below:
+
+    .. important::
+
+      Amazon Redshift is only considering a sample data of size 33,617 for training.
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
+      heights = [6.1, 2.08, 0.47, 7.26]
+      colors = [#1A6AFF, #ee145b, #f0d917, 'black']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+        fig.add_trace(go.Bar(
+          x=[label],
+          y=[height],
+          marker_color=color,
+          text=[height],
+          textposition='outside',
+          name=label,
+        ))
+      fig.update_layout(
+        title='Data Size: 10.5M',
+        #xaxis=dict(title='XGBoost Implementations'),
+        yaxis=dict(title='Execution Time (minutes)'),
+        bargap=0.2,
+        width = 600,
+        height = 500
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_10m.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_10m.html
+
+
+
+  Experiments
+  ++++++++++++
+
+  Below are the results from different experiments. 
+  Browse throught the tabs to look at each one.
+
+  - Custom Parameters:
+    - number of trees = 10, 
+    - tree depth = 10 
+    - number of bins = 150
+
+
+  .. tab:: Default Parameters
+
+    .. csv-table:: Default Parameters
+      :file: /_static/benchmark_xgboost_exp_default.csv
+      :header-rows: 2
+
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
+      heights = [1.27, 8, 3.84, 51.77]
+      colors = [#1A6AFF, 'green', 'black']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+        fig.add_trace(go.Bar(
+          x=[label],
+          y=[height],
+          marker_color=color,
+          text=[height],
+          textposition='outside',
+          name=label,
+        ))
+      fig.update_layout(
+        title='Data Size: 10.5M',
+        #xaxis=dict(title='XGBoost Implementations'),
+        yaxis=dict(title='Execution Time (minutes)'),
+        bargap=0.2,
+        width = 600,
+        height = 500
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html
+
+  .. tab:: Custom Parameters
+
+    .. csv-table:: Custom Parameters
+      :file: /_static/benchmark_xgboost_exp_custom.csv
+      :header-rows: 1
+
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
+      heights = [24.95, 7, 4.33, 56.7]
+      colors = [#1A6AFF, 'green', 'black']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+        fig.add_trace(go.Bar(
+          x=[label],
+          y=[height],
+          marker_color=color,
+          text=[height],
+          textposition='outside',
+          name=label,
+        ))
+      fig.update_layout(
+        title='Data Size: 10.5M',
+        #xaxis=dict(title='XGBoost Implementations'),
+        yaxis=dict(title='Execution Time (minutes)'),
+        bargap=0.2,
+        width = 600,
+        height = 500
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html
+
+
+
+.. tab:: Amazon dataset analysis
+
+
+  Below are the results from different experiments of parameters. 
+  Browse through the tabs to look at each one.
+
+
+  .. tab:: Default Parameters
+
+    **Training time Taken**
+
+    .. csv-table:: Default Parameters
+      :file: /_static/benchmark_xgboost_amazon_default.csv
+      :header-rows: 2
+
+    Since the accuracy is similar, we will only show the runtime comparison below:
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
+      heights = [6.105, 7, 9.78, 122.08]
+      colors = [#1A6AFF, 'green', 'black']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+        fig.add_trace(go.Bar(
+          x=[label],
+          y=[height],
+          marker_color=color,
+          text=[height],
+          textposition='outside',
+          name=label,
+        ))
+      fig.update_layout(
+        title='Data Size: 10.5M',
+        #xaxis=dict(title='XGBoost Implementations'),
+        yaxis=dict(title='Execution Time (minutes)'),
+        bargap=0.2,
+        width = 600,
+        height = 500
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_default.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_default.html
+
+  .. tab:: Custom Parameters
+
+    **Training time Taken**
+
+    .. csv-table:: Custom Parameters
+      :file: /_static/benchmark_xgboost_amazon_custom.csv
+      :header-rows: 2
+
+    Since the accuracy is similar, we will only show the runtime comparison below:
+
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
+      heights = [40.53, 7, 9.83, 119.09]
+      colors = [#1A6AFF, 'green', 'black']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+        fig.add_trace(go.Bar(
+          x=[label],
+          y=[height],
+          marker_color=color,
+          text=[height],
+          textposition='outside',
+          name=label,
+        ))
+      fig.update_layout(
+        title='Data Size: 10.5M',
+        #xaxis=dict(title='XGBoost Implementations'),
+        yaxis=dict(title='Execution Time (minutes)'),
+        bargap=0.2,
+        width = 600,
+        height = 500
+      )
+      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_custom.html")
+
+    .. raw:: html
+      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_custom.html
 
 
 
@@ -728,7 +732,7 @@ Comparison
     fig = px.bar(df, x='Vertica', y='Training Time (seconds)', 
       title='Training Time',
       color='Vertica',
-      color_discrete_map={'EON': 'blue', 'Enterprise': 'orange'})
+      color_discrete_map={'EON': #1A6AFF, 'Enterprise': #ee145b})
     fig.update_layout(xaxis_title=None)
     fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_eon_vs_enterprise_train.html")
 
@@ -748,7 +752,7 @@ Comparison
     fig = px.bar(df, x='ML Tool', y='Prediction Time (seconds)', 
       title='Prediction Time',
       color='ML Tool',
-      color_discrete_map={'Vertica EON': 'blue', 'Vertica Enterprise': 'orange'})
+      color_discrete_map={'Vertica EON': #1A6AFF, 'Vertica Enterprise': #ee145b})
     fig.update_layout(xaxis_title=None)
     fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_eon_vs_enterprise_prediction.html")
 
@@ -885,7 +889,7 @@ Comparison
 ..   labels = ['Vertica EON', 'Vertica Enterprise', 'Google BQ']
 ..   train_times = [1381.36, 1260.09, 1060]
 ..   predict_times = [128.86, 119.83, 19.1]
-..   colors = ['blue', 'green', 'purple']
+..   colors = [#1A6AFF, 'green', 'purple']
 ..   fig = go.Figure()
 ..   bar_width = 0.3  # Set the width of each bar
 ..   gap_width = -0.1  # Set the gap width between bars
