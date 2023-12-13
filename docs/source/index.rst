@@ -152,4 +152,5 @@ a Pythonic way to work with data stored in Vertica.
     chart_gallery
     user_guide
     connectors
+    benchmarks
     vertica_documentation
