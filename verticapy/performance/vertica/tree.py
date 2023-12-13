@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 import html
+import re
 import math
 from typing import Literal, Optional, Union
 import numpy as np
@@ -414,10 +415,13 @@ class PerformanceTree:
             res = row.split("Cost: ")[1].split(",")[0]
         else:
             return None
+        if res[-1] in ("]",):
+            res = res[:-1]
         unit = self._map_unit(res[-1])
+        res = int(re.sub(r"[^0-9]", "", res))
         if isinstance(unit, NoneType):
-            return int(res)
-        return int(res[:-1]) * unit
+            return res
+        return res * unit
 
     def _get_all_level_initiator(self, level: int) -> list[int]:
         """
