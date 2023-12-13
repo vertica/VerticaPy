@@ -136,7 +136,7 @@ Browse through the tabs to see the time comparison:
                     name=label,
                 ))
             fig.update_layout(
-                title='Data Size: 1 B',
+                title='Data Size: 1B',
                 yaxis=dict(title='Time (seconds)'),
                 bargap=0.2,
                 width = 600,
@@ -229,7 +229,7 @@ Browse through the tabs to see the time comparison:
                     name=label,
                 ))
             fig.update_layout(
-                title='Data Size: 1 M',
+                title='Data Size: 1M',
                 yaxis=dict(title='Time (seconds)'),
                 bargap=0.2,
                 width = 600,
@@ -263,7 +263,7 @@ Browse through the tabs to see the time comparison:
                     name=label,
                 ))
             fig.update_layout(
-                title='Data Size: 1 B',
+                title='Data Size: 1B',
                 yaxis=dict(title='Time (seconds)'),
                 bargap=0.2,
                 width = 600,
@@ -356,7 +356,7 @@ Browse through the tabs to see the time comparison:
                     name=label,
                 ))
             fig.update_layout(
-                title='Data Size: 1 M',
+                title='Data Size: 1M',
                 yaxis=dict(title='Time (seconds)'),
                 bargap=0.2,
                 width = 600,

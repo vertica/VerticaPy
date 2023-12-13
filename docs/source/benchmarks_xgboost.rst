@@ -302,7 +302,7 @@ The comparison analysis on both datasets follows:
   .. tab:: 1 Billion
 
 
-    .. csv-table:: 1 B Rows
+    .. csv-table:: 1B Rows
       :file: /_static/benchmark_xgboost_1b.csv
       :header-rows: 2
 
@@ -330,7 +330,7 @@ The comparison analysis on both datasets follows:
           name=label,
         ))
       fig.update_layout(
-        title='Data Size: 1 B',
+        title='Data Size: 1B',
         #xaxis=dict(title='XGBoost Implementations'),
         yaxis=dict(title='Execution Time (minutes)'),
         bargap=0.2,
