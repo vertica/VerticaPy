@@ -75,7 +75,7 @@ Dataset
 
   In order to get a larger size, we duplicated rows.
 
-Test Environemnt
+Test Environment
 ^^^^^^^^^^^^^^^^^
 
 .. tab:: Vertica
