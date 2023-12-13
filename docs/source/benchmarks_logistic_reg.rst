@@ -24,7 +24,7 @@ Spark
 
   |  *Version Details*
   |  **Vertica:** 23.3.0-5
-  |  **Spark:** ???
+  |  **Spark:** 2.02
 
 In this benchmark, we strive to assess the performance 
 of Vertica's Logistic Regression algorithm in 
@@ -61,12 +61,12 @@ Test Environment
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - ???
-          - ???
+        * - 23.3.0-5
+          - On Premise VM
           - 3 node cluster
-          - ???
+          - N/A
           - 755 GB
-          - ???
+          - Enterprise
           - Red Hat Enterprise Linux 
           - 8.7 (Ootpa)
           - 2.4GHz
@@ -87,12 +87,12 @@ Test Environment
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - ???
-          - ???
-          - ???
-          - ???
+        * - 2.02
+          - N/A
+          - N/A
+          - N/A
           - 755 GB
-          - ???
+          - N/A
           - Red Hat Enterprise Linux 
           - 8.7 (Ootpa)
           - 2.4GHz

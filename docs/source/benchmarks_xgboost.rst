@@ -11,10 +11,11 @@ Amazon Redshift | Python | Dask | PySpark
 .. important::
 
   |  *Version Details*
-  |  **Vertica:** 23.3.0-5
-  |  **Amazon Redshift:** ???
-  |  **Amazon Sagemaker:** ???
-  |  **Python Native XGBoost:** ???
+  |  **Vertica:** 23.4
+  |  **Amazon Redshift:** Jan 2023
+  |  **Amazon Sagemaker:** Jan 2023
+  |  **Python Native XGBoost:** 3.9.15
+  |  **PySark:** 3.3.1
 
 XGBoost is a highly optimized distributed gradient boosting library 
 renowned for its efficiency, flexibility, and portability. Operating 
@@ -163,12 +164,12 @@ algorithm that was tested:
         - OS Version
         - Processor freq. (per node)
         - Processor cores (per node) 
-      * - 23.3.0-5
-        - ???
+      * - 23.4
+        - On Premise VM
         - 4 node 
-        - ???
+        - N/A
         - 755 GB
-        - ???
+        - Enterprise
         - Red Hat Enterprise Linux  
         - 8.7 (Ootpa)   
         - 2.3 GHz  
@@ -250,7 +251,7 @@ algorithm that was tested:
         - N/A
         - N/A
         - N/A
-        - ???
+        - N/A
         - N/A
 
 
@@ -273,10 +274,10 @@ algorithm that was tested:
         - Driver Memory
         - Total Executor Cores
       * - 3.3.1
-        - ???
-        - ???
-        - ???
-        - ???
+        - N/A
+        - N/A
+        - N/A
+        - N/A
         - client
         - 70GB
         - 50GB
@@ -310,7 +311,7 @@ Browse throught the tabs to look at each one.
     :suppress:
 
     import plotly.graph_objects as go
-    labels = ['Vertica 23.3.0-5', 'PySpark']
+    labels = ['Vertica v23.4', 'PySpark']
     heights = [107.45, 1085.84]
     colors = ['blue', 'cyan']
     fig = go.Figure()
@@ -354,7 +355,7 @@ Browse throught the tabs to look at each one.
     :suppress:
 
     import plotly.graph_objects as go
-    labels = ['Vertica 23.3.0-5', 'Amazon Sagemaker', 'Python', 'PySpark']
+    labels = ['Vertica v23.4', 'Amazon Sagemaker', 'Python', 'PySpark']
     heights = [13.76, 9.11, 5.69, 96.8]
     colors = ['blue', 'orange', 'red', 'cyan']
     fig = go.Figure()
@@ -399,7 +400,7 @@ Browse throught the tabs to look at each one.
     :suppress:
 
     import plotly.graph_objects as go
-    labels = ['Vertica 23.3.0-5', 'Amazon Sagemaker', 'Python', 'PySpark']
+    labels = ['Vertica v23.4', 'Amazon Sagemaker', 'Python', 'PySpark']
     heights = [6.1, 2.08, 0.47, 7.26]
     colors = ['blue', 'orange', 'red', 'cyan']
     fig = go.Figure()
@@ -450,7 +451,7 @@ Browse throught the tabs to look at each one.
     :suppress:
 
     import plotly.graph_objects as go
-    labels = ['Vertica 23.3.0-5', 'Amazon Redshift', 'Python', 'PySpark']
+    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
     heights = [1.27, 8, 3.84, 51.77]
     colors = ['blue', 'green', 'cyan']
     fig = go.Figure()
@@ -487,7 +488,7 @@ Browse throught the tabs to look at each one.
     :suppress:
 
     import plotly.graph_objects as go
-    labels = ['Vertica 23.3.0-5', 'Amazon Redshift', 'Python', 'PySpark']
+    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
     heights = [24.95, 7, 4.33, 56.7]
     colors = ['blue', 'green', 'cyan']
     fig = go.Figure()
@@ -537,7 +538,7 @@ Browse through the tabs to look at each one.
     :suppress:
 
     import plotly.graph_objects as go
-    labels = ['Vertica 23.3.0-5', 'Amazon Redshift', 'Python', 'PySpark']
+    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
     heights = [6.105, 7, 9.78, 122.08]
     colors = ['blue', 'green', 'cyan']
     fig = go.Figure()
@@ -578,7 +579,7 @@ Browse through the tabs to look at each one.
     :suppress:
 
     import plotly.graph_objects as go
-    labels = ['Vertica 23.3.0-5', 'Amazon Redshift', 'Python', 'PySpark']
+    labels = ['Vertica v23.4', 'Amazon Redshift', 'Python', 'PySpark']
     heights = [40.53, 7, 9.83, 119.09]
     colors = ['blue', 'green', 'cyan']
     fig = go.Figure()
@@ -655,14 +656,14 @@ Test Environment
         - Storage type
       * - 11.1.0-0
         - r4.8xlarge
-        - 3 ???
-        - ???
-        - ???
-        - ???
-        - ???
-        - ???
-        - ???
-        - ???
+        - 3 nodes
+        - N/A
+        - N/A
+        - Eon
+        - Red Hat Enterprise Linux 
+        - 8.5 (Ootpa)
+        - 2.4GHz
+        - N/A
         - 32
         - 244
         - 3
@@ -686,11 +687,11 @@ Test Environment
         - Type
         - RAM
       * - 11.1.0-0
-        - ???
+        - On Premise VM
         - 3 node cluster
-        - ???
-        - ???
-        - ???
+        - N/A
+        - N/A
+        - Enterprise
         - Red Hat Enterprise Linux 
         - 8.5 (Ootpa)
         - 2.4GHz
@@ -721,13 +722,13 @@ Comparison
     :suppress:
 
     import plotly.express as px
-    ml_tools = ['Vertica EON', 'Vertica Enterprise']
+    ml_tools = ['EON', 'Enterprise']
     training_times = [1381.36, 1260.09] 
-    df = pd.DataFrame({'ML Tool': ml_tools, 'Training Time (seconds)': training_times})
-    fig = px.bar(df, x='ML Tool', y='Training Time (seconds)', 
+    df = pd.DataFrame({'Vertica': ml_tools, 'Training Time (seconds)': training_times})
+    fig = px.bar(df, x='Vertica', y='Training Time (seconds)', 
       title='Training Time',
-      color='ML Tool',
-      color_discrete_map={'Vertica EON': 'blue', 'Vertica Enterprise': 'orange'})
+      color='Vertica',
+      color_discrete_map={'EON': 'blue', 'Enterprise': 'orange'})
     fig.update_layout(xaxis_title=None)
     fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_eon_vs_enterprise_train.html")
 

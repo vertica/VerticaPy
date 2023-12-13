@@ -60,7 +60,7 @@ Test Environment
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - ???
+        * - 23.3.0-5
           - ???
           - 3 node cluster
           - ???
@@ -88,7 +88,7 @@ Test Environment
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - ???
+        * - 23.3.0-5
           - ???
           - ???
           - ???

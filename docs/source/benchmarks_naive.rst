@@ -40,15 +40,36 @@ informed algorithmic choices.
 Dataset
 ^^^^^^^^
 
-**Amazon**
 
-Size: 25 M
 
-Number of columns : 106
+.. tab:: Amazon
 
-Datatypes of data: Float
 
-Number of feature columns: 105
+  Size: 25 M
+
+  .. list-table:: 
+      :header-rows: 1
+
+      * - # of Rows
+      * - 25 M
+
+
+  .. ipython:: python
+    :suppress:
+
+    import plotly.express as px
+    col_des = ['No. of Columns', 'No. of Feature Columns']
+    vals = [106, 105] 
+    df = pd.DataFrame({'des': col_des, 'vals': vals})
+    fig = px.bar(df, x='des', y='vals', 
+      color='des')
+    fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
+    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_naive_amazon_data_cols.html")
+
+  .. raw:: html
+    :file: /project/data/VerticaPy/docs/figures/benchmark_naive_amazon_data_cols.html
+
+  Datatypes of data: :bdg-primary-line:`Float`
 
 Test Environment
 ^^^^^^^^^^^^^^^^^^^
@@ -74,7 +95,7 @@ Test Environment
         * - 11.1.0-0
           - On-Premises VM
           - 1 node
-          - ???
+          - N/A
           - 20393864 kB
           - Enterprise
           - Red Hat Enterprise Linux
@@ -100,7 +121,7 @@ Test Environment
         * - 11.1.0-0
           - On-Premises VM
           - 4 nodes
-          - ???
+          - N/A
           - 20393864 kB 
           - Enterprise
           - Red Hat Enterprise Linux
@@ -130,7 +151,7 @@ Test Environment
         * - 3.2.1
           - On-Premises VM
           - 1 node
-          - ???
+          - N/A
           - 20393864 kB
           - NA
           - Red Hat Enterprise Linux
@@ -156,7 +177,7 @@ Test Environment
         * - 3.2.1
           - On-Premises VM
           - 4 nodes
-          - ???
+          - N/A
           - 20393864 kB 
           - NA
           - Red Hat Enterprise Linux
