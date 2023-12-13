@@ -239,6 +239,27 @@ class QueryProfiler:
             statement_id=48,
         )
 
+    .. important::
+
+        To save the different performance tables
+        in a specific schema use
+        ``target_schema='MYSCHEMA'``, 'MYSCHEMA'
+        being the targetted schema. To overwrite
+        the tables, use: ``overwrite=True``.
+        Finally, if you just need local temporary
+        table, use: ``create_local_temporary_copy=True``.
+
+        Example:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                transaction_id=45035996273800581,
+                statement_id=48,
+                target_schema='MYSCHEMA',
+                overwrite=True,
+            )
+
     **SQL generated from VerticaPy functions**
 
     In this example, we can use the Titanic dataset:
@@ -404,8 +425,17 @@ class QueryProfiler:
     .. note::
 
         The same plot can also be plotted using
-        a bar plot by switching the ``kind``
-        to "bar".
+        a bar plot by setting ``kind='bar'``.
+
+    .. note::
+
+        For charts, it is possible
+        to pass many parameters to
+        customize them. Example:
+        You can use ``categoryorder``
+        to sort the chart or ``width``
+        and ``height`` to manage the
+        size.
 
     **Query Plan**
 
@@ -414,6 +444,83 @@ class QueryProfiler:
     .. ipython:: python
 
         qprof.get_qplan()
+
+    **Query Plan Tree**
+
+    We can easily call the function
+    to get the query plan Graphviz:
+
+    .. ipython:: python
+
+        qprof.get_qplan_tree(return_graphviz = True)
+
+    We can conveniently get the Query Plan tree:
+
+    .. code-block::
+
+        qprof.get_qplan_tree()
+
+    .. ipython:: python
+        :suppress:
+
+        res = qprof.get_qplan_tree()
+        res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+
+    .. image:: /../figures/performance_get_qplan_tree_1.png
+
+    We can easily customize the tree:
+
+    .. code-block::
+
+        qprof.get_qplan_tree(
+            metric='cost',
+            shape='square',
+            color_low='#0000FF',
+            color_high='#FFC0CB',
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        res = qprof.get_qplan_tree(
+            metric='cost',
+            shape='square',
+            color_low='#0000FF',
+            color_high='#FFC0CB',
+        )
+        res.render(filename='figures/performance_get_qplan_tree_2', format='png')
+
+    .. image:: /../figures/performance_get_qplan_tree_2.png
+
+    We can look at a specific path ID,
+    and look at some specific paths
+    information:
+
+    .. code-block::
+
+        qprof.get_qplan_tree(
+            path_id=4,
+            path_id_info=[5, 6],
+            metric='cost',
+            shape='square',
+            color_low='#0000FF',
+            color_high='#FFC0CB',
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        res = qprof.get_qplan_tree(
+            path_id=4,
+            path_id_info=[5, 6],
+            metric='cost',
+            shape='square',
+            color_low='#0000FF',
+            color_high='#FFC0CB',
+        )
+        res.render(filename='figures/performance_get_qplan_tree_3', format='png')
+
+    .. image:: /../figures/performance_get_qplan_tree_3.png
 
     **Query Plan Profile**
 
@@ -704,6 +811,8 @@ class QueryProfiler:
             else:
                 self.target_schema = copy.deepcopy(target_schema)
             create_table = create_copy
+
+        self.overwrite = overwrite
         self._create_copy_v_table(create_table=create_table)
 
         # Getting the request
@@ -727,7 +836,6 @@ class QueryProfiler:
                     f"and statement_id={statement_id} was found in the "
                     "v_internal.dc_requests_issued table."
                 )
-        self.overwrite = overwrite
 
     # Tools
 
@@ -823,6 +931,13 @@ class QueryProfiler:
         ]
 
     def _create_copy_v_table(self, create_table: bool = True) -> None:
+        """
+        Functions to create a copy
+        of the performance tables.
+        If the tables exist, it
+        will use them to do the
+        profiling.
+        """
         target_tables = {}
         v_temp_table_dict = self._v_table_dict()
         v_config_table_list = self._v_config_table_list()
@@ -857,7 +972,7 @@ class QueryProfiler:
                         )
                     except:
                         exists = False
-            if create_table and exists:
+            if create_table or not (exists):
                 if conf.get_option("print_info"):
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
@@ -887,13 +1002,17 @@ class QueryProfiler:
     # Main Method
 
     def step(self, idx: int, *args, **kwargs) -> Any:
+        """
+        Function to return the
+        QueryProfiler Step.
+        """
         steps_id = {
             0: self.get_version,
             1: self.get_request,
             2: self.get_qduration,
             3: self.get_qsteps,
             4: NotImplemented,
-            5: self.get_qplan,
+            5: self.get_qplan_tree,
             6: self.get_qplan_profile,
             7: NotImplemented,
             8: NotImplemented,
@@ -1408,6 +1527,7 @@ class QueryProfiler:
     def get_qplan_tree(
         self,
         path_id: int = 1,
+        path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
         metric: Literal[None, "cost", "rows"] = "rows",
         pic_path: Optional[str] = None,
@@ -1423,6 +1543,10 @@ class QueryProfiler:
             A path ID used to filter
             the tree elements by
             starting from it.
+        path_id_info: list, optional
+            ``list`` of path_id used
+            to display the different
+            query information.
         show_ancestors: bool, optional
             If set to ``True`` the
             ancestors of ``path_id``
@@ -1478,6 +1602,21 @@ class QueryProfiler:
             - height:
                 Node height.
                 Default: 0.6.
+            - info_color:
+                Color of the information box.
+                Default: #DFDFDF (lightgray)
+            - info_fontcolor:
+                Fontcolor of the information
+                box.
+                Default: #000000 (black)
+            - info_rowsize:
+                Maximum size of a line
+                in the information box.
+                Default: 30
+            - info_fontsize
+                Information box font
+                size.
+                Default: 8
 
         Returns
         -------
@@ -1507,9 +1646,23 @@ class QueryProfiler:
         We can easily call the function
         to get the query plan Graphviz:
 
-            .. ipython:: python
+        .. ipython:: python
 
-                qprof.get_qplan_tree(return_graphviz = True)
+            qprof.get_qplan_tree(return_graphviz = True)
+
+        We can conveniently get the Query Plan tree:
+
+        .. code-block::
+
+            qprof.get_qplan_tree()
+
+        .. ipython:: python
+            :suppress:
+
+            res = qprof.get_qplan_tree()
+            res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+
+        .. image:: /../figures/performance_get_qplan_tree_1.png
 
         .. note::
 
@@ -1520,6 +1673,7 @@ class QueryProfiler:
         obj = PerformanceTree(
             rows,
             show_ancestors=show_ancestors,
+            show_nodes_info=path_id_info,
             root=path_id,
             metric=metric,
             style=tree_style,

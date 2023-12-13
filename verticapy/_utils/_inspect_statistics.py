@@ -127,6 +127,7 @@ def count_verticapy_functions():
         documentation.
     """
     all_funs = [
+        ("QueryProfiler", "verticapy.performance.vertica.qprof", "QueryProfiler"),
         ("vDataFrame", "verticapy.core.vdataframe", "vDataFrame"),
         ("vDataColumn", "verticapy.core.vdataframe", "vDataColumn"),
         ("TableSample", "verticapy.core.tablesample", "TableSample"),
@@ -188,6 +189,7 @@ def summarise_verticapy_functions():
     """
     f = count_verticapy_functions()
     res = []
+    res += [("Vertica Utils", "QueryProfiler", f["QueryProfiler"][2])]
     res += [("Loaders & Generators", "Loaders", f["Loaders"][0])]
     res += [("Loaders & Generators", "Generators", f["Generators"][0])]
     res += [("Data Visualization Functions", "Matplotlib", f["Plotting Matplotlib"][1])]
@@ -354,7 +356,7 @@ def summarise_verticapy_chart(kind: str = "barh") -> PlottingObject:
         from verticapy._utils._inspect_statistics import summarise_verticapy_chart
         vp.set_option("plotting_lib", "highcharts")
         fig = summarise_verticapy_chart()
-        html_text = fig.htmlcontent.replace("container", "plotting_highcharts_barh_1D")
+        html_text = fig.htmlcontent.replace("container", "plotting_summarise_verticapy_chart")
         with open("SPHINX_DIRECTORY/figures/plotting_summarise_verticapy_chart.html", "w") as file:
             file.write(html_text)
 
@@ -411,6 +413,7 @@ def codecov_verticapy_chart():
     .. ipython:: python
         :suppress:
 
+        import verticapy as vp
         from verticapy._utils._inspect_statistics import codecov_verticapy_chart
         vp.set_option("plotting_lib", "plotly")
         fig = codecov_verticapy_chart()

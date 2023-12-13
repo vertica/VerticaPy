@@ -940,8 +940,14 @@ class TableSample:
         """
         res = []
         d = copy.deepcopy(self.values)
+        index = "index"
+        if "index" not in d:
+            columns = [col for col in d]
+            if len(columns) == 0:
+                raise ValueError("The TableSample is empty.")
+            index = columns[0]
         if use_number_as_category:
-            categories_alpha = d["index"]
+            categories_alpha = d[index]
             categories_beta = list(d)
             del categories_beta[0]
             bijection_categories = {}
@@ -950,19 +956,19 @@ class TableSample:
             for idx, x in enumerate(categories_beta):
                 bijection_categories[x] = idx
         for x in d:
-            if x != "index":
+            if x != index:
                 for idx, val_tmp in enumerate(d[x]):
                     try:
                         val = float(val_tmp)
-                    except TypeError:
+                    except (TypeError, ValueError):
                         val = val_tmp
                     if not use_number_as_category:
-                        res += [[x, d["index"][idx], val]]
+                        res += [[x, d[index][idx], val]]
                     else:
                         res += [
                             [
                                 bijection_categories[x],
-                                bijection_categories[d["index"][idx]],
+                                bijection_categories[d[index][idx]],
                                 val,
                             ]
                         ]

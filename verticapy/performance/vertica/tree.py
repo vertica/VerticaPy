@@ -15,7 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+import html
+import re
 import math
+import textwrap
 from typing import Literal, Optional, Union
 import numpy as np
 
@@ -55,6 +58,10 @@ class PerformanceTree:
         If set to ``True`` the
         ancestors are also
         displayed.
+    show_nodes_info: list, optional
+        List of nodes for which
+        a tooltip node will be
+        created.
 
     Attributes
     ----------
@@ -95,6 +102,7 @@ class PerformanceTree:
         root: int = 1,
         metric: Literal[None, "cost", "rows"] = "rows",
         show_ancestors: bool = True,
+        show_nodes_info: Optional[list] = None,
         style: dict = {},
     ) -> None:
         qplan = rows.split("\n")
@@ -106,12 +114,17 @@ class PerformanceTree:
                 tmp_rows = []
             tmp_rows += [qplan[i]]
         self.rows += ["\n".join(tmp_rows)]
-        if isinstance(root, int) and root > 0:
-            self.root = root - 1
+        self.path_order = [self._get_label(row) for row in self.rows]
+        if len(self.path_order) == 0:
+            raise ValueError(
+                "No PATH ID detected in the Query Plan. It seems to be empty."
+            )
+        if isinstance(root, int) and root in self.path_order:
+            self.root = root
         else:
             raise ValueError(
-                "Wrong value for parameter 'root': "
-                "It has to be a strictly positive int.\n"
+                "Wrong value for parameter 'root':\n"
+                f"It has to be in [{', '.join(self.path_order)}].\n"
                 f"Found {root}."
             )
         if metric in [None, "cost", "rows"]:
@@ -146,7 +159,19 @@ class PerformanceTree:
             d["edge_color"] = "#000000"
         if "edge_style" not in d:
             d["edge_style"] = "solid"
+        if "info_color" not in d:
+            d["info_color"] = "#DFDFDF"
+        if "info_fontcolor" not in d:
+            d["info_fontcolor"] = "#000000"
+        if "info_rowsize" not in d:
+            d["info_rowsize"] = 30
+        if "info_fontsize" not in d:
+            d["info_fontsize"] = 8
         self.style = d
+        if isinstance(show_nodes_info, list):
+            self.show_nodes_info = [i - 1 for i in show_nodes_info]
+        else:
+            self.show_nodes_info = []
 
     # Utils
     @staticmethod
@@ -343,7 +368,11 @@ class PerformanceTree:
         while len(res) > 0 and res[0] in ("+", "-", " ", "|", ">"):
             res = res[1:]
         if return_path_id:
-            res = int(res.split("PATH ID: ")[1].split(")")[0])
+            res = res.split("PATH ID: ")[1].split(")")[0]
+            res = re.sub(r"[^0-9]", "", res)
+            if len(res) == 0:
+                return -1
+            return int(res)
         return res
 
     @staticmethod
@@ -400,10 +429,13 @@ class PerformanceTree:
             res = row.split("Cost: ")[1].split(",")[0]
         else:
             return None
+        if res[-1] in ("]",):
+            res = res[:-1]
         unit = self._map_unit(res[-1])
+        res = int(re.sub(r"[^0-9]", "", res))
         if isinstance(unit, NoneType):
-            return int(res)
-        return int(res[:-1]) * unit
+            return res
+        return res * unit
 
     def _get_all_level_initiator(self, level: int) -> list[int]:
         """
@@ -426,11 +458,11 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        res = [0]
+        res = [self.path_order[0]]
         for idx, row in enumerate(self.rows):
             row_level = self._get_level(row)
             if row_level + 1 == level:
-                res += [idx]
+                res += [self.path_order[idx]]
         return res
 
     @staticmethod
@@ -461,8 +493,9 @@ class PerformanceTree:
                 return level_initiators[i - 1]
         return level_initiators[-1]
 
-    @staticmethod
-    def _find_descendants(node: int, relationships: list[tuple[int, int]]) -> list:
+    def _find_descendants(
+        self, node: int, relationships: list[tuple[int, int]]
+    ) -> list:
         """
         Method used to find all descendants
         (children, grandchildren, and so on)
@@ -488,13 +521,13 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        if node == 0:
+        if node == self.path_order[0]:
             return [x[0] for x in relationships] + [x[1] for x in relationships]
 
         descendants = []
 
         # Recursive function to find descendants
-        def find_recursive(current_node):
+        def find_recursive(current_node: int) -> None:
             nonlocal descendants
             children = [
                 child for parent, child in relationships if parent == current_node
@@ -508,8 +541,7 @@ class PerformanceTree:
 
         return descendants
 
-    @staticmethod
-    def _find_ancestors(node: int, relationships: list[tuple[int, int]]) -> list:
+    def _find_ancestors(self, node: int, relationships: list[tuple[int, int]]) -> list:
         """
         Method used to find all ancestors
         (parents, grandparents, and so on)
@@ -535,14 +567,14 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        if node == 0:
+        if node == self.path_order[0]:
             return []
 
         ancestors = []
 
         # Recursive function to find ancestors
-        def find_recursive(current_node):
-            if current_node == 0:
+        def find_recursive(current_node: int) -> None:
+            if current_node == self.path_order[0]:
                 return
             nonlocal ancestors
             parents = [
@@ -577,9 +609,10 @@ class PerformanceTree:
         relationships = []
         for i in range(n):
             level = self._get_level(self.rows[i])
+            tree_id = self.path_order[i]
             level_initiators = self._get_all_level_initiator(level)
-            id_initiator = self._get_last_initiator(level_initiators, i)
-            relationships += [(id_initiator, i)]
+            id_initiator = self._get_last_initiator(level_initiators, tree_id)
+            relationships += [(id_initiator, tree_id)]
         return relationships
 
     def _gen_labels(self) -> str:
@@ -608,18 +641,30 @@ class PerformanceTree:
         if self.show_ancestors:
             links += self._find_ancestors(self.root, relationships)
         for i in range(n):
+            tree_id = self.path_order[i]
+            dummy_id = self.path_order[-1] + 1
+            init_id = self.path_order[0]
+            info_bubble = self.path_order[-1] + 1 + tree_id
             if not (isinstance(self.metric, NoneType)):
                 alpha = (all_metrics[i] - m_min) / (m_max - m_min)
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
             label = self._get_label(self.rows[i])
-            if i in links:
+            if tree_id in links:
                 row = self._format_row(self.rows[i].replace('"', "'"))
-                res += f'\t{i} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
-            if i == self.root and i > 0 and self.show_ancestors:
+                res += f'\t{tree_id} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}", fixedsize=true];\n'
+                if tree_id in self.show_nodes_info:
+                    info_color = self.style["info_color"]
+                    info_fontcolor = self.style["info_fontcolor"]
+                    info_fontsize = self.style["info_fontsize"]
+                    info_rowsize = self.style["info_rowsize"]
+                    html_content = textwrap.fill(row, width=info_rowsize)
+                    html_content = html.escape(html_content).replace("\n", "<br/>")
+                    res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>];\n'
+            if tree_id == self.root and tree_id != init_id and self.show_ancestors:
                 row = self._format_row(self.rows[self.root].replace('"', "'"))
-                res += f'\t{n} [label="{self.root + 1}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
+                res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
         return res
 
     def _gen_links(self) -> str:
@@ -640,14 +685,23 @@ class PerformanceTree:
         res, n = "", len(self.rows)
         relationships = self._gen_relationships()
         links = self._find_descendants(self.root, relationships)
+        info_color = self.style["info_color"]
         if self.show_ancestors:
             links += self._find_ancestors(self.root, relationships)
         for i in range(n):
+            tree_id = self.path_order[i]
+            dummy_id = self.path_order[-1] + 1
+            init_id = self.path_order[0]
+            info_bubble = self.path_order[-1] + 1 + tree_id
             parent, child = relationships[i]
             if parent != child and child in links:
                 res += f"\t{parent} -> {child} [dir=back];\n"
-            if child == self.root and i > 0 and self.show_ancestors:
-                res += f"\t{parent} -> {n} [dir=back];\n"
+            if child == self.root and tree_id != init_id and self.show_ancestors:
+                res += f"\t{parent} -> {dummy_id} [dir=back];\n"
+            if tree_id in self.show_nodes_info:
+                res += (
+                    f'\t{info_bubble} -> {tree_id} [dir=none, color="{info_color}"];\n'
+                )
         return res
 
     def _gen_legend(self) -> str:
@@ -679,7 +733,7 @@ class PerformanceTree:
         alpha075 = self._generate_gradient_color(0.75)
         alpha1 = self._generate_gradient_color(1.0)
         res = '\tlegend [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
-        res += '<tr><td bgcolor="#DFDFDF">Legend</td></tr>'
+        res += f'<tr><td bgcolor="#DFDFDF">Legend</td></tr>'
         res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha050}">{cats[2]}</td></tr>'
