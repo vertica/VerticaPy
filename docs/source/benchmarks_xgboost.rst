@@ -5,7 +5,7 @@
 XGBoost
 =======
 
-Amazon Redshift | Python | Dask | PySpark
+Amazon Redshift | Python | PySpark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. important::
