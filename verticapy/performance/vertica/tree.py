@@ -418,7 +418,7 @@ class PerformanceTree:
         if res[-1] in ("]",):
             res = res[:-1]
         unit = self._map_unit(res[-1])
-        res = int(re.sub(r'[^0-9]', '', res))
+        res = int(re.sub(r"[^0-9]", "", res))
         if isinstance(unit, NoneType):
             return res
         return res * unit
