@@ -146,6 +146,7 @@ a Pythonic way to work with data stored in Vertica.
     :titlesonly:
 
     getting_started
+    connection
     whats_new
     contribution_guidelines
     api
