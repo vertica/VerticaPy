@@ -512,4 +512,4 @@ Comparison
 
 .. important::
 
-  Since all tests were failing so the test was abondoned.
+  Since all tests were failing so the test was abandoned.
