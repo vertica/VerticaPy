@@ -126,8 +126,8 @@ tox
 # Run tests on specified python versions with `tox -e ENV,ENV`
 tox -e py36,py37
 
-# Run specific tests by filename (e.g.) `test_vDF_combine_join_sort.py`
-tox -- verticapy/tests/vDataFrame/test_vDF_combine_join_sort.py
+# Run specific tests by filename (e.g.) `test_join_union_sort.py`
+tox -- verticapy/tests_new/core/vdataframe/test_join_union_sort.py
 
 # Run all tests on the python version 3.6:
 tox -e py36 -- verticapy/tests
@@ -136,8 +136,8 @@ tox -e py36 -- verticapy/tests
 tox -e py37 -v -- verticapy/tests
 
 # Run an individual test on specified python versions.
-# e.g.: Run the test `test_vDF_append` under `test_vDF_combine_join_sort.py` on the python versions 3.7 and 3.8
-tox -e py37,py38 -- verticapy/tests/vDataFrame/test_vDF_combine_join_sort.py::TestvDFCombineJoinSort::test_vDF_append
+# e.g.: Run the test `test_append` under `test_join_union_sort.py` on the python versions 3.7 and 3.8
+tox -e py37,py38 -- verticapy/tests_new/core/vdataframe/test_join_union_sort.py::TestJoinUnionSort::test_append
 ```
 
 The arguments after the `--` will be substituted everywhere where you specify `{posargs}` in your test *commands* of
