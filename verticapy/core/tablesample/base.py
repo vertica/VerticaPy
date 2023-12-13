@@ -917,20 +917,9 @@ class TableSample:
 
         Let's use the function.
 
-        .. code-block:: python
+        .. ipython:: python
 
             tb.narrow()
-
-        .. ipython:: python
-            :suppress:
-
-            result = tb.narrow()
-            html_file = open("SPHINX_DIRECTORY/figures/core_tb_base_narrow.html", "w")
-            html_file.write(result._repr_html_())
-            html_file.close()
-
-        .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_tb_base_narrow.html
 
         .. seealso::
 
