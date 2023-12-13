@@ -1604,9 +1604,19 @@ class QueryProfiler:
                 Default: 0.6.
             - info_color:
                 Color of the information box.
+                Default: #DFDFDF (lightgray)
             - info_fontcolor:
                 Fontcolor of the information
                 box.
+                Default: #000000 (black)
+            - info_rowsize:
+                Maximum size of a line
+                in the information box.
+                Default: 30
+            - info_fontsize
+                Information box font
+                size.
+                Default: 8
 
         Returns
         -------
