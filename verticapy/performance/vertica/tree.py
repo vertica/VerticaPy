@@ -169,7 +169,7 @@ class PerformanceTree:
             d["info_fontsize"] = 8
         self.style = d
         if isinstance(show_nodes_info, list):
-            self.show_nodes_info = [i - 1 for i in show_nodes_info]
+            self.show_nodes_info = [i for i in show_nodes_info]
         else:
             self.show_nodes_info = []
 
