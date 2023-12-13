@@ -1,0 +1,6 @@
+﻿,Xgboost Parameters,Run 1,,Run 2,,Run 3,,Run 4,,Average,
+,,Time Taken (minutes),Accuracy(%),Time Taken (minutes),Accuracy(%),Time Taken (minutes),Accuracy(%),Time Taken (minutes),Accuracy(%),Average Time Taken (minutes),Average Accuracy(%)
+Vertica,"max_depth=10,nbins=150",40.57,100,40.58,100,40.54,100,40.43,100,40.53,100
+Amazon Redshift,"max_depth=10,max_bin=150",7,100,7,100,7,100,7,100,7,100
+Python,"max_depth=10,max_bin=150",9.77,100,9.05,100,10.31,100,10.18,100,9.8275,100
+PySpark,"max_depth=10,max_bin=150",119.5,100,118.54,100,119.06,100,119.25,100,119.0875,100

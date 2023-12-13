@@ -1,0 +1,7 @@
+﻿,Run 1 - Time (mins),Run 1 - Time (mins),Run 1 - Time (mins),Average (mins)
+Vertica v12.0.4,32.9,32.4,32.3,32.5
+Vertica v23.4,13.75,13.75,13.78,13.76
+Amazon Redshift,1.37,1.37,1.37,1.37*
+Amazon SageMaker,9.25,9.17,8.9,9.11
+Python,5.67,5.78,5.61,5.69
+PySpark,94.23,97.98,98.18,96.8

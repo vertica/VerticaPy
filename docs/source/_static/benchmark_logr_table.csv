@@ -1,0 +1,10 @@
+﻿Data,,,Vertica 8.01 (With BFGS Optimizer),,,Vertica 8.01 (With Newton Optimizer),,,Spark 2.0.1(l-bfgs),,
+Columns,Row,Size,Total Time,Number of Iterations,Error,Total Time,Number of Iterations,Error,Training TIme,Number of Iterations,Error
+100,1M,800MB,14.74,85,,6.7,23,,4.52,41,
+100,10M,8GB,45.15,42,,28.98,22,,12.05,39,
+100,100M,80GB,36.54,2,,194.5,22,,367.27,39,
+100,1B,800GB,388.89,2,,2389.08,22,,2222,39,
+10,10M,800MB,3.57,3,,4.55,20,,15.38,35,
+20,10M,1.6GB,27.09,74,,6.15,20,,12.34,36,
+500,10M,40GB,55.37,3,,477.05,25,,63.02,44,
+1598,10M,~128GB,490.95,3,,8+ hours,,,321.24,48,

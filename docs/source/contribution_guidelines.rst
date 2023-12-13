@@ -29,6 +29,7 @@ This document will guide you through the contribution process. For code contribu
 .. toctree::
   :maxdepth: 2
 
+  cicd
   contribution_guidelines_code
 
 

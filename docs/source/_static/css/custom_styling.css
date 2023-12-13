@@ -529,6 +529,11 @@ p {
   border-bottom-right-radius: 20px;
 }
 
+/* Cards on Benchmarks pages */
+.custom-card-10 {
+  height: 125px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
 
 .custom-class-img-top{
   height: 90px;
