@@ -22,7 +22,7 @@ Spark
 .. important::
 
   |  *Version Details*
-  |  **Vertica:** 23.3.0-5
+  |  **Vertica:** 8.01
   |  **Spark:** ???
 
 This benchmark aims to evaluate the performance of 
@@ -60,7 +60,7 @@ Test Environment
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - 23.3.0-5
+        * - 8.01
           - ???
           - 3 node cluster
           - ???
@@ -88,7 +88,7 @@ Test Environment
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - 23.3.0-5
+        * - 8.01
           - ???
           - ???
           - ???
@@ -122,7 +122,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [1748.51, 2568.68]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -153,7 +153,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [84.7, 216]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -184,7 +184,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [26.39, 96.98]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -215,7 +215,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [4.49, 1.43]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -249,7 +249,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [1808.56, 1788.75]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -280,7 +280,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [85.93, 68.47]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -311,7 +311,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [826.04, 2.09]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -342,7 +342,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [4.81, 0.7]
             colors = ['blue', 'cyan']
             fig = go.Figure()

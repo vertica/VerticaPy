@@ -23,7 +23,7 @@ Spark
 .. important::
 
   |  *Version Details*
-  |  **Vertica:** 23.3.0-5
+  |  **Vertica:** 8.01
   |  **Spark:** 2.02
 
 In this benchmark, we strive to assess the performance 
@@ -61,7 +61,7 @@ Test Environment
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - 23.3.0-5
+        * - 8.01
           - On Premise VM
           - 3 node cluster
           - N/A
@@ -119,7 +119,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [388.89, 2222]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -150,7 +150,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [36.54, 367.27]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -181,7 +181,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [45.15, 12.05]
             colors = ['blue', 'cyan']
             fig = go.Figure()
@@ -212,7 +212,7 @@ Browse through the tabs to see the time comparison:
             :suppress:
 
             import plotly.graph_objects as go
-            labels = ['Vertica 23.3.0-5', 'Spark']
+            labels = ['Vertica 8.01', 'Spark']
             heights = [14.74, 4.52]
             colors = ['blue', 'cyan']
             fig = go.Figure()

@@ -22,7 +22,7 @@ Spark
 .. important::
 
   |  *Version Details*
-  |  **Vertica:** 23.3.0-5
+  |  **Vertica:** 11.1.0-0
   |  **Spark:** 3.2.1
 
 The goal is to assess the performance of Vertica's 
