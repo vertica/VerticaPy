@@ -109,7 +109,7 @@ Comparison
 
 Browse throught the different tabs to see the results:
 
-.. tab:: Upto 1 M
+.. tab:: Up to 1M
 
   .. tab:: Training Run Time
 
@@ -181,7 +181,7 @@ Browse throught the different tabs to see the results:
 
 
 
-.. tab:: More than 1 M
+.. tab:: More than 1M
 
   .. tab:: Training Run Time
 
