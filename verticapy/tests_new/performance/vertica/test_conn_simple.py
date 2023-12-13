@@ -8,6 +8,7 @@ from verticapy.performance.vertica import QueryProfiler
 
 from io import StringIO
 
+
 def test_profile_simple(vp_connect_get_name, raw_client_cursor):
     """Create a query profiler and run the steps on a simple query"""
 
@@ -18,19 +19,20 @@ def test_profile_simple(vp_connect_get_name, raw_client_cursor):
     check_version(qp)
     check_request(qp, "SELECT COUNT(*)")
 
+
 def setup_dummy_table(raw_client_cursor, table_name):
     raw_client_cursor.execute(f"DROP table if exists {table_name};")
     raw_client_cursor.fetchall()
     raw_client_cursor.execute(f"CREATE TABLE {table_name} (x int);")
     raw_client_cursor.fetchall()
 
-    raw_client_cursor.executemany(f"insert into {table_name} values (?);",
-                                  [(1,),
-                                   (2,),
-                                   (3,),
-                                   (4,)],
-                                  use_prepared_statements=True)
+    raw_client_cursor.executemany(
+        f"insert into {table_name} values (?);",
+        [(1,), (2,), (3,), (4,)],
+        use_prepared_statements=True,
+    )
     raw_client_cursor.fetchall()
+
 
 def check_version(qp):
     version_tuple = qp.get_version()
@@ -38,8 +40,9 @@ def check_version(qp):
     # version tuple can be
     #  (24, 1, 0)    (dev build)
     #  (11, 0, 1, 2) (release build)
-    assert (len(version_tuple) == 3 or len(version_tuple) == 4)
-    assert (version_tuple[0] >= 23 or version_tuple[0] in [12, 11])
+    assert len(version_tuple) == 3 or len(version_tuple) == 4
+    assert version_tuple[0] >= 23 or version_tuple[0] in [12, 11]
+
 
 def check_request(qp, fragment):
     sql = qp.get_request(indent_sql=False)
@@ -49,18 +52,21 @@ def check_request(qp, fragment):
     logging.info(f"Request retreived is: {sql}")
     assert fragment.lower() in sql.lower()
 
+
 def test_connect_perf(vp_connect_get_name, raw_client_cursor):
-    """ Connect to the vertica server
+    """Connect to the vertica server
     Run a very simple verticapy connection via dataframe
     """
-    df = vp.vDataFrame("""
+    df = vp.vDataFrame(
+        """
     /*test_connect_perf*/
     SELECT 1 as x
     UNION ALL
     SELECT 2 as x
     UNION ALL
     SELECT 3 as x
-    """)
+    """
+    )
     # Check that the dataframe has the expected values
     avg = df["x"].avg()
     logging.info(f"Average from the data frame is: {avg}")
@@ -69,11 +75,13 @@ def test_connect_perf(vp_connect_get_name, raw_client_cursor):
     # Confirm that the dataframe really did connect
     # and send the query
     # TODO: we could clear the dc table first?
-    raw_client_cursor.execute("""
+    raw_client_cursor.execute(
+        """
     SELECT count(*)
     FROM dc_requests_issued
     WHERE request ilike '%test_connect_perf%';
-    """)
+    """
+    )
 
     rset = raw_client_cursor.fetchall()
     logging.info(f"Result set looking for test queries {rset}")

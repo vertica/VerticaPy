@@ -8,6 +8,7 @@ import verticapy as vp
 # vertica_python is client connection
 import vertica_python
 
+
 @pytest.fixture()
 def vp_connect_get_name():
     logging.info("Trying to connect")
@@ -16,10 +17,10 @@ def vp_connect_get_name():
     # TODO: when this fails, the error message has
     # verbose stack information, but not instructions
     # for how to fix things
-    vp.new_connection(info_map,
-                      name="pytest connection")
+    vp.new_connection(info_map, name="pytest connection")
     logging.info("Connection complete")
     return connection_name
+
 
 @pytest.fixture
 def raw_client_cursor():
@@ -31,6 +32,7 @@ def raw_client_cursor():
     finally:
         if conn is not None:
             conn.close()
+
 
 def get_connection_info(verbose=True):
     # Fetch from the environment
@@ -48,25 +50,33 @@ def get_connection_info(verbose=True):
     user = test_user if test_user is not None else os.environ.get("USER", None)
 
     if user is None:
-        raise ValueError("Neither VP_TEST_USER nor USER are set, but the test framework expected them to be set")
-    msg = ("\nConnection info:\n"
-           f"host = {host}\n"
-           f"port = {port}\n"
-           f"database = {db}\n"
-           f"user = {user}\n"
-           f"password = {'EMPTY' if password is None else '(REDACTED)'}\n")
-    if (verbose):
+        raise ValueError(
+            "Neither VP_TEST_USER nor USER are set, but the test framework expected them to be set"
+        )
+    msg = (
+        "\nConnection info:\n"
+        f"host = {host}\n"
+        f"port = {port}\n"
+        f"database = {db}\n"
+        f"user = {user}\n"
+        f"password = {'EMPTY' if password is None else '(REDACTED)'}\n"
+    )
+    if verbose:
         print(msg)
     logging.info(msg)
 
-    return {"host": host,
-            "port": port,
-            "database": db,
-            "password": password,
-            "user": user,
-            "connection_timeout": 5}
+    return {
+        "host": host,
+        "port": port,
+        "database": db,
+        "password": password,
+        "user": user,
+        "connection_timeout": 5,
+    }
+
 
 def _throw_if_none(value, env_var):
     if value is None:
-        raise ValueError(f"{env_var} was not set, but the test framework expected it to be set")
-
+        raise ValueError(
+            f"{env_var} was not set, but the test framework expected it to be set"
+        )

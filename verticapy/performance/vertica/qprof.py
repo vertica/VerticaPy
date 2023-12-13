@@ -1662,7 +1662,7 @@ class QueryProfiler:
                 **style_kwargs,
             )
         return vdf
-    
+
     # Step 10: Query events
     def get_query_events(self) -> vDataFrame:
         """
