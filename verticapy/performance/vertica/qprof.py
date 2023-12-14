@@ -1820,19 +1820,89 @@ class QueryProfiler:
     # Step 10: Query events
     def get_query_events(self) -> vDataFrame:
         """
-        Returns a vDataFrame that contains a table listing query events
-
-        Parameters
-        ----------
-        None
+        Returns a :py:class`vDataFrame` that contains a table listing query events.
 
         Returns
         -------
-        A vDataframe that contains a table listing query events
+        A vDataframe that contains a table listing query events. 
+        Columns: 
+          1) event_timestamp:
+              Type: Timestamp
+              Description: When the event happened
+              Example: 2023-12-11 19:01:03.543272-05:00
+          2) node_name:
+              Type: string
+              Description: Which node the event happened on
+              Example: v_db_node0003
+          3) event_category:
+              Type: string
+              Description: The general kind of event. 
+              Examples: OPTIMIZATION, EXECUTION
+          4) event_type:
+              Type: string
+              Description: The specific kind of event.
+              Examples: AUTO_PROJECTION_USED, SMALL_MERGE_REPLACED
+          5) event_description:
+              Type: string
+              Description: A sentence explaining the event
+              Example: "The optimizer ran a query using auto-projections"
+          6) opreator_name:
+              Type: string
+              Description: The name of the EE operator associated with this event. NULL
+              if no operator is associated with the event.
+              Example: StorageMerge
+          7) path_id: 
+              Type: integer
+              Description: A number that uniquely identifies the operator in the plan
+              Examples: 1, 4
+          8) event_details:
+              Type: string
+              Description: Additional specific information related to this event
+              Example: "t1_super is an auto-projection"
+          9) suggested_action:
+              Type: string
+              Description: A sentence describing potential remedies 
 
         Examples
         --------
-        To be completed
+        Import verticapy, load a dataset, and run a query
+        .. code-block:: python
+            from verticapy.datasets import load_amazon
+            amazon = load_amazon()
+            query = amazon.groupby(
+                columns = ["date"],
+                expr = ["MONTH(date) AS month, AVG(number) AS avg_number"],
+            )
+
+        Load the sql magic, then look at the system table to identify the transaction_id and statement_id
+        .. code-block:: python
+            %load_ext verticapy.sql
+            %%%%sql
+            SELECT *
+            FROM query_requests
+            WHERE request ILIKE '%avg_number%FROM%public%amazon%'
+            and request not ilike '%query_requests%'
+            order by start_timestamp desc;
+
+        We will assume that the transaction id is `45035996273707473` and statement id is `12`.
+
+        Now we create a :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        instance and get the query events information.
+
+        .. code-block:: python
+            from verticapy.performance.vertica import QueryProfiler
+            qprof = QueryProfiler(transaction_id=45035996273707473, statement_id=12)
+
+        Then profile a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+            qprof.get_query_events()
 
         """
         query = f"""
