@@ -23,33 +23,34 @@ from verticapy.utilities import drop
 from verticapy.machine_learning.vertica.feature_extraction.text import (
     TfidfVectorizer as vpy_TfidfVectorizer,
 )
+from verticapy.tests_new.machine_learning.vertica import abs_tolerance_map
 
 
 class TestTFIDF:
     """
     test class for base TFIDF
     """
+    documents = [
+        "Natural language processing is a field of study in artificial intelligence.",
+        # "TF-IDF stands for Term Frequency-Inverse Document Frequency.",
+        "Machine learning algorithms can be applied to text data for classification.",
+        "The 20 Newsgroups dataset is a collection of text documents used for text classification.",
+        "Clustering is a technique used to group similar documents together.",
+        "Python is a popular programming language for natural language processing tasks.",
+        "TF-IDF is a technique widely used in information retrieval.",
+        "An algorithm is a set of instructions designed to perform a specific task.",
+        "Data preprocessing is an important step in preparing data for machine learning.",
+    ]
 
-    def test_fit(self):
+    def test_transform(self):
         """
         test function for fit TFIDF
         """
-        documents = [
-            "Natural language processing is a field of study in artificial intelligence.",
-            "TF-IDF stands for Term Frequency-Inverse Document Frequency.",
-            "Machine learning algorithms can be applied to text data for classification.",
-            "The 20 Newsgroups dataset is a collection of text documents used for text classification.",
-            "Clustering is a technique used to group similar documents together.",
-            "Python is a popular programming language for natural language processing tasks.",
-            "TF-IDF is a technique widely used in information retrieval.",
-            "An algorithm is a set of instructions designed to perform a specific task.",
-            "Data preprocessing is an important step in preparing data for machine learning.",
-        ]
 
         data = vp.vDataFrame(
             {
-                "id": (list(range(1, len(documents) + 1))),
-                "values": documents,
+                "id": (list(range(1, len(self.documents) + 1))),
+                "values": self.documents,
             }
         )
         drop("test_idf")
@@ -64,8 +65,8 @@ class TestTFIDF:
 
         # python
         py_model = py_TfidfVectorizer()
-        py_model.fit(documents)
-        py_term_vectors = py_model.transform(documents)
+        py_model.fit(self.documents)
+        py_term_vectors = py_model.transform(self.documents)
         array_len = len(py_term_vectors.toarray())
         merge_pdf = pd.DataFrame()
 
@@ -75,21 +76,24 @@ class TestTFIDF:
                 {
                     "row_id": len(chain_array) * [i + 1],
                     "word": py_model.get_feature_names_out(),
-                    "tfidf": chain(*chain_array),
+                    "tfidf_py": chain(*chain_array),
                 }
             )
-            nonzero_pdf = pdf[~pdf["tfidf"].isin([0])]
+            nonzero_pdf = pdf[~pdf["tfidf_py"].isin([0])]
             merge_pdf = pd.concat([merge_pdf, nonzero_pdf])
 
-        # inner join. as some of the stop words are ignored in sklearn(by default)
+        # inner join as some of the stop words are ignored in sklearn(by default)
         merge_vdf_pdf = vdf_merge_pandas.merge(
             merge_pdf, how="inner", on=["row_id", "word"]
         )
 
         def compare(x):
             print(x)
-            # print(f"row_id: {x['row_id']}, word: {x['word']}")
-            assert x["tfidf_x"] == pytest.approx(x["tfidf_y"], abs=1e-01)
-            print('\n')
+            assert x["tfidf"] == pytest.approx(
+                x["tfidf_py"], abs=abs_tolerance_map["TFIDF"]
+            )
 
         merge_vdf_pdf.apply(compare, axis=1)
+
+    def test_get_attributes(self):
+        pass
