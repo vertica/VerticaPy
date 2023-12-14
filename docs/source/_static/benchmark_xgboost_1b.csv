@@ -1,0 +1,7 @@
+﻿,Run 1 - Time (mins),Run 1 - Time (mins),Run 1 - Time (mins),Average (mins)
+Vertica v12.0.4,219.18,219.14,219.03,219.12
+Vertica v23.4,106.76,108.02,107.56,107.45**
+Amazon Redshift,1.37,1.37,1.37,1.37*
+Amazon SageMaker,Training did not get complete in 12 HRs.,,,
+Python,Memory Error,,,
+PySpark,1108.08,1066.39,1083.06,1085.84

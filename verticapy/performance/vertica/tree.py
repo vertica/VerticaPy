@@ -42,7 +42,7 @@ class PerformanceTree:
     rows: str
         ``str`` representing
         the Query Plan.
-    root: int, optional
+    path_id: int, optional
         A path ID used to filter
         the tree elements by
         starting from it.
@@ -58,7 +58,7 @@ class PerformanceTree:
         If set to ``True`` the
         ancestors are also
         displayed.
-    show_nodes_info: list, optional
+    path_id_info: list, optional
         List of nodes for which
         a tooltip node will be
         created.
@@ -99,10 +99,10 @@ class PerformanceTree:
     def __init__(
         self,
         rows: str,
-        root: int = 1,
+        path_id: Optional[int] = None,
         metric: Literal[None, "cost", "rows"] = "rows",
         show_ancestors: bool = True,
-        show_nodes_info: Optional[list] = None,
+        path_id_info: Optional[list] = None,
         style: dict = {},
     ) -> None:
         qplan = rows.split("\n")
@@ -117,15 +117,19 @@ class PerformanceTree:
         self.path_order = [self._get_label(row) for row in self.rows]
         if len(self.path_order) == 0:
             raise ValueError(
-                "No PATH ID detected in the Query Plan. It seems to be empty."
+                "No PATH ID detected in the Query Plan.\n"
+                "It seems to be empty.\nAre you sured to have "
+                "profiled your query?"
             )
-        if isinstance(root, int) and root in self.path_order:
-            self.root = root
+        if isinstance(path_id, NoneType):
+            path_id = self.path_order[0]
+        if isinstance(path_id, int) and path_id in self.path_order:
+            self.path_id = path_id
         else:
             raise ValueError(
-                "Wrong value for parameter 'root':\n"
-                f"It has to be in [{', '.join(self.path_order)}].\n"
-                f"Found {root}."
+                "Wrong value for parameter 'path_id':\n"
+                f"It has to be in [{', '.join([str(p) for p in self.path_order])}].\n"
+                f"Found {path_id}."
             )
         if metric in [None, "cost", "rows"]:
             self.metric = metric
@@ -168,10 +172,26 @@ class PerformanceTree:
         if "info_fontsize" not in d:
             d["info_fontsize"] = 8
         self.style = d
-        if isinstance(show_nodes_info, list):
-            self.show_nodes_info = [i - 1 for i in show_nodes_info]
+        self.path_id_info = []
+        if isinstance(path_id_info, int):
+            path_id_info = [path_id_info]
+        if isinstance(path_id_info, list):
+            for i in path_id_info:
+                if i not in self.path_order:
+                    raise ValueError(
+                        "Wrong value for parameter 'path_id_info':\n"
+                        f"It has to be integers in [{', '.join([str(p) for p in self.path_order])}].\n"
+                        f"Found {i}."
+                    )
+            self.path_id_info = [i for i in path_id_info]
+        elif isinstance(path_id_info, NoneType):
+            self.path_id_info = []
         else:
-            self.show_nodes_info = []
+            raise ValueError(
+                "Wrong type for parameter 'path_id_info'.\n"
+                "It should be a list of integers.\n"
+                f"Found: {type(path_id_info)}."
+            )
 
     # Utils
     @staticmethod
@@ -637,9 +657,9 @@ class PerformanceTree:
             ]
             m_min, m_max = min(all_metrics), max(all_metrics)
         relationships = self._gen_relationships()
-        links = self._find_descendants(self.root, relationships) + [self.root]
+        links = self._find_descendants(self.path_id, relationships) + [self.path_id]
         if self.show_ancestors:
-            links += self._find_ancestors(self.root, relationships)
+            links += self._find_ancestors(self.path_id, relationships)
         for i in range(n):
             tree_id = self.path_order[i]
             dummy_id = self.path_order[-1] + 1
@@ -654,7 +674,7 @@ class PerformanceTree:
             if tree_id in links:
                 row = self._format_row(self.rows[i].replace('"', "'"))
                 res += f'\t{tree_id} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}", fixedsize=true];\n'
-                if tree_id in self.show_nodes_info:
+                if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
                     info_fontcolor = self.style["info_fontcolor"]
                     info_fontsize = self.style["info_fontsize"]
@@ -662,8 +682,8 @@ class PerformanceTree:
                     html_content = textwrap.fill(row, width=info_rowsize)
                     html_content = html.escape(html_content).replace("\n", "<br/>")
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>];\n'
-            if tree_id == self.root and tree_id != init_id and self.show_ancestors:
-                row = self._format_row(self.rows[self.root].replace('"', "'"))
+            if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
+                row = self._format_row(self.rows[self.path_id].replace('"', "'"))
                 res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
         return res
 
@@ -684,10 +704,10 @@ class PerformanceTree:
         """
         res, n = "", len(self.rows)
         relationships = self._gen_relationships()
-        links = self._find_descendants(self.root, relationships)
+        links = self._find_descendants(self.path_id, relationships)
         info_color = self.style["info_color"]
         if self.show_ancestors:
-            links += self._find_ancestors(self.root, relationships)
+            links += self._find_ancestors(self.path_id, relationships)
         for i in range(n):
             tree_id = self.path_order[i]
             dummy_id = self.path_order[-1] + 1
@@ -696,9 +716,9 @@ class PerformanceTree:
             parent, child = relationships[i]
             if parent != child and child in links:
                 res += f"\t{parent} -> {child} [dir=back];\n"
-            if child == self.root and tree_id != init_id and self.show_ancestors:
+            if child == self.path_id and tree_id != init_id and self.show_ancestors:
                 res += f"\t{parent} -> {dummy_id} [dir=back];\n"
-            if tree_id in self.show_nodes_info:
+            if tree_id in self.path_id_info:
                 res += (
                     f'\t{info_bubble} -> {tree_id} [dir=none, color="{info_color}"];\n'
                 )

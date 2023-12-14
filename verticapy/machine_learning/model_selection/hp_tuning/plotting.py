@@ -680,6 +680,7 @@ def plot_acf_pacf(
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
+        from verticapy.machine_learning.model_selection import plot_acf_pacf
         result = plot_acf_pacf(
             amazon,
             column = "number",

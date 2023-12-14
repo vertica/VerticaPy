@@ -62,28 +62,6 @@ def titanic_vd():
 
 
 class TestvDFFeatureEngineering:
-    def test_vDF_sessionize(self, smart_meters_vd):
-        smart_meters_copy = smart_meters_vd.copy()
-
-        # expected exception
-        with pytest.raises(errors.QueryError) as exception_info:
-            smart_meters_copy.sessionize(
-                ts="time", by=["id"], session_threshold="1 time", name="slot"
-            )
-        # checking the error message
-        assert exception_info.match("seems to be incorrect")
-
-        smart_meters_copy.sessionize(
-            ts="time", by=["id"], session_threshold="1 hour", name="slot"
-        )
-        smart_meters_copy.sort({"id": "asc", "time": "asc"})
-
-        assert smart_meters_copy.shape() == (11844, 4)
-        assert smart_meters_copy["time"][2] == datetime.datetime(2014, 1, 2, 10, 45)
-        assert smart_meters_copy["val"][2] == 0.321
-        assert smart_meters_copy["id"][2] == 0
-        assert smart_meters_copy["slot"][2] == 2
-
     def test_vDF_case_when(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy.case_when(

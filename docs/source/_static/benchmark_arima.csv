@@ -1,0 +1,8 @@
+#Records,Run1,,,,,,Run2,,,,,,Run3,,,,,,"Average (Run1, Run2, Run3)",,,,,
+,Training Time (minutes),,Prediction Time (seconds),,MSE (Mean Squared Error)*,,Training Time (minutes),,Prediction Time (seconds),,MSE (Mean Squared Error)*,,Training Time (minutes),,Prediction Time (seconds),,MSE (Mean Squared Error)*,,Average Training Time (minutes),,Average Prediction Time (seconds),,Average MSE (Mean Squared Error)*,
+,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python,Vertica,Python
+10K,0.021,0.062,0.026,0.007,24.53,24.604,0.022,0.068,0.032,0.005,24.54,24.604,0.023102,0.062166667,0.02498,0.007,24.54,24.604,0.022,0.064,0.028,0.006,24.54,24.6
+100K,0.054,0.74,0.054,0.02,30.53,24.974,0.058,0.781,0.058,0.018,30.53,24.974,0.052804483,0.712666667,0.054513,0.02,30.53,24.974,0.055,0.745,0.056,0.019,30.53,24.97
+1M,0.513,8.73,0.368,0.026,27.94,25.003,0.529,9.533,0.365,0.026,27.94,24.604,0.5043333,8.505666667,0.360156,0.03,27.94,24.604,0.515,8.923,0.364,0.027,27.94,25
+10M,4.791,93.47,3.797,0.34,28.52,24.986,4.822,99.097,3.772,0.33,28.52,24.986,4.711237383,87.353,3.786029,0.33,28.52,24.986,4.775,93.307,3.785,0.333,28.52,24.99
+100M,157.741,1107.33,57.43,5.5,32.66,24.994,158.472,1197.598,56.329,5.237,32.66,24.994,157.0771004,1066.970833,57.396815,5.53,32.66,24.994,157.763,1123.966,57.052,5.422,32.66,24.99

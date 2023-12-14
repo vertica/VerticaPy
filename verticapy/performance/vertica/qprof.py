@@ -1526,7 +1526,7 @@ class QueryProfiler:
 
     def get_qplan_tree(
         self,
-        path_id: int = 1,
+        path_id: Optional[int] = None,
         path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
         metric: Literal[None, "cost", "rows"] = "rows",
@@ -1673,8 +1673,8 @@ class QueryProfiler:
         obj = PerformanceTree(
             rows,
             show_ancestors=show_ancestors,
-            show_nodes_info=path_id_info,
-            root=path_id,
+            path_id_info=path_id_info,
+            path_id=path_id,
             metric=metric,
             style=tree_style,
         )

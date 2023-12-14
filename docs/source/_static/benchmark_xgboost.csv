@@ -1,0 +1,7 @@
+﻿,,Run1,,Run1,,Run1,,Average,
+,Feature importance(top 5) ,Time Taken (minutes),Accuracy(%),Time Taken (minutes),Accuracy(%),Time Taken (minutes),Accuracy(%),Time Taken (minutes),Accuracy(%)
+Vertica,"col26, col28, col27, col23, col25 ",6.14,72.52,6.07,72.52,6.08,72.52,6.1,72.52
+Amazon Redshift,"col25, col27, col26, col22, col24",1.38,70.5,1.47,70.51,1.37,70.56,1.41*,70.52
+Amazon SageMaker,"col25, col27, col26, col22, col24",2.05,73.26,2.04,73.26,2.15,73.26,2.08,73.26
+Python,"col26, col28, col27, col23, col6",0.47,73.29,0.48,73.29,0.47,73.29,0.47,73.29
+PySpark,"col25, col27, col26, col22, col5",7.27,73.29,7.23,73.29,7.28,73.29,7.26,73.29
