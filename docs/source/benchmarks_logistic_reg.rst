@@ -121,7 +121,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [388.89, 2222]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -139,10 +139,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
                 )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1b.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_1b.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1b.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_1b.html
 
     .. tab:: 100M
 
@@ -152,7 +152,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [36.54, 367.27]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -170,10 +170,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_100m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_100m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_100m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_100m.html
     
     .. tab:: 10M
 
@@ -183,7 +183,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [45.15, 12.05]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -201,10 +201,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_10m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_10m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_10m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_10m.html
 
     .. tab:: 1M
 
@@ -214,7 +214,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [14.74, 4.52]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -232,7 +232,7 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_1m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_logistic_regression_spark_bfgs_1m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_logistic_regression_spark_bfgs_1m.html
