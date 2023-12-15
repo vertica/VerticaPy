@@ -19,8 +19,7 @@ Machine Learning
           ^^^^
           Creates platform-independent machine learning 
           models that can be easily exported.
-          +++
-          Learn more
+
 
 
     .. grid-item::
@@ -35,8 +34,7 @@ Machine Learning
           Evaluate model performance with VerticaPy's
           comprehensive metrics for informed decision-making.
 
-          +++
-          Learn more
+
 
     .. grid-item::
     
@@ -49,8 +47,7 @@ Machine Learning
           ^^^^
           Streamline model selection, validation, and 
           fine-tuning with VerticaPy.
-          +++
-          Learn more
+
 
 
     .. grid-item::
@@ -65,8 +62,7 @@ Machine Learning
           Integrate advanced machine learning models 
           seamlessly with Vertica's power in VerticaPy.
 
-          +++
-          Learn more
+
 
 
     .. grid-item::
@@ -80,8 +76,7 @@ Machine Learning
          ^^^^
          Simplify ML operations with VerticaPy, 
          facilitating deployment, monitoring, and management.
-         +++
-         Learn more
+
 
     .. grid-item::
     
@@ -94,8 +89,7 @@ Machine Learning
          ^^^^
          Experience automated model building and 
          optimization with Delphi in VerticaPy.
-         +++
-         Learn more
+
 
 .. toctree::
    :maxdepth: 1
