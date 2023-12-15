@@ -93,7 +93,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.boxplot`_
+            options, please see :ref:`chart_gallery.boxplot`
 
         Let's begin by importing `VerticaPy`.
 
@@ -335,7 +335,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.bar`_
+            options, please see :ref:`chart_gallery.bar`
 
         Let's begin by importing `VerticaPy`.
 
@@ -612,7 +612,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.barh`_
+            options, please see :ref:`chart_gallery.barh`
 
         Let's begin by importing `VerticaPy`.
 
@@ -824,7 +824,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.pie`_
+            options, please see :ref:`chart_gallery.pie`
 
         Let's begin by importing `VerticaPy`.
 
@@ -982,7 +982,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.hist`_
+            options, please see :ref:`chart_gallery.hist`
 
         Let's begin by importing `VerticaPy`.
 
@@ -1130,7 +1130,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.density`_
+            options, please see :ref:`chart_gallery.density`
 
         Let's begin by importing `VerticaPy`.
 
@@ -1330,7 +1330,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.line`_
+            options, please see :ref:`chart_gallery.line`
 
         Let's begin by importing `VerticaPy`.
 
@@ -1473,7 +1473,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.range`_
+            options, please see :ref:`chart_gallery.range`
 
         Let's begin by importing `VerticaPy`.
 
@@ -1748,7 +1748,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.pivot`_
+            options, please see :ref:`chart_gallery.pivot`
 
         Let's begin by importing `VerticaPy`.
 
@@ -1868,7 +1868,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.contour`_
+            options, please see :ref:`chart_gallery.contour`
 
         Let's begin by importing `VerticaPy`.
 
@@ -2312,7 +2312,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.scatter`_
+            options, please see :ref:`chart_gallery.scatter`
 
         Let's begin by importing `VerticaPy`.
 
@@ -2596,7 +2596,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.outliers`_
+            options, please see :ref:`chart_gallery.outliers`
 
         Let's begin by importing `VerticaPy`.
 
@@ -2858,7 +2858,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.boxplot`_
+            options, please see :ref:`chart_gallery.boxplot`
 
         Let's begin by importing `VerticaPy`.
 
@@ -3030,7 +3030,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.bar`_
+            options, please see :ref:`chart_gallery.bar`
 
         Let's begin by importing `VerticaPy`.
 
@@ -3196,7 +3196,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.bar`_
+            options, please see :ref:`chart_gallery.bar`
 
         Let's begin by importing `VerticaPy`.
 
@@ -3358,7 +3358,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.pie`_
+            options, please see :ref:`chart_gallery.pie`
 
         Let's begin by importing `VerticaPy`.
 
@@ -3494,7 +3494,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.spider`_
+            options, please see :ref:`chart_gallery.spider`
 
         Let's begin by importing `VerticaPy`.
 
@@ -3649,7 +3649,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.hist`_
+            options, please see :ref:`chart_gallery.hist`
 
         Let's begin by importing `VerticaPy`.
 
@@ -3797,7 +3797,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.density`_
+            options, please see :ref:`chart_gallery.density`
 
         Let's begin by importing `VerticaPy`.
 
@@ -3977,7 +3977,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.candlestick`_
+            options, please see :ref:`chart_gallery.candlestick`
 
         Let's begin by importing `VerticaPy`.
 
@@ -4106,7 +4106,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.line`_
+            options, please see :ref:`chart_gallery.line`
 
         Let's begin by importing `VerticaPy`.
 
@@ -4225,7 +4225,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.range`_
+            options, please see :ref:`chart_gallery.range`
 
         Let's begin by importing `VerticaPy`.
 
@@ -4319,7 +4319,7 @@ class vDCPlot(vDCScaler):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery.geo`_
+            options, please see :ref:`chart_gallery.geo`
 
         Let's begin by importing the dataset module of `VerticaPy`.
         It provides a range of datasets for both training and
