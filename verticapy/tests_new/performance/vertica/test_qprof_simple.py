@@ -23,10 +23,11 @@ from verticapy.datasets import load_amazon
 from verticapy.core.vdataframe import vDataFrame
 
 
-def test_profile_simple():
+def test_profile_simple(schema_loader):
     """Create a query profiler and run the steps on a simple query"""
     assert len(vp.available_connections()) > 0
-    amzn = setup_dummy_table_run_query()
+    schema = schema_loader
+    setup_dummy_table_run_query(schema)
     request = f"""
     SELECT 
         date, 
@@ -41,8 +42,8 @@ def test_profile_simple():
     check_request(qp, "avg(number) AS avg_number")
 
 
-def setup_dummy_table_run_query() -> vDataFrame:
-    amzn = load_amazon()
+def setup_dummy_table_run_query(schema) -> vDataFrame:
+    amzn = load_amazon(schema=schema)
     return amzn
 
 
