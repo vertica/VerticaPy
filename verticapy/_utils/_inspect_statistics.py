@@ -249,9 +249,9 @@ def gen_rst_summary_table() -> str:
         documentation.
     """
     # Header
-    table = "+----------------------------------------+------------------------+---------------+\n"
-    table += "| Category                               | Subcategory            | Functions     |\n"
-    table += "+========================================+========================+===============+\n"
+    table = "+----------------------------------------+-----------------------+--------------+\n"
+    table += "| Category                               | Subcategory           | Functions    |\n"
+    table += "+========================================+=======================+==============+\n"
 
     # Data rows
     current_category = None
@@ -262,18 +262,18 @@ def gen_rst_summary_table() -> str:
         if category != current_category:
             # New category, print total functions for the previous one
             if current_category is not None:
-                table += f"| {''.ljust(39)}|| {'Total'.ljust(22)}|| {str(total_functions).ljust(13)}|\n"
-                table += "+----------------------------------------+------------------------+---------------+\n"
+                table += f"| {''.ljust(39)}| {'Total'.ljust(22)}| {str(total_functions).ljust(13)}|\n"
+                table += "+----------------------------------------+-----------------------+--------------+\n"
 
             # Start a new category
             current_category = category
             total_functions = 0
 
             # Print the current category for the first row
-            table += f"| {category.ljust(39)}|| {subcategory.ljust(22)}|| {str(functions).ljust(13)}|\n"
+            table += f"| {category.ljust(39)}| {subcategory.ljust(22)}| {str(functions).ljust(13)}|\n"
         else:
             # Print subsequent rows for the same category without repeating category
-            table += f"| {''.ljust(39)}|| {subcategory.ljust(22)}|| {str(functions).ljust(13)}|\n"
+            table += f"| {''.ljust(39)}| {subcategory.ljust(22)}| {str(functions).ljust(13)}|\n"
 
         # Accumulate total functions
         total_functions += functions
@@ -281,8 +281,8 @@ def gen_rst_summary_table() -> str:
     # Print total functions for the last category
     if current_category is not None:
         if subcategory != "Total":
-            table += f"| {''.ljust(39)}|| {'Total'.ljust(22)}|| {str(total_functions).ljust(13)}|\n"
-        table += "+----------------------------------------+------------------------+---------------+\n"
+            table += f"| {''.ljust(39)}| {'Total'.ljust(22)}| {str(total_functions).ljust(13)}|\n"
+        table += "+----------------------------------------+-----------------------+--------------+\n"
 
     return table
 
