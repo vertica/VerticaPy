@@ -16,8 +16,8 @@ based on the input features, Naive Bayes provides a
 straightforward yet powerful approach to predictive 
 modeling.
 
-Spark
-~~~~~~
+Vertica vs Spark
+~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -85,8 +85,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -111,8 +111,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -141,8 +141,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -167,8 +167,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version

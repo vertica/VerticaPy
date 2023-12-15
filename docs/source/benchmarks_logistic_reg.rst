@@ -17,13 +17,13 @@ fields, including healthcare, finance, and marketing.
 Its simplicity, interpretability, and effectiveness 
 make it a popular choice for predictive modeling.
 
-Spark
-~~~~~~
+Vertica vs Spark
+~~~~~~~~~~~~~~~~~
 
 .. important::
 
   |  *Version Details*
-  |  **Vertica:** 8.01
+  |  **Vertica:** 8.0.1
   |  **Spark:** 2.02
 
 In this benchmark, we strive to assess the performance 
@@ -54,14 +54,14 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - 8.01
+        * - 8.0.1
           - On Premise VM
           - 3 node cluster
           - N/A
@@ -80,8 +80,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version

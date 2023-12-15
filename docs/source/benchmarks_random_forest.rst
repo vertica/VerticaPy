@@ -18,8 +18,8 @@ individual decision trees by leveraging the diversity of an
 ensemble.
 
 
-Spark ML
-~~~~~~~~~
+Vertica vs Spark ML
+~~~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -89,8 +89,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -115,8 +115,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -145,8 +145,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -171,8 +171,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -456,8 +456,8 @@ Comparison
       :file: SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_multi_accuracy.html
 
 
-Madlib
-~~~~~~
+Vertica vs Madlib
+~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -538,4 +538,5 @@ Comparison
 
 .. important::
 
-  Since all tests were failing so the test was abandoned.
+  Since all **Madlib** runs were failing for 
+  this size of dataset so the benchmark was abandoned.

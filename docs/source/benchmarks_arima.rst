@@ -13,8 +13,8 @@ provide the option to apply a differencing operation to the input
 data, which can turn a non-stationary time series into a stationary 
 time series.
 
-Python Statsmodels
-~~~~~~~~~~~~~~~~~~~
+Vertica vs Python Statsmodels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -49,8 +49,8 @@ Below are the configuration on which the tests were carried out:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -75,8 +75,8 @@ Below are the configuration on which the tests were carried out:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -247,7 +247,7 @@ Browse throught the different tabs to see the results:
           "Python": [24.99, 24.99]
       })
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
-        labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
+        labels={"value": "MSE", "variable": "Environment", "Size": "Data Size"},
         barmode="group",
         color_discrete_map={"Vertica": "#1A6AFF", "Python": "#f0d917"},
       )

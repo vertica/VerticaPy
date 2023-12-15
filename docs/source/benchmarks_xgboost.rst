@@ -5,7 +5,7 @@
 XGBoost
 =======
 
-Amazon Redshift | Python | PySpark
+Vertica vs Amazon Redshift | Python | PySpark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. important::
@@ -70,7 +70,7 @@ Datasets
     data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
     df = pd.DataFrame(data)
     fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
-      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['blue', 'black'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data.html")
@@ -110,7 +110,7 @@ Datasets
     data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
     df = pd.DataFrame(data)
     fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
-      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['blue', 'black'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data.html")
@@ -157,8 +157,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -186,8 +186,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - ???
         - ra3.16xlarge
@@ -206,8 +206,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - ???
         - ml.m5.24xlarge
@@ -224,8 +224,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - ???
         - ml.m5.24xlarge
@@ -244,8 +244,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - 3.9.15
         - N/A
@@ -267,8 +267,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy mode
         - Executor Memory
         - Driver Memory
@@ -310,25 +310,65 @@ The comparison analysis on both datasets follows:
 
     .. important::
 
-      Amazon Redshift is only considering a sample data of size 33,617 for training.
+      **Amazon Redshift** is only considering a sample data of size 33,617 for training.
+      Thus, we have removed it from further analysis.
 
     .. ipython:: python
       :suppress:
 
+
       import plotly.graph_objects as go
-      labels = ['Vertica', 'PySpark']
-      heights = [107.45, 1085.84]
-      colors = ["#1A6AFF", 'black']
+
+      labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
+      heights = [107.45, 720, 0, 1085.84]
+      colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
+
       fig = go.Figure()
+
       for label, height, color in zip(labels, heights, colors):
-        fig.add_trace(go.Bar(
-          x=[label],
-          y=[height],
-          marker_color=color,
-          text=[height],
-          textposition='outside',
-          name=label,
-        ))
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Data Size: 10.5M',
+          yaxis=dict(title='Execution Time (minutes)'),
+          bargap=0.2,
+          width=600,
+          height=500,
+          annotations=[
+              dict(
+                  x='Amazon Sagemaker',
+                  y=720,
+                  xref="x",
+                  yref="y",
+                  text="Did not complete in 720 mins",
+                  showarrow=False,
+                  arrowhead=7,
+                  xshift=0,
+                  yshift=30,
+                  font=dict(color='red', size=14)
+              ),
+              dict(
+                  x='Python',
+                  y=0,
+                  xref="x",
+                  yref="y",
+                  text="Memory Error",
+                  showarrow=False,
+                  arrowhead=7,
+                  xshift=0,
+                  yshift=30,
+                  font=dict(color='red', size=14)
+              )
+          ]
+      )
+
+
       fig.update_layout(
         title='Data Size: 1B',
         #xaxis=dict(title='XGBoost Implementations'),
@@ -647,8 +687,8 @@ Test Environment
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -681,8 +721,8 @@ Test Environment
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -728,10 +768,10 @@ Comparison
     import plotly.express as px
     ml_tools = ['EON', 'Enterprise']
     training_times = [1381.36, 1260.09] 
-    df = pd.DataFrame({'Vertica': ml_tools, 'Training Time (seconds)': training_times})
-    fig = px.bar(df, x='Vertica', y='Training Time (seconds)', 
+    df = pd.DataFrame({'ML Tool': ml_tools, 'Training Time (seconds)': training_times})
+    fig = px.bar(df, x='ML Tool', y='Training Time (seconds)', 
       title='Training Time',
-      color='Vertica',
+      color='ML Tool',
       color_discrete_map={'EON': "#1A6AFF", 'Enterprise': "#ee145b"})
     fig.update_layout(xaxis_title=None)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_train.html")
@@ -746,13 +786,13 @@ Comparison
     :suppress:
 
     import plotly.express as px
-    ml_tools = ['Vertica EON', 'Vertica Enterprise']
+    ml_tools = ['EON', 'Enterprise']
     training_times = [128.86, 119.83] 
     df = pd.DataFrame({'ML Tool': ml_tools, 'Prediction Time (seconds)': training_times})
     fig = px.bar(df, x='ML Tool', y='Prediction Time (seconds)', 
       title='Prediction Time',
       color='ML Tool',
-      color_discrete_map={'Vertica EON': "#1A6AFF", 'Vertica Enterprise': "#ee145b"})
+      color_discrete_map={'EON': "#1A6AFF", 'Enterprise': "#ee145b"})
     fig.update_layout(xaxis_title=None)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_prediction.html")
 
@@ -799,8 +839,8 @@ Comparison
 ..     * - Version
 ..       - Instance Type
 ..       - Cluster
-..       - vCPU(per node)
-..       - Memory(per node)
+..       - vCPU (per node)
+..       - Memory (per node)
 ..       - Deploy Mode
 ..       - OS
 ..       - OS Version
@@ -836,8 +876,8 @@ Comparison
 ..     * - Version
 ..       - Instance Type
 ..       - Cluster
-..       - vCPU(per node)
-..       - Memory(per node)
+..       - vCPU (per node)
+..       - Memory (per node)
 ..       - Deploy Mode
 ..       - OS
 ..       - OS Version

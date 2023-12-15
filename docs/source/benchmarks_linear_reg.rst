@@ -16,8 +16,8 @@ Regression is widely employed for tasks such as
 forecasting, risk assessment, and understanding the 
 underlying relationships within datasets.
 
-Spark
-~~~~~~
+Vertica vs Spark
+~~~~~~~~~~~~~~~~~
 
 .. important::
 
