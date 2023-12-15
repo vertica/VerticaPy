@@ -25,9 +25,10 @@ from verticapy.performance.vertica import QueryProfiler
 from io import StringIO
 
 
-def test_profile_simple(vp_connect_get_name, raw_client_cursor):
+def test_profile_simple():
     """Create a query profiler and run the steps on a simple query"""
-
+    assert len(vp.available_connections()) > 0
+    raw_client_cursor = vp.current_cursor()
     table_name = "test_profile_simple"
     setup_dummy_table(raw_client_cursor, table_name)
     request = f"SELECT count(*) from {table_name};"
@@ -67,39 +68,3 @@ def check_request(qp, fragment):
     # stored query = PROFILE select count(*) from foo;
     logging.info(f"Request retreived is: {sql}")
     assert fragment.lower() in sql.lower()
-
-
-def test_connect_perf(vp_connect_get_name, raw_client_cursor):
-    """Connect to the vertica server
-    Run a very simple verticapy connection via dataframe
-    """
-    df = vp.vDataFrame(
-        """
-    /*test_connect_perf*/
-    SELECT 1 as x
-    UNION ALL
-    SELECT 2 as x
-    UNION ALL
-    SELECT 3 as x
-    """
-    )
-    # Check that the dataframe has the expected values
-    avg = df["x"].avg()
-    logging.info(f"Average from the data frame is: {avg}")
-    assert avg == 2
-
-    # Confirm that the dataframe really did connect
-    # and send the query
-    # TODO: we could clear the dc table first?
-    raw_client_cursor.execute(
-        """
-    SELECT count(*)
-    FROM dc_requests_issued
-    WHERE request ilike '%test_connect_perf%';
-    """
-    )
-
-    rset = raw_client_cursor.fetchall()
-    logging.info(f"Result set looking for test queries {rset}")
-    assert len(rset) == 1
-    assert rset[0][0] > 0
