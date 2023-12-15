@@ -22,7 +22,7 @@ Spark
 .. important::
 
   |  *Version Details*
-  |  **Vertica:** 8.01
+  |  **Vertica:** 8.0.1
   |  **Spark:** 2.02
 
 This benchmark aims to evaluate the performance of 
@@ -53,19 +53,19 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - 8.01
-          - ???
+        * - 8.0.1
+          - On Premise VM
           - 3 node cluster
-          - ???
+          - N/A
           - 755 GB
-          - ???
+          - Enterprise
           - Red Hat Enterprise Linux 
           - 8.7 (Ootpa)
           - 2.4GHz
@@ -81,8 +81,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -312,7 +312,7 @@ Browse through the tabs to see the time comparison:
 
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
-            heights = [826.04, 2.09]
+            heights = [82.60, 2.09]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
