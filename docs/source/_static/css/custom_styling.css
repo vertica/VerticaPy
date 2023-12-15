@@ -467,8 +467,10 @@ p {
 
 /* Cards on API page */
 .custom-card {
-  height: 215px; /* Adjust the desired height */
+  height: 100px; /* Adjust the desired height */
   /* Add more styles as needed */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 
 /* Cards on Index Page */
@@ -479,7 +481,7 @@ p {
 
 /* Cards on Machine Learning page */
 .custom-card-3 {
-  height: 215px; /* Adjust the desired height */
+  height: 150px; /* Adjust the desired height */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
