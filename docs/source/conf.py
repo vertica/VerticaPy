@@ -202,7 +202,7 @@ project = "VerticaPy"
 copyright = "2023 OpenText. All rights reserved."
 author = "Vertica"
 release = "1.0.x"
-parent_directory = "http://localhost:1993/python"
+parent_directory = "../.."  # "http://www.vertica.com/python"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -267,7 +267,7 @@ html_theme_options = {
 
                         <div class="very-top-container">
 
-                            <a href="http://localhost:1993/python">
+                            <a href="http://www.vertica.com/python">
                             
                                 <svg id="Logo_Layer_2" data-name="Logo_Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.57 29.89" height="70%" width="70%" fill="var(--color-announcement-text)">
                                 <g id="Logo_Layer_1-2" data-name="Logo_Layer 1">
@@ -337,8 +337,6 @@ html_theme_options = {
                                 <div class="form-group">
                                     <select class="form-control" id="filter-select" name="filter-select" onchange="switchVersion(this.value)">
                                         <option value="1.0.x" selected="">1.0.x</option>
-                                        <option value="0.12.x">0.12.x</option>
-                                        <option value="0.11.x">0.11.x</option>
                                     </select>
                                 </div>
                                 <div class="color-theme-container">
@@ -355,7 +353,7 @@ html_theme_options = {
                         <div class="top-bottom-container">
 
                             <div class="home_button_container">
-                                    <a href="http://localhost:1993/python/documentation/1.0.x/html/index.html">
+                                    <a href="http://www.vertica.com/python/documentation/1.0.x/html/index.html">
                                         <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <g clip-path="url(#clip0)">
                                             <path d="M23.8039 11.137L12.3039 2.291C12.1249 2.153 11.8749 2.153 11.6959 2.291L0.195882 11.137C-0.181119 11.427 0.0238815 12.031 0.499882 12.031H2.52488C2.79988 12.031 3.02388 12.254 3.02388 12.53V22.504C3.02388 22.779 3.24688 23.003 3.52288 23.003H8.47888C8.75388 23.003 8.97788 22.78 8.97788 22.504V15.221C8.97788 14.001 9.96688 13.013 11.1859 13.013H12.7849C14.0049 13.013 14.9929 14.002 14.9929 15.221V22.504C14.9929 22.779 15.2159 23.003 15.4919 23.003H20.4479C20.7229 23.003 20.9469 22.78 20.9469 22.504V12.53C20.9469 12.255 21.1699 12.031 21.4459 12.031H23.4999C23.9769 12.031 24.1819 11.428 23.8039 11.137Z" fill="var(--color-announcement-text)"></path>

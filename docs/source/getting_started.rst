@@ -92,6 +92,10 @@ After a connection is created, you can use the `connect <https://www.vertica.com
 
 Create a VerticaPy schema for native VerticaPy models (that is, models available in VerticaPy, but not Vertica itself):
 
+.. important::
+
+  For more information on connection please visit :ref:`connection`
+
 .. code-block:: python
 
     vp.create_verticapy_schema()

@@ -1,12 +1,13 @@
 .. _connectors:
 
-=============
-Connectors
-=============
+====================
+Integration Options
+====================
 
-Vertica boasts a wide array of connectors, ensuring seamless integration with various technologies. 
-These connectors span Hadoop, Spark, ODBC, Apache, Node.js, SQL-Go, and more, 
-facilitating flexible data access and compatibility across diverse ecosystems.
+Vertica boasts a wide array of integration options, ensuring seamless 
+integration with various technologies. These connectors span Hadoop, 
+Spark, ODBC, Apache, Node.js, SQL-Go, and more, facilitating flexible 
+data access and compatibility across diverse ecosystems.
 
 ____
 

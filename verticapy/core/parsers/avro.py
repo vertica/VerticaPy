@@ -195,6 +195,7 @@ def read_avro(
     Let's download the AVRO file.
 
     .. ipython:: python
+        :okexcept:
 
         import requests
         url = "https://github.com/vertica/VerticaPy/raw/master/verticapy/tests/utilities/variants.avro"
@@ -216,6 +217,7 @@ def read_avro(
 
     .. ipython:: python
         :suppress:
+        :okexcept:
 
         from verticapy.core.parsers.avro import read_avro
 

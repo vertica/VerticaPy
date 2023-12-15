@@ -146,10 +146,14 @@ a Pythonic way to work with data stored in Vertica.
     :titlesonly:
 
     getting_started
+    connection
     whats_new
     contribution_guidelines
     api
     chart_gallery
     user_guide
-    connectors
+    user_defined_funcs
+    benchmarks
+    statistics
     vertica_documentation
+    connectors

@@ -1,0 +1,5 @@
+﻿,Time Taken (mins),Accuracy (%)
+Vertica,24.95,72.52
+Amazon Redshift,7,70.89
+Python,4.33,75.69
+PySpark,56.7,75.69
