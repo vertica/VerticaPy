@@ -20,7 +20,6 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer as py_TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 import verticapy as vp
-from verticapy.utilities import drop
 from verticapy.machine_learning.vertica.feature_extraction.text import (
     TfidfVectorizer as vpy_TfidfVectorizer,
 )
@@ -66,7 +65,7 @@ class TestTFIDF:
         """
         function to create TFIDF
         """
-        drop(name)
+        vp.drop(name)
         vpy_model = vpy_TfidfVectorizer(
             name=name,
             overwrite_model=overwrite_model,
