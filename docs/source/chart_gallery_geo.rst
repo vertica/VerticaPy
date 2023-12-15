@@ -42,7 +42,7 @@ Let's utilize the World dataset to demonstrate geospatial capabilities.
     africa = world[world["continent"] == "Africa"]
 
 Let's use Africa Education dataset from the VerticaPy datasets. 
-Data is also available 'here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/africa_education/students.csv>'_.
+Data is also available `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/africa_education/students.csv>`_.
 
 .. code-block:: python
     

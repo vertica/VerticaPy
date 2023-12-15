@@ -277,13 +277,13 @@ def set_option(key: str, value: Any = None) -> None:
          - count_on:
             [bool]
             If set to ``True``, the total number of rows in
-            :py:class:`vDataFrame` and :py:class:`TableSample`
+            :py:class:`vDataFrame` and :py:class:`verticapy.TableSample`
             is computed and displayed in the footer (if
             ``footer_on is True``).
          - footer_on:
             [bool]
             If set to ``True``, :py:class:`vDataFrame` and
-            :py:class:`TableSample` show a footer that includes
+            :py:class:`verticapy.TableSample` show a footer that includes
             information about the displayed rows and columns.
          - interactive:
             [bool]

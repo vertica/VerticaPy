@@ -252,7 +252,7 @@ def describe_index(
         the polygons  in the index.  If set to
         True,   the  function  returns  a
         :py:class:`vDataFrame` instead of a
-        :py:class:`TableSample`.
+        :py:class:`verticapy.TableSample`.
 
     Returns
     -------
