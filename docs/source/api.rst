@@ -102,6 +102,19 @@ methods.
           Using SQL 
 
     .. grid-item::
+
+      .. card:: Performance
+          :img-top: _static/api_performance.svg
+          :link: api.performance
+          :link-type: ref
+          :text-align: center
+          :class-card: custom-card
+          :class-img-top: custom-class-img-top
+
+
+          Performance metrics
+
+    .. grid-item::
     
       .. card:: Stats
           :img-top: _static/stats.svg
@@ -195,6 +208,7 @@ methods.
           All the types of errors
 
 
+
 ---------
 
 
@@ -208,10 +222,12 @@ methods.
   stats
   plotting
   sql
+  performance
   sdk-vertica
   datasets
   tablesample
   jupyter
   utilities
   error
+  
   
