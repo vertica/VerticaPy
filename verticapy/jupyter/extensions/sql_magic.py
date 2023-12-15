@@ -401,7 +401,7 @@ def sql_magic(
     You can use variables in a SQL
     query with the ':' operator. This
     variable can be a :py:class:`vDataFrame`,
-    a :py:class:`TableSample`, a ``pandas.DataFrame``,
+    a :py:class:`verticapy.TableSample`, a ``pandas.DataFrame``,
     or any standard Python type.
 
     .. code-block:: python
@@ -465,7 +465,7 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_7.html
 
     You can do the same with a
-    :py:class:`TableSample`:
+    :py:class:`verticapy.TableSample`:
 
     .. code-block:: python
 

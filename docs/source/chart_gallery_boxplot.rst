@@ -451,6 +451,7 @@ Grouping
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = data["score1"].boxplot(by = "category")
         fig.write_html("figures/plotting_plotly_boxplot_groupby.html")
@@ -480,6 +481,7 @@ Grouping
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = data["score1"].boxplot(by = "category")
         html_text = fig.htmlcontent.replace("container", "plotting_highcharts_boxplot_groupby")

@@ -16,8 +16,8 @@ based on the input features, Naive Bayes provides a
 straightforward yet powerful approach to predictive 
 modeling.
 
-Spark
-~~~~~~
+Vertica vs Spark
+~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -64,10 +64,10 @@ Dataset
     fig = px.bar(df, x='des', y='vals', 
       color='des')
     fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_naive_amazon_data_cols.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_naive_amazon_data_cols.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_naive_amazon_data_cols.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_naive_amazon_data_cols.html
 
   Datatypes of data: :bdg-primary-line:`Float`
 
@@ -85,8 +85,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -111,8 +111,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -141,8 +141,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -167,8 +167,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -256,7 +256,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -268,10 +268,10 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_single_time.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_single_time.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_single_time.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_single_time.html
 
   .. tab:: Accuracy
 
@@ -303,7 +303,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -315,10 +315,10 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_single_accuracy.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_single_accuracy.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_single_accuracy.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_single_accuracy.html
 
 
 .. tab:: Multi Node
@@ -388,7 +388,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -400,10 +400,10 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_multi_time.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_multi_time.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_multi_time.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_multi_time.html
 
   .. tab:: Accuracy
 
@@ -435,7 +435,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -447,7 +447,7 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_multi_accuracy.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_multi_accuracy.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_naive_bayes_spark_multi_accuracy.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_naive_bayes_spark_multi_accuracy.html

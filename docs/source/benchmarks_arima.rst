@@ -13,8 +13,8 @@ provide the option to apply a differencing operation to the input
 data, which can turn a non-stationary time series into a stationary 
 time series.
 
-Python Statsmodels
-~~~~~~~~~~~~~~~~~~~
+Vertica vs Python Statsmodels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -49,8 +49,8 @@ Below are the configuration on which the tests were carried out:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -75,8 +75,8 @@ Below are the configuration on which the tests were carried out:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -126,13 +126,13 @@ Browse throught the different tabs to see the results:
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
         barmode="group",
-        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
+        color_discrete_map={"Vertica": "#1A6AFF", "Python": "#f0d917"},
       )
       fig.update_layout(width = 550)
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_1m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train_1m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html
 
   .. tab:: Prediction Run Time
 
@@ -150,13 +150,13 @@ Browse throught the different tabs to see the results:
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
         barmode="group",
-        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
+        color_discrete_map={"Vertica": "#1A6AFF", "Python": "#f0d917"},
       )
       fig.update_layout(width = 550)
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_1m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction_1m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html
 
 
   .. tab:: Mean Squared Error
@@ -174,13 +174,13 @@ Browse throught the different tabs to see the results:
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
         barmode="group",
-        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
+        color_discrete_map={"Vertica": "#1A6AFF", "Python": "#f0d917"},
       )
       fig.update_layout(width = 550)
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_1m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse_1m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html
 
 
 
@@ -201,13 +201,13 @@ Browse throught the different tabs to see the results:
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
         barmode="group",
-        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
+        color_discrete_map={"Vertica": "#1A6AFF", "Python": "#f0d917"},
       )
       fig.update_layout(width = 550)
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_100m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_100m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train_100m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_100m.html
 
   .. tab:: Prediction Run Time
 
@@ -225,13 +225,13 @@ Browse throught the different tabs to see the results:
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
         labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
         barmode="group",
-        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
+        color_discrete_map={"Vertica": "#1A6AFF", "Python": "#f0d917"},
       )
       fig.update_layout(width = 550)
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_100m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction_100m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100m.html
 
 
   .. tab:: Mean Squared Error
@@ -247,14 +247,14 @@ Browse throught the different tabs to see the results:
           "Python": [24.99, 24.99]
       })
       fig = px.bar(df, x="Size", y=["Vertica", "Python"], title="Vertica vs Python Performance",
-        labels={"value": "Time (minutes)", "variable": "Environment", "Size": "Data Size"},
+        labels={"value": "MSE", "variable": "Environment", "Size": "Data Size"},
         barmode="group",
-        color_discrete_map={"Vertica": #1A6AFF, "Python": #f0d917},
+        color_discrete_map={"Vertica": "#1A6AFF", "Python": "#f0d917"},
       )
       fig.update_layout(width = 550)
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_100m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_100m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse_100m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_100m.html
 
 

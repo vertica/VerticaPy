@@ -16,14 +16,14 @@ Regression is widely employed for tasks such as
 forecasting, risk assessment, and understanding the 
 underlying relationships within datasets.
 
-Spark
-~~~~~~
+Vertica vs Spark
+~~~~~~~~~~~~~~~~~
 
 .. important::
 
   |  *Version Details*
-  |  **Vertica:** 8.01
-  |  **Spark:** ???
+  |  **Vertica:** 8.0.1
+  |  **Spark:** 2.02
 
 This benchmark aims to evaluate the performance of 
 Vertica's Linear Regression algorithm in comparison 
@@ -53,19 +53,19 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - 8.01
-          - ???
+        * - 8.0.1
+          - On Premise VM
           - 3 node cluster
-          - ???
+          - N/A
           - 755 GB
-          - ???
+          - Enterprise
           - Red Hat Enterprise Linux 
           - 8.7 (Ootpa)
           - 2.4GHz
@@ -81,19 +81,19 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
           - Processor freq. (per node)
           - Processor cores (per node) 
-        * - 8.01
-          - ???
-          - ???
-          - ???
+        * - 2.02
+          - N/A
+          - N/A
+          - N/A
           - 755 GB
-          - ???
+          - N/A
           - Red Hat Enterprise Linux 
           - 8.7 (Ootpa)
           - 2.4GHz
@@ -124,7 +124,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [1748.51, 2568.68]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -142,10 +142,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
                 )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1b.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_1b.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1b.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_1b.html
 
     .. tab:: 100M
 
@@ -155,7 +155,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [84.7, 216]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -173,10 +173,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_100m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_100m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_100m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_100m.html
     
     .. tab:: 10M
 
@@ -186,7 +186,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [26.39, 96.98]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -204,10 +204,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_10m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_10m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_10m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_10m.html
 
     .. tab:: 1M
 
@@ -217,7 +217,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [4.49, 1.43]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -235,10 +235,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_1m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_bfgs_1m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_bfgs_1m.html
 
 
 .. tab:: Newton
@@ -251,7 +251,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [1808.56, 1788.75]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -269,10 +269,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1b.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_1b.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1b.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_1b.html
 
     .. tab:: 100M
 
@@ -282,7 +282,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [85.93, 68.47]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -300,10 +300,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_100m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_100m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_100m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_100m.html
     
     .. tab:: 10M
 
@@ -312,8 +312,8 @@ Browse through the tabs to see the time comparison:
 
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
-            heights = [826.04, 2.09]
-            colors = [#1A6AFF, 'black']
+            heights = [82.60, 2.09]
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -331,10 +331,10 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_10m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_10m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_10m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_10m.html
 
     .. tab:: 1M
 
@@ -344,7 +344,7 @@ Browse through the tabs to see the time comparison:
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']
             heights = [4.81, 0.7]
-            colors = [#1A6AFF, 'black']
+            colors = ["#1A6AFF", 'black']
             fig = go.Figure()
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
@@ -362,7 +362,7 @@ Browse through the tabs to see the time comparison:
                 width = 600,
                 height = 500
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1m.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_1m.html")
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/benchmark_linear_regression_spark_newton_1m.html
+            :file: SPHINX_DIRECTORY/figures/benchmark_linear_regression_spark_newton_1m.html

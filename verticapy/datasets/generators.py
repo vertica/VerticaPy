@@ -260,7 +260,6 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
                     "name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
                     "age": {"type": int, "range": [20, 40]},
                     "distance": {"type": float, "range": [1000, 4000]},
-                    "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
                     "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},
                 },
             )._repr_html_()

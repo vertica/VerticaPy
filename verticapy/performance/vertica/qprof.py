@@ -499,7 +499,7 @@ class QueryProfiler:
     .. code-block::
 
         qprof.get_qplan_tree(
-            path_id=4,
+            path_id=1,
             path_id_info=[5, 6],
             metric='cost',
             shape='square',
@@ -511,7 +511,7 @@ class QueryProfiler:
         :suppress:
 
         res = qprof.get_qplan_tree(
-            path_id=4,
+            path_id=1,
             path_id_info=[5, 6],
             metric='cost',
             shape='square',
@@ -621,6 +621,8 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
+        import verticapy as vp
+        vp.set_option("plotting_lib", "plotly")
         fig = qprof.get_qexecution()
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html")
 
@@ -2196,6 +2198,8 @@ class QueryProfiler:
         .. ipython:: python
             :suppress:
 
+            import verticapy as vp
+            vp.set_option("plotting_lib", "plotly")
             fig = qprof.get_qexecution()
             fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html")
 
