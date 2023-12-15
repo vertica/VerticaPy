@@ -14,16 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import pytest
 import logging
 
 import verticapy as vp
-import vertica_python
 
 from verticapy.performance.vertica import QueryProfiler
 from verticapy.datasets import load_amazon
 from verticapy.core.vdataframe import vDataFrame
-from io import StringIO
 
 
 def test_profile_simple():
