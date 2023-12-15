@@ -337,8 +337,6 @@ html_theme_options = {
                                 <div class="form-group">
                                     <select class="form-control" id="filter-select" name="filter-select" onchange="switchVersion(this.value)">
                                         <option value="1.0.x" selected="">1.0.x</option>
-                                        <option value="0.12.x">0.12.x</option>
-                                        <option value="0.11.x">0.11.x</option>
                                     </select>
                                 </div>
                                 <div class="color-theme-container">
