@@ -1518,6 +1518,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.range_plot(columns = ["population1"], ts = "date", width = 600)
@@ -1534,6 +1535,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.range_plot(columns = ["population1", "population2"], ts = "date", width = 600)
@@ -4009,6 +4011,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["population"].candlestick(ts = "date", width = 600)
@@ -4262,6 +4265,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["population1"].range_plot(ts = "date", width = 600)

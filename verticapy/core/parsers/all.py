@@ -198,8 +198,9 @@ def read_file(
     needed to create the Table.
 
     .. ipython:: python
+        :okexcept:
 
-        from verticapy.core.parsers.csv import read_file
+        from verticapy.core.parsers.all import read_file
 
         read_file(
             path = "titanic_subset.csv",
@@ -329,7 +330,7 @@ def read_file(
 
         # Cleanup block - drop / remove objects created for this example
 
-        from verticapy.utilities import drop
+        from verticapy import drop
         drop(name = "public.titanic_subset")
         drop(name = "public.titanic_sub_dtypes")
 

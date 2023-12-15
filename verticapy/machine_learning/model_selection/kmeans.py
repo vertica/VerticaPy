@@ -492,6 +492,7 @@ def elbow(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
         from verticapy.machine_learning.model_selection import elbow
