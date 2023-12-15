@@ -355,7 +355,6 @@ The comparison analysis on both datasets follows:
       :suppress:
 
       import plotly.graph_objects as go
-
       labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
       heights = [107.45, 720, 0, 1085.84]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
