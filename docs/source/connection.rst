@@ -61,88 +61,88 @@ The ``conn_info`` parameter utilized by the :py:func:`verticapy.connection.new_c
 			'connection_timeout': 5,
 		}
 
-	Discover the details of the majority of supported parameters in the table below.
+Discover the details of the majority of supported parameters in the table below.
 
-	+------------------------+--------------------------------------------------------------------+
-	| Connection Option      | Description                                                        |
-	+------------------------+--------------------------------------------------------------------+
-	| host                   | The server host of the connection. This can be a host name or an   |
-	|                        | IP address.                                                        |
-	|                        | Default: "localhost"                                               |
-	+------------------------+--------------------------------------------------------------------+
-	| port                   | The port of the connection.                                        |
-	|                        | Default: 5433                                                      |
-	+------------------------+--------------------------------------------------------------------+
-	| user                   | The database user name to use to connect to the database.          |
-	|                        | Default: OS login user name                                        |
-	+------------------------+--------------------------------------------------------------------+
-	| password               | The password to use to log into the database.                      |
-	|                        | Default: ""                                                        |
-	+------------------------+--------------------------------------------------------------------+
-	| database               | The database name.                                                 |
-	|                        | Default: ""                                                        |
-	+------------------------+--------------------------------------------------------------------+
-	| autocommit             | Autocommit.                                                        |
-	|                        | Default: False                                                     |
-	+------------------------+--------------------------------------------------------------------+
-	| backup_server_node     | Connection Failover.                                               |
-	|                        | Default: []                                                        |
-	+------------------------+--------------------------------------------------------------------+
-	| binary_transfer        | Data Transfer Format.                                              |
-	|                        | Default: False (use text format transfer)                          |
-	+------------------------+--------------------------------------------------------------------+
-	| connection_load_balance| Connection Load Balancing.                                         |
-	|                        | Default: False (disabled)                                          |
-	+------------------------+--------------------------------------------------------------------+
-	| connection_timeout     | The number of seconds (can be a nonnegative floating point         |
-	|                        | number) the client waits for a socket operation (Establishing a    |
-	|                        | TCP connection or read/write operation).                           |
-	|                        | Default: None (no timeout)                                         |
-	+------------------------+--------------------------------------------------------------------+
-	| disable_copy_local     | COPY FROM LOCAL.                                                   |
-	|                        | Default: False                                                     |
-	+------------------------+--------------------------------------------------------------------+
-	| kerberos_host_name     | Kerberos Authentication.                                           |
-	|                        | Default: the value of connection option host                       |
-	+------------------------+--------------------------------------------------------------------+
-	| kerberos_service_name  | Kerberos Authentication.                                           |
-	|                        | Default: "vertica"                                                 |
-	+------------------------+--------------------------------------------------------------------+
-	| log_level              | Logging Level.                                                     |
-	+------------------------+--------------------------------------------------------------------+
-	| log_path               | Logging Path.                                                      |
-	+------------------------+--------------------------------------------------------------------+
-	| oauth_access_token     | To authenticate via OAuth, provide an OAuth Access Token that      |
-	|                        | authorizes a user to the database.                                 |
-	|                        | Default: ""                                                        |
-	+------------------------+--------------------------------------------------------------------+
-	| request_complex_types  | SQL Data conversion to Python objects.                             |
-	|                        | Default: True                                                      |
-	+------------------------+--------------------------------------------------------------------+
-	| session_label          | Sets a label for the connection on the server. This value appears  |
-	|                        | in the client_label column of the v_monitor.sessions system table. |
-	|                        | Default: an auto-generated label with format of                    |
-	|                        | verticapy-{version}-{random_uuid}                                  |
-	+------------------------+--------------------------------------------------------------------+
-	| ssl                    | TLS/SSL.                                                           |
-	|                        | Default: False (disabled)                                          |
-	+------------------------+--------------------------------------------------------------------+
-	| unicode_error          | UTF-8 encoding issues.                                             |
-	|                        | Default: 'ignore' (ignore invalid UTF-8 results)                   |
-	+------------------------+--------------------------------------------------------------------+
-	| use_prepared_statements| Passing parameters to SQL queries.                                 |
-	|                        | Default: False                                                     |
-	+------------------------+--------------------------------------------------------------------+
-	| workload               | Sets the workload name associated with this session. Valid values  |
-	|                        | are workload names that already exist in a workload routing rule   |
-	|                        | on the server. If a workload name that doesn't exist is entered,   |
-	|                        | the server will reject it and it will be set to the default.       |
-	|                        | Default: ""                                                        |
-	+------------------------+--------------------------------------------------------------------+
-	| dsn                    | Set Properties with Connection String.                             |
-	+------------------------+--------------------------------------------------------------------+
++------------------------+--------------------------------------------------------------------+
+| Connection Option      | Description                                                        |
++------------------------+--------------------------------------------------------------------+
+| host                   | The server host of the connection. This can be a host name or an   |
+|                        | IP address.                                                        |
+|                        | Default: "localhost"                                               |
++------------------------+--------------------------------------------------------------------+
+| port                   | The port of the connection.                                        |
+|                        | Default: 5433                                                      |
++------------------------+--------------------------------------------------------------------+
+| user                   | The database user name to use to connect to the database.          |
+|                        | Default: OS login user name                                        |
++------------------------+--------------------------------------------------------------------+
+| password               | The password to use to log into the database.                      |
+|                        | Default: ""                                                        |
++------------------------+--------------------------------------------------------------------+
+| database               | The database name.                                                 |
+|                        | Default: ""                                                        |
++------------------------+--------------------------------------------------------------------+
+| autocommit             | Autocommit.                                                        |
+|                        | Default: False                                                     |
++------------------------+--------------------------------------------------------------------+
+| backup_server_node     | Connection Failover.                                               |
+|                        | Default: []                                                        |
++------------------------+--------------------------------------------------------------------+
+| binary_transfer        | Data Transfer Format.                                              |
+|                        | Default: False (use text format transfer)                          |
++------------------------+--------------------------------------------------------------------+
+| connection_load_balance| Connection Load Balancing.                                         |
+|                        | Default: False (disabled)                                          |
++------------------------+--------------------------------------------------------------------+
+| connection_timeout     | The number of seconds (can be a nonnegative floating point         |
+|                        | number) the client waits for a socket operation (Establishing a    |
+|                        | TCP connection or read/write operation).                           |
+|                        | Default: None (no timeout)                                         |
++------------------------+--------------------------------------------------------------------+
+| disable_copy_local     | COPY FROM LOCAL.                                                   |
+|                        | Default: False                                                     |
++------------------------+--------------------------------------------------------------------+
+| kerberos_host_name     | Kerberos Authentication.                                           |
+|                        | Default: the value of connection option host                       |
++------------------------+--------------------------------------------------------------------+
+| kerberos_service_name  | Kerberos Authentication.                                           |
+|                        | Default: "vertica"                                                 |
++------------------------+--------------------------------------------------------------------+
+| log_level              | Logging Level.                                                     |
++------------------------+--------------------------------------------------------------------+
+| log_path               | Logging Path.                                                      |
++------------------------+--------------------------------------------------------------------+
+| oauth_access_token     | To authenticate via OAuth, provide an OAuth Access Token that      |
+|                        | authorizes a user to the database.                                 |
+|                        | Default: ""                                                        |
++------------------------+--------------------------------------------------------------------+
+| request_complex_types  | SQL Data conversion to Python objects.                             |
+|                        | Default: True                                                      |
++------------------------+--------------------------------------------------------------------+
+| session_label          | Sets a label for the connection on the server. This value appears  |
+|                        | in the client_label column of the v_monitor.sessions system table. |
+|                        | Default: an auto-generated label with format of                    |
+|                        | verticapy-{version}-{random_uuid}                                  |
++------------------------+--------------------------------------------------------------------+
+| ssl                    | TLS/SSL.                                                           |
+|                        | Default: False (disabled)                                          |
++------------------------+--------------------------------------------------------------------+
+| unicode_error          | UTF-8 encoding issues.                                             |
+|                        | Default: 'ignore' (ignore invalid UTF-8 results)                   |
++------------------------+--------------------------------------------------------------------+
+| use_prepared_statements| Passing parameters to SQL queries.                                 |
+|                        | Default: False                                                     |
++------------------------+--------------------------------------------------------------------+
+| workload               | Sets the workload name associated with this session. Valid values  |
+|                        | are workload names that already exist in a workload routing rule   |
+|                        | on the server. If a workload name that doesn't exist is entered,   |
+|                        | the server will reject it and it will be set to the default.       |
+|                        | Default: ""                                                        |
++------------------------+--------------------------------------------------------------------+
+| dsn                    | Set Properties with Connection String.                             |
++------------------------+--------------------------------------------------------------------+
 
-	For additional examples and more in-depth information, please refer to the `official vertica_python GitHub <https://github.com/vertica/vertica-python>`_
+For additional examples and more in-depth information, please refer to the `official vertica_python GitHub <https://github.com/vertica/vertica-python>`_
 
 
 Additionally, the :py:func:`verticapy.connection.new_connection` function introduces an extra parameter, ``env`` which holds significance in enhancing connection security. This parameter, discussed in more detail later, enables users to configure an environment variable within the ``conn_info`` dictionary, offering an additional layer of control and customization for a secure and tailored connection experience.
@@ -223,26 +223,26 @@ Auto connections provide a hands-free option, simplifying the user experience by
 In the provided example, we establish a new auto connection named ``VerticaDSN``. By utilizing the setting of ``auto=True`` (which is also the default), the connection is automatically saved to a designated directory. The path for saving this connection is determined by the ``VERTICAPY_CONNECTION`` environment variable. If this variable exists, the associated path is used; otherwise, the file is stored in a hidden folder named .vertica located in the home directory. This streamlined approach ensures that connections are efficiently managed and, if desired, conveniently located based on user preferences or system configurations.
 
 .. code-block:: python
-	
+
 	# Import VerticaPy.
 	import verticapy as vp
 
-    # Creating a vertica_python connection directory.
-    conn_info = {
-        "host": "your_host", # ex: 127.0.0.1
-        "port": "5433",
-        "database": "your_database", # ex: testdb
-        "password": "XxX",
-        "user": "your_user", # ex: dbadmin
-    }
+	# Creating a vertica_python connection directory.
+	conn_info = {
+		"host": "your_host", # ex: 127.0.0.1
+		"port": "5433",
+		"database": "your_database", # ex: testdb
+		"password": "XxX",
+		"user": "your_user", # ex: dbadmin
+	}
 
-    # Creating a new auto connection.
-    vp.new_connection(
-    	conn_info, 
-    	name = "VerticaDSN",
-    	auto = True,
-    	overwrite = True,
-    )
+	# Creating a new auto connection.
+	vp.new_connection(
+		conn_info, 
+		name = "VerticaDSN",
+		auto = True,
+		overwrite = True,
+	)
 
 .. hint::
 
