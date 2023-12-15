@@ -6,7 +6,7 @@ XGBoost
 =======
 
 Vertica vs Amazon Redshift | Python | PySpark
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -283,6 +283,44 @@ algorithm that was tested:
         - 50GB
         - 36 ( Per Worker)
 
+Parameters
+-----------
+
+
+
+.. tab:: Custom Parameters
+
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  |    Platform      | Num Trees  | Tree Depth     | Number of Bins | Feature Importance (Top 5)        |
+  +==================+============+================+================+===================================+
+  | Vertica          | 10         | 10             | 150            | col26, col27, col28, col23, col25 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Amazon Redshift  | 100        | 10             | 150            | col25, col27, col26, col22, col24 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Python           | 10         | 10             | 150            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Dask (Python)    | 10         | 10             | 150            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Spark            | 100        | 10             | 150            | col25, col27, col26, col22, col5  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+
+.. tab:: Default Parameters
+
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  |    Platform      | Num Trees  | Tree Depth     | Number of Bins | Feature Importance (Top 5)        |
+  +==================+============+================+================+===================================+
+  | Vertica          | 10         | 6              | 32             | col26, col27, col28, col23, col25 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Amazon Redshift  | 10         | 6              | 256            | col25, col27, col26, col22, col24 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Python           | 10         | 6              | 256            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Dask (Python)    | 10         | 6              | 256            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Spark            | 100        | 6              | 256            | col25, col27, col26, col22, col5  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+
+
 
 Analysis
 ^^^^^^^^^^
@@ -316,15 +354,12 @@ The comparison analysis on both datasets follows:
     .. ipython:: python
       :suppress:
 
-
       import plotly.graph_objects as go
 
       labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
       heights = [107.45, 720, 0, 1085.84]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
-
       fig = go.Figure()
-
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -367,8 +402,6 @@ The comparison analysis on both datasets follows:
               )
           ]
       )
-
-
       fig.update_layout(
         title='Data Size: 1B',
         #xaxis=dict(title='XGBoost Implementations'),
@@ -479,11 +512,6 @@ The comparison analysis on both datasets follows:
   Below are the results from different experiments. 
   Browse throught the tabs to look at each one.
 
-  - Custom Parameters:
-    - number of trees = 10, 
-    - tree depth = 10 
-    - number of bins = 150
-
 
   .. tab:: Default Parameters
 
@@ -498,7 +526,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [1.27, 8, 3.84, 51.77]
-      colors = ["#1A6AFF", 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -535,7 +563,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [24.95, 7, 4.33, 56.7]
-      colors = ["#1A6AFF", 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -584,7 +612,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [6.105, 7, 9.78, 122.08]
-      colors = ["#1A6AFF", 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -625,7 +653,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [40.53, 7, 9.83, 119.09]
-      colors = ["#1A6AFF", 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
