@@ -22,6 +22,7 @@ import vertica_python
 
 from verticapy.performance.vertica import QueryProfiler
 from verticapy.datasets import load_amazon
+from verticapy.core.vdataframe import vDataFrame
 from io import StringIO
 
 
@@ -43,12 +44,12 @@ def test_profile_simple():
     check_request(qp, "avg(number) AS avg_number")
 
 
-def setup_dummy_table_run_query():
+def setup_dummy_table_run_query() -> vDataFrame:
     amzn = load_amazon()
     return amzn
 
 
-def check_version(qp):
+def check_version(qp: QueryProfiler) -> None:
     version_tuple = qp.get_version()
     logging.info(f"Version is: {version_tuple}")
     # version tuple can be
@@ -58,10 +59,42 @@ def check_version(qp):
     assert version_tuple[0] >= 23 or version_tuple[0] in [12, 11]
 
 
-def check_request(qp, fragment):
+def check_request(qp: QueryProfiler, fragment: str) -> None:
     sql = qp.get_request(indent_sql=False)
     # sql won't match the input query exactly
     # input query = select count(*) from foo;
     # stored query = PROFILE select count(*) from foo;
     logging.info(f"Request retreived is: {sql}")
     assert fragment.lower() in sql.lower()
+
+
+def check_duration(qp: QueryProfiler) -> None:
+    duration = qp.get_qduration("s")
+    logging.info(f"Query duration was {duration} seconds")
+    # Duration is about 10 ms
+    assert duration > 0.0001
+    return
+
+
+def check_query_events(qp: QueryProfiler) -> None:
+    events = qp.get_query_events()
+    assert not events.empty()
+    cols = events.get_columns()
+    assert len(cols) == 9
+    assert "event_type" in cols
+
+    col_indexes = {name: index for index, name in enumerate(cols)}
+    AUTOPROJ_EVENT_TYPE = "AUTO_PROJECTION_USED"
+    found_autoproj_event = False
+
+    for x in range(len(events)):
+        row = events[x]
+        found_autoproj_event |= look_for_autoproj(
+            row, col_indexes["event_type"], AUTOPROJ_EVENT_TYPE
+        )
+
+    assert found_autoproj_event
+
+
+def look_for_autoproj(row: list, index: int, target: str) -> bool:
+    return True if row[index] == target else False
