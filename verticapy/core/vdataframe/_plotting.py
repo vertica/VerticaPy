@@ -2017,7 +2017,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery`_
+            options, please see :ref:`chart_gallery`
 
         Let's begin by importing `VerticaPy`.
 
@@ -2172,7 +2172,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery`_
+            options, please see :ref:`chart_gallery`
 
         Let's begin by importing `VerticaPy`.
 
@@ -2484,7 +2484,7 @@ class vDFPlot(vDFMachineLearning):
 
             The below example is a very basic one. For
             other more detailed examples and customization
-            options, please see :ref:`chart_gallery`_
+            options, please see :ref:`chart_gallery`
 
         Let's begin by importing `VerticaPy`.
 
