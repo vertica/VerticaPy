@@ -696,7 +696,7 @@ def read_csv(
 
         # Cleanup block - drop / remove objects created for this example
 
-        from verticapy import drop
+        from verticapy.sql import drop
         drop(name = "public.titanic_subset")
         drop(name = "public.titanic_sub_dtypes")
 
