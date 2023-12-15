@@ -21,34 +21,31 @@ import verticapy as vp
 import vertica_python
 
 from verticapy.performance.vertica import QueryProfiler
-
+from verticapy.datasets import load_amazon
 from io import StringIO
 
 
 def test_profile_simple():
     """Create a query profiler and run the steps on a simple query"""
     assert len(vp.available_connections()) > 0
-    raw_client_cursor = vp.current_cursor()
-    table_name = "test_profile_simple"
-    setup_dummy_table(raw_client_cursor, table_name)
-    request = f"SELECT count(*) from {table_name};"
+    amzn = setup_dummy_table_run_query()
+    request = f"""
+    SELECT 
+        date, 
+        MONTH(date) AS month, 
+        AVG(number) AS avg_number 
+    FROM 
+        public.amazon 
+    GROUP BY 1;
+    """
     qp = QueryProfiler(request)
     check_version(qp)
-    check_request(qp, "SELECT COUNT(*)")
+    check_request(qp, "avg(number) AS avg_number")
 
 
-def setup_dummy_table(raw_client_cursor, table_name):
-    raw_client_cursor.execute(f"DROP table if exists {table_name};")
-    raw_client_cursor.fetchall()
-    raw_client_cursor.execute(f"CREATE TABLE {table_name} (x int);")
-    raw_client_cursor.fetchall()
-
-    raw_client_cursor.executemany(
-        f"insert into {table_name} values (?);",
-        [(1,), (2,), (3,), (4,)],
-        use_prepared_statements=True,
-    )
-    raw_client_cursor.fetchall()
+def setup_dummy_table_run_query():
+    amzn = load_amazon()
+    return amzn
 
 
 def check_version(qp):
