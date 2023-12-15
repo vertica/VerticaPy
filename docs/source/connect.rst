@@ -9,6 +9,9 @@ ______
 Functions
 --------------------
 
+.. important::
+
+   For a compurehensive guide to create connections, please refer to :ref:`connection`.
 
 Read
 ~~~~~
