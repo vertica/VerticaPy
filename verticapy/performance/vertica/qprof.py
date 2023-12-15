@@ -1824,8 +1824,8 @@ class QueryProfiler:
 
         Returns
         -------
-        A vDataframe that contains a table listing query events. 
-        Columns: 
+        A vDataframe that contains a table listing query events.
+        Columns:
           1) event_timestamp:
               Type: Timestamp
               Description: When the event happened
@@ -1836,7 +1836,7 @@ class QueryProfiler:
               Example: v_db_node0003
           3) event_category:
               Type: string
-              Description: The general kind of event. 
+              Description: The general kind of event.
               Examples: OPTIMIZATION, EXECUTION
           4) event_type:
               Type: string
@@ -1851,7 +1851,7 @@ class QueryProfiler:
               Description: The name of the EE operator associated with this event. NULL
               if no operator is associated with the event.
               Example: StorageMerge
-          7) path_id: 
+          7) path_id:
               Type: integer
               Description: A number that uniquely identifies the operator in the plan
               Examples: 1, 4
@@ -1861,7 +1861,7 @@ class QueryProfiler:
               Example: "t1_super is an auto-projection"
           9) suggested_action:
               Type: string
-              Description: A sentence describing potential remedies 
+              Description: A sentence describing potential remedies
 
         Examples
         --------
