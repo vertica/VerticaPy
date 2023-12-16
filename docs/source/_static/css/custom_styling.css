@@ -979,3 +979,7 @@ article, article .align-default {
   100% { transform: rotate(360deg); }
 }
 
+/* VerticaPy Tables */
+.verticapy_table {
+  overflow-x: scroll;
+}
