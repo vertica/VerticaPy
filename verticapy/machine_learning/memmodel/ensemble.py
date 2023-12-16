@@ -152,9 +152,9 @@ class Ensemble(InMemoryModel):
             :suppress:
 
             res = model_rfc.plot_tree(tree_id = 0)
-            res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier', format='png')
+            res.save(filename='figures/machine_learning_memmodel_ensemble_rfclassifier.dot')
 
-        .. image:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.png
+        .. graphviz:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.dot
 
         .. important::
 
@@ -290,9 +290,9 @@ class RandomForestRegressor(Ensemble):
         :suppress:
 
         res = model_rfr.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_tree_rndforestreg', format='png')
+        res.save(filename='figures/machine_learning_memmodel_tree_rndforestreg.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_tree_rndforestreg.png
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_rndforestreg.dot
 
     .. important::
 
@@ -639,9 +639,9 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         :suppress:
 
         res = model_rfc.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier', format='png')
+        res.save(filename='figures/machine_learning_memmodel_ensemble_rfclassifier.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.png
+    .. graphviz:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.dot
 
     .. important::
 
@@ -1026,9 +1026,9 @@ class XGBRegressor(Ensemble):
         :suppress:
 
         res = model_xgbr.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_tree_xgbreg', format='png')
+        res.save(filename='figures/machine_learning_memmodel_tree_xgbreg.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_tree_xgbreg.png
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_xgbreg.dot
 
     .. important::
 
@@ -1422,9 +1422,9 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         :suppress:
 
         res = model_xgbc.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_ensemble_xgbclassifier', format='png')
+        res.save(filename='figures/machine_learning_memmodel_ensemble_xgbclassifier.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_ensemble_xgbclassifier.png
+    .. graphviz:: /../figures/machine_learning_memmodel_ensemble_xgbclassifier.dot
 
     .. important::
 
@@ -1822,9 +1822,9 @@ class IsolationForest(Ensemble):
         :suppress:
 
         res = model_isf.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_ensemble_iforest', format='png')
+        res.save(filename='figures/machine_learning_memmodel_ensemble_iforest.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_ensemble_iforest.png
+    .. graphviz:: /../figures/machine_learning_memmodel_ensemble_iforest.dot
 
     .. important::
 

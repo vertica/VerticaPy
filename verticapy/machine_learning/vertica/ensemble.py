@@ -884,9 +884,9 @@ class RandomForestRegressor(Regressor, RandomForest):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_rfreg', format='png')
+        res.save(filename='figures/machine_learning_vertica_rfreg.dot')
 
-    .. image:: /../figures/machine_learning_vertica_rfreg.png
+    .. graphviz:: /../figures/machine_learning_vertica_rfreg.dot
 
     .. note::
 
@@ -1568,9 +1568,9 @@ class XGBRegressor(Regressor, XGBoost):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_xgbreg', format='png')
+        res.save(filename='figures/machine_learning_vertica_xgbreg.dot')
 
-    .. image:: /../figures/machine_learning_vertica_xgbreg.png
+    .. graphviz:: /../figures/machine_learning_vertica_xgbreg.dot
 
     .. note::
 
@@ -2491,9 +2491,9 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_rf_classifier_', format='png')
+        res.save(filename='figures/machine_learning_vertica_tree_rf_classifier_.dot')
 
-    .. image:: /../figures/machine_learning_vertica_tree_rf_classifier_.png
+    .. graphviz:: /../figures/machine_learning_vertica_tree_rf_classifier_.dot
 
     .. note::
 
@@ -3434,9 +3434,9 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_xgb_classifier_', format='png')
+        res.save(filename='figures/machine_learning_vertica_tree_xgb_classifier_.dot')
 
-    .. image:: /../figures/machine_learning_vertica_tree_xgb_classifier_.png
+    .. graphviz:: /../figures/machine_learning_vertica_tree_xgb_classifier_.dot
 
     .. note::
 
@@ -4020,9 +4020,9 @@ class IsolationForest(Clustering, Tree):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_isolation_for_', format='png')
+        res.save(filename='figures/machine_learning_vertica_tree_isolation_for_.dot')
 
-    .. image:: /../figures/machine_learning_vertica_tree_isolation_for_.png
+    .. graphviz:: /../figures/machine_learning_vertica_tree_isolation_for_.dot
 
     .. note::
 

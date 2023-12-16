@@ -825,9 +825,9 @@ class Tree(InMemoryModel):
             :suppress:
 
             res = model_btc.plot_tree()
-            res.render(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier', format='png')
+            res.save(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier.dot')
 
-        .. image:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.png
+        .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.dot
 
         .. important::
 
@@ -1005,9 +1005,9 @@ class BinaryTreeRegressor(Tree):
         :suppress:
 
         res = model_btr.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_binarytreereg', format='png')
+        res.save(filename='figures/machine_learning_memmodel_tree_binarytreereg.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_tree_binarytreereg.png
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreereg.dot
 
     .. important::
 
@@ -1235,9 +1235,9 @@ class BinaryTreeAnomaly(Tree):
         :suppress:
 
         res = model_bta.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_binarytreeanomaly', format='png')
+        res.save(filename='figures/machine_learning_memmodel_tree_binarytreeanomaly.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_tree_binarytreeanomaly.png
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreeanomaly.dot
 
     .. important::
 
@@ -1485,9 +1485,9 @@ class BinaryTreeClassifier(Tree):
         :suppress:
 
         res = model_btc.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier', format='png')
+        res.save(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.png
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.dot
 
     .. important::
 
@@ -1737,9 +1737,9 @@ class NonBinaryTree(Tree):
         :suppress:
 
         res = model_nbt.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_NonBinaryTree', format='png')
+        res.save(filename='figures/machine_learning_memmodel_tree_NonBinaryTree.dot')
 
-    .. image:: /../figures/machine_learning_memmodel_tree_NonBinaryTree.png
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_NonBinaryTree.dot
 
     .. important::
 
