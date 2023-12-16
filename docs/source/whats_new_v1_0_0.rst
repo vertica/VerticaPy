@@ -66,13 +66,13 @@ In parallel, we are actively developing a set of new tests. Consequently, the cu
 Bug fixes
 ----------
 
-- Adjusted-R squared now works with "k" parameter
-- Corrected calculation of Prevalence Threshold
-- Fixed nested pie plots
-- Improved vDataFrame.balance() function
-- load_model accepts feature names with parentheses
-- pandas_to_vertica() now works with dataframes that have a column full of NaN values
-- CountVectorizer supports larger datasets
+- Adjusted-R squared now works with "k" parameter.
+- Corrected calculation of Prevalence Threshold.
+- Fixed nested pie plots.
+- Improved vDataFrame.balance() function.
+- load_model accepts feature names with parentheses.
+- pandas_to_vertica() now works with dataframes that have a column full of NaN values.
+- TFIDF replaces CountVectorizer.
 - AutoML Error: An error prompt is now displayed when no model fits.
 - Cramer's V calculation is now fixed.
 - Colors can now be changed correctly for Matplotlib Candlestick plot 
@@ -86,16 +86,16 @@ Machine Learning Support
 -------------------------
 
 - New Vertica algorithms supported:
-    - IsolationForest
-    - KPrototypes
-    - Poisson Regression
-    - AutoRegressive (AR)
-    - MovingAverages (MA)
-    - AutoRegressive Moving Averages (ARMA)
-    - AutoRegressive Integrated Moving Averages (ARIMA)
-    - Term Frequency * Inverse Document Frequency (TFIDF). It is still beta. 
+    - IsolationForest (See :py:class:`verticapy.machine_learning.vertica.IsolationForest` for more information)
+    - KPrototypes (See :py:class:`verticapy.machine_learning.vertica.KPrototypes` for more information)
+    - Poisson Regression (See :py:class:`verticapy.machine_learning.vertica.PoissonRegressor` for more information)
+    - AutoRegressive (AR) (See :py:class:`verticapy.machine_learning.vertica.AR` for more information)
+    - MovingAverages (MA) (See :py:class:`verticapy.machine_learning.vertica.MA` for more information)
+    - AutoRegressive Moving Averages (ARMA) (See :py:class:`verticapy.machine_learning.vertica.ARMA` for more information)
+    - AutoRegressive Integrated Moving Averages (ARIMA) (See :py:class:`verticapy.machine_learning.vertica.ARIMA` for more information)
+    - Term Frequency * Inverse Document Frequency (TFIDF). It is still beta (See :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` for more information). 
 
-- New function for finding the feature importance for XGBoost models.
+- New function for finding the feature importance for XGBoost models (See :py:meth:`verticapy.machine_learning.vertica.XGBoostClassifier.features_importance` for more information). 
 - Classification metrics are now available for multiclass data/model using three methods: ``micro``, ``macro``, ``weighted``, ``score`` and ``none``.
   - ``average_precision_score`` is another new metric that is added to classification metrics.
   - ``roc_auc`` and ``prc_auc`` now work for multi-class classification using different averaging techniques stated above. 
@@ -110,18 +110,25 @@ _____
 SQL
 -----
 
-- ``vDataFramesSQL`` is deprecated. Now, :py:class:`vDataFrame` can be used directly to create `:py:class:`vDataFrame`s from SQL. For example:
+- ``vDataFramesSQL`` is deprecated. Now, :py:class:`verticapy.vDataFrame` can be used directly to create :py:class:`verticapy.vDataFrame`s from SQL. For example:
 
 .. code-block:: python
 
   import verticapy as vp
-  vp.vDataFrame("(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x")
+  vp.vDataFrame(
+    "(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
+  )
 
-The new format supports other methods for creating :py:class:`vDataFrame`s.
+The new format supports other methods for creating :py:class:`verticapy.vDataFrame`s.
 
 .. code-block:: python
 
-  vp.vDataFrame({"X":[1,2,3],"Y":['a','b','c']})
+  vp.vDataFrame(
+    {
+      "X":[1,2,3],
+      "Y":['a','b','c'],
+    }
+  )
   
 _______
 
@@ -143,8 +150,11 @@ Plotting
 
   .. code-block:: python
 
-    fig=data.range_plot(["col1","col2"],ts = "date", plot_median=True,
-      colors=["black","yellow"]
+    fig=data.range_plot(
+      ["col1", "col2"],
+      ts = "date",
+      plot_median = True,
+      colors = ["black","yellow"],
     )
 
 - Plotly Scatter plot now has the option to plot Bubble plot.
@@ -214,14 +224,14 @@ Import structures have changed. The code has been completely restructured, which
 
 The new structure has the following parent folders:
 
-- Core [includes :py:class:`vDataFrame`, parsers ``string_sql``, and ``tablesample``]
+- Core [includes :py:class:`verticapy.vDataFrame`, ``parsers``, ``string_sql``, and ``tablesample``]
 - Machine Learning [includes model selection, metrics, memmodels, and also all the ML functions of Vertica]
 - SQL [includes dtypes, insert, drop, etc.]
 - Jupyter [includes extensions such as magic SQL and magic chart]
 - Datasets [includes loaders and sample datasets]
 - Connection [includes connect, read, write, etc.]
 - _config [includes configurations]
-- _utils [icnludes all utilities]
+- _utils [includes all utilities]
 
 .. note:: The folders with "_" subscript are internal
 
@@ -243,6 +253,7 @@ Added Model Tracking tool (MLOps)
 ----------------------------------
   
 It is a common practice for data scientists to train tens of temporary models before picking one of them as their candidate model for going into production.
+
 A model tracking tool can help each individual data scientist to easily track the models trained for an experiment (project) and compare their metrics for choosing the best one.
 
 Example:
@@ -253,12 +264,17 @@ Example:
 
   # creating an experiment
   experiment = mt.vExperiment(
-      experiment_name="multi_exp",
-      test_relation=iris_vd,
-      X=["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-      y="Species",
-      experiment_type="multi",
-      experiment_table="multi_exp_table",
+      experiment_name = "multi_exp",
+      test_relation = iris_vd,
+      X = [
+        "SepalLengthCm", 
+        "SepalWidthCm", 
+        "PetalLengthCm", 
+        "PetalWidthCm",
+      ],
+      y = "Species",
+      experiment_type = "multi",
+      experiment_table = "multi_exp_table",
   )
 
   # adding models to the experiment after they are trained
@@ -271,7 +287,6 @@ Example:
   # finding the best model in the experiment based on a metric
   best_model = experiment.load_best_model("weighted_precision")
   
-  
 - Added Model Versioning (MLOps)
   
   To integrate in-DB model versioning into VerticaPy, we added a new function, named "register", to the VerticaModel class. Calling this function will execute the register_model meta-function inside Vertica and registers the model. We also implemented a new class in VerticaPy, named RegisteredModel, in order to help a user with MLSUPERVISOR or DBADMIN privilege to work with the registered models inside the database.
@@ -282,14 +297,18 @@ Example:
 
   # training a model and then registering it
   model = RandomForestClassifier(name = "my_schema.rfc1")
-  model.fit("public.train_data", ["pred1","pred2","pred3"], "resp")
+  model.fit(
+    "public.train_data",
+    ["pred1", "pred2", "pred3"],
+    "resp",
+  )
   model.register("application_name")
 
   # for users with MLSUPERVISOR or DBADMIN privilege
   import verticapy.mlops.model_versioning as mv
   rm = mv.RegisteredModel("application_name")
-  rm.change_status(version=1, new_status="staging")
-  pred_vdf2 = rm.predict(new_data_vDF, version=1)
+  rm.change_status(version = 1, new_status = "staging")
+  pred_vdf2 = rm.predict(new_data_vDF, version = 1)
   
   
 Others
@@ -302,16 +321,14 @@ Others
 
   from verticapy.datasets import load_africa_education
 
-- Now we use the DISTRIBUTED_SEEDED_RANDOM function instead of SEEDED_RANDOM in Vertica versions higher than 23.
-- Some new functions taht help in viewing and using nested data:
-  - ``explode_array`` is a :py:class:`vDataFrame` function that allows users to expand the contents of a nested column.
+- Now we use the ``DISTRIBUTED_SEEDED_RANDOM`` function instead of ``SEEDED_RANDOM`` in Vertica versions higher than 23.
+- Some new functions that help in viewing and using nested data:
+  - ``explode_array`` is a :py:class:`verticapy.vDataFrame` function that allows users to expand the contents of a nested column.
 - Changes that do not affect the user experience include:
-
   - Code restructuring to improve readability and better collaboration using PEP8 standard.
   - Improved the code pylint score to 9+, which makes the code more professional and efficient.
   - Improved thorough Unit Tests that require considerably less time to compute, making the CI/CD pipeline more efficient.
 
- 
 - Verticapylab autoconnection. Slight modification to allow smooth integration of the upcoming VerticaPyLab.
   
 Internal

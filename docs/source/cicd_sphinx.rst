@@ -2,7 +2,7 @@
 .. _cicd.sphinx:
 
 =====================================
-Autoamted Documentation using Sphinx
+Automated Documentation using Sphinx
 =====================================
 
 

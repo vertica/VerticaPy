@@ -113,13 +113,13 @@ def print_table(
         cell_width = []
         for row in data_columns:
             cell_width += [min(5 * max([len(str(item)) for item in row]) + 80, 280)]
-        html_table = "<table>"
+        html_table = '<table class="verticapy_table">'
         for i in range(n):
             if i == 0:
-                html_table += '<thead style = "display: table; ">'
+                html_table += '<thead style="display: table; ">'
             if i == 1 and n > 0:
                 html_table += (
-                    '<tbody style = "display: block; max-height: '
+                    '<tbody style="display: block; max-height: '
                     '300px; overflow-y: scroll;">'
                 )
             html_table += "<tr>"
