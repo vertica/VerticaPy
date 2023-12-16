@@ -409,7 +409,8 @@ class DecisionTreeRegressor(RandomForestRegressor):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_decision, format='png')
+        res.render(filename='figures/machine_learning_vertica_tree_decision', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_decision.png
 
@@ -891,7 +892,8 @@ class DummyTreeRegressor(RandomForestRegressor):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_dummy, format='png')
+        res.render(filename='figures/machine_learning_vertica_tree_dummy', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_dummy.png
 
@@ -1629,7 +1631,8 @@ class DecisionTreeClassifier(RandomForestClassifier):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_decision_classifier, format='png')
+        res.render(filename='figures/machine_learning_vertica_tree_decision_classifier', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_decision_classifier.png
 
@@ -2354,7 +2357,8 @@ class DummyTreeClassifier(RandomForestClassifier):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_decision_classifier, format='png')
+        res.render(filename='figures/machine_learning_vertica_tree_decision_classifier', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_decision_classifier.png
 

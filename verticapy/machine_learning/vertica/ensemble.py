@@ -884,7 +884,8 @@ class RandomForestRegressor(Regressor, RandomForest):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_rfreg, format='png')
+        res.render(filename='figures/machine_learning_vertica_rfreg', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_rfreg.png
 
@@ -1568,7 +1569,8 @@ class XGBRegressor(Regressor, XGBoost):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_xgbreg, format='png')
+        res.render(filename='figures/machine_learning_vertica_xgbreg', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_xgbreg.png
 
@@ -2491,7 +2493,8 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_rf_classifier_, format='png')
+        res.render(filename='figures/machine_learning_vertica_tree_rf_classifier_', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_rf_classifier_.png
 
@@ -3434,7 +3437,8 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_xgb_classifier_, format='png')
+        res.render(filename='figures/machine_learning_vertica_tree_xgb_classifier_', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_xgb_classifier_.png
 
@@ -4020,7 +4024,8 @@ class IsolationForest(Clustering, Tree):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_isolation_for_, format='png')
+        res.render(filename='figures/machine_learning_vertica_tree_isolation_for_', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_isolation_for_.png
 

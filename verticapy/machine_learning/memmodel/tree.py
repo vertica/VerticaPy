@@ -825,7 +825,8 @@ class Tree(InMemoryModel):
             :suppress:
 
             res = model_btc.plot_tree()
-            res.render(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier, format='png')
+            res.render(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier', format='png')
+
 
         .. image:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.png
 
@@ -1005,7 +1006,8 @@ class BinaryTreeRegressor(Tree):
         :suppress:
 
         res = model_btr.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_binarytreereg, format='png')
+        res.render(filename='figures/machine_learning_memmodel_tree_binarytreereg', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_binarytreereg.png
 
@@ -1235,7 +1237,8 @@ class BinaryTreeAnomaly(Tree):
         :suppress:
 
         res = model_bta.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_binarytreeanomaly, format='png')
+        res.render(filename='figures/machine_learning_memmodel_tree_binarytreeanomaly', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_binarytreeanomaly.png
 
@@ -1485,7 +1488,8 @@ class BinaryTreeClassifier(Tree):
         :suppress:
 
         res = model_btc.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier, format='png')
+        res.render(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.png
 
@@ -1737,7 +1741,8 @@ class NonBinaryTree(Tree):
         :suppress:
 
         res = model_nbt.plot_tree()
-        res.render(filename='figures/machine_learning_memmodel_tree_NonBinaryTree, format='png')
+        res.render(filename='figures/machine_learning_memmodel_tree_NonBinaryTree', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_NonBinaryTree.png
 

@@ -464,7 +464,8 @@ class QueryProfiler:
         :suppress:
 
         res = qprof.get_qplan_tree()
-        res.render(filename='figures/performance_get_qplan_tree_1, format='png')
+        res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+
 
     .. image:: /../figures/performance_get_qplan_tree_1.png
 
@@ -488,7 +489,8 @@ class QueryProfiler:
             color_low='#0000FF',
             color_high='#FFC0CB',
         )
-        res.render(filename='figures/performance_get_qplan_tree_2, format='png')
+        res.render(filename='figures/performance_get_qplan_tree_2', format='png')
+
 
     .. image:: /../figures/performance_get_qplan_tree_2.png
 
@@ -518,7 +520,8 @@ class QueryProfiler:
             color_low='#0000FF',
             color_high='#FFC0CB',
         )
-        res.render(filename='figures/performance_get_qplan_tree_3, format='png')
+        res.render(filename='figures/performance_get_qplan_tree_3', format='png')
+
 
     .. image:: /../figures/performance_get_qplan_tree_3.png
 
@@ -1662,7 +1665,8 @@ class QueryProfiler:
             :suppress:
 
             res = qprof.get_qplan_tree()
-            res.render(filename='figures/performance_get_qplan_tree_1, format='png')
+            res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+
 
         .. image:: /../figures/performance_get_qplan_tree_1.png
 

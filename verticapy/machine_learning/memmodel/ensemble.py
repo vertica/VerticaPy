@@ -152,7 +152,8 @@ class Ensemble(InMemoryModel):
             :suppress:
 
             res = model_rfc.plot_tree(tree_id = 0)
-            res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier, format='png')
+            res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier', format='png')
+
 
         .. image:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.png
 
@@ -290,7 +291,8 @@ class RandomForestRegressor(Ensemble):
         :suppress:
 
         res = model_rfr.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_tree_rndforestreg, format='png')
+        res.render(filename='figures/machine_learning_memmodel_tree_rndforestreg', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_rndforestreg.png
 
@@ -639,7 +641,8 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         :suppress:
 
         res = model_rfc.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier, format='png')
+        res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.png
 
@@ -1026,7 +1029,8 @@ class XGBRegressor(Ensemble):
         :suppress:
 
         res = model_xgbr.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_tree_xgbreg, format='png')
+        res.render(filename='figures/machine_learning_memmodel_tree_xgbreg', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_xgbreg.png
 
@@ -1422,7 +1426,8 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         :suppress:
 
         res = model_xgbc.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_ensemble_xgbclassifier, format='png')
+        res.render(filename='figures/machine_learning_memmodel_ensemble_xgbclassifier', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_ensemble_xgbclassifier.png
 
@@ -1822,7 +1827,8 @@ class IsolationForest(Ensemble):
         :suppress:
 
         res = model_isf.plot_tree(tree_id = 0)
-        res.render(filename='figures/machine_learning_memmodel_ensemble_iforest, format='png')
+        res.render(filename='figures/machine_learning_memmodel_ensemble_iforest', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_ensemble_iforest.png
 

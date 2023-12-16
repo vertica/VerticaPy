@@ -3411,7 +3411,8 @@ class Tree:
             :suppress:
 
             res = model.plot_tree(tree_id = 0)
-            res.render(filename='figures/machine_learning_vertica_tree_rf_classifier_, format='png')
+            res.render(filename='figures/machine_learning_vertica_tree_rf_classifier_', format='png')
+
 
         .. image:: /../figures/machine_learning_vertica_tree_rf_classifier_.png
 
