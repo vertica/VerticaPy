@@ -27,57 +27,19 @@ Here is a drill-down bar chart summarizing the VerticaPy statistics. Each bar re
 Table: VerticaPy Statistics Summary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. .. ipython:: python
-..   :suppress:
+.. ipython:: python
+  :suppress:
 
-..   # Import the function.
-..   from verticapy._utils._inspect_statistics import gen_rst_summary_table
+  # Import the function.
+  from verticapy._utils._inspect_statistics import gen_rst_summary_table
 
-..   # Example.
-..   print(gen_rst_summary_table())
-..   file_path = "statistics.rst"
-..   with open(file_path, "w") as rst_file:
-..     rst_file.write(gen_rst_summary_table())
+  # Example.
+  print(gen_rst_summary_table())
+  file_path = "statistics.rst"
+  with open(file_path, "w") as rst_file:
+    rst_file.write(gen_rst_summary_table())
 
-.. .. include:: ../statistics.rst
-
-
-+----------------------------------------+-----------------------+--------------+
-| Category                               | Subcategory           | Functions    |
-+========================================+=======================+==============+
-| Vertica Utils                          | | QueryProfiler       | | 14         |
-|                                        | | Total               | | 14         |
-+----------------------------------------+-----------------------+--------------+
-| Loaders & Generators                   | | Loaders             | | 22         |
-|                                        | | Generators          | | 4          |
-|                                        | | Total               | | 26         |
-+----------------------------------------+-----------------------+--------------+
-| Data Visualization Functions           | | Matplotlib          | | 46         |
-|                                        | | Highcharts          | | 40         |
-|                                        | | Plotly              | | 37         |
-|                                        | | Total               | | 123        |
-+----------------------------------------+-----------------------+--------------+
-| Data Preparation/Exploration Functions | | vDataFrame          | | 147        |
-|                                        | | vDataColumn         | | 93         |
-|                                        | | TableSample         | | 16         |
-|                                        | | Total               | | 256        |
-+----------------------------------------+-----------------------+--------------+
-| SQL Functions & Extensions             | | SQL Functions       | | 95         |
-|                                        | | SQL Statements      | | 15         |
-|                                        | | SQL Geo Extensions  | | 6          |
-|                                        | | Total               | | 116        |
-+----------------------------------------+-----------------------+--------------+
-| Machine Learning                       | | Statistical Tests   | | 15         |
-|                                        | | Algorithms/Functions| | 51         |
-|                                        | | Extensions          | | 23         |
-|                                        | | Metrics             | | 41         |
-|                                        | | Evaluation Functions| | 14         |
-|                                        | | Total               | | 144        |
-+----------------------------------------+-----------------------+--------------+
-|                                        | Total                 | 679          |
-+----------------------------------------+-----------------------+--------------+
-
-
+.. include:: ../statistics.rst
 
 Code Coverage
 -------------
