@@ -988,9 +988,10 @@ class BisectingKMeans(Clustering, Tree):
         :suppress:
 
         res = model_bkm.plot_tree()
-        res.save(filename='figures/machine_learning_cluster_bisecting_kmeans.dot')
+        res.render(filename='figures/machine_learning_cluster_bisecting_kmeans', format='png')
 
-    .. graphviz:: /../figures/machine_learning_cluster_bisecting_kmeans.dot
+
+    .. image:: /../figures/machine_learning_cluster_bisecting_kmeans.png
 
     .. note::
 

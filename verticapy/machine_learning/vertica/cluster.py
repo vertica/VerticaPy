@@ -1963,9 +1963,10 @@ class BisectingKMeans(KMeans, Tree):
         :suppress:
 
         res = model.plot_tree()
-        res.save(filename='figures/machine_learning_vertica_tree_bisect_km_.dot')
+        res.render(filename='figures/machine_learning_vertica_tree_bisect_km_', format='png')
 
-    .. graphviz:: /../figures/machine_learning_vertica_tree_bisect_km_.dot
+
+    .. image:: /../figures/machine_learning_vertica_tree_bisect_km_.png
 
     .. note::
 
@@ -2523,9 +2524,10 @@ class BisectingKMeans(KMeans, Tree):
             :suppress:
 
             res = model.plot_tree()
-            res.save(filename='figures/machine_learning_vertica_cluster_BKMeans_plot_tree.dot')
+            res.render(filename='figures/machine_learning_vertica_cluster_BKMeans_plot_tree', format='png')
 
-        .. graphviz:: /../figures/machine_learning_vertica_cluster_BKMeans_plot_tree.dot
+
+        .. image:: /../figures/machine_learning_vertica_cluster_BKMeans_plot_tree.png
 
         .. note::
 

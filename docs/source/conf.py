@@ -202,7 +202,6 @@ project = "VerticaPy"
 copyright = "2023-2024 OpenText. All rights reserved."
 author = "Vertica"
 release = "1.0.x"
-parent_directory = "../../.."  # "http://www.vertica.com/python"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -269,7 +268,7 @@ html_theme_options = {
 
                         <div class="very-top-container">
 
-                            <a href="{parent_directory}">
+                            <a href="./home.html">
                             
                                 <svg id="Logo_Layer_2" data-name="Logo_Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.57 29.89" height="70%" width="70%" fill="var(--color-announcement-text)">
                                 <g id="Logo_Layer_1-2" data-name="Logo_Layer 1">
@@ -308,7 +307,7 @@ html_theme_options = {
                                     <a class="top-button" href="./getting_started.html" id="sitenav-solutions">Getting Started</a>
                                     <a class="top-button" href="./user_guide.html" id="sitenav-solutions">User Guide</a>
                                     <a class="top-button" href="./api.html" id="sitenav-solutions">API Reference</a>
-                                    <a class="top-button" href="{parent_directory}/examples/" id="sitenav-solutions">Examples</a>
+                                    <a class="top-button" href="./examples.html" id="sitenav-solutions">Examples</a>
                                 </div>
                             </div>
                             <div class="search-top-dropdown">
@@ -358,7 +357,7 @@ html_theme_options = {
                                 <a class="top-button" href="./index.html" id="sitenav-solutions">Home</a>
                                 <a class="top-button" href="./user_guide.html" id="sitenav-solutions">User Guide</a>
                                 <a class="top-button" href="./api.html" id="sitenav-solutions">API Reference</a>
-                                <a class="top-button" href="{parent_directory}/examples" id="sitenav-solutions">Examples</a>
+                                <a class="top-button" href="./examples.html" id="sitenav-solutions">Examples</a>
                             </div>
 
                             <div class="right-content">
