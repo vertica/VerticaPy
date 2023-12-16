@@ -1965,7 +1965,7 @@ class BisectingKMeans(KMeans, Tree):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_bisect_km_.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_bisect_km_.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_bisect_km_.dot
 
     .. note::
 
@@ -2525,7 +2525,7 @@ class BisectingKMeans(KMeans, Tree):
             res = model.plot_tree()
             res.save(filename='figures/machine_learning_vertica_cluster_BKMeans_plot_tree.dot')
 
-        .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_BKMeans_plot_tree.dot
+        .. graphviz:: /../figures/machine_learning_vertica_cluster_BKMeans_plot_tree.dot
 
         .. note::
 

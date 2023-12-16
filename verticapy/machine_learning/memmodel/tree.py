@@ -827,7 +827,7 @@ class Tree(InMemoryModel):
             res = model_btc.plot_tree()
             res.save(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier.dot')
 
-        .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_tree_binarytreeclassifier.dot
+        .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.dot
 
         .. important::
 
@@ -1007,7 +1007,7 @@ class BinaryTreeRegressor(Tree):
         res = model_btr.plot_tree()
         res.save(filename='figures/machine_learning_memmodel_tree_binarytreereg.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_tree_binarytreereg.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreereg.dot
 
     .. important::
 
@@ -1237,7 +1237,7 @@ class BinaryTreeAnomaly(Tree):
         res = model_bta.plot_tree()
         res.save(filename='figures/machine_learning_memmodel_tree_binarytreeanomaly.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_tree_binarytreeanomaly.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreeanomaly.dot
 
     .. important::
 
@@ -1487,7 +1487,7 @@ class BinaryTreeClassifier(Tree):
         res = model_btc.plot_tree()
         res.save(filename='figures/machine_learning_memmodel_tree_binarytreeclassifier.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_tree_binarytreeclassifier.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.dot
 
     .. important::
 
@@ -1739,7 +1739,7 @@ class NonBinaryTree(Tree):
         res = model_nbt.plot_tree()
         res.save(filename='figures/machine_learning_memmodel_tree_NonBinaryTree.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_tree_NonBinaryTree.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_NonBinaryTree.dot
 
     .. important::
 

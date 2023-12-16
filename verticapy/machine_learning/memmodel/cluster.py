@@ -990,7 +990,7 @@ class BisectingKMeans(Clustering, Tree):
         res = model_bkm.plot_tree()
         res.save(filename='figures/machine_learning_cluster_bisecting_kmeans.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_cluster_bisecting_kmeans.dot
+    .. graphviz:: /../figures/machine_learning_cluster_bisecting_kmeans.dot
 
     .. note::
 

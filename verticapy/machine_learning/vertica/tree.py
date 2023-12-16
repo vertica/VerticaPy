@@ -411,7 +411,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_decision.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_decision.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_decision.dot
 
     .. note::
 
@@ -893,7 +893,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_dummy.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_dummy.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_dummy.dot
 
     .. note::
 
@@ -1631,7 +1631,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_decision_classifier.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_decision_classifier.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_decision_classifier.dot
 
     .. note::
 
@@ -2356,7 +2356,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_decision_classifier.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_decision_classifier.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_decision_classifier.dot
 
     .. note::
 

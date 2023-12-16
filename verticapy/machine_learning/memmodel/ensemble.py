@@ -154,7 +154,7 @@ class Ensemble(InMemoryModel):
             res = model_rfc.plot_tree(tree_id = 0)
             res.save(filename='figures/machine_learning_memmodel_ensemble_rfclassifier.dot')
 
-        .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_ensemble_rfclassifier.dot
+        .. graphviz:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.dot
 
         .. important::
 
@@ -292,7 +292,7 @@ class RandomForestRegressor(Ensemble):
         res = model_rfr.plot_tree(tree_id = 0)
         res.save(filename='figures/machine_learning_memmodel_tree_rndforestreg.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_tree_rndforestreg.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_rndforestreg.dot
 
     .. important::
 
@@ -641,7 +641,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         res = model_rfc.plot_tree(tree_id = 0)
         res.save(filename='figures/machine_learning_memmodel_ensemble_rfclassifier.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_ensemble_rfclassifier.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.dot
 
     .. important::
 
@@ -1028,7 +1028,7 @@ class XGBRegressor(Ensemble):
         res = model_xgbr.plot_tree(tree_id = 0)
         res.save(filename='figures/machine_learning_memmodel_tree_xgbreg.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_tree_xgbreg.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_tree_xgbreg.dot
 
     .. important::
 
@@ -1424,7 +1424,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         res = model_xgbc.plot_tree(tree_id = 0)
         res.save(filename='figures/machine_learning_memmodel_ensemble_xgbclassifier.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_ensemble_xgbclassifier.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_ensemble_xgbclassifier.dot
 
     .. important::
 
@@ -1824,7 +1824,7 @@ class IsolationForest(Ensemble):
         res = model_isf.plot_tree(tree_id = 0)
         res.save(filename='figures/machine_learning_memmodel_ensemble_iforest.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_memmodel_ensemble_iforest.dot
+    .. graphviz:: /../figures/machine_learning_memmodel_ensemble_iforest.dot
 
     .. important::
 

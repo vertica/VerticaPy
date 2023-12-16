@@ -886,7 +886,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_rfreg.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_rfreg.dot
+    .. graphviz:: /../figures/machine_learning_vertica_rfreg.dot
 
     .. note::
 
@@ -1570,7 +1570,7 @@ class XGBRegressor(Regressor, XGBoost):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_xgbreg.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_xgbreg.dot
+    .. graphviz:: /../figures/machine_learning_vertica_xgbreg.dot
 
     .. note::
 
@@ -2493,7 +2493,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_rf_classifier_.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_rf_classifier_.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_rf_classifier_.dot
 
     .. note::
 
@@ -3436,7 +3436,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_xgb_classifier_.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_xgb_classifier_.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_xgb_classifier_.dot
 
     .. note::
 
@@ -4022,7 +4022,7 @@ class IsolationForest(Clustering, Tree):
         res = model.plot_tree()
         res.save(filename='figures/machine_learning_vertica_tree_isolation_for_.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_isolation_for_.dot
+    .. graphviz:: /../figures/machine_learning_vertica_tree_isolation_for_.dot
 
     .. note::
 

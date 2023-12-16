@@ -215,6 +215,7 @@ extensions = [
     "sphinx_inline_tabs",
     "sphinx_design",
     "sphinx_copybutton",
+    "sphinx.ext.graphviz",
 ]
 
 templates_path = ["_templates"]

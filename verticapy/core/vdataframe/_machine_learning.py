@@ -450,7 +450,7 @@ class vDFMachineLearning(vDFScaler):
             res = tree.plot_tree()
             res.save(filename='figures/core_vDataFrame_ml_chaid_tree.dot')
 
-        .. graphviz:: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_chaid_tree.dot
+        .. graphviz:: /../figures/core_vDataFrame_ml_chaid_tree.dot
 
         .. note::
 

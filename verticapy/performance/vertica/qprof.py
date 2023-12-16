@@ -466,7 +466,7 @@ class QueryProfiler:
         res = qprof.get_qplan_tree()
         res.save(filename='figures/performance_get_qplan_tree_1.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_1.dot
+    .. graphviz:: /../figures/performance_get_qplan_tree_1.dot
 
     We can easily customize the tree:
 
@@ -490,7 +490,7 @@ class QueryProfiler:
         )
         res.save(filename='figures/performance_get_qplan_tree_2.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_2.dot
+    .. graphviz:: /../figures/performance_get_qplan_tree_2.dot
 
     We can look at a specific path ID,
     and look at some specific paths
@@ -520,7 +520,7 @@ class QueryProfiler:
         )
         res.save(filename='figures/performance_get_qplan_tree_3.dot')
 
-    .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_3.dot
+    .. graphviz:: /../figures/performance_get_qplan_tree_3.dot
 
     **Query Plan Profile**
 
@@ -1664,7 +1664,7 @@ class QueryProfiler:
             res = qprof.get_qplan_tree()
             res.save(filename='figures/performance_get_qplan_tree_1.dot')
 
-        .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_1.dot
+        .. graphviz:: /../figures/performance_get_qplan_tree_1.dot
 
         .. note::
 

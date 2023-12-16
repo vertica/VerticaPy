@@ -3413,7 +3413,7 @@ class Tree:
             res = model.plot_tree(tree_id = 0)
             res.save(filename='figures/machine_learning_vertica_tree_rf_classifier_.dot')
 
-        .. graphviz:: SPHINX_DIRECTORY/figures/machine_learning_vertica_tree_rf_classifier_.dot
+        .. graphviz:: /../figures/machine_learning_vertica_tree_rf_classifier_.dot
 
         .. important::
 
