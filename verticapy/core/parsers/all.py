@@ -359,9 +359,6 @@ def read_file(
             into the Vertica DB.
     """
     dtype = format_type(dtype, dtype=dict)
-    assert not ingest_local or insert, ValueError(
-        "Ingest local to create new relations is not yet supported for 'read_file'"
-    )
     file_format = path.split(".")[-1].lower()
     compression = extract_compression(path)
     if compression != "UNCOMPRESSED":
@@ -383,6 +380,9 @@ def read_file(
             gen_tmp_table_name=gen_tmp_table_name,
             ingest_local=ingest_local,
         )
+    assert not ingest_local or insert, ValueError(
+        "Ingest local to create new relations is not yet supported for 'read_file'"
+    )
     if insert:
         if not table_name:
             raise ValueError(

@@ -448,9 +448,9 @@ class vDFMachineLearning(vDFScaler):
                 columns = ["sex", "pclass"]
             )
             res = tree.plot_tree()
-            res.save(filename='figures/core_vDataFrame_ml_chaid_tree.dot')
+            res.render(filename='figures/core_vDataFrame_ml_chaid_tree, format='png')
 
-        .. graphviz:: /../figures/core_vDataFrame_ml_chaid_tree.dot
+        .. image:: /../figures/core_vDataFrame_ml_chaid_tree.png
 
         .. note::
 
