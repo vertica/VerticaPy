@@ -464,9 +464,9 @@ class QueryProfiler:
         :suppress:
 
         res = qprof.get_qplan_tree()
-        res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+        res.save(filename='figures/performance_get_qplan_tree_1.dot')
 
-    .. image:: /../figures/performance_get_qplan_tree_1.png
+    .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_1.dot
 
     We can easily customize the tree:
 
@@ -488,9 +488,9 @@ class QueryProfiler:
             color_low='#0000FF',
             color_high='#FFC0CB',
         )
-        res.render(filename='figures/performance_get_qplan_tree_2', format='png')
+        res.save(filename='figures/performance_get_qplan_tree_2.dot')
 
-    .. image:: /../figures/performance_get_qplan_tree_2.png
+    .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_2.dot
 
     We can look at a specific path ID,
     and look at some specific paths
@@ -518,9 +518,9 @@ class QueryProfiler:
             color_low='#0000FF',
             color_high='#FFC0CB',
         )
-        res.render(filename='figures/performance_get_qplan_tree_3', format='png')
+        res.save(filename='figures/performance_get_qplan_tree_3.dot')
 
-    .. image:: /../figures/performance_get_qplan_tree_3.png
+    .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_3.dot
 
     **Query Plan Profile**
 
@@ -1662,9 +1662,9 @@ class QueryProfiler:
             :suppress:
 
             res = qprof.get_qplan_tree()
-            res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+            res.save(filename='figures/performance_get_qplan_tree_1.dot')
 
-        .. image:: /../figures/performance_get_qplan_tree_1.png
+        .. graphviz:: SPHINX_DIRECTORY/figures/performance_get_qplan_tree_1.dot
 
         .. note::
 
