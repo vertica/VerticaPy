@@ -37,6 +37,7 @@ rel_tolerance_map = {
     "ARMA": 1e-01,
     "ARIMA": 1e-00,
     "TENSORFLOW": 1e-06,
+    "TFIDF": 1e-01,
 }
 
 abs_tolerance_map = {
@@ -59,4 +60,5 @@ abs_tolerance_map = {
     "ARMA": 1e-02,
     "ARIMA": 1e-00,
     "TENSORFLOW": 1e-06,
+    "TFIDF": 1e-01,
 }
