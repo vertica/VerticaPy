@@ -4,8 +4,6 @@
 Machine Learning
 =================
 
-
-
 .. grid:: 3
 
     .. grid-item::
@@ -17,10 +15,8 @@ Machine Learning
           :class-card: custom-card-3
           
           ^^^^
-          Creates platform-independent machine learning 
+          Creates platform-independent Machine Learning 
           models that can be easily exported.
-
-
 
     .. grid-item::
 
@@ -48,8 +44,6 @@ Machine Learning
           Streamline model selection, validation, and 
           fine-tuning with VerticaPy.
 
-
-
     .. grid-item::
     
       .. card:: Vertica
@@ -62,9 +56,6 @@ Machine Learning
           Integrate advanced machine learning models 
           seamlessly with Vertica's power in VerticaPy.
 
-
-
-
     .. grid-item::
     
       .. card:: ML Ops
@@ -75,8 +66,8 @@ Machine Learning
 
          ^^^^
          Simplify ML operations with VerticaPy, 
-         facilitating deployment, monitoring, and management.
-
+         facilitating deployment, monitoring, and 
+         management.
 
     .. grid-item::
     
@@ -90,14 +81,11 @@ Machine Learning
          Experience automated model building and 
          optimization with Delphi in VerticaPy.
 
-
 .. toctree::
    :maxdepth: 1
    :hidden:
 
    machine_learning_memmodels
-
-
 
 .. toctree::
    :maxdepth: 1
@@ -105,15 +93,12 @@ Machine Learning
 
    machine_learning_vertica
   
-
 .. toctree::
    :maxdepth: 1
    :hidden:
 
    machine_learning_model_selection
   
-
-
 .. toctree::
    :maxdepth: 1
    :hidden:

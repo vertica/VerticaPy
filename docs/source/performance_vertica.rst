@@ -28,6 +28,7 @@ Query Performance
    QueryProfiler.get_qexecution
    QueryProfiler.get_qexecution_report
    QueryProfiler.get_qplan
+   QueryProfiler.get_qplan_tree
    QueryProfiler.get_qplan_profile
    QueryProfiler.get_qsteps
    QueryProfiler.get_request

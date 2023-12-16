@@ -1,14 +1,14 @@
 .. _api.vdataframe:
 
-=================
+============
 vDataFrame
-=================
+============
 
 
 .. tab:: vDataFrame
 
    vDataFrame
-   ------------
+   -----------
 
    .. currentmodule:: verticapy
 
@@ -29,15 +29,10 @@ ______
 
 
 Plotting
-----------
-
-
-.. image:: ../../docs/source/_static/ot_plotting.svg
-   :width: 20%
-   :align: center
+---------
 
 General
-~~~~~~~~~
+~~~~~~~~
 
 
 .. tab:: vDataFrame
@@ -107,14 +102,7 @@ ______
 
 
 Descriptive Statistics
-----------------------
-
-
-
-.. image:: ../../docs/source/_static/ot_descriptive_statistics.svg
-   :width: 20%
-   :align: center
-
+-----------------------
 
 .. tab:: vDataFrame
 
@@ -195,15 +183,8 @@ ______
 Correlation & Dependency
 -------------------------
 
-
-.. image:: ../../docs/source/_static/ot_correlation_dependency.svg
-   :width: 20%
-   :align: center
-
-
 General
-~~~~~~~~~~
-
+~~~~~~~~
 
 .. tab:: vDataFrame
 
@@ -256,13 +237,7 @@ ______
 
 
 Preprocessing
----------------
-
-
-
-.. image:: ../../docs/source/_static/ot_preprocessing.svg
-   :width: 20%
-   :align: center
+--------------
 
 Encoding
 ~~~~~~~~~
@@ -492,13 +467,6 @@ ______
 Features Engineering
 ---------------------
 
-
-
-.. image:: ../../docs/source/_static/ot_feature_engineering.svg
-   :width: 20%
-   :align: center
-
-
 Analytic Functions
 ~~~~~~~~~~~~~~~~~~
 
@@ -674,12 +642,6 @@ ______
 Join, sort and transform
 -------------------------
 
-
-
-.. image:: ../../docs/source/_static/ot_join_sort_transform.svg
-   :width: 20%
-   :align: center
-
 .. tab:: vDataFrame
 
    ``vDataFrame.func(...)``
@@ -714,13 +676,7 @@ ______
 
 
 Filter and Sample
---------------------
-
-
-
-.. image:: ../../docs/source/_static/ot_filter_simple.svg
-   :width: 20%
-   :align: center
+------------------
 
 Search
 ~~~~~~
@@ -833,12 +789,8 @@ Filter Records
 ______
 
 
-.. image:: ../../docs/source/_static/serialization.svg
-   :width: 20%
-   :align: center
-
 Serialization
----------------
+--------------
 
 General Format
 ~~~~~~~~~~~~~~
@@ -906,13 +858,8 @@ Binary Format
       
 
 
-Utiltiies
-------------
-
-
-.. image:: ../../docs/source/_static/utilities.svg
-   :width: 20%
-   :align: center
+Utilities
+----------
 
 Information
 ~~~~~~~~~~~~

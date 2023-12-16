@@ -46,7 +46,7 @@ Vertica
 
     .. grid-item::
     
-      .. card:: Clustering & Anomolies
+      .. card:: Clustering & Anomalies
           :link: api.machine_learning.vertica.clustering
           :link-type: ref
           :text-align: center

@@ -16,6 +16,8 @@ SQL
           :class-card: custom-card
 
           ^^^^^^
+          SQL Functions for Building and 
+          Transforming Features.
 
 
     .. grid-item::
@@ -27,6 +29,9 @@ SQL
           :class-card: custom-card
 
           ^^^^^^
+          Functions for Dropping, Creating, 
+          and Inserting Data into Tables.
+
 
 
     .. grid-item::
@@ -38,6 +43,8 @@ SQL
           :class-card: custom-card
 
           ^^^^^^
+          Functions for Building and 
+          Understanding Flex Elements.
 
     .. grid-item::
     
@@ -48,7 +55,8 @@ SQL
           :class-card: custom-card
 
           ^^^^^
-
+          Function for Performing Spatial 
+          Joins and Building Geo Indexes.
 
 _____________
 

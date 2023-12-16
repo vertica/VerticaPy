@@ -29,6 +29,7 @@ from verticapy.machine_learning.vertica.ensemble import (
     XGBClassifier,
     XGBRegressor,
 )
+from verticapy.machine_learning.vertica.feature_extraction.text import TfidfVectorizer
 from verticapy.machine_learning.vertica.linear_model import (
     ElasticNet,
     Lasso,

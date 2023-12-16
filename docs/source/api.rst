@@ -38,7 +38,7 @@ methods.
 
           
           ^^^^^^^^
-          View/Modify Database Connections 
+          View/Modify Database Connections. 
 
     .. grid-item::
     
@@ -51,7 +51,7 @@ methods.
 
           
           ^^^^^^^^
-          Different methods to ingest data
+          Different methods to ingest data.
 
 
     .. grid-item::
@@ -65,7 +65,7 @@ methods.
 
           
           ^^^^^^^^
-          vDataFrame is the main object of VerticaPy
+          vDataFrame is the main object of VerticaPy.
 
 
     .. grid-item::
@@ -77,7 +77,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^
-          Create and Optimize ML models
+          Create and Optimize ML models.
 
     .. grid-item::
     
@@ -88,7 +88,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^^
-          User Defined Fucntions
+          User Defined Fucntions.
 
     .. grid-item::
     
@@ -99,7 +99,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^^
-          Using SQL 
+          Using SQL.
 
     .. grid-item::
 
@@ -110,7 +110,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^
-          Performance metrics
+          Performance metrics.
 
     .. grid-item::
     
@@ -121,7 +121,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^
-          Statistical Functions
+          Statistical Functions.
 
     .. grid-item::
     
@@ -132,7 +132,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^
-          Ingest, Read, & Drop Data
+          Ingest, Read, & Drop Data.
   
     
     .. grid-item::
@@ -144,7 +144,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^
-          Titanic, Iris, Amazon
+          Titanic, Iris, Amazon.
 
 
     .. grid-item::
@@ -156,7 +156,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^
-          Charts & Graphs
+          Charts & Graphs.
 
 
     .. grid-item::
@@ -168,7 +168,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^
-          Charts & Magic SQL
+          Charts & Magic SQL.
 
     .. grid-item::
 
@@ -179,7 +179,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^^
-          Table Sample Object
+          Table Sample Object.
 
 
     .. grid-item::
@@ -191,29 +191,24 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^
-          All the types of errors
-
-
+          All the types of errors.
 
 ---------
-
 
 .. toctree::
   :maxdepth: 2
   
   connect
-  parsers
-  vdataframe
-  machine_learning
-  stats
-  plotting
-  sql
-  performance
-  sdk-vertica
   datasets
-  tablesample
-  jupyter
-  utilities
   error
-  
-  
+  jupyter
+  machine_learning
+  parsers
+  performance
+  plotting
+  sdk-vertica
+  sql
+  stats
+  tablesample
+  utilities
+  vdataframe
