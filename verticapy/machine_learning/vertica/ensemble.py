@@ -554,7 +554,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -564,7 +564,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         The importance of features is calculated
         using the MDI (Mean Decreased Impurity).
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -574,7 +574,7 @@ class RandomForestRegressor(Regressor, RandomForest):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
@@ -1223,7 +1223,7 @@ class XGBRegressor(Regressor, XGBoost):
         tree, normalizes them and applies an activation
         function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1233,7 +1233,7 @@ class XGBRegressor(Regressor, XGBoost):
         The importance of features is calculated
         using the average gain of each tree.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1255,7 +1255,7 @@ class XGBRegressor(Regressor, XGBoost):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
@@ -1938,7 +1938,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1948,7 +1948,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         The importance of features is calculated
         using the MDI (Mean Decreased Impurity).
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1960,7 +1960,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
@@ -2864,7 +2864,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         tree, normalizes them and applies an activation
         function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2874,7 +2874,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         The importance of features is calculated
         using the average gain of each tree.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2900,7 +2900,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
@@ -3822,7 +3822,7 @@ class IsolationForest(Clustering, Tree):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::

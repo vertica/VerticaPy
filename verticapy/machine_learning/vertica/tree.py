@@ -92,7 +92,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -100,7 +100,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
@@ -584,7 +584,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -592,7 +592,7 @@ class DummyTreeRegressor(RandomForestRegressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
@@ -1089,7 +1089,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1099,7 +1099,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
@@ -1821,7 +1821,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1831,7 +1831,7 @@ class DummyTreeClassifier(RandomForestClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::

@@ -720,7 +720,7 @@ class ElasticNet(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -728,7 +728,7 @@ class ElasticNet(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
@@ -1238,7 +1238,7 @@ class Lasso(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1246,7 +1246,7 @@ class Lasso(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
@@ -1769,7 +1769,7 @@ class LinearRegression(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
@@ -2316,7 +2316,7 @@ class PoissonRegressor(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2324,7 +2324,7 @@ class PoissonRegressor(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
@@ -2826,7 +2826,7 @@ class Ridge(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2834,7 +2834,7 @@ class Ridge(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
@@ -3403,7 +3403,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -3413,7 +3413,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes` 
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
