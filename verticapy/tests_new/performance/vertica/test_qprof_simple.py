@@ -30,14 +30,14 @@ class TestQueryProfilerSimple:
 
     # Utilities
 
-    def check_duration(qp: QueryProfiler) -> None:
+    def check_duration(self, qp: QueryProfiler) -> None:
         duration = qp.get_qduration("s")
         logging.info(f"Query duration was {duration} seconds")
         # Duration is about 10 ms
         assert duration > 0.0001
         return
 
-    def check_query_events(qp: QueryProfiler) -> None:
+    def check_query_events(self, qp: QueryProfiler) -> None:
         events = qp.get_query_events()
         assert not events.empty()
         cols = events.get_columns()
@@ -56,7 +56,7 @@ class TestQueryProfilerSimple:
 
         assert found_autoproj_event
 
-    def check_request(qp: QueryProfiler, fragment: str) -> None:
+    def check_request(self, qp: QueryProfiler, fragment: str) -> None:
         sql = qp.get_request(indent_sql=False)
         # sql won't match the input query exactly
         # input query = select count(*) from foo;
@@ -64,7 +64,7 @@ class TestQueryProfilerSimple:
         logging.info(f"Request retreived is: {sql}")
         assert fragment.lower() in sql.lower()
 
-    def check_version(qp: QueryProfiler) -> None:
+    def check_version(self, qp: QueryProfiler) -> None:
         version_tuple = qp.get_version()
         logging.info(f"Version is: {version_tuple}")
         # version tuple can be
@@ -73,16 +73,16 @@ class TestQueryProfilerSimple:
         assert len(version_tuple) == 3 or len(version_tuple) == 4
         assert version_tuple[0] >= 23 or version_tuple[0] in [12, 11]
 
-    def look_for_autoproj(row: list, index: int, target: str) -> bool:
+    def look_for_autoproj(self, row: list, index: int, target: str) -> bool:
         return True if row[index] == target else False
 
-    def setup_dummy_table_run_query(schema) -> vDataFrame:
+    def setup_dummy_table_run_query(self, schema) -> vDataFrame:
         amzn = load_amazon(schema=schema)
         return amzn
 
     # Main Test
 
-    def test_profile_simple(schema_loader):
+    def test_profile_simple(self, schema_loader):
         """Create a query profiler and run the steps on a simple query"""
         assert len(vp.available_connections()) > 0
         schema = schema_loader
