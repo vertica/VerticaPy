@@ -69,15 +69,15 @@ Bug fixes
 - Adjusted-R squared now works with "k" parameter.
 - Corrected calculation of Prevalence Threshold.
 - Fixed nested pie plots.
-- Improved vDataFrame.balance() function.
+- Improved :py:meth:`verticapy.vDataFrame.balance` method.
 - load_model accepts feature names with parentheses.
-- pandas_to_vertica() now works with dataframes that have a column full of NaN values.
-- TFIDF replaces CountVectorizer.
+- ``pandas_to_vertica`` method is renamed :py:func:`verticapy.core.parsers.pandas.read_pandas` and it can now work with ``pandas.DataFrames`` that have a column full of ``NaN`` values.
+- :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` replaces :py:class:`verticapy.machine_learning.vertica.CountVectorizer`.
 - AutoML Error: An error prompt is now displayed when no model fits.
-- Cramer's V calculation is now fixed.
+- Cramer's V calculation is now fixed. See :py:meth:`verticapy.vDataFrame.corr`.
 - Colors can now be changed correctly for Matplotlib Candlestick plot 
-- Isolation Forest Anomaly plot is now fixed.
-- Plotly LOF 3D plot is fixed.
+- :py:class:`verticapy.machine_learning.vertica.IsolationForest` Anomaly plot is now fixed.
+- Plotly :py:class:`verticapy.machine_learning.vertica.LocalOutlierFactor` 3D plot is fixed.
 - Graphviz tree plot display is fixed.
 
 ____
@@ -86,16 +86,16 @@ Machine Learning Support
 -------------------------
 
 - New Vertica algorithms supported:
-    - IsolationForest (See :py:class:`verticapy.machine_learning.vertica.IsolationForest` for more information)
-    - KPrototypes (See :py:class:`verticapy.machine_learning.vertica.KPrototypes` for more information)
-    - Poisson Regression (See :py:class:`verticapy.machine_learning.vertica.PoissonRegressor` for more information)
-    - AutoRegressive (AR) (See :py:class:`verticapy.machine_learning.vertica.AR` for more information)
-    - MovingAverages (MA) (See :py:class:`verticapy.machine_learning.vertica.MA` for more information)
-    - AutoRegressive Moving Averages (ARMA) (See :py:class:`verticapy.machine_learning.vertica.ARMA` for more information)
-    - AutoRegressive Integrated Moving Averages (ARIMA) (See :py:class:`verticapy.machine_learning.vertica.ARIMA` for more information)
-    - Term Frequency * Inverse Document Frequency (TFIDF). It is still beta (See :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` for more information). 
+    - :py:class:`verticapy.machine_learning.vertica.IsolationForest`.
+    - :py:class:`verticapy.machine_learning.vertica.KPrototypes`.
+    - :py:class:`verticapy.machine_learning.vertica.PoissonRegressor`.
+    - :py:class:`verticapy.machine_learning.vertica.AR`.
+    - :py:class:`verticapy.machine_learning.vertica.MA`.
+    - :py:class:`verticapy.machine_learning.vertica.ARMA`.
+    - :py:class:`verticapy.machine_learning.vertica.ARIMA`.
+    - :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer`. It is still beta. 
 
-- New function for finding the feature importance for XGBoost models (See :py:meth:`verticapy.machine_learning.vertica.XGBoostClassifier.features_importance` for more information). 
+- New method :py:meth:`verticapy.machine_learning.vertica.XGBoostClassifier.features_importance` for finding the feature importance for XGBoost models. 
 - Classification metrics are now available for multiclass data/model using three methods: ``micro``, ``macro``, ``weighted``, ``score`` and ``none``.
   - ``average_precision_score`` is another new metric that is added to classification metrics.
   - ``roc_auc`` and ``prc_auc`` now work for multi-class classification using different averaging techniques stated above. 
@@ -104,6 +104,10 @@ Machine Learning Support
   Check out :ref:`notebooks/ml/model_tracking_versioning/index.ipynb` for more details.
 - Model Export and Import:
   Now models can be exported to ``pmml``, ``tensorflow``, and ``binary``. They can now be exported to another User Defined Location.
+
+.. note::
+  
+  For more information, see: :ref:`api.machine_learning` and :ref:`api.machine_learning.metrics`.
 
 _____
 
@@ -146,29 +150,30 @@ Plotting
 - Plotly Contout plot colors can be modified.
 - Plotly Range plot
   - Can draw multiple plots.
-  - Color change is very easy with ``colors`` = ``List`` option e.g.
+  - Color change is very easy with ``colors=[...]`` option e.g.
 
   .. code-block:: python
 
-    fig=data.range_plot(
+    fig = data.range_plot(
       ["col1", "col2"],
       ts = "date",
       plot_median = True,
-      colors = ["black","yellow"],
+      colors = ["black", "yellow"],
     )
 
-- Plotly Scatter plot now has the option to plot Bubble plot.
+- Plotly :py:meth:`verticapy.vDataFrame.scatter` plot now has the option to plot Bubble plot.
 - Plotly Pie chart now has the option to change color and size.
 - Highcharts Histogram plot is now available.
-- PLotly Histogram plot now allows multiple plots.
+- Plotly Histogram plot now allows multiple plots.
 - You can now easily switch between the plotting libraries using the following syntax:
 
   .. code-block:: python
 
     from verticapy import set_option
+
     set_option("plotting_lib","matplotlib")
     
-.. note:: The ``hchart`` function is deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax by setting Highcharts as the default plotting library.
+.. note:: The ``hchart`` method of :py:class:`verticapy.vDataFrame` is deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax by setting Highcharts as the default plotting library.
 
 - The parameters ``custom_height`` and ``custom_width`` have been added to all plots so that the sizes can be changed as needed.
 
@@ -181,12 +186,12 @@ Plotting
   %load_ext verticapy.jupyter.extensions.chart_magic
   %chart -c sql_command -f input_file -k 'auto' -o output_file
   
-  The chart command is similar to the hchart command, accepting four arguments:
+  The :py:func:`verticapy.jupyter.extensions.chart_magic.chart_magic` command is similar to the hchart command, accepting four arguments:
 
-  1. SQL command
-  2. Input file
-  3. Plot type (e.g. pie, bar, boxplot, etc.)
-  4. Output file
+  1. SQL command.
+  2. Input file.
+  3. Plot type (e.g. pie, bar, boxplot, etc.).
+  4. Output file.
 
   Example:
 
@@ -199,21 +204,21 @@ Classification Metrics
 
 Added support for many new classification and regression metrics.
 
-The following metrics have been added to the classification report:
-  - Akaike's Information Criterion (AIC)
-  - Balanced Accuracy (BA)
-  - False Discovery Rate (FDR)
-  - Fowlkes-Mallows index
-  - Positive Likelihood Ratio
-  - Negative Likelihood Ratio
-  - Prevalence Threshold
-  - Specificity
+The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.classification.classification_report`:
+  - Akaike's Information Criterion (AIC).
+  - Balanced Accuracy (BA).
+  - False Discovery Rate (FDR).
+  - Fowlkes-Mallows index.
+  - Positive Likelihood Ratio.
+  - Negative Likelihood Ratio.
+  - Prevalence Threshold.
+  - Specificity.
 
   Most of the above metrics are new in this version and can be accessed directly.
 
-  The following metrics have been added to the regression report:
-  - Mean Squared Log Error
-  - Quantile Error
+  The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.regression.regression_report`:
+  - Mean Squared Log Error.
+  - Quantile Error.
 
 _____
 
@@ -224,24 +229,26 @@ Import structures have changed. The code has been completely restructured, which
 
 The new structure has the following parent folders:
 
-- Core [includes :py:class:`verticapy.vDataFrame`, ``parsers``, ``string_sql``, and ``tablesample``]
-- Machine Learning [includes model selection, metrics, memmodels, and also all the ML functions of Vertica]
-- SQL [includes dtypes, insert, drop, etc.]
-- Jupyter [includes extensions such as magic SQL and magic chart]
-- Datasets [includes loaders and sample datasets]
-- Connection [includes connect, read, write, etc.]
-- _config [includes configurations]
-- _utils [includes all utilities]
+- Core includes: ``vdataframe``, ``parsers``, ``string_sql``, and ``tablesample``.
+- Machine Learning includes: ``model_selection``, ``metrics``, ``memmodels``, and also all the ML functions of Vertica (``vertica`` folder).
+- SQL includes: ``geo``, ``dtypes``, ``insert``, ``drop``, all the SQL mathematical functions, etc.
+- Jupyter includes: extensions such as magic ``sql`` and magic ``chart``.
+- Datasets includes: ``loaders`` and sample datasets.
+- Connection includes: ``connect``, ``read``, ``write``, etc.
+- ``_config`` includes configurations.
+- ``_utils`` includes all utilities.
 
-.. note:: The folders with "_" subscript are internal
+.. note:: 
+  
+  The folders with "_" subscript are internal
 
-For example, to use Vertica's `LinearRegression`, it should now be imported as follows:
+For example, to use Vertica's :py:class:`verticapy.machine_learning.vertica.LinearRegression`, it should now be imported as follows:
 
 .. code-block:: python
 
   from verticapy.machine_learning.vertica import LinearRegression
   
-To import statistical tests:
+To import the statistical test :py:func:`verticapy.machine_learning.model_selection.statistical_tests.het_arch`:
 
 .. code-block:: python
 
@@ -296,6 +303,7 @@ Example:
 .. code-block:: python
 
   # training a model and then registering it
+
   model = RandomForestClassifier(name = "my_schema.rfc1")
   model.fit(
     "public.train_data",
@@ -305,17 +313,18 @@ Example:
   model.register("application_name")
 
   # for users with MLSUPERVISOR or DBADMIN privilege
+
   import verticapy.mlops.model_versioning as mv
+
   rm = mv.RegisteredModel("application_name")
   rm.change_status(version = 1, new_status = "staging")
   pred_vdf2 = rm.predict(new_data_vDF, version = 1)
-  
   
 Others
 -------
 
 - Docstrings have been enriched to add examples and other details that will help in creating a more helpful doc.
-- A new dataset "Africa Education" has been added to the dataset library. It can be easily imported using:
+- A new dataset "Africa Education" (:py:meth:`erticapy.datasets.load_africa_education`) has been added to the dataset library. It can be easily imported using:
 
 .. code-block:: python
 
@@ -323,7 +332,7 @@ Others
 
 - Now we use the ``DISTRIBUTED_SEEDED_RANDOM`` function instead of ``SEEDED_RANDOM`` in Vertica versions higher than 23.
 - Some new functions that help in viewing and using nested data:
-  - ``explode_array`` is a :py:class:`verticapy.vDataFrame` function that allows users to expand the contents of a nested column.
+  - :py:meth:`verticapy.vDataFrame.explode_array` is a :py:class:`verticapy.vDataFrame` function that allows users to expand the contents of a nested column.
 - Changes that do not affect the user experience include:
   - Code restructuring to improve readability and better collaboration using PEP8 standard.
   - Improved the code pylint score to 9+, which makes the code more professional and efficient.
@@ -336,15 +345,15 @@ Internal
 
 - Hints have been added to most functions to make sure the correct inputs are passed to all the functions.
 
-- A python decorator (@save_verticapy_logs) is used to effectively log the usage statistics of all the functions.
+- A python decorator ``@save_verticapy_logs`` is used to effectively log the usage statistics of all the functions.
 
 - A set of common classes were created for effective collaboration and incorporation of other plotting libraries in the future.
 
-- A new decorator (@check_dtypes) is used to ensure correct input for the functions.
+- A new decorator ``@check_dtypes`` is used to ensure correct input for the functions.
 
 - Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and the contributing folder.
 
-- The new GitHub workflow now automatically checks for pylint score of the new code that is added. If the score is below 5, then the tests fail.
+- The new GitHub workflow now automatically checks for pylint score of the new code that is added. If the error score is below 10, then the tests fail.
 
 - Added a check in the workflow for fomatting using black. If any files requires reformatting, the test fails and reports the relevant files.
 
