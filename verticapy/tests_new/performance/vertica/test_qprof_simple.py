@@ -23,76 +23,79 @@ from verticapy.datasets import load_amazon
 from verticapy.core.vdataframe import vDataFrame
 
 
-def test_profile_simple(schema_loader):
-    """Create a query profiler and run the steps on a simple query"""
-    assert len(vp.available_connections()) > 0
-    schema = schema_loader
-    setup_dummy_table_run_query(schema)
-    request = f"""
-    SELECT 
-        date, 
-        MONTH(date) AS month, 
-        AVG(number) AS avg_number 
-    FROM 
-        public.amazon 
-    GROUP BY 1;
+class TestQueryProfilerSimple:
     """
-    qp = QueryProfiler(request)
-    check_version(qp)
-    check_request(qp, "avg(number) AS avg_number")
+    Test Base Class.
+    """
 
+    # Utilities
 
-def setup_dummy_table_run_query(schema) -> vDataFrame:
-    amzn = load_amazon(schema=schema)
-    return amzn
+    def check_duration(qp: QueryProfiler) -> None:
+        duration = qp.get_qduration("s")
+        logging.info(f"Query duration was {duration} seconds")
+        # Duration is about 10 ms
+        assert duration > 0.0001
+        return
 
+    def check_query_events(qp: QueryProfiler) -> None:
+        events = qp.get_query_events()
+        assert not events.empty()
+        cols = events.get_columns()
+        assert len(cols) == 9
+        assert "event_type" in cols
 
-def check_version(qp: QueryProfiler) -> None:
-    version_tuple = qp.get_version()
-    logging.info(f"Version is: {version_tuple}")
-    # version tuple can be
-    #  (24, 1, 0)    (dev build)
-    #  (11, 0, 1, 2) (release build)
-    assert len(version_tuple) == 3 or len(version_tuple) == 4
-    assert version_tuple[0] >= 23 or version_tuple[0] in [12, 11]
+        col_indexes = {name: index for index, name in enumerate(cols)}
+        AUTOPROJ_EVENT_TYPE = "AUTO_PROJECTION_USED"
+        found_autoproj_event = False
 
+        for x in range(len(events)):
+            row = events[x]
+            found_autoproj_event |= self.look_for_autoproj(
+                row, col_indexes["event_type"], AUTOPROJ_EVENT_TYPE
+            )
 
-def check_request(qp: QueryProfiler, fragment: str) -> None:
-    sql = qp.get_request(indent_sql=False)
-    # sql won't match the input query exactly
-    # input query = select count(*) from foo;
-    # stored query = PROFILE select count(*) from foo;
-    logging.info(f"Request retreived is: {sql}")
-    assert fragment.lower() in sql.lower()
+        assert found_autoproj_event
 
+    def check_request(qp: QueryProfiler, fragment: str) -> None:
+        sql = qp.get_request(indent_sql=False)
+        # sql won't match the input query exactly
+        # input query = select count(*) from foo;
+        # stored query = PROFILE select count(*) from foo;
+        logging.info(f"Request retreived is: {sql}")
+        assert fragment.lower() in sql.lower()
 
-def check_duration(qp: QueryProfiler) -> None:
-    duration = qp.get_qduration("s")
-    logging.info(f"Query duration was {duration} seconds")
-    # Duration is about 10 ms
-    assert duration > 0.0001
-    return
+    def check_version(qp: QueryProfiler) -> None:
+        version_tuple = qp.get_version()
+        logging.info(f"Version is: {version_tuple}")
+        # version tuple can be
+        #  (24, 1, 0)    (dev build)
+        #  (11, 0, 1, 2) (release build)
+        assert len(version_tuple) == 3 or len(version_tuple) == 4
+        assert version_tuple[0] >= 23 or version_tuple[0] in [12, 11]
 
+    def look_for_autoproj(row: list, index: int, target: str) -> bool:
+        return True if row[index] == target else False
 
-def check_query_events(qp: QueryProfiler) -> None:
-    events = qp.get_query_events()
-    assert not events.empty()
-    cols = events.get_columns()
-    assert len(cols) == 9
-    assert "event_type" in cols
+    def setup_dummy_table_run_query(schema) -> vDataFrame:
+        amzn = load_amazon(schema=schema)
+        return amzn
 
-    col_indexes = {name: index for index, name in enumerate(cols)}
-    AUTOPROJ_EVENT_TYPE = "AUTO_PROJECTION_USED"
-    found_autoproj_event = False
+    # Main Test
 
-    for x in range(len(events)):
-        row = events[x]
-        found_autoproj_event |= look_for_autoproj(
-            row, col_indexes["event_type"], AUTOPROJ_EVENT_TYPE
-        )
-
-    assert found_autoproj_event
-
-
-def look_for_autoproj(row: list, index: int, target: str) -> bool:
-    return True if row[index] == target else False
+    def test_profile_simple(schema_loader):
+        """Create a query profiler and run the steps on a simple query"""
+        assert len(vp.available_connections()) > 0
+        schema = schema_loader
+        self.setup_dummy_table_run_query(schema)
+        request = f"""
+        SELECT 
+            date, 
+            MONTH(date) AS month, 
+            AVG(number) AS avg_number 
+        FROM 
+            public.amazon 
+        GROUP BY 1;
+        """
+        qp = QueryProfiler(request)
+        self.check_version(qp)
+        self.check_request(qp, "avg(number) AS avg_number")
