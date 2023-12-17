@@ -417,13 +417,13 @@ class KMeans(Clustering):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes` 
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
         method.
 
     Examples
@@ -1117,13 +1117,13 @@ class KPrototypes(KMeans):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes` 
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
         method.
 
     Examples
@@ -1722,13 +1722,13 @@ class BisectingKMeans(KMeans, Tree):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes` 
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
         method.
 
     Examples
@@ -2622,7 +2622,7 @@ class DBSCAN(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes` 
         method.
 
     Examples
@@ -3378,7 +3378,7 @@ class NearestCentroid(MulticlassClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes` 
         method.
 
     Examples

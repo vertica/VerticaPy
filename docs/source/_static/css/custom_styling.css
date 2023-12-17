@@ -70,8 +70,8 @@ h2{
   transition: color 0.5s ease-in-out;
   /* font-family: 'Inter', sans-serif;  */
   font-family: "Inter var","Helvetica Neue",Helvetica,Arial,sans-serif;  /* From Vertica Website */
-  font-weight: 400;
-  font-size: 1em; /* Badr said 16, but I increased */
+  /* font-weight: 400; */
+  /* font-size: 1em; */
   
   color: #101c2f; /* From Vertica Website */
 
@@ -83,11 +83,11 @@ h2{
   content: "";
   position: absolute;
   width: 100%;
-  height: 10px;
+  height: 7px;
   bottom: -15px;
-  left: 0;
+  left: -10px;
   background-color: #1a6aff;
-  transition: all 0.5s ease-in-out;
+  /*transition: all 0.5s ease-in-out;*/
   transform: scaleX(0);
   visibility: hidden;
   border-radius: 10px 10px 0 0;
@@ -293,12 +293,10 @@ h2{
   background: linear-gradient(to right, #00008b 0%,  #00008b 50%, #1a6aff 50%, #1a6aff 100%);
   background-size: 200% 100%;
   background-position: right bottom;
-  transition: all .5s ease-out;
-
+  /* transition: all .5s ease-out; */
   color: white;
   border: none;
   border-radius: 50px;
-
 }
 
 .button-text {
@@ -982,4 +980,9 @@ article, article .align-default {
 /* VerticaPy Tables */
 .verticapy_table {
   overflow-x: scroll;
+}
+
+/* Hiding the code block counter */
+.gp {
+  display: none;
 }

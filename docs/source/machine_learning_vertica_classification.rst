@@ -57,6 +57,7 @@ Linear SVC
    LinearSVC.score
    LinearSVC.set_params
    LinearSVC.summarize
+   LinearSVC.to_binary
    LinearSVC.to_memmodel
    LinearSVC.to_pmml
    LinearSVC.to_python
@@ -115,6 +116,7 @@ Logistic Regression
    LogisticRegression.score
    LogisticRegression.set_params
    LogisticRegression.summarize
+   LogisticRegression.to_binary
    LogisticRegression.to_memmodel
    LogisticRegression.to_pmml
    LogisticRegression.to_python
@@ -182,6 +184,7 @@ Dummy Tree
    DummyTreeClassifier.score
    DummyTreeClassifier.set_params
    DummyTreeClassifier.summarize
+   DummyTreeClassifier.to_binary
    DummyTreeClassifier.to_graphviz
    DummyTreeClassifier.to_memmodel
    DummyTreeClassifier.to_pmml
@@ -244,6 +247,7 @@ Decision Tree
    DecisionTreeClassifier.score
    DecisionTreeClassifier.set_params
    DecisionTreeClassifier.summarize
+   DecisionTreeClassifier.to_binary
    DecisionTreeClassifier.to_memmodel
    DecisionTreeClassifier.to_pmml
    DecisionTreeClassifier.to_python
@@ -304,6 +308,7 @@ Random Forest Classifier
    RandomForestClassifier.score
    RandomForestClassifier.set_params
    RandomForestClassifier.summarize
+   RandomForestClassifier.to_binary
    RandomForestClassifier.to_graphviz
    RandomForestClassifier.to_memmodel
    RandomForestClassifier.to_pmml
@@ -365,6 +370,7 @@ XGBoost Classifier
    XGBClassifier.score
    XGBClassifier.set_params
    XGBClassifier.summarize
+   XGBClassifier.to_binary
    XGBClassifier.to_graphviz
    XGBClassifier.to_memmodel
    XGBClassifier.to_pmml

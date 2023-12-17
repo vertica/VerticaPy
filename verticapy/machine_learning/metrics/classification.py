@@ -4676,7 +4676,7 @@ def classification_report(
 
             .. math::
 
-                AIC = = 2k - 2\ln(\hat{L})
+                AIC = 2k - 2\ln(\hat{L})
 
         - auc:
             Area Under the Curve (ROC).
@@ -4701,7 +4701,7 @@ def classification_report(
 
             .. math::
 
-                BIC = = -2\ln(\hat{L}) + k \ln(n)
+                BIC = -2\ln(\hat{L}) + k \ln(n)
 
         - bm:
             Informedness
@@ -4792,7 +4792,7 @@ def classification_report(
             Matthews Correlation Coefficient
             .. math::
 
-                MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+                MCC = \\frac{TP \\times TN - FP \\times FN}{\\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
         - mk:
             Markedness
@@ -4833,14 +4833,14 @@ def classification_report(
             Recall.
 
             .. math::
-                Recall = TP / (TP + FN)
+                Recall = \\frac{TP}{TP + FN}
 
         - specificity:
             Specificity.
 
             .. math::
 
-                Specificity = TN / (TN + FP)
+                Specificity = \\frac{TN}{TN + FP}
 
     labels: ArrayLike, optional
         List of the response column categories to use.

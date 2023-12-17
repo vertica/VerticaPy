@@ -38,6 +38,17 @@ def auto_connect() -> None:
     a connection using the
     auto-connection.
 
+    Examples
+    --------
+    Connects using an existing
+    auto-connection:
+
+    .. code-block:: python
+
+        from verticapy.connection import auto_connect
+
+        auto_connect()
+
     .. seealso::
 
         | :py:func:`verticapy.connection.read.available_connections` :

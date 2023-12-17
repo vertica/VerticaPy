@@ -45,6 +45,7 @@ K-Means
    KMeans.register
    KMeans.set_params
    KMeans.summarize
+   KMeans.to_binary
    KMeans.to_memmodel
    KMeans.to_pmml
    KMeans.to_python
@@ -113,7 +114,8 @@ Bisecting K-Means
    BisectingKMeans.predict
    BisectingKMeans.register
    BisectingKMeans.set_params
-   BisectingKMeans.summarize  
+   BisectingKMeans.summarize
+   BisectingKMeans.to_binary
    BisectingKMeans.to_memmodel
    BisectingKMeans.to_pmml
    BisectingKMeans.to_python
@@ -150,23 +152,16 @@ DBSCAN (Beta)
    DBSCAN.deploySQL
    DBSCAN.does_model_exists
    DBSCAN.drop
-   DBSCAN.export_models
    DBSCAN.fit
    DBSCAN.get_attributes
    DBSCAN.get_match_index
    DBSCAN.get_params
    DBSCAN.get_plotting_lib
-   DBSCAN.get_vertica_attributes
-   DBSCAN.import_models
    DBSCAN.plot
    DBSCAN.predict
    DBSCAN.register
    DBSCAN.set_params
    DBSCAN.summarize
-   DBSCAN.to_pmml
-   DBSCAN.to_python
-   DBSCAN.to_sql
-   DBSCAN.to_tf
 
 _____________
 
@@ -208,6 +203,7 @@ Isolation Forest
    IsolationForest.register
    IsolationForest.set_params
    IsolationForest.summarize
+   IsolationForest.to_binary
    IsolationForest.to_memmodel
    IsolationForest.to_pmml
    IsolationForest.to_python
@@ -239,10 +235,10 @@ Local Outlier Factor (Beta)
 .. autosummary::
    :toctree: api/
 
-   drop
-   fit
-   plot
-   predict
+   LocalOutlierFactor.drop
+   LocalOutlierFactor.fit
+   LocalOutlierFactor.plot
+   LocalOutlierFactor.predict
    
 
 

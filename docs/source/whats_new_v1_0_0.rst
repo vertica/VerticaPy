@@ -86,16 +86,16 @@ Machine Learning Support
 -------------------------
 
 - New Vertica algorithms supported:
-    - :py:class:`verticapy.machine_learning.vertica.IsolationForest`.
-    - :py:class:`verticapy.machine_learning.vertica.KPrototypes`.
-    - :py:class:`verticapy.machine_learning.vertica.PoissonRegressor`.
-    - :py:class:`verticapy.machine_learning.vertica.AR`.
-    - :py:class:`verticapy.machine_learning.vertica.MA`.
-    - :py:class:`verticapy.machine_learning.vertica.ARMA`.
-    - :py:class:`verticapy.machine_learning.vertica.ARIMA`.
-    - :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer`. It is still beta. 
+  - :py:class:`verticapy.machine_learning.vertica.IsolationForest` .
+  - :py:class:`verticapy.machine_learning.vertica.KPrototypes` .
+  - :py:class:`verticapy.machine_learning.vertica.PoissonRegressor` .
+  - :py:class:`verticapy.machine_learning.vertica.AR` .
+  - :py:class:`verticapy.machine_learning.vertica.MA` .
+  - :py:class:`verticapy.machine_learning.vertica.ARMA` .
+  - :py:class:`verticapy.machine_learning.vertica.ARIMA` .
+  - :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` . It is still beta. 
 
-- New method :py:meth:`verticapy.machine_learning.vertica.XGBoostClassifier.features_importance` for finding the feature importance for XGBoost models. 
+- New method :py:meth:`verticapy.machine_learning.vertica.XGBoostClassifier.features_importance`  for finding the feature importance for XGBoost models. 
 - Classification metrics are now available for multiclass data/model using three methods: ``micro``, ``macro``, ``weighted``, ``score`` and ``none``.
   - ``average_precision_score`` is another new metric that is added to classification metrics.
   - ``roc_auc`` and ``prc_auc`` now work for multi-class classification using different averaging techniques stated above. 
@@ -107,14 +107,14 @@ Machine Learning Support
 
 .. note::
   
-  For more information, see: :ref:`api.machine_learning` and :ref:`api.machine_learning.metrics`.
+  For more information, see: :ref:`api.machine_learning` and :ref:`api.machine_learning.metrics` .
 
 _____
 
 SQL
 -----
 
-- ``vDataFramesSQL`` is deprecated. Now, :py:class:`verticapy.vDataFrame` can be used directly to create :py:class:`verticapy.vDataFrame`s from SQL. For example:
+- ``vDataFramesSQL`` is deprecated. Now, :py:class:`verticapy.vDataFrame` can be used directly to create :py:class:`verticapy.vDataFrame` from SQL. For example:
 
 .. code-block:: python
 
@@ -123,7 +123,7 @@ SQL
     "(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
   )
 
-The new format supports other methods for creating :py:class:`verticapy.vDataFrame`s.
+The new format supports other methods for creating :py:class:`verticapy.vDataFrame` .
 
 .. code-block:: python
 
@@ -186,14 +186,14 @@ Plotting
   %load_ext verticapy.jupyter.extensions.chart_magic
   %chart -c sql_command -f input_file -k 'auto' -o output_file
   
-  The :py:func:`verticapy.jupyter.extensions.chart_magic.chart_magic` command is similar to the hchart command, accepting four arguments:
+The :py:func:`verticapy.jupyter.extensions.chart_magic.chart_magic` command is similar to the hchart command, accepting four arguments:
 
   1. SQL command.
   2. Input file.
   3. Plot type (e.g. pie, bar, boxplot, etc.).
   4. Output file.
 
-  Example:
+Example:
 
 .. code-block:: python
 
@@ -204,7 +204,7 @@ Classification Metrics
 
 Added support for many new classification and regression metrics.
 
-The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.classification.classification_report`:
+The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.classification_report` :
   - Akaike's Information Criterion (AIC).
   - Balanced Accuracy (BA).
   - False Discovery Rate (FDR).
@@ -214,9 +214,9 @@ The following metrics have been added to the :py:func:`verticapy.machine_learnin
   - Prevalence Threshold.
   - Specificity.
 
-  Most of the above metrics are new in this version and can be accessed directly.
+Most of the above metrics are new in this version and can be accessed directly.
 
-  The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.regression.regression_report`:
+The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.regression_report` :
   - Mean Squared Log Error.
   - Quantile Error.
 
@@ -324,7 +324,7 @@ Others
 -------
 
 - Docstrings have been enriched to add examples and other details that will help in creating a more helpful doc.
-- A new dataset "Africa Education" (:py:meth:`erticapy.datasets.load_africa_education`) has been added to the dataset library. It can be easily imported using:
+- A new dataset "Africa Education" (:py:func:`verticapy.datasets.load_africa_education`) has been added to the dataset library. It can be easily imported using:
 
 .. code-block:: python
 

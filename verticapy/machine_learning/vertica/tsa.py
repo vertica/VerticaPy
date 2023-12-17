@@ -1868,7 +1868,7 @@ class ARIMA(TimeSeriesModelBase):
         are normalized based on their range. Subsequently,
         an activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1884,13 +1884,13 @@ class ARIMA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes` 
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples
@@ -2600,7 +2600,7 @@ class ARMA(TimeSeriesModelBase):
         are normalized based on their range. Subsequently,
         an activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2616,13 +2616,13 @@ class ARMA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes` 
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples
@@ -3325,7 +3325,7 @@ class AR(TimeSeriesModelBase):
         are normalized based on their range. Subsequently,
         an activation function calculates the final score.
         It is necessary to use the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` 
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -3341,13 +3341,13 @@ class AR(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes` 
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples
@@ -4028,13 +4028,13 @@ class MA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes` 
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples

@@ -33,5 +33,6 @@ Query Performance
    QueryProfiler.get_qsteps
    QueryProfiler.get_request
    QueryProfiler.get_rp_status
+   QueryProfiler.get_table
    QueryProfiler.get_version
    QueryProfiler.step
