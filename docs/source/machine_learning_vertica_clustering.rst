@@ -152,16 +152,23 @@ DBSCAN (Beta)
    DBSCAN.deploySQL
    DBSCAN.does_model_exists
    DBSCAN.drop
+   DBSCAN.export_models
    DBSCAN.fit
    DBSCAN.get_attributes
    DBSCAN.get_match_index
    DBSCAN.get_params
    DBSCAN.get_plotting_lib
+   DBSCAN.get_vertica_attributes
+   DBSCAN.import_models
    DBSCAN.plot
    DBSCAN.predict
    DBSCAN.register
    DBSCAN.set_params
    DBSCAN.summarize
+   DBSCAN.to_pmml
+   DBSCAN.to_python
+   DBSCAN.to_sql
+   DBSCAN.to_tf
 
 _____________
 
