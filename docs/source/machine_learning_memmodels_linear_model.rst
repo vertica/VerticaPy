@@ -32,6 +32,12 @@ Base Class
    LinearModel.predict_sql
    LinearModel.set_attributes
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   LinearModel.object_type
 _____
 
 
@@ -59,4 +65,10 @@ Linear Model Classifier
    LinearModelClassifier.predict_sql
    LinearModelClassifier.set_attributes
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   LinearModelClassifier.object_type
 ____

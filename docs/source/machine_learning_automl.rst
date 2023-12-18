@@ -47,6 +47,7 @@ AutoML
    AutoML.to_pmml
    AutoML.to_python
    AutoML.to_sql
+   AutoML.to_tf
 
 
 **Attributes:**
