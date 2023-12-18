@@ -404,43 +404,6 @@ Balance
 
    preprocessing.balance
 
-Count Vectorizor (Beta)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. currentmodule:: verticapy.machine_learning.vertica
-   
-.. autosummary::
-   :toctree: api/
-
-   preprocessing.CountVectorizer
-
-.. currentmodule:: verticapy.machine_learning.vertica.preprocessing
-
-**Methods:**
-
-.. autosummary::
-   :toctree: api/
-
-   CountVectorizer.contour
-   CountVectorizer.deploySQL
-   CountVectorizer.does_model_exists
-   CountVectorizer.drop
-   CountVectorizer.export_models
-   CountVectorizer.fit
-   CountVectorizer.get_attributes
-   CountVectorizer.get_match_index
-   CountVectorizer.get_params
-   CountVectorizer.get_plotting_lib
-   CountVectorizer.get_vertica_attributes
-   CountVectorizer.import_models
-   CountVectorizer.register
-   CountVectorizer.set_params
-   CountVectorizer.summarize
-   CountVectorizer.to_pmml
-   CountVectorizer.to_python
-   CountVectorizer.to_sql
-   CountVectorizer.to_tf
-   CountVectorizer.transform
 
 _____
 

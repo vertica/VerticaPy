@@ -71,6 +71,17 @@ Vertica
 
     .. grid-item::
     
+      .. card:: Text Analytics
+         :link: api.machine_learning.vertica.text
+         :link-type: ref
+         :text-align: center
+         :class-card: custom-card-4
+         
+         ^^^^
+         Work with text using VerticaPy.
+
+    .. grid-item::
+    
       .. card:: Pipeline (Beta)
          :link: api.machine_learning.vertica.pipeline
          :link-type: ref
