@@ -411,6 +411,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         res = model.plot_tree()
         res.render(filename='figures/machine_learning_vertica_tree_decision', format='png')
 
+
     .. image:: /../figures/machine_learning_vertica_tree_decision.png
 
     .. note::
@@ -892,6 +893,7 @@ class DummyTreeRegressor(RandomForestRegressor):
 
         res = model.plot_tree()
         res.render(filename='figures/machine_learning_vertica_tree_dummy', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_dummy.png
 
@@ -1631,6 +1633,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         res = model.plot_tree()
         res.render(filename='figures/machine_learning_vertica_tree_decision_classifier', format='png')
 
+
     .. image:: /../figures/machine_learning_vertica_tree_decision_classifier.png
 
     .. note::
@@ -2355,6 +2358,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
         res = model.plot_tree()
         res.render(filename='figures/machine_learning_vertica_tree_decision_classifier', format='png')
+
 
     .. image:: /../figures/machine_learning_vertica_tree_decision_classifier.png
 

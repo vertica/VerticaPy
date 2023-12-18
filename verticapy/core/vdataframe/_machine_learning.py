@@ -450,6 +450,7 @@ class vDFMachineLearning(vDFScaler):
             res = tree.plot_tree()
             res.render(filename='figures/core_vDataFrame_ml_chaid_tree', format='png')
 
+
         .. image:: /../figures/core_vDataFrame_ml_chaid_tree.png
 
         .. note::

@@ -673,7 +673,7 @@ class PerformanceTree:
             label = self._get_label(self.rows[i])
             if tree_id in links:
                 row = self._format_row(self.rows[i].replace('"', "'"))
-                res += f'\t{tree_id} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}", fixedsize=true];\n'
+                res += f'\t{tree_id} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"];\n'
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
                     info_fontcolor = self.style["info_fontcolor"]
@@ -681,10 +681,10 @@ class PerformanceTree:
                     info_rowsize = self.style["info_rowsize"]
                     html_content = textwrap.fill(row, width=info_rowsize)
                     html_content = html.escape(html_content).replace("\n", "<br/>")
-                    res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>];\n'
+                    res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
                 row = self._format_row(self.rows[self.path_id].replace('"', "'"))
-                res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", tooltip="{row}"];\n'
+                res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", tooltip="{row}", URL="#path_id={tree_id}"];\n'
         return res
 
     def _gen_links(self) -> str:

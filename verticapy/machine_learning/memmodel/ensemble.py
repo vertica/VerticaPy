@@ -154,6 +154,7 @@ class Ensemble(InMemoryModel):
             res = model_rfc.plot_tree(tree_id = 0)
             res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier', format='png')
 
+
         .. image:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.png
 
         .. important::
@@ -291,6 +292,7 @@ class RandomForestRegressor(Ensemble):
 
         res = model_rfr.plot_tree(tree_id = 0)
         res.render(filename='figures/machine_learning_memmodel_tree_rndforestreg', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_rndforestreg.png
 
@@ -640,6 +642,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
         res = model_rfc.plot_tree(tree_id = 0)
         res.render(filename='figures/machine_learning_memmodel_ensemble_rfclassifier', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_ensemble_rfclassifier.png
 
@@ -1027,6 +1030,7 @@ class XGBRegressor(Ensemble):
 
         res = model_xgbr.plot_tree(tree_id = 0)
         res.render(filename='figures/machine_learning_memmodel_tree_xgbreg', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_tree_xgbreg.png
 
@@ -1423,6 +1427,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
         res = model_xgbc.plot_tree(tree_id = 0)
         res.render(filename='figures/machine_learning_memmodel_ensemble_xgbclassifier', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_ensemble_xgbclassifier.png
 
@@ -1823,6 +1828,7 @@ class IsolationForest(Ensemble):
 
         res = model_isf.plot_tree(tree_id = 0)
         res.render(filename='figures/machine_learning_memmodel_ensemble_iforest', format='png')
+
 
     .. image:: /../figures/machine_learning_memmodel_ensemble_iforest.png
 

@@ -5,8 +5,8 @@
 XGBoost
 =======
 
-Amazon Redshift | Python | PySpark
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vertica vs Amazon Redshift | Python | PySpark
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -70,13 +70,13 @@ Datasets
     data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
     df = pd.DataFrame(data)
     fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
-      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['blue', 'black'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data.html
 
 
   .. ipython:: python
@@ -89,10 +89,10 @@ Datasets
     fig = px.bar(df, x='des', y='vals', 
       color='des')
     fig.update_layout(xaxis_title=None, yaxis_title=None,showlegend=False)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data_cols.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data_cols.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_data_cols.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data_cols.html
 
 
   Datatypes of data: :bdg-primary-line:`Float`
@@ -110,13 +110,13 @@ Datasets
     data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
     df = pd.DataFrame(data)
     fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
-      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['blue', 'black'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data.html
 
 
 
@@ -130,10 +130,10 @@ Datasets
     fig = px.bar(df, x='des', y='vals', 
       color='des')
     fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data_cols.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data_cols.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_data_cols.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data_cols.html
 
 
   Datatypes of data: :bdg-primary-line:`Float`
@@ -157,8 +157,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -186,8 +186,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - ???
         - ra3.16xlarge
@@ -206,8 +206,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - ???
         - ml.m5.24xlarge
@@ -224,8 +224,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - ???
         - ml.m5.24xlarge
@@ -244,8 +244,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
       * - 3.9.15
         - N/A
@@ -267,8 +267,8 @@ algorithm that was tested:
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy mode
         - Executor Memory
         - Driver Memory
@@ -282,6 +282,44 @@ algorithm that was tested:
         - 70GB
         - 50GB
         - 36 ( Per Worker)
+
+Parameters
+-----------
+
+
+
+.. tab:: Custom Parameters
+
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  |    Platform      | Num Trees  | Tree Depth     | Number of Bins | Feature Importance (Top 5)        |
+  +==================+============+================+================+===================================+
+  | Vertica          | 10         | 10             | 150            | col26, col27, col28, col23, col25 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Amazon Redshift  | 100        | 10             | 150            | col25, col27, col26, col22, col24 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Python           | 10         | 10             | 150            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Dask (Python)    | 10         | 10             | 150            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Spark            | 100        | 10             | 150            | col25, col27, col26, col22, col5  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+
+.. tab:: Default Parameters
+
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  |    Platform      | Num Trees  | Tree Depth     | Number of Bins | Feature Importance (Top 5)        |
+  +==================+============+================+================+===================================+
+  | Vertica          | 10         | 6              | 32             | col26, col27, col28, col23, col25 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Amazon Redshift  | 10         | 6              | 256            | col25, col27, col26, col22, col24 |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Python           | 10         | 6              | 256            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Dask (Python)    | 10         | 6              | 256            | col26, col28, col27, col23, col6  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+  | Spark            | 100        | 6              | 256            | col25, col27, col26, col22, col5  |
+  +------------------+------------+----------------+----------------+-----------------------------------+
+
 
 
 Analysis
@@ -310,25 +348,59 @@ The comparison analysis on both datasets follows:
 
     .. important::
 
-      Amazon Redshift is only considering a sample data of size 33,617 for training.
+      **Amazon Redshift** is only considering a sample data of size 33,617 for training.
+      Thus, we have removed it from further analysis.
 
     .. ipython:: python
       :suppress:
 
       import plotly.graph_objects as go
-      labels = ['Vertica', 'PySpark']
-      heights = [107.45, 1085.84]
-      colors = [#1A6AFF, 'black']
+      labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
+      heights = [107.45, 720, 0, 1085.84]
+      colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
-        fig.add_trace(go.Bar(
-          x=[label],
-          y=[height],
-          marker_color=color,
-          text=[height],
-          textposition='outside',
-          name=label,
-        ))
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Data Size: 10.5M',
+          yaxis=dict(title='Execution Time (minutes)'),
+          bargap=0.2,
+          width=600,
+          height=500,
+          annotations=[
+              dict(
+                  x='Amazon Sagemaker',
+                  y=720,
+                  xref="x",
+                  yref="y",
+                  text="Did not complete in 720 mins",
+                  showarrow=False,
+                  arrowhead=7,
+                  xshift=0,
+                  yshift=30,
+                  font=dict(color='red', size=14)
+              ),
+              dict(
+                  x='Python',
+                  y=0,
+                  xref="x",
+                  yref="y",
+                  text="Memory Error",
+                  showarrow=False,
+                  arrowhead=7,
+                  xshift=0,
+                  yshift=30,
+                  font=dict(color='red', size=14)
+              )
+          ]
+      )
       fig.update_layout(
         title='Data Size: 1B',
         #xaxis=dict(title='XGBoost Implementations'),
@@ -337,10 +409,10 @@ The comparison analysis on both datasets follows:
         width = 600,
         height = 500
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_1b.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_1b.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_1b.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_1b.html
 
 
   .. tab:: 100 Million
@@ -362,7 +434,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
       heights = [13.76, 9.11, 5.69, 96.8]
-      colors = [#1A6AFF, #ee145b, #f0d917, 'black']
+      colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -381,10 +453,10 @@ The comparison analysis on both datasets follows:
         width = 600,
         height = 500
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_100m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_100m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_100m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_100m.html
 
 
 
@@ -407,7 +479,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Sagemaker', 'Python', 'PySpark']
       heights = [6.1, 2.08, 0.47, 7.26]
-      colors = [#1A6AFF, #ee145b, #f0d917, 'black']
+      colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -426,10 +498,10 @@ The comparison analysis on both datasets follows:
         width = 600,
         height = 500
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_10m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_10m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_10m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_10m.html
 
 
 
@@ -438,11 +510,6 @@ The comparison analysis on both datasets follows:
 
   Below are the results from different experiments. 
   Browse throught the tabs to look at each one.
-
-  - Custom Parameters:
-    - number of trees = 10, 
-    - tree depth = 10 
-    - number of bins = 150
 
 
   .. tab:: Default Parameters
@@ -458,7 +525,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [1.27, 8, 3.84, 51.77]
-      colors = [#1A6AFF, 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -477,10 +544,10 @@ The comparison analysis on both datasets follows:
         width = 600,
         height = 500
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_exp_custom.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_exp_custom.html
 
   .. tab:: Custom Parameters
 
@@ -495,7 +562,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [24.95, 7, 4.33, 56.7]
-      colors = [#1A6AFF, 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -514,10 +581,10 @@ The comparison analysis on both datasets follows:
         width = 600,
         height = 500
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_exp_custom.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_higgs_exp_custom.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_exp_custom.html
 
 
 
@@ -544,7 +611,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [6.105, 7, 9.78, 122.08]
-      colors = [#1A6AFF, 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -563,10 +630,10 @@ The comparison analysis on both datasets follows:
         width = 600,
         height = 500
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_default.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_exp_default.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_default.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_exp_default.html
 
   .. tab:: Custom Parameters
 
@@ -585,7 +652,7 @@ The comparison analysis on both datasets follows:
       import plotly.graph_objects as go
       labels = ['Vertica', 'Amazon Redshift', 'Python', 'PySpark']
       heights = [40.53, 7, 9.83, 119.09]
-      colors = [#1A6AFF, 'green', 'black']
+      colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
@@ -604,10 +671,10 @@ The comparison analysis on both datasets follows:
         width = 600,
         height = 500
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_custom.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_exp_custom.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_amazon_exp_custom.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_exp_custom.html
 
 
 
@@ -647,8 +714,8 @@ Test Environment
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -681,8 +748,8 @@ Test Environment
       * - Version
         - Instance Type
         - Cluster
-        - vCPU(per node)
-        - Memory(per node)
+        - vCPU (per node)
+        - Memory (per node)
         - Deploy Mode
         - OS
         - OS Version
@@ -728,16 +795,16 @@ Comparison
     import plotly.express as px
     ml_tools = ['EON', 'Enterprise']
     training_times = [1381.36, 1260.09] 
-    df = pd.DataFrame({'Vertica': ml_tools, 'Training Time (seconds)': training_times})
-    fig = px.bar(df, x='Vertica', y='Training Time (seconds)', 
+    df = pd.DataFrame({'ML Tool': ml_tools, 'Training Time (seconds)': training_times})
+    fig = px.bar(df, x='ML Tool', y='Training Time (seconds)', 
       title='Training Time',
-      color='Vertica',
-      color_discrete_map={'EON': #1A6AFF, 'Enterprise': #ee145b})
+      color='ML Tool',
+      color_discrete_map={'EON': "#1A6AFF", 'Enterprise': "#ee145b"})
     fig.update_layout(xaxis_title=None)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_eon_vs_enterprise_train.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_train.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_eon_vs_enterprise_train.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_train.html
 
 
 .. tab:: Prediction Time
@@ -746,18 +813,18 @@ Comparison
     :suppress:
 
     import plotly.express as px
-    ml_tools = ['Vertica EON', 'Vertica Enterprise']
+    ml_tools = ['EON', 'Enterprise']
     training_times = [128.86, 119.83] 
     df = pd.DataFrame({'ML Tool': ml_tools, 'Prediction Time (seconds)': training_times})
     fig = px.bar(df, x='ML Tool', y='Prediction Time (seconds)', 
       title='Prediction Time',
       color='ML Tool',
-      color_discrete_map={'Vertica EON': #1A6AFF, 'Vertica Enterprise': #ee145b})
+      color_discrete_map={'EON': "#1A6AFF", 'Enterprise': "#ee145b"})
     fig.update_layout(xaxis_title=None)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_eon_vs_enterprise_prediction.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_prediction.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_eon_vs_enterprise_prediction.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_prediction.html
 
 
 
@@ -799,8 +866,8 @@ Comparison
 ..     * - Version
 ..       - Instance Type
 ..       - Cluster
-..       - vCPU(per node)
-..       - Memory(per node)
+..       - vCPU (per node)
+..       - Memory (per node)
 ..       - Deploy Mode
 ..       - OS
 ..       - OS Version
@@ -836,8 +903,8 @@ Comparison
 ..     * - Version
 ..       - Instance Type
 ..       - Cluster
-..       - vCPU(per node)
-..       - Memory(per node)
+..       - vCPU (per node)
+..       - Memory (per node)
 ..       - Deploy Mode
 ..       - OS
 ..       - OS Version
@@ -889,7 +956,7 @@ Comparison
 ..   labels = ['Vertica EON', 'Vertica Enterprise', 'Google BQ']
 ..   train_times = [1381.36, 1260.09, 1060]
 ..   predict_times = [128.86, 119.83, 19.1]
-..   colors = [#1A6AFF, 'green', 'purple']
+..   colors = ["#1A6AFF", 'green', 'purple']
 ..   fig = go.Figure()
 ..   bar_width = 0.3  # Set the width of each bar
 ..   gap_width = -0.1  # Set the gap width between bars
@@ -906,8 +973,8 @@ Comparison
 ..   )
 ..   fig.add_trace(go.Bar(x=[label for label in labels],y=predict_times,width=bar_width,marker_color=colors,text=predict_times,textposition='outside',name=f'Predicting',offset=bar_width + gap_width,))
 ..   fig.update_layout(title='Training & Predicting', yaxis=dict(title='Execution Time (seconds)'), barmode='group',bargap=0.2,width=600,height=500,)
-..   fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_xgboost_google_bq.html")
+..   fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_google_bq.html")
 
 .. .. raw:: html
-..   :file: /project/data/VerticaPy/docs/figures/benchmark_xgboost_google_bq.html
+..   :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_google_bq.html
 

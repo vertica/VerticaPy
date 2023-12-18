@@ -41,7 +41,6 @@ Table: VerticaPy Statistics Summary
 
 .. include:: ../statistics.rst
 
-
 Code Coverage
 -------------
 

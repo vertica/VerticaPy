@@ -8,7 +8,6 @@ h1{
   font-size: 3.2em ;
 }
 
-
 h2{
   font-family: "Inter" ;
   font-weight: 350 ;
@@ -16,7 +15,6 @@ h2{
   letter-spacing: -.021em;
   color: #3f4d62;
 }
-
 
 /* Side nav bar */
 .current {
@@ -45,7 +43,6 @@ h2{
   font-family: "Inter" ;
 }
 
-
 /* Top search bar */
 .top_search{
   margin-left: 40px;
@@ -53,7 +50,6 @@ h2{
   /* margin-top: 20px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
   /* text-align: center; DEL TE/STIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 }
-
 
 /* Top Banner BUttons */
 .top-button-container {
@@ -112,7 +108,6 @@ h2{
   font-family: "Inter";
 } */
 
-
 /* Top Buttons Dropdown Menu*/
 
 .top-button-dropdown {
@@ -135,12 +130,12 @@ h2{
   width: 200px;
 }
 
-
 .sidebar-search-container_top{
   display: flex;
   justify-content: center;
   /* size: fixed; */
   width: 300px;
+  border: 1px solid var(--border-gray);
 }
 
 .sidebar-search{
@@ -149,7 +144,6 @@ h2{
 .element.style {
       width: 200px; /* Adjust the width as needed */
 }
-
 
 /* Hiding the logo on right side */
 .sidebar-logo{
@@ -197,7 +191,6 @@ h2{
   /* flex-direction: column; TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 }
 
-
 /* Container at the top for all buttons and search etc */
 .main-header-container{
   display: flex;
@@ -237,6 +230,11 @@ h2{
   justify-content: center;
 }
 
+.toc-drawer {
+  z-index: 1;
+  margin-top: 20px;
+}
+
 /* For the top navigation bar. For the logo */
 .centered-content {
   display: flex;
@@ -250,7 +248,6 @@ h2{
   margin-right: 110px;
   min-width: 200px;
 } */
-
 
 /* Home button */
 .home_button_container{
@@ -266,7 +263,6 @@ h2{
 
   transition: fill 0.5s;
 
-
 }
 
 .home_button_container:hover {
@@ -281,9 +277,7 @@ h2{
   padding-left: 150px; */
   padding-top: 10px;
 
-
 }
-
 
 /* Github button */
 .github-button {
@@ -317,7 +311,6 @@ h2{
   background-position: left bottom;
 }
 
-
 /* Chart Gallery GIF and other card info */
 
 /* Chart Gallery Badges */
@@ -337,22 +330,16 @@ h2{
   border-radius: 10px;
 }
 
-
-
 .sd-card-title {
-  font-size: 1.4em;
+  font-size: 1.2em;
 }
 
-
 /* End of Chart Gallery */
-
 
 
 /* body[data-theme="dark"] .banner-image {
   fill: white; 
 } */
-
-
 
 /* The top box to select version */
 .select.form-control-sm:not([multiple]) {
@@ -419,7 +406,6 @@ h2{
   color: #00008b;
 }
 
-
 .content {
   /* padding: 3.5em 3em; */
 }
@@ -435,9 +421,9 @@ body {
 }
 
 .sd-card:hover {
-  --sd-color-shadow: #1a6aff;
+  --sd-color-shadow: #000000;
+  border-color: #CFCFCF;
 }
-
 
 p {
   font-size: 85%; 
@@ -448,13 +434,10 @@ p {
   /* margin-top: calc(var(--header-height) * 1.8+500px); */
 }
 
-
 /* Add padding on top of article container */
 .article-container{
   /* margin-top: calc(var(--header-height) * 1.8+20px); */
 }
-
-
 
 /* TOC on right */
 
@@ -462,31 +445,55 @@ p {
   margin-top: 70px;
 }
 
-
-
+/* Cards */
+.custom-card,
+.custom-card-2,
+.custom-card-3,
+.custom-card-4,
+.custom-card-5,
+.custom-card-6, 
+.custom-card-7, 
+.custom-card-8,
+.custom-card-9,
+.custom-card-10 {
+  /*overflow-y: scroll;*/
+}
+.custom-card:hover,
+.custom-card-2:hover,
+.custom-card-3:hover,
+.custom-card-4:hover,
+.custom-card-5:hover,
+.custom-card-6:hover, 
+.custom-card-7:hover, 
+.custom-card-8:hover,
+.custom-card-9:hover,
+.custom-card-10:hover {
+  box-shadow: 0px 12px 30px whitesmoke;
+}
 
 /* Cards on API page */
 .custom-card {
-  height: 215px; /* Adjust the desired height */
+  height: 100px; /* Adjust the desired height */
   /* Add more styles as needed */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 
 /* Cards on Index Page */
 .custom-card-2 {
   height: 295px; /* Adjust the desired height */
-  /* Add more styles as needed */
 }
 
 /* Cards on Machine Learning page */
 .custom-card-3 {
-  height: 215px; /* Adjust the desired height */
+  height: 200px; /* Adjust the desired height */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 
 /* Cards on Vertica page */
 .custom-card-4 {
-  height: 180px; /* Adjust the desired height */
+  height: 200px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -494,30 +501,22 @@ p {
 
 /* Cards on Connectors page */
 .custom-card-5 {
-  height: 280px; /* Adjust the desired height */
-  /* Add more styles as needed */
+  height: 320px; /* Adjust the desired height */
 }
 
 /* Cards on chart gallery page */
 .custom-card-6 {
   height: 380px; /* Adjust the desired height */
-  /* Add more styles as needed */
 }
 
 /* Cards on User Guide pages */
 .custom-card-7 {
-  height: 110px; /* Adjust the desired height */
-  /* Add more styles as needed */
-}
-
-.custom-card-7:hover {
-  /* Increase the box shadow on hover */
-  box-shadow: 0px 12px 20px whitesmoke;
+  height: 130px; /* Adjust the desired height */
 }
 
 /* Cards on User Guide MAIN page */
 .custom-card-8 {
-  height: 200px; /* Adjust the desired height */
+  height: 250px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -531,9 +530,10 @@ p {
 
 /* Cards on Benchmarks pages */
 .custom-card-10 {
-  height: 125px; /* Adjust the desired height */
-  /* Add more styles as needed */
+  height: 145px; /* Adjust the desired height */
 }
+
+/* End cards */
 
 .custom-class-img-top{
   height: 90px;
@@ -609,7 +609,6 @@ p {
   z-index: 1;
 }
 
-
 .dropdown-item {
   padding: 15px 20px;
   text-decoration: none;
@@ -626,21 +625,16 @@ p {
   display: block;
 }
 
-
-
-
 /* Summary Tables */
 article, article .align-default {
   margin-left: 0;
 }
-
 
 /* Icons on pages */
 .page-icons {
   margin-top: 10px; /* Adjust the margin size as needed */
   margin-bottom: 10px; /* Adjust the margin size as needed */
 }
-
 
 /*second search for short window*/
 .search-top-dropdown {
@@ -685,7 +679,6 @@ article, article .align-default {
   width: 400px;
 }
 
-
 /* Feedback button on right */
 
 .openbtn {
@@ -703,7 +696,6 @@ article, article .align-default {
   border: 0;
   z-index: 1000;
 }
-
 
 .feedback_sidebar {
   height: 100%;
@@ -740,7 +732,6 @@ article, article .align-default {
   margin-left: 50px;
 }
 
-
 .openbtn:hover {
   background-color: #00008b;
 }
@@ -750,13 +741,9 @@ article, article .align-default {
   /* padding: 16px; */
 }
 
-
-
-
 /* End of Feedback button details */
 
 /* From VerticaPy Website for Feedback Form */
-
 
 #feedback-form {
   margin: 20px 25px 0 -25px;
@@ -849,7 +836,6 @@ article, article .align-default {
   font-size: large;
 }
 
-
 .deprecated{
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
@@ -857,7 +843,6 @@ article, article .align-default {
   border-left: 0.2rem solid red;
   padding: 5px;
 }
-
 
 .versionadded{
   border-top-left-radius: 5px;
@@ -876,18 +861,12 @@ article, article .align-default {
 
 /* End of form */
 
-
 @media (max-width: 72em) {
 
   .search-top-dropdown {
       /* display: inline-block; */
   }
 }
-
-
-
-
-
 
 @media (max-width: 50em) {
   .github-button {
@@ -915,7 +894,6 @@ article, article .align-default {
   }
 }
 
-
 @media (max-width: 90em) {
   .right-content {
     /* display: none; */
@@ -926,7 +904,6 @@ article, article .align-default {
   }
 
 }
-
 
 @media (max-width: 72em) {
   .top-button-container {
@@ -978,11 +955,6 @@ article, article .align-default {
 }
 }
 
-
-
-
-
-
 /* Loader GIF for pages */
 .loader-container {
   position: fixed;
@@ -1007,3 +979,7 @@ article, article .align-default {
   100% { transform: rotate(360deg); }
 }
 
+/* VerticaPy Tables */
+.verticapy_table {
+  overflow-x: scroll;
+}

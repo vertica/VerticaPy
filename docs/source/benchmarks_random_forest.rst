@@ -18,8 +18,8 @@ individual decision trees by leveraging the diversity of an
 ensemble.
 
 
-Spark ML
-~~~~~~~~~
+Vertica vs Spark ML
+~~~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -64,10 +64,10 @@ Dataset
     fig = px.bar(df, x='des', y='vals', 
       color='des')
     fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data_cols.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data_cols.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html
 
   Datatypes of data: :bdg-primary-line:`Float`
 
@@ -89,8 +89,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -115,8 +115,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -145,8 +145,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -171,8 +171,8 @@ Test Environment
         * - Version
           - Instance Type
           - Cluster
-          - vCPU(per node)
-          - Memory(per node)
+          - vCPU (per node)
+          - Memory (per node)
           - Deploy Mode
           - OS
           - OS Version
@@ -260,7 +260,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -272,10 +272,10 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_time.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_single_time.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_time.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_single_time.html
 
   .. tab:: Accuracy
 
@@ -307,7 +307,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -319,10 +319,10 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_accuracy.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_single_accuracy.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_single_accuracy.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_single_accuracy.html
 
 .. tab:: Multi Node
 
@@ -391,7 +391,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -403,10 +403,10 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_time.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_multi_time.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_time.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_multi_time.html
 
   .. tab:: Accuracy
 
@@ -438,7 +438,7 @@ Comparison
           text=data['Vertica'],
           textposition='outside',
           name='Vertica',
-          marker_color= #1A6AFF,
+          marker_color= "#1A6AFF",
           offset=0.15
       ))
       fig.update_layout(
@@ -450,14 +450,14 @@ Comparison
           width=550,
           height=600
       )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_accuracy.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_multi_accuracy.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_random_forest_spark_multi_accuracy.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_random_forest_spark_multi_accuracy.html
 
 
-Madlib
-~~~~~~
+Vertica vs Madlib
+~~~~~~~~~~~~~~~~~~
 
 .. important::
 
@@ -484,10 +484,10 @@ Dataset
       labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data.html
 
 
 
@@ -501,10 +501,10 @@ Dataset
     fig = px.bar(df, x='des', y='vals', 
       color='des')
     fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data_cols.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html")
 
   .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/benchmark_rf_amazon_data_cols.html
+    :file: SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html
 
 
   Datatypes of data: :bdg-primary-line:`Float`
@@ -538,4 +538,5 @@ Comparison
 
 .. important::
 
-  Since all tests were failing so the test was abandoned.
+  Since all **Madlib** runs were failing for 
+  this size of dataset so the benchmark was abandoned.

@@ -466,6 +466,7 @@ class QueryProfiler:
         res = qprof.get_qplan_tree()
         res.render(filename='figures/performance_get_qplan_tree_1', format='png')
 
+
     .. image:: /../figures/performance_get_qplan_tree_1.png
 
     We can easily customize the tree:
@@ -490,6 +491,7 @@ class QueryProfiler:
         )
         res.render(filename='figures/performance_get_qplan_tree_2', format='png')
 
+
     .. image:: /../figures/performance_get_qplan_tree_2.png
 
     We can look at a specific path ID,
@@ -499,7 +501,7 @@ class QueryProfiler:
     .. code-block::
 
         qprof.get_qplan_tree(
-            path_id=4,
+            path_id=1,
             path_id_info=[5, 6],
             metric='cost',
             shape='square',
@@ -511,7 +513,7 @@ class QueryProfiler:
         :suppress:
 
         res = qprof.get_qplan_tree(
-            path_id=4,
+            path_id=1,
             path_id_info=[5, 6],
             metric='cost',
             shape='square',
@@ -519,6 +521,7 @@ class QueryProfiler:
             color_high='#FFC0CB',
         )
         res.render(filename='figures/performance_get_qplan_tree_3', format='png')
+
 
     .. image:: /../figures/performance_get_qplan_tree_3.png
 
@@ -641,6 +644,8 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
+        import verticapy as vp
+        vp.set_option("plotting_lib", "plotly")
         fig = qprof.get_qexecution()
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html")
 
@@ -1682,6 +1687,7 @@ class QueryProfiler:
             res = qprof.get_qplan_tree()
             res.render(filename='figures/performance_get_qplan_tree_1', format='png')
 
+
         .. image:: /../figures/performance_get_qplan_tree_1.png
 
         .. note::
@@ -2358,6 +2364,8 @@ class QueryProfiler:
         .. ipython:: python
             :suppress:
 
+            import verticapy as vp
+            vp.set_option("plotting_lib", "plotly")
             fig = qprof.get_qexecution()
             fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html")
 
