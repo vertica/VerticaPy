@@ -27,6 +27,8 @@ Base Class
 
    LinearModel.get_attributes
    LinearModel.predict
+   LinearModel.predict_proba
+   LinearModel.predict_proba_sql
    LinearModel.predict_sql
    LinearModel.set_attributes
 
