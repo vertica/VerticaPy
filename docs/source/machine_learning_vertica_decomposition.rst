@@ -48,6 +48,8 @@ PCA
    PCA.score
    PCA.set_params
    PCA.summarize
+   PCA.to_binary
+   PCA.to_memmodel
    PCA.to_pmml
    PCA.to_python
    PCA.to_sql
@@ -93,12 +95,20 @@ SVD
    SVD.score
    SVD.set_params
    SVD.summarize
+   SVD.to_binary
+   SVD.to_memmodel
    SVD.to_pmml
    SVD.to_python
    SVD.to_sql
    SVD.to_tf
    SVD.transform
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   SVD.object_type
 
 MCA (Beta)
 ~~~~~~~~~~~~
@@ -138,15 +148,23 @@ MCA (Beta)
    MCA.plot_scree
    MCA.plot_var
    MCA.register
+   MCA.score
    MCA.set_params
    MCA.summarize
+   MCA.to_binary
+   MCA.to_memmodel
    MCA.to_pmml
    MCA.to_python
    MCA.to_sql
    MCA.to_tf
    MCA.transform
 
+**Attributes:**
 
+.. autosummary::
+   :toctree: api/
+
+   MCA.object_type
 ____
 
 Preprocessing 
@@ -187,6 +205,7 @@ One-Hot Encoder
    OneHotEncoder.register
    OneHotEncoder.set_params
    OneHotEncoder.summarize
+   OneHotEncoder.to_binary
    OneHotEncoder.to_memmodel
    OneHotEncoder.to_pmml
    OneHotEncoder.to_python
@@ -195,7 +214,12 @@ One-Hot Encoder
    OneHotEncoder.transform
 
 
+**Attributes:**
 
+.. autosummary::
+   :toctree: api/
+
+   OneHotEncoder.object_type
 
 ______
 
@@ -234,6 +258,7 @@ Scaler
    Scaler.register
    Scaler.set_params
    Scaler.summarize
+   Scaler.to_binary
    Scaler.to_memmodel
    Scaler.to_pmml
    Scaler.to_python
@@ -284,6 +309,7 @@ Standard Scaler
    StandardScaler.register
    StandardScaler.set_params
    StandardScaler.summarize
+   StandardScaler.to_binary
    StandardScaler.to_memmodel
    StandardScaler.to_pmml
    StandardScaler.to_python
@@ -316,6 +342,7 @@ Min Max Scaler
 .. autosummary::
    :toctree: api/
 
+   MinMaxScaler.contour
    MinMaxScaler.deployInverseSQL
    MinMaxScaler.deploySQL
    MinMaxScaler.does_model_exists
@@ -332,6 +359,7 @@ Min Max Scaler
    MinMaxScaler.register
    MinMaxScaler.set_params
    MinMaxScaler.summarize
+   MinMaxScaler.to_binary
    MinMaxScaler.to_memmodel
    MinMaxScaler.to_pmml
    MinMaxScaler.to_python
@@ -364,6 +392,7 @@ Robust Scaler
 .. autosummary::
    :toctree: api/
 
+   RobustScaler.contour
    RobustScaler.deployInverseSQL
    RobustScaler.deploySQL
    RobustScaler.does_model_exists
@@ -380,6 +409,7 @@ Robust Scaler
    RobustScaler.register
    RobustScaler.set_params
    RobustScaler.summarize
+   RobustScaler.to_binary
    RobustScaler.to_memmodel
    RobustScaler.to_pmml
    RobustScaler.to_python
@@ -435,11 +465,14 @@ Kernel Density (Beta)
    KernelDensity.does_model_exists
    KernelDensity.drop
    KernelDensity.export_models
+   KernelDensity.features_importance
    KernelDensity.fit
    KernelDensity.get_attributes
    KernelDensity.get_match_index
    KernelDensity.get_params
    KernelDensity.get_plotting_lib
+   KernelDensity.get_score
+   KernelDensity.get_tree
    KernelDensity.get_vertica_attributes
    KernelDensity.import_models
    KernelDensity.plot
@@ -451,6 +484,8 @@ Kernel Density (Beta)
    KernelDensity.score
    KernelDensity.set_params
    KernelDensity.summarize
+   KernelDensity.to_binary
+   KernelDensity.to_graphviz
    KernelDensity.to_pmml
    KernelDensity.to_python
    KernelDensity.to_sql

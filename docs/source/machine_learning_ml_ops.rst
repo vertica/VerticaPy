@@ -61,6 +61,9 @@ Model Tracking
 
    vExperiment.add_model
    vExperiment.drop
+   vExperiment.get_plotting_lib
+   vExperiment.list_models
+   vExperiment.load_best_model
    vExperiment.plot
 
 
