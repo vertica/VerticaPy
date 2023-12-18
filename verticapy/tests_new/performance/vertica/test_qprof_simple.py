@@ -76,17 +76,11 @@ class TestQueryProfilerSimple:
     def look_for_autoproj(self, row: list, index: int, target: str) -> bool:
         return True if row[index] == target else False
 
-    def setup_dummy_table_run_query(self, schema) -> vDataFrame:
-        amzn = load_amazon(schema=schema)
-        return amzn
-
     # Main Test
 
-    def test_profile_simple(self, schema_loader):
+    def test_profile_simple(self, amazon_vd):
         """Create a query profiler and run the steps on a simple query"""
         assert len(vp.available_connections()) > 0
-        schema = schema_loader
-        self.setup_dummy_table_run_query(schema)
         request = f"""
         SELECT 
             date, 
