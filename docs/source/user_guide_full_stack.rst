@@ -13,7 +13,7 @@ Full Stack
     .. grid-item::
     
       .. card:: DBLink Integration
-          :link: dblink_integration/index.html
+          :link: notebooks/full_stack/dblink_integration/index.html
           :text-align: center
           :class-card: custom-card-9
 
