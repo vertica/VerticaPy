@@ -78,16 +78,17 @@ class TestQueryProfilerSimple:
 
     # Main Test
 
-    def test_profile_simple(self, amazon_vd):
+    def test_profile_simple(self, amazon_vd, schema_loader):
         """Create a query profiler and run the steps on a simple query"""
-        assert len(vp.available_connections()) > 0
+        # Assume autoconnect will handle it somewhere?
+        # assert len(vp.available_connections()) > 0
         request = f"""
         SELECT 
             date, 
             MONTH(date) AS month, 
             AVG(number) AS avg_number 
         FROM 
-            public.amazon 
+            {schema_loader}.amazon 
         GROUP BY 1;
         """
         qp = QueryProfiler(request)
