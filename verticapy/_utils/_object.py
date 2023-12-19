@@ -81,7 +81,7 @@ def read_pd(*args, **kwargs) -> "vDataFrame":
     """
     Reads a Pandas DataFrame into a VerticaPy
     vDataFrame. It uses the
-    :py:func:`verticapy.core.parsers.pandas.read_pandas`
+    :py:func:`verticapy.pandas.read_pandas`
     function.
 
     .. note::

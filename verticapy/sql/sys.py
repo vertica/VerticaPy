@@ -42,8 +42,8 @@ def current_session() -> int:
         the VerticaPy logs.
 
     .. seealso::
-        | :py:meth:`verticapy.sql.sys.username` : current DB username.
-        | :py:meth:`verticapy.sql.sys.has_privileges` : checks user privileges.
+        | :py:meth:`verticapy.username` : current DB username.
+        | :py:meth:`verticapy.has_privileges` : checks user privileges.
     """
     res = _executeSQL(
         query="SELECT /*+LABEL(current_session)*/ CURRENT_SESSION();",
@@ -78,8 +78,8 @@ def username() -> str:
         privileges.
 
     .. seealso::
-        | :py:meth:`verticapy.sql.sys.current_session` : current DB session.
-        | :py:meth:`verticapy.sql.sys.has_privileges` : checks user privileges.
+        | :py:meth:`verticapy.current_session` : current DB session.
+        | :py:meth:`verticapy.has_privileges` : checks user privileges.
     """
     return _executeSQL(
         query="SELECT /*+LABEL(username)*/ USERNAME();",
@@ -164,8 +164,8 @@ def has_privileges(
     ...
 
     .. seealso::
-        | :py:meth:`verticapy.sql.sys.current_session` : current DB session.
-        | :py:meth:`verticapy.sql.sys.username` : current DB username.
+        | :py:meth:`verticapy.current_session` : current DB session.
+        | :py:meth:`verticapy.username` : current DB username.
     """
     query_superuser = f"""
         SELECT 

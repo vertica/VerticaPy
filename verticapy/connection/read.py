@@ -43,11 +43,11 @@ def available_connections() -> list[str]:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.utils.get_connection_file` :
+        | :py:func:`verticapy.connection.get_connection_file` :
             Gets the VerticaPy connection file.
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
@@ -136,11 +136,11 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.utils.get_connection_file` :
+        | :py:func:`verticapy.connection.get_connection_file` :
             Gets the VerticaPy connection file.
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     confparser = get_confparser(dsn)

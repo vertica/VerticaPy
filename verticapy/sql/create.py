@@ -61,7 +61,7 @@ def create_schema(
         drop("employees_test")
 
     .. seealso::
-        | :py:func:`verticapy.sql.create.create_table` : Creates a table.
+        | :py:func:`verticapy.create_table` : Creates a table.
     """
     try:
         _executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
@@ -172,7 +172,7 @@ def create_table(
         :file: SPHINX_DIRECTORY/figures/sql_create_create_table.html
 
     .. seealso::
-        | :py:func:`verticapy.sql.create.create_schema` : Creates a schema.
+        | :py:func:`verticapy.create_schema` : Creates a schema.
     """
     if schema.lower() == "v_temp_schema":
         schema = ""

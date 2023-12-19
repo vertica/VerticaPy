@@ -100,7 +100,7 @@ def drop(
         action is irreversible.
 
     .. seealso::
-        | :py:func:`verticapy.sql.create.create_table` : Creates a table.
+        | :py:func:`verticapy.create_table` : Creates a table.
     """
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]

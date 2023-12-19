@@ -809,7 +809,7 @@ def cochrane_orcutt(
 
         new_model.coef_
 
-    We can see that the new model has slighlty different
+    We can see that the new model has slightly different
     coefficients to cater for the autocorrelated noise.
     """
     if isinstance(input_relation, vDataFrame):

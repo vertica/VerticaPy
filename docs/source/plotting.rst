@@ -4,6 +4,9 @@
 Plotting
 =============
 
+This page illustrates the Plotting Base class. It is still incomplete.
+In order to understand the graphics in more detail, please check out the :ref:`chart_gallery.guide`.
+
 ______
 
 
@@ -43,11 +46,11 @@ SQL
 
 _____
 
-Switching Libaries
--------------------
+Switching Libraries
+--------------------
 
 Plotly
-~~~~~~~~
+~~~~~~~
 
 .. code-block:: python
 

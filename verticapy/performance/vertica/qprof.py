@@ -1103,7 +1103,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         tables = list(self._v_table_dict().keys())
         if isinstance(table_name, NoneType):
@@ -1173,7 +1173,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         return vertica_version()
 
@@ -1233,7 +1233,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         res = format_query(
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
@@ -1298,7 +1298,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1420,7 +1420,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         query = f"""
@@ -1499,7 +1499,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1674,7 +1674,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
         obj = PerformanceTree(
@@ -1788,7 +1788,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         where = ""
@@ -1933,7 +1933,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT 
@@ -2005,7 +2005,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -2243,7 +2243,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         if metric == "all" and show:
             if conf.get_option("plotting_lib") != "plotly":
@@ -2360,7 +2360,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.resource_pool_status;"""
         query = self._replace_schema_in_query(query)
@@ -2410,7 +2410,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.host_resources;"""
         query = self._replace_schema_in_query(query)

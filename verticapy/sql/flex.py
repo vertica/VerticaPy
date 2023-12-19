@@ -135,9 +135,9 @@ def compute_flextable_keys(
         to understand the possibilities.
 
     .. seealso::
-        | :py:func:`verticapy.sql.flex.compute_vmap_keys` : Computes the vmap most frequent keys.
-        | :py:func:`verticapy.sql.flex.isflextable` : Checks if the input relation is a flextable.
-        | :py:func:`verticapy.sql.flex.isvmap` : Checks if the input column is a VMap.
+        | :py:func:`verticapy.sql.compute_vmap_keys` : Computes the vmap most frequent keys.
+        | :py:func:`verticapy.sql.isflextable` : Checks if the input relation is a flextable.
+        | :py:func:`verticapy.sql.isvmap` : Checks if the input column is a VMap.
     """
     usecols = format_type(usecols, dtype=list)
     _executeSQL(
@@ -280,9 +280,9 @@ def compute_vmap_keys(
         to understand the possibilities.
 
     .. seealso::
-        | :py:func:`verticapy.sql.flex.compute_flextable_keys` : Computes the flex table keys.
-        | :py:func:`verticapy.sql.flex.isflextable` : Checks if the input relation is a flextable.
-        | :py:func:`verticapy.sql.flex.isvmap` : Checks if the input column is a VMap.
+        | :py:func:`verticapy.sql.compute_flextable_keys` : Computes the flex table keys.
+        | :py:func:`verticapy.sql.isflextable` : Checks if the input relation is a flextable.
+        | :py:func:`verticapy.sql.isvmap` : Checks if the input column is a VMap.
     """
     vmap = quote_ident(vmap_col)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
@@ -408,9 +408,9 @@ def isflextable(table_name: str, schema: str) -> bool:
         to understand the possibilities.
 
     .. seealso::
-        | :py:func:`verticapy.sql.flex.compute_flextable_keys` : : Computes the flex table keys.
-        | :py:func:`verticapy.sql.flex.compute_vmap_keys` : Computes the vmap most frequent keys.
-        | :py:func:`verticapy.sql.flex.isvmap` : Checks if the input column is a VMap.
+        | :py:func:`verticapy.sql.compute_flextable_keys` : : Computes the flex table keys.
+        | :py:func:`verticapy.sql.compute_vmap_keys` : Computes the vmap most frequent keys.
+        | :py:func:`verticapy.sql.isvmap` : Checks if the input column is a VMap.
     """
     table_name = quote_ident(table_name)[1:-1]
     schema = quote_ident(schema)[1:-1]
@@ -536,9 +536,9 @@ def isvmap(
         to understand the possibilities.
 
     .. seealso::
-        | :py:func:`verticapy.sql.flex.compute_flextable_keys` : Computes the flex table keys.
-        | :py:func:`verticapy.sql.flex.compute_vmap_keys` : : Computes the vmap most frequent keys.
-        | :py:func:`verticapy.sql.flex.isflextable` : Checks if the input relation is a flextable.
+        | :py:func:`verticapy.sql.compute_flextable_keys` : Computes the flex table keys.
+        | :py:func:`verticapy.sql.compute_vmap_keys` : : Computes the vmap most frequent keys.
+        | :py:func:`verticapy.sql.isflextable` : Checks if the input relation is a flextable.
     """
     column = quote_ident(column)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):

@@ -61,7 +61,7 @@ def change_auto_connection(name: str) -> None:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
     """
     gb_conn = get_global_connection()
@@ -155,7 +155,7 @@ def delete_connection(name: str) -> bool:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
     """
     gb_conn = get_global_connection()
@@ -192,11 +192,11 @@ def new_connection(
     connection file. The information is saved
     as plaintext in the local machine.
     The function
-    :py:func:`verticapy.connection.utils.get_connection_file`
+    :py:func:`verticapy.connection.get_connection_file`
     returns the associated connection file
     path. If you want a temporary connection,
     you can use the
-    :py:func:`verticapy.connection.connect.set_connection`
+    :py:func:`verticapy.connection.set_connection`
     function.
 
     Parameters
@@ -271,9 +271,9 @@ def new_connection(
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.utils.get_connection_file` :
+        | :py:func:`verticapy.connection.get_connection_file` :
             Gets the VerticaPy connection file.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     path = get_connection_file()

@@ -211,12 +211,12 @@ def create_index(
 
     .. seealso::
 
-        | :py:func:`verticapy.sql.geo.index.describe_index` :
+        | :py:func:`verticapy.sql.geo.describe_index` :
             Describes the geo index.
-        | :py:func:`verticapy.sql.geo.functions.intersect` :
+        | :py:func:`verticapy.sql.geo.intersect` :
             Spatially intersects a point
             or points with a set of polygons.
-        | :py:func:`verticapy.sql.geo.index.rename_index` :
+        | :py:func:`verticapy.sql.geo.rename_index` :
             Renames the geo index.
     """
     gid, g = vdf.format_colnames(gid, g)
@@ -252,7 +252,7 @@ def describe_index(
         the polygons  in the index.  If set to
         True,   the  function  returns  a
         :py:class:`vDataFrame` instead of a
-        :py:class:`verticapy.TableSample`.
+        :py:class:`verticapy.core.tablesample.base.TableSample`.
 
     Returns
     -------
@@ -326,12 +326,12 @@ def describe_index(
 
     .. seealso::
 
-        | :py:func:`verticapy.sql.geo.index.create_index` :
+        | :py:func:`verticapy.sql.geo.create_index` :
             Creates the geo index.
-        | :py:func:`verticapy.sql.geo.functions.intersect` :
+        | :py:func:`verticapy.sql.geo.intersect` :
             Spatially intersects a point
             or points with a set of polygons.
-        | :py:func:`verticapy.sql.geo.index.rename_index` :
+        | :py:func:`verticapy.sql.geo.rename_index` :
             Renames the geo index.
     """
     if not name:
@@ -432,11 +432,11 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
 
     .. seealso::
 
-        | :py:func:`verticapy.sql.geo.index.create_index` :
+        | :py:func:`verticapy.sql.geo.create_index` :
             Creates the geo index.
-        | :py:func:`verticapy.sql.geo.index.describe_index` :
+        | :py:func:`verticapy.sql.geo.describe_index` :
             Describes the geo index.
-        | :py:func:`verticapy.sql.geo.functions.intersect` :
+        | :py:func:`verticapy.sql.geo.intersect` :
             Spatially intersects a point
             or points with a set of polygons.
     """

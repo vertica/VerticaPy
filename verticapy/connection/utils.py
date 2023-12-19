@@ -47,7 +47,7 @@ def get_confparser(dsn: Optional[str] = None) -> ConfigParser:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.utils.get_connection_file` :
+        | :py:func:`verticapy.connection.get_connection_file` :
             Gets the VerticaPy connection file.
     """
     if not dsn:
@@ -97,7 +97,7 @@ def get_connection_file() -> str:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
     """
     if "VERTICAPY_CONNECTION" in os.environ:

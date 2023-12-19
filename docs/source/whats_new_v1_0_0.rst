@@ -71,7 +71,7 @@ Bug fixes
 - Fixed nested pie plots.
 - Improved :py:meth:`verticapy.vDataFrame.balance` method.
 - load_model accepts feature names with parentheses.
-- ``pandas_to_vertica`` method is renamed :py:func:`verticapy.core.parsers.pandas.read_pandas` and it can now work with ``pandas.DataFrames`` that have a column full of ``NaN`` values.
+- ``pandas_to_vertica`` method is renamed :py:func:`verticapy.pandas.read_pandas` and it can now work with ``pandas.DataFrames`` that have a column full of ``NaN`` values.
 - :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` replaces :py:class:`verticapy.machine_learning.vertica.CountVectorizer`.
 - AutoML Error: An error prompt is now displayed when no model fits.
 - Cramer's V calculation is now fixed. See :py:meth:`verticapy.vDataFrame.corr`.

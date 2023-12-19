@@ -280,7 +280,7 @@ def het_breuschpagan(
 
         print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
-    ..note::
+    .. note::
 
         Notice the contrast of the two test results. In this
         dataset, the noise was heteroscedestic so we got very low
@@ -529,7 +529,7 @@ def het_goldfeldquandt(
 
         print(statistic, pvalue)
 
-    ..note::
+    .. note::
 
         Notice the contrast of the two test results. In this
         dataset, the noise was heteroscedestic so we got very low
@@ -829,7 +829,7 @@ def het_white(
 
         print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
-    ..note::
+    .. note::
 
         Notice the contrast of the two test results. In this
         dataset, the noise was heteroscedestic so we got very low
