@@ -549,6 +549,26 @@ class QueryProfiler:
         a bar plot by switching the ``kind``
         to "bar".
 
+    **Query Events**
+
+    We can easily look
+    at the query events:
+
+    .. code-block:: python
+
+        qprof.get_query_events()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_query_events()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_query_events.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_query_events.html
+
     **CPU Time by Node and Path ID**
 
     Another very important metric could be the CPU time
@@ -1022,7 +1042,7 @@ class QueryProfiler:
             7: NotImplemented,
             8: NotImplemented,
             9: NotImplemented,
-            10: NotImplemented,
+            10: self.get_query_events,
             11: NotImplemented,
             12: self.get_cpu_time,
             13: NotImplemented,
@@ -1756,7 +1776,6 @@ class QueryProfiler:
 
         Examples
         --------
-
         First, let's import the
         :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
         object.
@@ -1821,6 +1840,149 @@ class QueryProfiler:
                 max_cardinality=1000,
                 **style_kwargs,
             )
+        return vdf
+
+    # Step 10: Query events
+    def get_query_events(self) -> vDataFrame:
+        """
+        Returns a :py:class`vDataFrame`
+        that contains a table listing
+        query events.
+
+        Returns
+        -------
+        A :py:class`vDataFrame` that
+        contains a table listing query
+        events.
+
+        Columns:
+          1) event_timestamp:
+            - Type:
+                Timestamp.
+            - Description:
+                When the event happened.
+            - Example:
+                ``2023-12-11 19:01:03.543272-05:00``
+          2) node_name:
+            - Type:
+                string.
+            - Description:
+                Which node the event
+                happened on.
+            - Example:
+                v_db_node0003
+          3) event_category:
+            - Type:
+                string.
+            - Description:
+                The general kind of event.
+            - Examples:
+                OPTIMIZATION, EXECUTION.
+          4) event_type:
+            - Type:
+                string.
+            - Description:
+                The specific kind of event.
+            - Examples:
+                AUTO_PROJECTION_USED, SMALL_MERGE_REPLACED.
+          5) event_description:
+            - Type:
+                string.
+            - Description:
+                A sentence explaining the event.
+            - Example:
+                "The optimizer ran a query
+                using auto-projections"
+          6) operator_name:
+            - Type:
+                string.
+            - Description:
+                The name of the EE operator
+                associated with this event.
+                ``None`` if no operator is
+                associated with the event.
+            - Example:
+                StorageMerge.
+          7) path_id:
+            - Type:
+                integer.
+            - Description:
+                A number that uniquely
+                identifies the operator
+                in the plan.
+            - Examples:
+                1, 4...
+          8) event_details:
+            - Type:
+                string.
+            - Description:
+                Additional specific
+                information related
+                to this event.
+            - Example:
+                "t1_super is an
+                auto-projection"
+          9) suggested_action:
+            - Type:
+                string.
+            - Description:
+                A sentence describing
+                potential remedies.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can look at the query events:
+
+        .. code-block:: python
+
+            qprof.get_query_events()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_query_events.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+        """
+        query = f"""
+            SELECT
+                event_timestamp,
+                node_name,
+                event_category,
+                event_type,
+                event_description,
+                operator_name,
+                path_id,
+                event_details,
+                suggested_action
+            FROM
+                v_monitor.query_events
+            WHERE
+                transaction_id={self.transaction_id} AND
+                statement_id={self.statement_id}
+            ORDER BY
+                1;"""
+        query = self._replace_schema_in_query(query)
+        vdf = vDataFrame(query)
         return vdf
 
     # Step 12: CPU Time by node and path_id
