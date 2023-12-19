@@ -1552,7 +1552,7 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
             - mk:
                 Markedness.
@@ -1594,14 +1594,14 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    Recall = TP / (TP + FN)
+                    Recall = \\frac{TP}{TP + FN}
 
             - specificity:
                 Specificity.
 
                 .. math::
 
-                    Specificity = TN / (TN + FP)
+                    Specificity = \\frac{TN}{TN + FP}
 
             **For Regression**
 

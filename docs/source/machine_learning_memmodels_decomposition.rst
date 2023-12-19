@@ -31,7 +31,12 @@ PCA
    PCA.transform
    PCA.transform_sql
 
+**Attributes:**
 
+.. autosummary::
+   :toctree: api/
+
+   PCA.object_type
 ____
 
 SVD
@@ -56,3 +61,9 @@ SVD
    SVD.transform
    SVD.transform_sql
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   SVD.object_type

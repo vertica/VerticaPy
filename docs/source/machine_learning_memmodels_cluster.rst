@@ -32,7 +32,12 @@ Base Class
    Clustering.transform
    Clustering.transform_sql
 
+**Attributes:**
 
+.. autosummary::
+   :toctree: api/
+
+   Clustering.object_type
 _____
 
 K-Means
@@ -62,7 +67,12 @@ K-Means
    KMeans.transform
    KMeans.transform_sql
 
+**Attributes:**
 
+.. autosummary::
+   :toctree: api/
+
+   KMeans.object_type
 
 
 ________
@@ -94,6 +104,12 @@ K-Prototypes
    KPrototypes.transform
    KPrototypes.transform_sql
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   KPrototypes.object_type
 _______
 
 Bisecting K-Means
@@ -124,7 +140,12 @@ Bisecting K-Means
    BisectingKMeans.transform
    BisectingKMeans.transform_sql
 
+**Attributes:**
 
+.. autosummary::
+   :toctree: api/
+
+   BisectingKMeans.object_type
 ________
 
 Nearest Centroid
@@ -155,3 +176,9 @@ Nearest Centroid
    NearestCentroid.transform
    NearestCentroid.transform_sql
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   NearestCentroid.object_type

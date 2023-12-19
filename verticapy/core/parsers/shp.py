@@ -86,14 +86,14 @@ def read_shp(
 
     .. seealso::
 
-        | :py:func:`verticapy.sql.geo.index.create_index` :
+        | :py:func:`verticapy.sql.geo.create_index` :
             Creates the geo index.
-        | :py:func:`verticapy.sql.geo.index.describe_index` :
+        | :py:func:`verticapy.sql.geo.describe_index` :
             Describes the geo index.
-        | :py:func:`verticapy.sql.geo.functions.intersect` :
+        | :py:func:`verticapy.sql.geo.intersect` :
             Spatially intersects a point
             or points with a set of polygons.
-        | :py:func:`verticapy.sql.geo.index.rename_index` :
+        | :py:func:`verticapy.sql.geo.rename_index` :
             Renames the geo index.
     """
     if not (schema):

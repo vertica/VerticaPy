@@ -1884,13 +1884,13 @@ class ARIMA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples
@@ -2616,13 +2616,13 @@ class ARMA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples
@@ -3341,13 +3341,13 @@ class AR(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples
@@ -4028,13 +4028,13 @@ class MA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes`
         method.
 
     Examples

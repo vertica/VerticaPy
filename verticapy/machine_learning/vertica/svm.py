@@ -110,13 +110,13 @@ class LinearSVR(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples
@@ -691,13 +691,13 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples

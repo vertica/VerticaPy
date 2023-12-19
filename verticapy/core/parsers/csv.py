@@ -240,13 +240,13 @@ def pcsv(
 
     .. seealso::
 
-        | :py:func:`verticapy.core.parsers.read_avro` :
+        | :py:func:`verticapy.read_avro` :
             Ingests a AVRO file into the Vertica DB.
-        | :py:func:`verticapy.core.parsers.read_file` :
+        | :py:func:`verticapy.read_file` :
             Ingests an input file into the Vertica DB.
-        | :py:func:`verticapy.core.parsers.read_json` :
+        | :py:func:`verticapy.read_json` :
             Ingests a JSON file into the Vertica DB.
-        | :py:func:`verticapy.core.parsers.read_pandas` :
+        | :py:func:`verticapy.read_pandas` :
             Ingests the ``pandas.DataFrame``
             into the Vertica DB.
     """
@@ -705,7 +705,7 @@ def read_csv(
 
     .. note::
 
-        The :py:func:`verticapy.core.parsers.csv.read_csv`
+        The :py:func:`verticapy.csv.read_csv`
         function offers various additional
         parameters and options. Check the
         documentation to explore its capabilities,
@@ -715,7 +715,7 @@ def read_csv(
 
     .. seealso::
 
-        | :py:func:`verticapy.core.parsers.read_json` :
+        | :py:func:`verticapy.read_json` :
             Ingests a JSON file into the Vertica DB.
     """
     dtype = format_type(dtype, dtype=dict)

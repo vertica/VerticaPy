@@ -151,7 +151,7 @@ class TfidfVectorizer(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
         method.
 
     Examples

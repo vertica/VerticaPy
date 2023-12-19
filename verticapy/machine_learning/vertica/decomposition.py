@@ -951,13 +951,13 @@ class PCA(Decomposition):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes`
         method.
 
     Examples
@@ -1420,13 +1420,13 @@ class MCA(PCA):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes`
         method.
 
     Examples
@@ -2241,13 +2241,13 @@ class SVD(Decomposition):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes`
         method.
 
     Examples

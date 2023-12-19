@@ -38,9 +38,20 @@ def auto_connect() -> None:
     a connection using the
     auto-connection.
 
+    Examples
+    --------
+    Connects using an existing
+    auto-connection:
+
+    .. code-block:: python
+
+        from verticapy.connection import auto_connect
+
+        auto_connect()
+
     .. seealso::
 
-        | :py:func:`verticapy.connection.read.available_connections` :
+        | :py:func:`verticapy.connection.available_connections` :
             Displays all available connections.
     """
     gb_conn = get_global_connection()
@@ -97,13 +108,13 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.read.available_connections` :
+        | :py:func:`verticapy.connection.available_connections` :
             Displays all available connections.
-        | :py:func:`verticapy.connection.utils.get_connection_file` :
+        | :py:func:`verticapy.connection.get_connection_file` :
             Gets the VerticaPy connection file.
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
@@ -135,7 +146,7 @@ def set_connection(conn: Connection) -> None:
     ODBC connection. This should not be
     confused with a native VerticaPy
     connection created by the
-    :py:func:`verticapy.connection.write.new_connection`
+    :py:func:`verticapy.connection.new_connection`
     function.
 
     Examples
@@ -190,7 +201,7 @@ def set_connection(conn: Connection) -> None:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
     """
     try:
@@ -232,9 +243,9 @@ def close_connection() -> None:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.connect.current_connection` :
+        | :py:func:`verticapy.connection.current_connection` :
             Returns the current VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
@@ -298,11 +309,11 @@ def current_connection() -> GlobalConnection:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.connect.current_cursor` :
+        | :py:func:`verticapy.connection.current_cursor` :
             Returns the current VerticaPy cursor.
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     gb_conn = get_global_connection()
@@ -365,11 +376,11 @@ def current_cursor() -> Cursor:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.connect.current_connection` :
+        | :py:func:`verticapy.connection.current_connection` :
             Returns the current VerticaPy connection.
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     return current_connection().cursor()
@@ -426,11 +437,11 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.connect.current_connection` :
+        | :py:func:`verticapy.connection.current_connection` :
             Returns the current VerticaPy connection.
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
     return vertica_python.connect(**read_dsn(section, dsn))
@@ -474,13 +485,13 @@ def verticapylab_connection() -> Connection:
 
     .. seealso::
 
-        | :py:func:`verticapy.connection.connect.current_connection` :
+        | :py:func:`verticapy.connection.current_connection` :
             Returns the current VerticaPy connection.
-        | :py:func:`verticapy.connection.write.new_connection` :
+        | :py:func:`verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.set_connection` :
+        | :py:func:`verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
-        | :py:func:`verticapy.connection.connect.vertica_connection` :
+        | :py:func:`verticapy.connection.vertica_connection` :
             Reads the input DSN and creates a
             Vertica Database connection.
     """

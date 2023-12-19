@@ -170,7 +170,7 @@ class QueryProfiler:
     ^^^^^^^^^^^^^^^
 
     First, let's import the
-    :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+    :py:class:`QueryProfiler`
     object.
 
     .. ipython:: python
@@ -1093,7 +1093,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1123,7 +1123,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         tables = list(self._v_table_dict().keys())
         if isinstance(table_name, NoneType):
@@ -1160,7 +1160,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. ipython:: python
@@ -1193,7 +1193,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         return vertica_version()
 
@@ -1226,7 +1226,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1253,7 +1253,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         res = format_query(
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
@@ -1292,7 +1292,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1318,7 +1318,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1409,7 +1409,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1440,7 +1440,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         query = f"""
@@ -1492,7 +1492,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1519,7 +1519,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1531,6 +1531,7 @@ class QueryProfiler:
                 v_internal.dc_explain_plans
             WHERE 
                 transaction_id={self.transaction_id}
+            AND statement_id={self.statement_id}
             ORDER BY 
                 statement_id,
                 path_id,
@@ -1651,7 +1652,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1693,7 +1694,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
         obj = PerformanceTree(
@@ -1777,7 +1778,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1806,7 +1807,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         where = ""
@@ -2065,7 +2066,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2094,7 +2095,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT 
@@ -2137,7 +2138,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2166,7 +2167,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -2336,7 +2337,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2404,7 +2405,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         if metric == "all" and show:
             if conf.get_option("plotting_lib") != "plotly":
@@ -2491,7 +2492,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2521,7 +2522,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.resource_pool_status;"""
         query = self._replace_schema_in_query(query)
@@ -2541,7 +2542,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2571,7 +2572,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.host_resources;"""
         query = self._replace_schema_in_query(query)

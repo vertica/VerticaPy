@@ -100,13 +100,13 @@ class DecisionTreeRegressor(RandomForestRegressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes`
         method.
 
     Examples
@@ -592,13 +592,13 @@ class DummyTreeRegressor(RandomForestRegressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes`
         method.
 
     Examples
@@ -1099,13 +1099,13 @@ class DecisionTreeClassifier(RandomForestClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes`
         method.
 
     Examples
@@ -1831,13 +1831,13 @@ class DummyTreeClassifier(RandomForestClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes`
         method.
 
     Examples

@@ -1,8 +1,8 @@
 .. _api.utilities:
 
-============
+==========
 Utilities
-============
+==========
 
 
 Options & Displaying
@@ -13,9 +13,8 @@ Options & Displaying
 .. autosummary:: 
    :toctree: api/
 
+   get_option
    set_option
-
-
 
 ______
 

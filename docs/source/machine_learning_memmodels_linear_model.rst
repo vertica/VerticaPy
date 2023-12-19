@@ -27,9 +27,17 @@ Base Class
 
    LinearModel.get_attributes
    LinearModel.predict
+   LinearModel.predict_proba
+   LinearModel.predict_proba_sql
    LinearModel.predict_sql
    LinearModel.set_attributes
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   LinearModel.object_type
 _____
 
 
@@ -57,4 +65,10 @@ Linear Model Classifier
    LinearModelClassifier.predict_sql
    LinearModelClassifier.set_attributes
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   LinearModelClassifier.object_type
 ____

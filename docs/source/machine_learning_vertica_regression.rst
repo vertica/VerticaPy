@@ -23,7 +23,7 @@ Linear Regression
 
    linear_model.LinearRegression
 
-.. currentmodule:: verticapy.machine_learning.vertica
+.. currentmodule:: verticapy.machine_learning.vertica.linear_model
 
 **Methods:**
 
@@ -45,6 +45,7 @@ Linear Regression
    LinearRegression.import_models
    LinearRegression.plot
    LinearRegression.predict
+   LinearRegression.register
    LinearRegression.regression_report
    LinearRegression.report
    LinearRegression.score
@@ -95,11 +96,13 @@ Ridge
    Ridge.import_models
    Ridge.plot
    Ridge.predict
+   Ridge.register
    Ridge.regression_report
    Ridge.report
    Ridge.score
    Ridge.set_params
    Ridge.summarize
+   Ridge.to_binary
    Ridge.to_memmodel
    Ridge.to_pmml
    Ridge.to_python
@@ -145,11 +148,13 @@ Lasso
    Lasso.import_models
    Lasso.plot
    Lasso.predict
+   Lasso.register
    Lasso.regression_report
    Lasso.report
    Lasso.score
    Lasso.set_params
    Lasso.summarize
+   Lasso.to_binary
    Lasso.to_memmodel
    Lasso.to_pmml
    Lasso.to_python
@@ -195,11 +200,13 @@ Elastic Net
    ElasticNet.import_models
    ElasticNet.plot
    ElasticNet.predict
+   ElasticNet.register
    ElasticNet.regression_report
    ElasticNet.report
    ElasticNet.score
    ElasticNet.set_params
    ElasticNet.summarize
+   ElasticNet.to_binary
    ElasticNet.to_memmodel
    ElasticNet.to_pmml
    ElasticNet.to_python
@@ -246,11 +253,13 @@ Linear SVR
    LinearSVR.import_models
    LinearSVR.plot
    LinearSVR.predict
+   LinearSVR.register
    LinearSVR.regression_report
    LinearSVR.report
    LinearSVR.score
    LinearSVR.set_params
    LinearSVR.summarize
+   LinearSVR.to_binary
    LinearSVR.to_memmodel
    LinearSVR.to_pmml
    LinearSVR.to_python
@@ -300,11 +309,13 @@ Poisson Regression
    PoissonRegressor.import_models
    PoissonRegressor.plot
    PoissonRegressor.predict
+   PoissonRegressor.register
    PoissonRegressor.regression_report
    PoissonRegressor.report
    PoissonRegressor.score
    PoissonRegressor.set_params
    PoissonRegressor.summarize
+   PoissonRegressor.to_binary
    PoissonRegressor.to_memmodel
    PoissonRegressor.to_pmml
    PoissonRegressor.to_python
@@ -354,11 +365,14 @@ Dummy Tree
    DummyTreeRegressor.plot
    DummyTreeRegressor.plot_tree
    DummyTreeRegressor.predict
+   DummyTreeRegressor.register
    DummyTreeRegressor.regression_report
    DummyTreeRegressor.report
    DummyTreeRegressor.score
    DummyTreeRegressor.set_params
    DummyTreeRegressor.summarize
+   DummyTreeRegressor.to_binary
+   DummyTreeRegressor.to_graphviz
    DummyTreeRegressor.to_memmodel
    DummyTreeRegressor.to_pmml
    DummyTreeRegressor.to_python
@@ -410,11 +424,14 @@ Decision Tree Regressor
    DecisionTreeRegressor.plot
    DecisionTreeRegressor.plot_tree
    DecisionTreeRegressor.predict
+   DecisionTreeRegressor.register
    DecisionTreeRegressor.regression_report
    DecisionTreeRegressor.report
    DecisionTreeRegressor.score
    DecisionTreeRegressor.set_params
    DecisionTreeRegressor.summarize
+   DecisionTreeRegressor.to_binary
+   DecisionTreeRegressor.to_graphviz
    DecisionTreeRegressor.to_memmodel
    DecisionTreeRegressor.to_pmml
    DecisionTreeRegressor.to_python
@@ -458,15 +475,21 @@ Random Forest Regressor
    RandomForestRegressor.get_match_index
    RandomForestRegressor.get_params
    RandomForestRegressor.get_plotting_lib
+   RandomForestRegressor.get_score
+   RandomForestRegressor.get_tree
    RandomForestRegressor.get_vertica_attributes
    RandomForestRegressor.import_models
    RandomForestRegressor.plot
+   RandomForestRegressor.plot_tree
    RandomForestRegressor.predict
+   RandomForestRegressor.register
    RandomForestRegressor.regression_report
    RandomForestRegressor.report
    RandomForestRegressor.score
    RandomForestRegressor.set_params
    RandomForestRegressor.summarize
+   RandomForestRegressor.to_binary
+   RandomForestRegressor.to_graphviz
    RandomForestRegressor.to_memmodel
    RandomForestRegressor.to_pmml
    RandomForestRegressor.to_python
@@ -510,15 +533,22 @@ XGB Regressor
    XGBRegressor.get_match_index
    XGBRegressor.get_params
    XGBRegressor.get_plotting_lib
+   XGBRegressor.get_score
+   XGBRegressor.get_tree
    XGBRegressor.get_vertica_attributes
    XGBRegressor.import_models
    XGBRegressor.plot
+   XGBRegressor.plot_tree
    XGBRegressor.predict
+   XGBRegressor.register
    XGBRegressor.regression_report
    XGBRegressor.report
    XGBRegressor.score
    XGBRegressor.set_params
    XGBRegressor.summarize
+   XGBRegressor.to_binary
+   XGBRegressor.to_graphviz
+   XGBRegressor.to_json
    XGBRegressor.to_memmodel
    XGBRegressor.to_pmml
    XGBRegressor.to_python
@@ -568,11 +598,13 @@ K-Nearest Neighbors Regressor (Beta)
    KNeighborsRegressor.get_vertica_attributes
    KNeighborsRegressor.import_models
    KNeighborsRegressor.predict
+   KNeighborsRegressor.register
    KNeighborsRegressor.regression_report
    KNeighborsRegressor.report
    KNeighborsRegressor.score
    KNeighborsRegressor.set_params
    KNeighborsRegressor.summarize
+   KNeighborsRegressor.to_binary
    KNeighborsRegressor.to_pmml
    KNeighborsRegressor.to_python
    KNeighborsRegressor.to_sql

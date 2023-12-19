@@ -1117,7 +1117,7 @@ class vDCRead:
         .. note::
 
             This function can be employed to explore the dataset,
-            and the output is a :py:class:`verticapy.TableSample`—an in-memory
+            and the output is a :py:class:`verticapy.core.tablesample.base.TableSample`—an in-memory
             object containing the result.
 
         .. seealso::
@@ -1205,7 +1205,7 @@ class vDCRead:
         .. note::
 
             This function can be employed to explore the dataset,
-            and the output is a :py:class:`verticapy.TableSample`—an in-memory
+            and the output is a :py:class:`verticapy.core.tablesample.base.TableSample`—an in-memory
             object containing the result.
 
         .. seealso::

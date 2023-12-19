@@ -81,7 +81,7 @@ def vertica_python_dtype(
 
     .. seealso::
 
-        | :py:func:`verticapy.sql.dtypes.get_data_types` : Gets a SQL query data types.
+        | :py:func:`verticapy.get_data_types` : Gets a SQL query data types.
     """
     res = type_name
     has_precision_scale = not (
@@ -178,7 +178,7 @@ def get_data_types(
 
     .. seealso::
 
-        | :py:func:`verticapy.sql.dtypes.vertica_python_dtype` : Formats the input data type.
+        | :py:func:`verticapy.vertica_python_dtype` : Formats the input data type.
     """
     if not (schema):
         schema = conf.get_option("temp_schema")

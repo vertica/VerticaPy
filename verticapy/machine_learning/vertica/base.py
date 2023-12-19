@@ -3604,7 +3604,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    AIC = = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\ln(\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
@@ -3629,7 +3629,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\ln(\hat{L}) + k \ln(n)
 
             - bm:
                 Informedness
@@ -3719,7 +3719,7 @@ class BinaryClassifier(Supervised):
                 Matthews Correlation Coefficient
                 .. math::
 
-                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
             - mk:
                 Markedness
@@ -3760,14 +3760,14 @@ class BinaryClassifier(Supervised):
                 Recall.
 
                 .. math::
-                    Recall = TP / (TP + FN)
+                    Recall = \\frac{TP}{TP + FN}
 
             - specificity:
                 Specificity.
 
                 .. math::
 
-                    Specificity = TN / (TN + FP)
+                    Specificity = \\frac{TN}{TN + FP}
 
         cutoff: PythonNumber, optional
             Probability cutoff.
@@ -3989,7 +3989,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    AIC = = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\ln(\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
@@ -4014,7 +4014,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\ln(\hat{L}) + k \ln(n)
 
             - bm:
                 Informedness
@@ -4104,7 +4104,7 @@ class BinaryClassifier(Supervised):
                 Matthews Correlation Coefficient
                 .. math::
 
-                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
             - mk:
                 Markedness
@@ -4145,14 +4145,14 @@ class BinaryClassifier(Supervised):
                 Recall.
 
                 .. math::
-                    Recall = TP / (TP + FN)
+                    Recall = \\frac{TP}{TP + FN}
 
             - specificity:
                 Specificity.
 
                 .. math::
 
-                    Specificity = TN / (TN + FP)
+                    Specificity = \\frac{TN}{TN + FP}
 
         cutoff: PythonNumber, optional
             Cutoff for which the tested category will be
@@ -5340,7 +5340,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    AIC = = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\ln(\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
@@ -5365,7 +5365,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\ln(\hat{L}) + k \ln(n)
 
             - bm:
                 Informedness
@@ -5455,7 +5455,7 @@ class MulticlassClassifier(Supervised):
                 Matthews Correlation Coefficient
                 .. math::
 
-                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
             - mk:
                 Markedness
@@ -5496,14 +5496,14 @@ class MulticlassClassifier(Supervised):
                 Recall.
 
                 .. math::
-                    Recall = TP / (TP + FN)
+                    Recall = \\frac{TP}{TP + FN}
 
             - specificity:
                 Specificity.
 
                 .. math::
 
-                    Specificity = TN / (TN + FP)
+                    Specificity = \\frac{TN}{TN + FP}
 
         cutoff: PythonNumber, optional
             Cutoff for which the tested category is accepted
@@ -5754,7 +5754,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    AIC = = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\ln(\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
@@ -5779,7 +5779,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    BIC = = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\ln(\hat{L}) + k \ln(n)
 
             - bm:
                 Informedness
@@ -5869,7 +5869,7 @@ class MulticlassClassifier(Supervised):
                 Matthews Correlation Coefficient
                 .. math::
 
-                    MCC = \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+                    MCC = \\frac{TP \\times TN - FP \\times FN}{\\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
 
             - mk:
                 Markedness
@@ -5910,14 +5910,14 @@ class MulticlassClassifier(Supervised):
                 Recall.
 
                 .. math::
-                    Recall = TP / (TP + FN)
+                    Recall = \\frac{TP}{TP + FN}
 
             - specificity:
                 Specificity.
 
                 .. math::
 
-                    Specificity = TN / (TN + FP)
+                    Specificity = \\frac{TN}{TN + FP}
 
         average: str, optional
             The method used to  compute the final score for

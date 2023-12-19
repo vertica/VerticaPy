@@ -295,13 +295,13 @@ def read_avro(
 
     .. seealso::
 
-        | :py:func:`verticapy.core.parsers.read_csv` :
+        | :py:func:`verticapy.read_csv` :
             Ingests a CSV file into the Vertica DB.
-        | :py:func:`verticapy.core.parsers.read_file` :
+        | :py:func:`verticapy.read_file` :
             Ingests an input file into the Vertica DB.
-        | :py:func:`verticapy.core.parsers.read_json` :
+        | :py:func:`verticapy.read_json` :
             Ingests a JSON file into the Vertica DB.
-        | :py:func:`verticapy.core.parsers.read_pandas` :
+        | :py:func:`verticapy.read_pandas` :
             Ingests the ``pandas.DataFrame``
             into the Vertica DB.
     """

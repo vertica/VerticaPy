@@ -11,7 +11,6 @@ ______
 Import
 ~~~~~~~
 
-
 .. currentmodule:: verticapy.sdk.vertica.udf
 
 .. autosummary:: 
@@ -19,10 +18,8 @@ Import
 
    import_lib_udf
 
-
 Generate
-~~~~~~~~~~~
-
+~~~~~~~~~
 
 .. currentmodule:: verticapy.sdk.vertica.udf
 
@@ -32,13 +29,8 @@ Generate
    generate_lib_udf
    generate_udf
 
-
-
-
-
 Utilities
-~~~~~~~~~~~~
-
+~~~~~~~~~~
 
 .. currentmodule:: verticapy.sdk.vertica.udf
 

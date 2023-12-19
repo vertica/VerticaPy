@@ -728,13 +728,13 @@ class ElasticNet(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples
@@ -1246,13 +1246,13 @@ class Lasso(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples
@@ -1761,7 +1761,7 @@ class LinearRegression(LinearModel, Regressor):
         the model coefficients, which are normalized
         based on their range. Subsequently, an
         activation function calculates the final score.
-        It is necessary to use the :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`method
+        It is necessary to use the :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance` method
         to compute it initially, and the computed values
         will be subsequently utilized for subsequent
         calls.
@@ -1769,13 +1769,13 @@ class LinearRegression(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples
@@ -2324,13 +2324,13 @@ class PoissonRegressor(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples
@@ -2834,13 +2834,13 @@ class Ridge(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples
@@ -3413,13 +3413,13 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
         method.
 
     Examples

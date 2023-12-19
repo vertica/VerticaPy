@@ -44,13 +44,13 @@ class PMMLModel(VerticaModel):
     Attributes
     ----------
     All attributes can be accessed using the
-    :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+    :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
     method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_vertica_attributes`
         method.
     """
 
