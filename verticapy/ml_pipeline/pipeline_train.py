@@ -12,7 +12,7 @@ from verticapy.machine_learning.vertica.tsa import *
 from verticapy.machine_learning.vertica.decomposition import *
 from verticapy.machine_learning.vertica.cluster import *
 
-from pipeline_helper import execute_and_add
+from .pipeline_helper import execute_and_add
 
 
 def training(train, vdf, pipeline_name, cols):

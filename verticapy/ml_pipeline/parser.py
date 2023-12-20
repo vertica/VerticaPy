@@ -13,12 +13,12 @@ from verticapy.datasets import *
 from verticapy._utils._sql._sys import _executeSQL
 
 # local
-from pipeline_helper import required_keywords, execute_and_add, setup
-import pipeline_ingest
-import pipeline_transform
-import pipeline_train
-import pipeline_test
-import pipeline_schedule
+from .pipeline_helper import required_keywords, execute_and_add, setup
+from . import pipeline_ingest
+from . import pipeline_transform
+from . import pipeline_train
+from . import pipeline_test
+from . import pipeline_schedule
 
 parser = argparse.ArgumentParser(
     description="""Vertica Pipelines is an open source platform for

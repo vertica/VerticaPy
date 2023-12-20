@@ -62,7 +62,7 @@ from verticapy import vDataFrame
 from verticapy.machine_learning.model_selection import *
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._collect import save_to_query_profile
-from pipeline_toolbox import *
+from .pipeline_toolbox import *
 
 # from verticapy.toolbox import *
 

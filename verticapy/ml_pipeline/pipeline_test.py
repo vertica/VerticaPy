@@ -4,8 +4,8 @@
 
 from verticapy import vDataFrame
 
-from pipeline_helper import execute_and_add, remove_comments
-import pipeline_metrics
+from .pipeline_helper import execute_and_add, remove_comments
+from . import pipeline_metrics
 
 
 def testing(test, model, pipeline_name, cols):

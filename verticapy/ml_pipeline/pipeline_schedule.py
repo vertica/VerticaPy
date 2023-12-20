@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """This script runs the Vertica Machine Learning Pipeline Parser"""
 
-from pipeline_helper import execute_and_add, to_sql
+from .pipeline_helper import execute_and_add, to_sql
 
 
 def schedule(schedule, model_sql, table_sql, pipeline_name):
