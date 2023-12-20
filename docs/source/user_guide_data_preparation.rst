@@ -5,9 +5,6 @@
 Data Preparation
 =================
 
-
-
-
 .. grid:: 2
 
     .. grid-item::

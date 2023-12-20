@@ -1,11 +1,8 @@
 .. _user_guide.data_exploration:
 
-
 =================
 Data Exploration
 =================
-
-
 
 .. grid:: 1
 
@@ -57,11 +54,6 @@ Data Exploration
           allowing you to identify patterns and dependencies 
           crucial for informed decision-making and predictive 
           modeling.
-
-
-
-
-
 
 .. toctree::
   :hidden:
