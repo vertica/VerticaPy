@@ -2315,7 +2315,7 @@ class BisectingKMeans(KMeans, Tree):
         .. ipython:: python
             :suppress:
 
-            result = model.predict()
+            result = model.get_tree()
             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_get_tree.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()

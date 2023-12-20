@@ -23,3 +23,10 @@ Performance
           
           Learn about the evaluation of difference performance
           metrics for Vertica.
+
+
+.. toctree::
+  :maxdepth: 1
+  :hidden:
+
+  performance_vertica

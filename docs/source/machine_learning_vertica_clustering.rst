@@ -284,11 +284,8 @@ Local Outlier Factor (Beta)
    LocalOutlierFactor.get_match_index
    LocalOutlierFactor.get_params
    LocalOutlierFactor.get_plotting_lib
-   LocalOutlierFactor.get_score
-   LocalOutlierFactor.get_tree
    LocalOutlierFactor.get_vertica_attributes
    LocalOutlierFactor.import_models
-   LocalOutlierFactor.plot_tree
    LocalOutlierFactor.predict
    LocalOutlierFactor.register
    LocalOutlierFactor.set_params
