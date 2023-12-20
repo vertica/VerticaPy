@@ -56,6 +56,12 @@ PCA
    PCA.to_tf
    PCA.transform
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   PCA.object_type
 
 SVD
 ~~~~
@@ -174,7 +180,6 @@ Preprocessing
 One-Hot Encoder
 ~~~~~~~~~~~~~~~~
 
-
 .. currentmodule:: verticapy.machine_learning.vertica
    
 .. autosummary::
@@ -225,7 +230,7 @@ ______
 
 
 Scaler
-~~~~~~~~~
+~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -240,7 +245,6 @@ Scaler
 
 .. autosummary::
    :toctree: api/
-
 
    Scaler.deployInverseSQL
    Scaler.deploySQL
@@ -266,14 +270,12 @@ Scaler
    Scaler.to_tf
    Scaler.transform
 
-
 **Attributes:**
 
 .. autosummary::
    :toctree: api/
 
    Scaler.object_type
-
 
 
 Standard Scaler
@@ -326,7 +328,7 @@ Standard Scaler
 
 
 Min Max Scaler
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -374,9 +376,8 @@ Min Max Scaler
 
    MinMaxScaler.object_type
 
-
 Robust Scaler
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -424,8 +425,10 @@ Robust Scaler
 
    RobustScaler.object_type
 
+_____
+
 Balance
-~~~~~~~~~
+~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -434,17 +437,14 @@ Balance
 
    preprocessing.balance
 
-
 _____
 
 
-
-
 Density Estimation
---------------------
+------------------
 
 Kernel Density (Beta)
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -491,4 +491,10 @@ Kernel Density (Beta)
    KernelDensity.to_sql
    KernelDensity.to_tf
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   KernelDensity.object_type
 ______

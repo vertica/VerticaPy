@@ -518,7 +518,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.merge` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.merge` :
                 Merges the input :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
         """
@@ -599,7 +599,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.get_columns` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.get_columns` :
                 Returns the :py:class:`verticapy.core.tablesample.base.TableSample` columns.
         """
         x = np.array(self[column])
@@ -692,7 +692,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.category` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.category` :
                 Returns the category of data in a
                 specified :py:class:`verticapy.core.tablesample.base.TableSample`
                 column.
@@ -755,7 +755,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.shape` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.shape` :
                 Returns the :py:class:`verticapy.core.tablesample.base.TableSample` shape.
         """
         return list(self.values)
@@ -857,7 +857,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.append` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.append` :
                 Appends the input :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
         """
@@ -923,7 +923,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.merge` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.merge` :
                 Merges the input :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
         """
@@ -1145,7 +1145,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.get_columns` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.get_columns` :
                 Returns the :py:class:`verticapy.core.tablesample.base.TableSample` columns.
         """
         cols = list(self.values)
@@ -1223,7 +1223,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.merge` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.merge` :
                 Merges the input :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
         """
@@ -1316,7 +1316,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.narrow` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.narrow` :
                 Returns the narrow representation of the
                 :py:class:`verticapy.core.tablesample.base.TableSample`.
         """
@@ -1387,7 +1387,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.to_numpy` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_numpy` :
                 Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a ``numpy.array``.
         """
@@ -1455,7 +1455,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.to_list` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_list` :
                 Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a Python ``list``.
         """
@@ -1514,7 +1514,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.to_numpy` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_numpy` :
                 Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a ``numpy.array``.
         """
@@ -1577,7 +1577,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.to_vdf` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_vdf` :
                 Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
                 to a :py:class:`vDataFrame`.
         """
@@ -1657,7 +1657,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.TableSample.to_sql` :
+            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_sql` :
                 Generates the SQL query associated
                 to the :py:class:`verticapy.core.tablesample.base.TableSample`.
         """

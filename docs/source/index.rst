@@ -90,7 +90,7 @@ a Pythonic way to work with data stored in Vertica.
           The API reference provides concise information about VerticaPy's functions and methods with clear examples.
 
           +++
-          Refernce Guide
+          Reference Guide
 
 
     .. grid-item::

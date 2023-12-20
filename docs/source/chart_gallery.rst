@@ -33,7 +33,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Stacked` :bdg-dark-line:`Fully Stacked``
+          :bdg-dark-line:`Single` :bdg-dark-line:`Stacked` :bdg-dark-line:`Fully Stacked`
 
           +++
           See Examples

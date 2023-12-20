@@ -72,7 +72,7 @@ Bug fixes
 - Improved :py:meth:`verticapy.vDataFrame.balance` method.
 - load_model accepts feature names with parentheses.
 - ``pandas_to_vertica`` method is renamed :py:func:`verticapy.pandas.read_pandas` and it can now work with ``pandas.DataFrames`` that have a column full of ``NaN`` values.
-- :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` replaces :py:class:`verticapy.machine_learning.vertica.CountVectorizer`.
+- :py:class:`verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer` replaces :py:class:`verticapy.machine_learning.vertica.CountVectorizer`.
 - AutoML Error: An error prompt is now displayed when no model fits.
 - Cramer's V calculation is now fixed. See :py:meth:`verticapy.vDataFrame.corr`.
 - Colors can now be changed correctly for Matplotlib Candlestick plot 
@@ -93,7 +93,7 @@ Machine Learning Support
   - :py:class:`verticapy.machine_learning.vertica.MA` .
   - :py:class:`verticapy.machine_learning.vertica.ARMA` .
   - :py:class:`verticapy.machine_learning.vertica.ARIMA` .
-  - :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` . It is still beta. 
+  - :py:class:`verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer` . It is still beta. 
 
 - New method :py:meth:`verticapy.machine_learning.vertica.XGBoostClassifier.features_importance`  for finding the feature importance for XGBoost models. 
 - Classification metrics are now available for multiclass data/model using three methods: ``micro``, ``macro``, ``weighted``, ``score`` and ``none``.
