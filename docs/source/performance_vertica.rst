@@ -1,8 +1,8 @@
 .. _api.performance.vertica:
 
-==============
-Performance
-==============
+=========
+Vertica
+=========
 
 
 Query Performance
