@@ -14,7 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.performance.vertica.qprof import QueryProfiler
-from verticapy.performance.vertica.collection_metadata import CollectionMetadata
-from verticapy.performance.vertica.step00_vertica_version import Step00VerticaVersion
-from verticapy.performance.vertica.profile_collector import ProfileCollector
+
+from enum import Enum
+
+
+class StepId(Enum):
+    VERTICA_VERSION = 0
+    QUERY_TEXT = 1
+    QUERY_DURACTION = 2
+    QUERY_EXECUTION_STEPS = 3
+    # ... etc for all the qprof steps
