@@ -18,6 +18,9 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Training.
 """
+from verticapy.core.vdataframe.base import vDataFrame
+from verticapy._typing import SQLColumns
+from verticapy.machine_learning.vertica.base import VerticaModel
 
 from verticapy.machine_learning.vertica import *
 from verticapy.machine_learning.vertica.linear_model import *
@@ -32,7 +35,33 @@ from verticapy.machine_learning.vertica.cluster import *
 from ._helper import execute_and_add
 
 
-def training(train, vdf, pipeline_name, cols):
+def training(train: dict, vdf: vDataFrame, pipeline_name: str, cols: SQLColumns) -> Tuple[str, VerticaModel, str]:
+    """
+    Run the training step 
+    of the pipeline.
+
+    Parameters
+    ----------
+    train: dict
+        YAML object which outlines the steps of the operation.
+    vdf: vDataFrame
+        The model trained in the training step.
+    pipeline_name: str
+        The prefix name of the intended pipeline to unify
+        the creatation of the objects.
+    cols: SQLColumns
+        ``list`` of the columns needed to deploy the model.
+        
+    Returns
+    -------
+    return meta_sql, model, model_sql
+    str
+        The SQL to replicate the steps of the yaml file.
+    VerticaModel
+        The model created after training.
+    str
+        The SQL needed to retrain the model.
+    """
     meta_sql = ""
     if "train_test_split" in train:
         info = train["train_test_split"]

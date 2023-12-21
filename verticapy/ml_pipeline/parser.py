@@ -105,6 +105,7 @@ with open(file_name, "r", encoding="utf-8") as file:
             META_SQL += _ingest.ingestion(ingest, pipeline_name, table)
             pbar.update()
 
+        # TRANSFORM
         VDF = None
         if "transform" in steps:
             transform = steps["transform"]
@@ -117,6 +118,7 @@ with open(file_name, "r", encoding="utf-8") as file:
                 )
             pbar.update()
 
+        # TRAIN
         COLS = None
         MODEL = None
         MODEL_SQL = ""
@@ -133,6 +135,7 @@ with open(file_name, "r", encoding="utf-8") as file:
             META_SQL += train_sql
             pbar.update()
 
+        # TEST
         TABLE_SQL = ""
         if "test" in steps:
             test = steps["test"]
@@ -145,6 +148,7 @@ with open(file_name, "r", encoding="utf-8") as file:
                 ).fetchall()
             )
 
+        # SCHEDULE
         if "train" in steps and "schedule" in steps["train"]:
             schedule = steps["train"]["schedule"]
             META_SQL += _schedule.schedule(

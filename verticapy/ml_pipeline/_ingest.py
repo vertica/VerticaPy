@@ -22,7 +22,26 @@ This script runs the Vertica Machine Learning Pipeline Ingestion
 from ._helper import required_keywords, execute_and_add
 
 
-def ingestion(ingest, pipeline_name, table):
+def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
+    """
+    Run the ingestion step 
+    of the pipeline.
+
+    Parameters
+    ----------
+    ingestion: dict
+        YAML object which outlines the steps of the operation.
+    pipeline_name: str
+        The prefix name of the intended pipeline to unify
+        the creatation of the objects.
+    table: str
+        The name of the table the pipeline is ingesting to.
+        
+    Returns
+    -------
+    str
+        The SQL to replicate the steps of the yaml file.
+    """
     meta_sql = ""
     if required_keywords(ingest, ["from"]):
         data_loader_sql = ""

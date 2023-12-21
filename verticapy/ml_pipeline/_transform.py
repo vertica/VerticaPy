@@ -23,9 +23,13 @@ This script runs the Vertica Machine Learning Pipeline Transforming.
 from queue import Queue
 
 import verticapy as vp
+from verticapy.core.vdataframe.base import vDataFrame
 
 
-def reset_queue(column_queue):
+def reset_queue(column_queue: Queue) -> Queue:
+    """
+    Return a new Queue where all columns haven't been tried.
+    """
     new_queue = Queue()
     while not column_queue.empty():
         col, _ = column_queue.get()
@@ -33,7 +37,23 @@ def reset_queue(column_queue):
     return new_queue
 
 
-def transformation(transform, table):
+def transformation(transform: dict, table: str) -> vDataFrame:
+    """
+    Run the transformation step 
+    of the pipeline.
+
+    Parameters
+    ----------
+    transform: dict
+        YAML object which outlines the steps of the operation.
+    table: str
+        The name of the table the pipeline is ingesting to.
+        
+    Returns
+    -------
+    vDataFrame
+        The transformed vDataFrame.
+    """
     vdf = vp.vDataFrame(table)
 
     column_queue = Queue()

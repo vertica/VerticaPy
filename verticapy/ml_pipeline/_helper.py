@@ -23,7 +23,9 @@ from verticapy._utils._sql._sys import _executeSQL
 
 
 def required_keywords(yaml: dict, keywords: list) -> bool:
-    # if false raise keyerror
+    """
+    Returns if all the expected keywords are in the yaml level.
+    """
     for keyword in keywords:
         if keyword not in yaml.keys():
             raise KeyError(f"Missing keyword(s): '{keyword}'")
@@ -31,17 +33,26 @@ def required_keywords(yaml: dict, keywords: list) -> bool:
 
 
 def execute_and_add(sql: str) -> str:
+    """
+    Execute and then return SQL string.
+    """
     _executeSQL(sql)
     return sql + "\n"
 
 
-def remove_comments(input_string):
+def remove_comments(input_string: str) -> str:
+    """
+    Remove comments of the form /* */ from SQL string.
+    """
     pattern = r"/\*.*?\*/"
     result = re.sub(pattern, "", input_string, flags=re.DOTALL)
     return result
 
 
-def to_sql(sql):
+def to_sql(sql: str) -> str:
+    """
+    Transform any 'str' to QUOTE_LITERAL('str') in SQL string.
+    """
     even = True
     string = ""
     for c in sql:
@@ -58,7 +69,9 @@ def to_sql(sql):
 
 
 def setup():
-    # CREATE drop_pipeline
+    """
+    Execute the creation of drop_pipeline.
+    """
     _executeSQL(
         """CREATE OR REPLACE PROCEDURE drop_pipeline(schem VARCHAR, recipe VARCHAR) LANGUAGE PLvSQL AS $$
             DECLARE

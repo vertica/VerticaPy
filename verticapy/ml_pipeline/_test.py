@@ -20,12 +20,37 @@ This script runs the Vertica Machine Learning Pipeline Test.
 """
 
 from verticapy import vDataFrame
+from verticapy.machine_learning.vertica.base import VerticaModel
+from verticapy._typing import SQLColumns
 
 from ._helper import execute_and_add, remove_comments
 from . import _metrics
 
 
-def testing(test, model, pipeline_name, cols):
+def testing(test: dict, model: VerticaModel, pipeline_name: str, cols: SQLColumns) -> Tuple[str, str]:
+    """
+    Run the testing step 
+    of the pipeline.
+
+    Parameters
+    ----------
+    test: dict
+        YAML object which outlines the steps of the operation.
+    model: VerticaModel
+        The model trained in the training step.
+    pipeline_name: str
+        The prefix name of the intended pipeline to unify
+        the creatation of the objects.
+    cols: SQLColumns
+        ``list`` of the columns used to deploy the model.
+        
+    Returns
+    -------
+    str
+        The SQL to replicate the steps of the yaml file.
+    str
+        The SQL to replicate the metric table.
+    """
     meta_sql = ""
     dummy = model.predict(
         pipeline_name + "_TEST_VIEW", X=cols, name="prediction", inplace=True
