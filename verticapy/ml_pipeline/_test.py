@@ -18,6 +18,7 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Test.
 """
+from typing import Tuple
 
 from verticapy import vDataFrame
 from verticapy.machine_learning.vertica.base import VerticaModel

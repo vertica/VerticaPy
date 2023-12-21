@@ -18,6 +18,8 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Training.
 """
+from typing import Tuple
+
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._typing import SQLColumns
 from verticapy.machine_learning.vertica.base import VerticaModel
