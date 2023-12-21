@@ -1,0 +1,12 @@
+schema: "public"
+recipe: "recipeIngestion"
+table: public.example_table
+steps:
+  ingest:
+      from: '/scratch_b/znowak/repos/server/udx/supported/MachineLearning/SQLTest/data/bucket/*'
+      delimiter: ','
+      retry_limit: 'NONE'
+      retention_interval: "'15 days'"
+      
+    
+      

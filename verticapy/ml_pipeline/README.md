@@ -40,19 +40,16 @@ table: public.example_table
 
 ### Run the Parser  
 First you will need to clone the repo:  
-`$git clone ssh://git@git.verticacorp.com:7999/mp/ml-pipelines-mvp.git`  
-> **ssh: Could not resolve hostname git.verticacorp.com: Name or service not known**
-> 1. Check to make sure you are connected to MF OpenVPN.
-> 2. On the engdev machines `$ping git.verticacorp.com`
-> 3. It should say something like `PING git.verticacorp.com (10.5.5.233) 56(84) bytes of data.`
-> 4. Try `$git clone ssh://git@10.5.5.233:7999/mp/ml-pipelines-mvp.git`  
+`git clone ssh://git@github.com:vertica/VerticaPy.git` 
 
-The parser follows the general format:  
-`$python PARSER.py [connection_file] [input file] -o [output file]`  
+The parser will follow the general format:  
+`$python -m verticapy.ml_pipeline.parser [connection_file] [input_file] -o [output file]`  
+or if you are testing with the github repo either navigate to `Verticapy/` and run the **above** command or use the **below** command after locating the file.
+`python3 run_parser.py [connection_file] [input_file]`
 
 Both of the following will generate a sql file: **recipeGettingStarted.sql**  
-`$python PARSER.py connection.yaml recipeGettingStarted.yaml`  
-`$python PARSER.py connection.yaml recipeGettingStarted.yaml -o recipeGettingStarted.sql`
+`$python -m verticapy.ml_pipeline.parser connection.yaml recipeGettingStarted.yaml`  
+`$python -m verticapy.ml_pipeline.parser connection.yaml recipeGettingStarted.yaml -o recipeGettingStarted.sql`
 
 ### Dropping the Pipeline
 If you are done with the pipeline and want to drop all ingestions, views, models, or stored procedures associated with it, you can do either of the following:  

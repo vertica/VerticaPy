@@ -1,0 +1,54 @@
+schema: "public"      # Required
+recipe: "recipe1"     # Required
+table: public.titanic # Required
+steps:
+  ingest:
+      from: '/scratch_b/znowak/repos/server/udx/supported/MachineLearning/SQLTest/data/bucket/*'
+      delimiter: ','
+      retry_limit: 'NONE'
+      retention_interval: "'15 days'"
+      schedule: "* * * * *"
+  transform:
+    family_size:
+        sql: parch+sibsp+1
+    fares:
+        sql: fare
+        transform_method: 
+            name: fill_outliers
+            params: 
+                method: winsorize
+                alpha: 0.03
+    sexes:
+        sql: sex
+        transform_method:
+            name: label_encode
+    ages:
+        sql: age
+        transform_method:
+            name: fillna
+            params:
+                method: mean
+                by: [pclass, sex]
+  train:
+    train_test_split:
+        test_size: 0.34
+    method:
+        name: RandomForestClassifier
+        target: survived
+        params:
+            n_estimators: 4
+            max_depth: 4
+    schedule: "* * * * *"
+  test:
+    metric1: 
+        name: accuracy_score
+        y_true: survived
+        y_score: prediction
+    metric2: 
+        name: r2_score
+        y_true: survived
+        y_score: prediction
+    metric3: 
+        name: max_error
+        y_true: survived
+        y_score: prediction

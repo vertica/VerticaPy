@@ -1,0 +1,5 @@
+host: "10.20.50.86"
+port: "32802"
+database: "verticadb21455"
+password: ""
+user: "znowak"

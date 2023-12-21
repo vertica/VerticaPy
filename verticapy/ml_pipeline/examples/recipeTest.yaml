@@ -1,0 +1,26 @@
+schema: "public"
+recipe: "recipeTest"
+table: public.winequality
+steps:
+  transform:
+    col1:
+        sql: alcohol      
+  train:
+    train_test_split:
+        test_size: 0.34
+    method:
+        name: LinearRegression
+        target: quality
+  test:
+    metric1: 
+        name: accuracy_score
+        y_true: quality
+        y_score: prediction
+    metric2: 
+        name: r2_score
+        y_true: quality
+        y_score: prediction
+    metric3: 
+        name: max_error
+        y_true: quality
+        y_score: prediction

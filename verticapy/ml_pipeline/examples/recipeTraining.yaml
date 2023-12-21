@@ -1,0 +1,52 @@
+schema: "public"
+recipe: "recipeTraining"
+table: public.winequality
+steps:
+  transform:
+    real_name:
+        sql: fixed_acidity
+    col2:
+        sql: color
+        transform_method:
+            name: str_count
+            params:
+                pat: white
+    col3:
+        transform_method:
+            name: cummax
+            params:
+                column: fixed_acidity
+                order_by: fixed_acidity
+    col4:
+        sql: fixed_acidity * density
+    col5:
+        transform_method:
+            name: regexp
+            params:
+                column: color
+                pattern: "white"
+                method: "replace"
+                replacement: "NOT white"
+    col6:
+        sql: color
+        transform_method1:
+            name: str_count
+            params:
+                pat: white
+        transform_method2:
+            name: add
+            params:
+                x: 0.5
+    col7:
+        sql: col2
+        transform_method:
+            name: add
+            params:
+                x: 0.5
+  train: 
+    method:
+        name: LinearSVC
+        target: col2
+        exclude: ['col5', 'col2']
+    schedule: "* * * * *"
+            
