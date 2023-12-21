@@ -54,6 +54,23 @@ class PerformanceTree:
         - cost
         - rows
         - None (no specific color)
+
+        The following metrics work only
+        if ``metric_value is not None``:
+
+        - exec_time_ms
+        - est_rows
+        - proc_rows
+        - prod_rows
+        - rle_prod_rows
+        - cstall_us
+        - pstall_us
+        - mem_res_mb
+        - mem_all_mb
+
+    metric_value: dict, optional
+        ``dictionary`` including the
+        metric value for each PATH ID.
     show_ancestors: bool, optional
         If set to ``True`` the
         ancestors are also
@@ -100,7 +117,21 @@ class PerformanceTree:
         self,
         rows: str,
         path_id: Optional[int] = None,
-        metric: Literal[None, "cost", "rows"] = "rows",
+        metric: Literal[
+            None,
+            "cost",
+            "rows",
+            "exec_time_ms",
+            "est_rows",
+            "proc_rows",
+            "prod_rows",
+            "rle_prod_rows",
+            "cstall_us",
+            "pstall_us",
+            "mem_res_mb",
+            "mem_all_mb",
+        ] = "rows",
+        metric_value: Optional[dict] = None,
         show_ancestors: bool = True,
         path_id_info: Optional[list] = None,
         style: dict = {},
@@ -131,12 +162,35 @@ class PerformanceTree:
                 f"It has to be in [{', '.join([str(p) for p in self.path_order])}].\n"
                 f"Found {path_id}."
             )
-        if metric in [None, "cost", "rows"]:
+        available_metrics = [
+            None,
+            "cost",
+            "rows",
+            "exec_time_ms",
+            "est_rows",
+            "proc_rows",
+            "prod_rows",
+            "rle_prod_rows",
+            "cstall_us",
+            "pstall_us",
+            "mem_res_mb",
+            "mem_all_mb",
+        ]
+        if metric in available_metrics:
+            if metric not in [None, "cost", "rows"] and isinstance(
+                metric_value, NoneType
+            ):
+                raise ValueError(
+                    "Parameter 'metric_value' can not be empty when the metric "
+                    "is not in [None, cost, rows]."
+                )
             self.metric = metric
+            self.metric_value = copy.deepcopy(metric_value)
         else:
             raise ValueError(
                 "Wrong value for parameter 'metric': "
-                "It has to be one of the following: None, 'cost', 'rows'.\n"
+                "It has to be one of the following: "
+                f"[{', '.join([str(x) for x in available_metrics])}].\n"
                 f"Found {metric}."
             )
         self.show_ancestors = show_ancestors
@@ -447,8 +501,14 @@ class PerformanceTree:
             res = row.split("Rows: ")[1].split(" ")[0]
         elif self.metric == "cost" and "Cost: " in row:
             res = row.split("Cost: ")[1].split(",")[0]
-        else:
+        elif isinstance(self.metric, NoneType):
             return None
+        else:
+            path_id = self._get_label(row, return_path_id=True)
+            if path_id in self.metric_value:
+                return self.metric_value[path_id]
+            else:
+                return None
         if res[-1] in ("]",):
             res = res[:-1]
         unit = self._map_unit(res[-1])
@@ -683,7 +743,7 @@ class PerformanceTree:
                     html_content = html.escape(html_content).replace("\n", "<br/>")
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
-                row = self._format_row(self.rows[self.path_id].replace('"', "'"))
+                row = self._format_row(self.rows[i].replace('"', "'"))
                 res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", tooltip="{row}", URL="#path_id={tree_id}"];\n'
         return res
 
@@ -753,7 +813,11 @@ class PerformanceTree:
         alpha075 = self._generate_gradient_color(0.75)
         alpha1 = self._generate_gradient_color(1.0)
         res = '\tlegend [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
-        res += f'<tr><td bgcolor="#DFDFDF">Legend</td></tr>'
+        if isinstance(self.metric, NoneType):
+            legend = "Legend"
+        else:
+            legend = self.metric
+        res += f'<tr><td bgcolor="#DFDFDF">{legend}</td></tr>'
         res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha050}">{cats[2]}</td></tr>'

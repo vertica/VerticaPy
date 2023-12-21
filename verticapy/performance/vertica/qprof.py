@@ -1555,7 +1555,20 @@ class QueryProfiler:
         path_id: Optional[int] = None,
         path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
-        metric: Literal[None, "cost", "rows"] = "rows",
+        metric: Literal[
+            None,
+            "cost",
+            "rows",
+            "exec_time_ms",
+            "est_rows",
+            "proc_rows",
+            "prod_rows",
+            "rle_prod_rows",
+            "cstall_us",
+            "pstall_us",
+            "mem_res_mb",
+            "mem_all_mb",
+        ] = "rows",
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
         **tree_style,
@@ -1582,9 +1595,18 @@ class QueryProfiler:
             the tree nodes. One of
             the following:
 
+            - None (no specific color)
             - cost
             - rows
-            - None (no specific color)
+            - exec_time_ms
+            - est_rows
+            - proc_rows
+            - prod_rows
+            - rle_prod_rows
+            - cstall_us
+            - pstall_us
+            - mem_res_mb
+            - mem_all_mb
 
         pic_path: str, optional
             Absolute path to save
@@ -1697,12 +1719,31 @@ class QueryProfiler:
             :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
+        metric_value = None
+        if metric not in [None, "rows", "cost"]:
+            vdf = self.get_qexecution_report()
+            query = f"""
+                SELECT
+                    path_id,
+                    SUM({metric})
+                FROM {vdf}
+                GROUP BY 1
+                ORDER BY 1"""
+            res = _executeSQL(
+                query,
+                title="Getting the corresponding query",
+                method="fetchall",
+            )
+            metric_value = {}
+            for path_id_val, metric_val in res:
+                metric_value[path_id_val] = float(metric_val)
         obj = PerformanceTree(
             rows,
             show_ancestors=show_ancestors,
             path_id_info=path_id_info,
             path_id=path_id,
             metric=metric,
+            metric_value=metric_value,
             style=tree_style,
         )
         if return_graphviz:
