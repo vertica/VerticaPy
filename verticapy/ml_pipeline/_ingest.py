@@ -2,7 +2,7 @@
 
 """This script runs the Vertica Machine Learning Pipeline Ingestion"""
 
-from .pipeline_helper import required_keywords, execute_and_add
+from ._helper import required_keywords, execute_and_add
 
 
 def ingestion(ingest, pipeline_name, table):

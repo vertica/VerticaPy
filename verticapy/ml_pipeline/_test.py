@@ -4,8 +4,8 @@
 
 from verticapy import vDataFrame
 
-from .pipeline_helper import execute_and_add, remove_comments
-from . import pipeline_metrics
+from ._helper import execute_and_add, remove_comments
+from . import _metrics
 
 
 def testing(test, model, pipeline_name, cols):
@@ -35,7 +35,7 @@ def testing(test, model, pipeline_name, cols):
         y_true = metric["y_true"]
         y_score = metric["y_score"]
         temp = eval(
-            f"""pipeline_metrics.{name}('{y_true}', '{y_score}',
+            f"""_metrics.{name}('{y_true}', '{y_score}',
             '{pipeline_name + '_PREDICT_VIEW'}')""",
             globals(),
         )

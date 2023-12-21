@@ -13,12 +13,12 @@ from verticapy.datasets import *
 from verticapy._utils._sql._sys import _executeSQL
 
 # local
-from .pipeline_helper import required_keywords, execute_and_add, setup
-from . import pipeline_ingest
-from . import pipeline_transform
-from . import pipeline_train
-from . import pipeline_test
-from . import pipeline_schedule
+from ._helper import required_keywords, execute_and_add, setup
+from . import _ingest
+from . import _transform
+from . import _train
+from . import _test
+from . import _schedule
 
 parser = argparse.ArgumentParser(
     description="""Vertica Pipelines is an open source platform for
@@ -85,13 +85,13 @@ with open(file_name, "r", encoding="utf-8") as file:
         pbar = tqdm(total=step_count)
         if "ingest" in steps:
             ingest = steps["ingest"]
-            META_SQL += pipeline_ingest.ingestion(ingest, pipeline_name, table)
+            META_SQL += _ingest.ingestion(ingest, pipeline_name, table)
             pbar.update()
 
         VDF = None
         if "transform" in steps:
             transform = steps["transform"]
-            VDF = pipeline_transform.transformation(transform, table)
+            VDF = _transform.transformation(transform, table)
             if "train" not in steps:
                 META_SQL += execute_and_add(
                     f"CREATE OR REPLACE VIEW {pipeline_name + '_VIEW'} AS SELECT * FROM "
@@ -110,7 +110,7 @@ with open(file_name, "r", encoding="utf-8") as file:
                 COLS = VDF.get_columns()
             else:
                 COLS = list(transform.keys())
-            train_sql, MODEL, MODEL_SQL = pipeline_train.training(
+            train_sql, MODEL, MODEL_SQL = _train.training(
                 train, VDF, pipeline_name, COLS
             )
             META_SQL += train_sql
@@ -119,7 +119,7 @@ with open(file_name, "r", encoding="utf-8") as file:
         TABLE_SQL = ""
         if "test" in steps:
             test = steps["test"]
-            TEST_SQL, TABLE_SQL = pipeline_test.testing(test, MODEL, pipeline_name, COLS)
+            TEST_SQL, TABLE_SQL = _test.testing(test, MODEL, pipeline_name, COLS)
             META_SQL += TEST_SQL
             pbar.update()
             print(
@@ -130,7 +130,7 @@ with open(file_name, "r", encoding="utf-8") as file:
 
         if "train" in steps and "schedule" in steps["train"]:
             schedule = steps["train"]["schedule"]
-            META_SQL += pipeline_schedule.schedule(
+            META_SQL += _schedule.schedule(
                 schedule, MODEL_SQL, TABLE_SQL, pipeline_name
             )
 
