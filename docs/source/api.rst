@@ -179,7 +179,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^^
-          Table Sample Object.
+          TableSample Object.
 
 
     .. grid-item::

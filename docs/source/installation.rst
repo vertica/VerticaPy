@@ -11,6 +11,7 @@ Installation
        <img src="_static/vp_logo.png" alt="Clickable Image" style="width: 20%;">
      </a>
    </div>
+
 .. raw:: html
 
     <div style="text-align: center; font-size: 26px; font-family: 'Inter', sans-serif; padding-top: 10px;">
@@ -20,20 +21,17 @@ Installation
       Python API for Vertica Data Science at Scale
     </div>
 
-
 Prerequisite
 -------------
 
 **Python 3.9+**
 
-
-VerticaPy runs with Python 3.9 or higher. You can install Python directly from their `website <link URL>`_ <https://www.python.org/downloads/>.
-
+VerticaPy runs with Python 3.9 or higher. You can install Python directly from their `website <https://www.python.org/downloads>`_ .
 
 **Jupyter Lab**
 
 If you want to have a nice environment to play with, we recommend you to install the last Jupyter version. You can find all the information to install it in their `website
-<https://jupyter.org/install>`_
+<https://jupyter.org/install>`_ .
 
 **Vertica 9+**
 
@@ -76,13 +74,16 @@ To start playing with the API, create a new connection:
 .. code-block:: python
 
     import verticapy as vp
-    vp.new_connection({"host": "10.211.55.14", 
-                    "port": "5433", 
-                    "database": "testdb", 
-                    "password": "XxX", 
-                    "user": "dbadmin"},
-                    name = "My_New_Vertica_Connection")
-
+    vp.new_connection(
+        {
+            "host": "10.211.55.14", 
+            "port": "5433", 
+            "database": "testdb", 
+            "password": "XxX", 
+            "user": "dbadmin",
+        },
+        name = "My_New_Vertica_Connection",
+    )
 
 After a connection is created, you can use the `connect <https://www.vertica.com/python/documentation_last/connect/connect/index.php>`_ function to reconnect.
 

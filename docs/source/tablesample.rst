@@ -1,7 +1,7 @@
 .. _api.tablesample:
 
 =================
-Table Sample
+TableSample
 =================
 
 

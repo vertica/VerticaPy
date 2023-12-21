@@ -3,10 +3,7 @@
 ===============
 Text Analytics
 ===============
-
-
 ______
-
 
 
 TFIDF
@@ -49,6 +46,12 @@ TFIDF
    TfidfVectorizer.to_tf
    TfidfVectorizer.transform
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   TfidfVectorizer.object_type
 
 _____
 
@@ -89,3 +92,10 @@ Count Vectorizor (Beta)
    CountVectorizer.to_sql
    CountVectorizer.to_tf
    CountVectorizer.transform
+
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   CountVectorizer.object_type

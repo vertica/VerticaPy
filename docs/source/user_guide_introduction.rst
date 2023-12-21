@@ -16,7 +16,6 @@ Introduction
           :link: notebooks/introduction/installation/index.html
           :text-align: center
           :class-card: custom-card-9
-          :shadow: lg
 
           4 mins
           ^^^^^^^
@@ -32,7 +31,6 @@ Introduction
           :link: notebooks/introduction/vdf/index.html
           :text-align: center
           :class-card: custom-card-9
-          :shadow: lg
 
           12 mins
           ^^^^^^^^
@@ -49,7 +47,6 @@ Introduction
           :link: notebooks/introduction/best-practices/index.html
           :text-align: center
           :class-card: custom-card-9
-          :shadow: lg
 
           20 mins
           ^^^^^^^^

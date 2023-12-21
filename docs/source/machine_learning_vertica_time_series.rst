@@ -6,8 +6,115 @@ Time Series
 
 ______
 
-AR
+ARIMA
+~~~~~
+
+.. currentmodule:: verticapy.machine_learning.vertica
+   
+.. autosummary::
+   :toctree: api/
+
+   tsa.ARIMA
+
+.. currentmodule:: verticapy.machine_learning.vertica.tsa
+
+**Methods:**
+
+.. autosummary::
+   :toctree: api/
+
+   ARIMA.contour
+   ARIMA.deploySQL
+   ARIMA.does_model_exists
+   ARIMA.drop
+   ARIMA.export_models
+   ARIMA.features_importance
+   ARIMA.fit
+   ARIMA.get_attributes
+   ARIMA.get_match_index
+   ARIMA.get_params
+   ARIMA.get_plotting_lib
+   ARIMA.get_vertica_attributes
+   ARIMA.import_models
+   ARIMA.plot
+   ARIMA.predict
+   ARIMA.register
+   ARIMA.regression_report
+   ARIMA.report
+   ARIMA.score
+   ARIMA.set_params
+   ARIMA.summarize
+   ARIMA.to_binary
+   ARIMA.to_pmml
+   ARIMA.to_python
+   ARIMA.to_sql
+   ARIMA.to_tf
+
+
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   ARIMA.object_type
+
+______
+
+ARMA
 ~~~~
+
+.. currentmodule:: verticapy.machine_learning.vertica
+   
+.. autosummary::
+   :toctree: api/
+
+   tsa.ARMA
+
+.. currentmodule:: verticapy.machine_learning.vertica.tsa
+
+**Methods:**
+
+.. autosummary::
+   :toctree: api/
+
+   ARMA.contour
+   ARMA.deploySQL
+   ARMA.does_model_exists
+   ARMA.drop
+   ARMA.export_models
+   ARMA.features_importance
+   ARMA.fit
+   ARMA.get_attributes
+   ARMA.get_match_index
+   ARMA.get_params
+   ARMA.get_plotting_lib
+   ARMA.get_vertica_attributes
+   ARMA.import_models
+   ARMA.plot
+   ARMA.predict
+   ARMA.register
+   ARMA.regression_report
+   ARMA.report
+   ARMA.score
+   ARMA.set_params
+   ARMA.summarize
+   ARMA.to_binary
+   ARMA.to_pmml
+   ARMA.to_python
+   ARMA.to_sql
+   ARMA.to_tf
+
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   ARMA.object_type
+
+______
+
+AR
+~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -50,13 +157,14 @@ AR
    AR.to_sql
    AR.to_tf
 
-
 **Attributes:**
 
 .. autosummary::
    :toctree: api/
 
    AR.object_type
+
+______
 
 
 MA
@@ -110,113 +218,3 @@ MA
    :toctree: api/
 
    MA.object_type
-
-ARIMA
-~~~~~~
-
-.. currentmodule:: verticapy.machine_learning.vertica
-   
-.. autosummary::
-   :toctree: api/
-
-   tsa.ARIMA
-
-.. currentmodule:: verticapy.machine_learning.vertica.tsa
-
-**Methods:**
-
-.. autosummary::
-   :toctree: api/
-
-   ARIMA.contour
-   ARIMA.deploySQL
-   ARIMA.does_model_exists
-   ARIMA.drop
-   ARIMA.export_models
-   ARIMA.features_importance
-   ARIMA.fit
-   ARIMA.get_attributes
-   ARIMA.get_match_index
-   ARIMA.get_params
-   ARIMA.get_plotting_lib
-   ARIMA.get_vertica_attributes
-   ARIMA.import_models
-   ARIMA.plot
-   ARIMA.predict
-   ARIMA.register
-   ARIMA.regression_report
-   ARIMA.report
-   ARIMA.score
-   ARIMA.set_params
-   ARIMA.summarize
-   ARIMA.to_binary
-   ARIMA.to_pmml
-   ARIMA.to_python
-   ARIMA.to_sql
-   ARIMA.to_tf
-
-
-**Attributes:**
-
-.. autosummary::
-   :toctree: api/
-
-   ARIMA.object_type
-
-
-ARMA
-~~~~~~
-
-.. currentmodule:: verticapy.machine_learning.vertica
-   
-.. autosummary::
-   :toctree: api/
-
-   tsa.ARMA
-
-.. currentmodule:: verticapy.machine_learning.vertica.tsa
-
-**Methods:**
-
-.. autosummary::
-   :toctree: api/
-
-   ARMA.contour
-   ARMA.deploySQL
-   ARMA.does_model_exists
-   ARMA.drop
-   ARMA.export_models
-   ARMA.features_importance
-   ARMA.fit
-   ARMA.get_attributes
-   ARMA.get_match_index
-   ARMA.get_params
-   ARMA.get_plotting_lib
-   ARMA.get_vertica_attributes
-   ARMA.import_models
-   ARMA.plot
-   ARMA.predict
-   ARMA.register
-   ARMA.regression_report
-   ARMA.report
-   ARMA.score
-   ARMA.set_params
-   ARMA.summarize
-   ARMA.to_binary
-   ARMA.to_pmml
-   ARMA.to_python
-   ARMA.to_sql
-   ARMA.to_tf
-
-
-**Attributes:**
-
-.. autosummary::
-   :toctree: api/
-
-   ARMA.object_type
-______
-
-
-
-

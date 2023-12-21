@@ -33,7 +33,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Stacked` :bdg-dark-line:`Fully Stacked``
+          :bdg-primary:`Single` :bdg-primary:`Stacked` :bdg-primary:`Fully Stacked`
 
           +++
           See Examples
@@ -52,7 +52,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`1D` :bdg-dark-line:`2D`  :bdg-dark-line:`Stacked`` :bdg-dark-line:`Fully Stacked` :bdg-dark-line:`Negative`
+          :bdg-primary:`1D` :bdg-primary:`2D`  :bdg-primary:`Stacked`` :bdg-primary:`Fully Stacked` :bdg-primary:`Negative`
 
           +++
           See Examples
@@ -71,7 +71,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Multi`
+          :bdg-primary:`Single` :bdg-primary:`Multi`
 
           +++
           See Examples
@@ -90,7 +90,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Candlestick`
+          :bdg-primary:`Candlestick`
 
           +++
           See Examples
@@ -109,7 +109,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Contour`
+          :bdg-primary:`Contour`
 
           +++
           See Examples
@@ -129,7 +129,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Matrix` :bdg-dark-line:`Vector`
+          :bdg-primary:`Matrix` :bdg-primary:`Vector`
 
           +++
           See Examples
@@ -149,7 +149,7 @@ Basic
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`      
 
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Mult`
+          :bdg-primary:`Single` :bdg-primary:`Mult`
 
           +++
           See Examples
@@ -171,7 +171,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Multi`
+          :bdg-primary:`Single` :bdg-primary:`Multi`
 
           +++
           See Examples
@@ -191,7 +191,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Multi`
+          :bdg-primary:`Single` :bdg-primary:`Multi`
 
           +++
           See Examples
@@ -212,7 +212,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Regular` :bdg-dark-line:`Donut` :bdg-dark-line:`Rose` :bdg-dark-line:`3D` :bdg-dark-line:`Nested`
+          :bdg-primary:`Regular` :bdg-primary:`Donut` :bdg-primary:`Rose` :bdg-primary:`3D` :bdg-primary:`Nested`
 
           +++
           See Examples
@@ -232,7 +232,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Pivot`
+          :bdg-primary:`Pivot`
 
           +++
           See Examples
@@ -252,7 +252,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python`
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Multi`
+          :bdg-primary:`Single` :bdg-primary:`Multi`
 
           +++
           See Examples
@@ -271,7 +271,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`1D` :bdg-dark-line:`2D` :bdg-dark-line:`3D` :bdg-dark-line:`Bubble`
+          :bdg-primary:`1D` :bdg-primary:`2D` :bdg-primary:`3D` :bdg-primary:`Bubble`
 
           +++
           See Examples
@@ -290,7 +290,7 @@ Basic
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Single` :bdg-dark-line:`Multi`
+          :bdg-primary:`Single` :bdg-primary:`Multi`
 
           +++
           See Examples
@@ -316,7 +316,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python`
           
-          :bdg-dark-line:`Bar` :bdg-dark-line:`Heatmap``
+          :bdg-primary:`Bar` :bdg-primary:`Heatmap``
 
           +++
           See Examples
@@ -335,7 +335,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python`
 
-          :bdg-dark-line:`Champion Challenger`
+          :bdg-primary:`Champion Challenger`
 
           +++
           See Examples
@@ -354,7 +354,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`ROC` :bdg-dark-line:`PRC` :bdg-dark-line:`Lift Chart`
+          :bdg-primary:`ROC` :bdg-primary:`PRC` :bdg-primary:`Lift Chart`
 
           +++
           See Examples
@@ -373,7 +373,7 @@ Machine Learning
           Using: :bdg-secondary:`Python`        
 
 
-          :bdg-dark-line:`1D` :bdg-dark-line:`2D` :bdg-dark-line:`3D`  :bdg-dark-line:`Logit`
+          :bdg-primary:`1D` :bdg-primary:`2D` :bdg-primary:`3D`  :bdg-primary:`Logit`
 
           +++
           See Examples
@@ -393,7 +393,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` :bdg-warning:`SQL`
 
-          :bdg-dark-line:`Matrix`  :bdg-dark-line:`Vector`  
+          :bdg-primary:`Matrix`  :bdg-primary:`Vector`  
 
           +++
           See Examples
@@ -413,7 +413,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Efficiency`  :bdg-dark-line:`Scalability`  :bdg-dark-line:`Performance`
+          :bdg-primary:`Efficiency`  :bdg-primary:`Scalability`  :bdg-primary:`Performance`
 
           +++
           See Examples
@@ -433,7 +433,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Scalability`  :bdg-dark-line:`Performance`
+          :bdg-primary:`Scalability`  :bdg-primary:`Performance`
 
           +++
           See Examples
@@ -452,7 +452,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`1D`  :bdg-dark-line:`2D`  :bdg-dark-line:`3D`
+          :bdg-primary:`1D`  :bdg-primary:`2D`  :bdg-primary:`3D`
 
           +++
           See Examples
@@ -472,7 +472,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`1D`  :bdg-dark-line:`2D`
+          :bdg-primary:`1D`  :bdg-primary:`2D`
 
           +++
           See Examples
@@ -492,7 +492,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Linear Regression`  :bdg-dark-line:`Random Forest` :bdg-dark-line:`Residual Plot` 
+          :bdg-primary:`Linear Regression`  :bdg-primary:`Random Forest` :bdg-primary:`Residual Plot` 
 
           +++
           See Examples
@@ -511,7 +511,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Seasonal`  
+          :bdg-primary:`Seasonal`  
 
           +++
           See Examples
@@ -530,7 +530,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Forward`  :bdg-dark-line:`Backward`  
+          :bdg-primary:`Forward`  :bdg-primary:`Backward`  
 
           +++
           See Examples
@@ -550,7 +550,7 @@ Machine Learning
           Available in: :bdg-success-line:`Graphviz`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Forward`  :bdg-dark-line:`Backward`  
+          :bdg-primary:`Forward`  :bdg-primary:`Backward`  
 
           +++
           See Examples
@@ -570,7 +570,7 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Prediction Plot`
+          :bdg-primary:`Prediction Plot`
 
           +++
           See Examples
@@ -599,7 +599,7 @@ Geo-spatial
 
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Regular`  :bdg-dark-line:`CMAP`  :bdg-dark-line:`Scatter`  :bdg-dark-line:`Bubble`
+          :bdg-primary:`Regular`  :bdg-primary:`CMAP`  :bdg-primary:`Scatter`  :bdg-primary:`Bubble`
 
           +++
           See Examples
@@ -627,7 +627,7 @@ Animated
 
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Bar`  :bdg-dark-line:`Pie`  :bdg-dark-line:`Bubble`  :bdg-dark-line:`Time-series`
+          :bdg-primary:`Bar`  :bdg-primary:`Pie`  :bdg-primary:`Bubble`  :bdg-primary:`Time-series`
 
           +++
           See Examples

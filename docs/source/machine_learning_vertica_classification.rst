@@ -4,18 +4,14 @@
 Classification
 ===============
 
-
-
 ______
 
 
 Linear Models
-----------------------
-
-
+-------------
 
 Linear SVC
-~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
 
@@ -52,6 +48,7 @@ Linear SVC
    LinearSVC.prc_curve
    LinearSVC.predict
    LinearSVC.predict_proba
+   LinearSVC.register
    LinearSVC.report
    LinearSVC.roc_curve
    LinearSVC.score
@@ -64,14 +61,13 @@ Linear SVC
    LinearSVC.to_sql
    LinearSVC.to_tf
 
-
-
 **Attributes:**
 
 .. autosummary::
    :toctree: api/
 
    LinearSVC.object_type
+   LinearSVC.classes_
 
 Logistic Regression
 ~~~~~~~~~~~~~~~~~~~~~
@@ -124,22 +120,21 @@ Logistic Regression
    LogisticRegression.to_sql
    LogisticRegression.to_tf
 
-
-
 **Attributes:**
 
 .. autosummary::
    :toctree: api/
 
    LogisticRegression.object_type
+   LogisticRegression.classes_
+
 _____
 
 Tree-based algorithms
---------------------------
-
+---------------------
 
 Dummy Tree
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -154,7 +149,6 @@ Dummy Tree
 
 .. autosummary::
    :toctree: api/
-
 
    DummyTreeClassifier.classification_report
    DummyTreeClassifier.confusion_matrix

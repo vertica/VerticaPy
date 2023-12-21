@@ -24,7 +24,7 @@ ____
           :class-card: custom-card-5
           :class-img-top: custom-class-img-top-5
 
-          Native Python client for the Vertica
+          Native Python client for the Vertica.
 
 
     .. grid-item::
@@ -36,7 +36,7 @@ ____
           :class-card: custom-card-5
           :class-img-top: custom-class-img-top-6
 
-          Load data directly, or run queries from a remote database
+          Load data directly, or run queries from a remote database.
 
 
     .. grid-item::
@@ -70,7 +70,7 @@ ____
           :class-card: custom-card-5
           :class-img-top: custom-class-img-top-4
 
-          Apache Hadoop & Pig Connector
+          Apache Hadoop & Pig Connector.
 
 
     .. grid-item::
@@ -93,7 +93,7 @@ ____
           :class-card: custom-card-5
           :class-img-top: custom-class-img-top-5
 
-          Integration of Apache Airflow with Vertica
+          Integration of Apache Airflow with Vertica.
 
 
 
@@ -106,7 +106,7 @@ ____
           :class-card: custom-card-5
           :class-img-top: custom-class-img-top-4
 
-          Native Go adapter for Vertica
+          Native Go adapter for Vertica.
 
     .. grid-item::
     
@@ -117,4 +117,4 @@ ____
           :class-card: custom-card-5
           :class-img-top: custom-class-img-top-3
 
-          Database Transformation adapter
+          Database Transformation adapter.

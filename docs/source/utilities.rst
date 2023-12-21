@@ -4,7 +4,6 @@
 Utilities
 ==========
 
-
 Options & Displaying
 --------------------------
 

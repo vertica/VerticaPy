@@ -807,7 +807,7 @@ class CountVectorizer(VerticaModel):
     the occurences of each word in
     the data.
 
-    .. deprecated:: version 1.1.0.
+    .. deprecated:: version 1.0.0.
 
         This feature is deprecated and
         it will be removed on VerticaPy
