@@ -24,7 +24,7 @@ from ._helper import required_keywords, execute_and_add
 
 def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
     """
-    Run the ingestion step 
+    Run the ingestion step
     of the pipeline.
 
     Parameters
@@ -36,7 +36,7 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
         the creatation of the objects.
     table: str
         The name of the table the pipeline is ingesting to.
-        
+
     Returns
     -------
     str

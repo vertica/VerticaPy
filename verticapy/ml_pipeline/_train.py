@@ -37,9 +37,11 @@ from verticapy.machine_learning.vertica.cluster import *
 from ._helper import execute_and_add
 
 
-def training(train: dict, vdf: vDataFrame, pipeline_name: str, cols: SQLColumns) -> Tuple[str, VerticaModel, str]:
+def training(
+    train: dict, vdf: vDataFrame, pipeline_name: str, cols: SQLColumns
+) -> Tuple[str, VerticaModel, str]:
     """
-    Run the training step 
+    Run the training step
     of the pipeline.
 
     Parameters
@@ -53,7 +55,7 @@ def training(train: dict, vdf: vDataFrame, pipeline_name: str, cols: SQLColumns)
         the creatation of the objects.
     cols: SQLColumns
         ``list`` of the columns needed to deploy the model.
-        
+
     Returns
     -------
     return meta_sql, model, model_sql

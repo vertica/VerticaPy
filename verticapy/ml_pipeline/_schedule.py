@@ -24,7 +24,7 @@ from ._helper import execute_and_add, to_sql
 
 def schedule(schedule: dict, model_sql: str, table_sql: str, pipeline_name: str) -> str:
     """
-    Run the schedule step 
+    Run the schedule step
     of the pipeline.
 
     Parameters
@@ -38,7 +38,7 @@ def schedule(schedule: dict, model_sql: str, table_sql: str, pipeline_name: str)
     pipeline_name: str
         The prefix name of the intended pipeline to unify
         the creatation of the objects.
-        
+
     Returns
     -------
     str

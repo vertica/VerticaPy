@@ -39,7 +39,7 @@ def reset_queue(column_queue: Queue) -> Queue:
 
 def transformation(transform: dict, table: str) -> vDataFrame:
     """
-    Run the transformation step 
+    Run the transformation step
     of the pipeline.
 
     Parameters
@@ -48,7 +48,7 @@ def transformation(transform: dict, table: str) -> vDataFrame:
         YAML object which outlines the steps of the operation.
     table: str
         The name of the table the pipeline is ingesting to.
-        
+
     Returns
     -------
     vDataFrame

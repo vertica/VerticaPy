@@ -28,9 +28,11 @@ from ._helper import execute_and_add, remove_comments
 from . import _metrics
 
 
-def testing(test: dict, model: VerticaModel, pipeline_name: str, cols: SQLColumns) -> Tuple[str, str]:
+def testing(
+    test: dict, model: VerticaModel, pipeline_name: str, cols: SQLColumns
+) -> Tuple[str, str]:
     """
-    Run the testing step 
+    Run the testing step
     of the pipeline.
 
     Parameters
@@ -44,7 +46,7 @@ def testing(test: dict, model: VerticaModel, pipeline_name: str, cols: SQLColumn
         the creatation of the objects.
     cols: SQLColumns
         ``list`` of the columns used to deploy the model.
-        
+
     Returns
     -------
     str
@@ -64,7 +66,6 @@ def testing(test: dict, model: VerticaModel, pipeline_name: str, cols: SQLColumn
         + ";"
     )
 
-    
     # FOR multiple metrics
     table_sql = ""
     table_sql += f"DROP TABLE IF EXISTS {pipeline_name + '_METRIC_TABLE'};"

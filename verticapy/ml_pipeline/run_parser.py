@@ -25,7 +25,6 @@ command = ["/bin/bash", shell_script, args.arg1, args.arg2]
 
 # Run the shell script using subprocess
 try:
-        subprocess.run(command, check=True)
+    subprocess.run(command, check=True)
 except subprocess.CalledProcessError as e:
-        print(f"Error: {e}")
-
+    print(f"Error: {e}")
