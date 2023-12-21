@@ -1590,7 +1590,7 @@ class QueryProfiler:
             If set to ``True`` the
             ancestors of ``path_id``
             are also displayed.
-        metric: str, optional
+        metric: str | tuple | list, optional
             The metric used to color
             the tree nodes. One of
             the following:
@@ -1607,6 +1607,9 @@ class QueryProfiler:
             - pstall_us
             - mem_res_mb
             - mem_all_mb
+
+            It can also be a ``list`` or
+            a ``tuple`` of two metrics.
 
         pic_path: str, optional
             Absolute path to save
@@ -1719,24 +1722,30 @@ class QueryProfiler:
             :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
-        metric_value = None
-        if metric not in [None, "rows", "cost"]:
-            vdf = self.get_qexecution_report()
-            query = f"""
-                SELECT
-                    path_id,
-                    SUM({metric})
-                FROM {vdf}
-                GROUP BY 1
-                ORDER BY 1"""
-            res = _executeSQL(
-                query,
-                title="Getting the corresponding query",
-                method="fetchall",
-            )
-            metric_value = {}
-            for path_id_val, metric_val in res:
-                metric_value[path_id_val] = float(metric_val)
+        metric_value = {}
+        if isinstance(metric, (str, NoneType)):
+            metric = [metric]
+        for me in metric:
+            if me not in [None, "rows", "cost"]:
+                vdf = self.get_qexecution_report()
+                query = f"""
+                    SELECT
+                        path_id,
+                        SUM({me})
+                    FROM {vdf}
+                    GROUP BY 1
+                    ORDER BY 1"""
+                res = _executeSQL(
+                    query,
+                    title="Getting the corresponding query",
+                    method="fetchall",
+                )
+                metric_value[me] = {}
+                for path_id_val, metric_val in res:
+                    if not isinstance(metric_val, NoneType):
+                        metric_value[me][path_id_val] = float(metric_val)
+                    else:
+                        metric_value[me][path_id_val] = 0
         obj = PerformanceTree(
             rows,
             show_ancestors=show_ancestors,
