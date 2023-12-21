@@ -506,9 +506,12 @@ class PerformanceTree:
         else:
             path_id = self._get_label(row, return_path_id=True)
             if path_id in self.metric_value:
-                return self.metric_value[path_id]
+                res = self.metric_value[path_id]
+                if isinstance(res, NoneType):
+                    return 0
+                return res
             else:
-                return None
+                return 0
         if res[-1] in ("]",):
             res = res[:-1]
         unit = self._map_unit(res[-1])
