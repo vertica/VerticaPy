@@ -245,20 +245,10 @@ class PerformanceTree:
             d["info_rowsize"] = 30
         if "info_fontsize" not in d:
             d["info_fontsize"] = 8
-        if "pos_op_bgcolor" not in d:
-            d["pos_op_bgcolor"] = "#00FF00"
-        if "neg_op_bgcolor" not in d:
-            d["neg_op_bgcolor"] = "#FF0000"
-        if "op_color" not in d:
-            d["op_color"] = "#FFFFFF"
         if "display_operator" not in d:
-            self.display_operator = True
-        else:
-            self.display_operator = bool(d["display_operator"])
-        if "display_suboperator" not in d:
-            self.display_suboperator = True
-        else:
-            self.display_suboperator = bool(d["display_suboperator"])
+            d["display_operator"] = True
+        if "display_operator_edge" not in d:
+            d["display_operator_edge"] = True
         self.style = d
         self.path_id_info = []
         if isinstance(path_id_info, int):
@@ -559,7 +549,7 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        if self.display_operator:
+        if self.style["display_operator"]:
             if isinstance(operator, NoneType):
                 return "?"
             elif "ANALYTICAL" in operator:
@@ -583,7 +573,7 @@ class PerformanceTree:
             return "?"
         return None
 
-    def _get_operator_subtype(self, operator: str) -> Optional[str]:
+    def _get_operator_edge(self, operator: str, parent_operator: str) -> Optional[str]:
         """
         Gets the input
         operator edge
@@ -592,7 +582,9 @@ class PerformanceTree:
         Parameters
         ----------
         operator: str
-            Tree operator.
+            Node operator.
+        parent_operator: str
+            Node Parent operator.
 
         Returns
         -------
@@ -605,47 +597,23 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        if self.display_operator:
-            if "MERGE" in operator:
-                return ("MERGE", self.style["pos_op_bgcolor"])
-            elif "PIPELINED" in operator:
-                return ("PIPELINED", self.style["pos_op_bgcolor"])
-            elif "HASH" in operator:
-                return ("HASH", self.style["neg_op_bgcolor"])
-            elif "NO STATISTICS" in operator and "STORAGE ACCESS" in operator:
-                return ("NOSTATS", self.style["neg_op_bgcolor"])
-        return None
-
-    def _get_operator_edge(self, operator: str) -> Optional[str]:
-        """
-        Gets the input
-        operator edge
-        xlabel.
-
-        Parameters
-        ----------
-        operator: str
-            Tree operator.
-
-        Returns
-        -------
-        str
-            operator edge
-            xlabel.
-
-        Examples
-        --------
-        See :py:meth:`verticapy.performance.vertica.tree`
-        for more information.
-        """
-        if self.display_operator:
+        res = ""
+        if self.style["display_operator_edge"]:
             if isinstance(operator, NoneType):
                 return "?"
-            elif "Outer ->" in operator:
-                return "O"
+            if "Outer ->" in operator:
+                res = "O"
             elif "Inner ->" in operator:
-                return "I"
-        return ""
+                res = "I"
+                if "HASH" in parent_operator and res != "":
+                    res += "-H"
+                elif "HASH" in parent_operator:
+                    res = "H"
+            if "MERGE" in parent_operator and res != "":
+                res += "-M"
+            elif "MERGE" in parent_operator:
+                res = "M"
+        return res
 
     def _get_metric(self, row: str, metric: str) -> int:
         """
@@ -875,7 +843,6 @@ class PerformanceTree:
         label: str,
         colors: list,
         operator: Optional[str] = None,
-        suboperator: Optional[tuple[Optional[str], str]] = None,
     ) -> str:
         """
         Generates the Graphviz
@@ -901,7 +868,7 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        if not (self.display_operator) and len(colors) == 1:
+        if not (self.style["display_operator"]) and len(colors) == 1:
             return f'"{label}", style="filled", fillcolor="{colors[0]}"'
         fontcolor = self.style["fontcolor"]
         fontsize = self.style["fontsize"]
@@ -919,7 +886,7 @@ class PerformanceTree:
         else:
             second_color = ""
             colspan = 3
-        if self.display_operator and not (isinstance(operator, NoneType)):
+        if self.style["display_operator"] and not (isinstance(operator, NoneType)):
             operator = (
                 f'<TD WIDTH="{width}" HEIGHT="{height}" '
                 f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
@@ -927,17 +894,6 @@ class PerformanceTree:
             )
         else:
             operator = ""
-        if self.display_suboperator and (isinstance(suboperator, tuple)):
-            suboperator, color = suboperator
-            fontcolor = self.style["op_color"]
-            suboperator = (
-                f'<TR><TD COLSPAN="{colspan}" WIDTH="{width / 3}"'
-                f' HEIGHT="{height}" BGCOLOR="{color}">'
-                f'<FONT POINT-SIZE="12" COLOR="{fontcolor}">'
-                f"<B>{suboperator}</B></FONT></TD></TR>"
-            )
-        else:
-            suboperator = ""
         label = (
             '<<TABLE border="1" cellborder="1" cellspacing="0" '
             f'cellpadding="0"><TR><TD WIDTH="{width}" '
@@ -945,7 +901,7 @@ class PerformanceTree:
             f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
             f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
             f'COLOR="{fontcolor}">{label}</FONT></TD>{operator}{second_color}'
-            f"</TR>{suboperator}</TABLE>>"
+            f"</TR></TABLE>>"
         )
         return label
 
@@ -966,9 +922,9 @@ class PerformanceTree:
         """
         n, res = len(self.rows), ""
         wh = 0.8
-        if len(self.metric) > 1 and self.display_operator:
+        if len(self.metric) > 1 and self.style["display_operator"]:
             wh = 1.22
-        elif self.display_operator:
+        elif self.style["display_operator"]:
             wh = 1.1
         if not (isinstance(self.metric[0], NoneType)):
             all_metrics = [
@@ -992,7 +948,6 @@ class PerformanceTree:
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             row = self._format_row(self.rows[i].replace('"', "'"))
-            suboperator = self._get_operator_subtype(row)
             operator_icon = self._get_operator_icon(row)
             if not (isinstance(self.metric[0], NoneType)):
                 alpha = (all_metrics[i] - m_min) / (m_max - m_min)
@@ -1008,7 +963,9 @@ class PerformanceTree:
                 else:
                     colors += [self.style["fillcolor"]]
             label = self._gen_label_table(
-                label, colors, operator=row, suboperator=suboperator
+                label,
+                colors,
+                operator=row,
             )
             if tree_id in links:
                 params = f'width={wh}, height={wh}, tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"'
@@ -1024,7 +981,9 @@ class PerformanceTree:
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
                 params = f'width={wh}, height={wh}, tooltip="{row}", URL="#path_id={tree_id}"'
                 label = self._gen_label_table(
-                    tree_id, colors, operator=row, suboperator=suboperator
+                    tree_id,
+                    colors,
+                    operator=row,
                 )
                 res += f"\t{dummy_id} [label={label}, {params}];\n"
         return res
@@ -1052,16 +1011,20 @@ class PerformanceTree:
             links += self._find_ancestors(self.path_id, relationships)
         for i in range(n):
             row = self._format_row(self.rows[i].replace('"', "'"))
-            xlabel = " " + self._get_operator_edge(row) + " "
             tree_id = self.path_order[i]
             dummy_id = self.path_order[-1] + 1
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             parent, child = relationships[i]
+            parent_row = ""
+            for j, lb in enumerate(self.path_order):
+                if lb == parent and j > 0:
+                    parent_row = self._format_row(self.rows[j].replace('"', "'"))
+            label = " " + self._get_operator_edge(row, parent_row) + " "
             if parent != child and child in links:
-                res += f'\t{parent} -> {child} [dir=back, label="{xlabel}"];\n'
+                res += f'\t{parent} -> {child} [dir=back, label="{label}"];\n'
             if child == self.path_id and tree_id != init_id and self.show_ancestors:
-                res += f'\t{parent} -> {dummy_id} [dir=back, label="{xlabel}"];\n'
+                res += f'\t{parent} -> {dummy_id} [dir=back, label="{label}"];\n'
             if tree_id in self.path_id_info:
                 res += (
                     f'\t{info_bubble} -> {tree_id} [dir=none, color="{info_color}"];\n'
@@ -1140,7 +1103,7 @@ class PerformanceTree:
         edge_color = self.style["edge_color"]
         edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
-        if not (self.display_operator):
+        if not (self.style["display_operator"]):
             res += (
                 f"\tnode [shape={shape}, style=filled, "
                 f'fillcolor="{fillcolor}", fontsize="{fontsize}", '
