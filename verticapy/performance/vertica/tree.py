@@ -46,7 +46,7 @@ class PerformanceTree:
         A path ID used to filter
         the tree elements by
         starting from it.
-    metric: str, optional
+    metric: str | list, optional
         The metric used to color
         the tree nodes. One of
         the following:
@@ -68,9 +68,13 @@ class PerformanceTree:
         - mem_res_mb
         - mem_all_mb
 
+        It can also be a ``list`` or
+        ``tuple`` of metrics.
+
     metric_value: dict, optional
         ``dictionary`` including the
-        metric value for each PATH ID.
+        different metrics and their
+        values for each PATH ID.
     show_ancestors: bool, optional
         If set to ``True`` the
         ancestors are also
@@ -117,19 +121,23 @@ class PerformanceTree:
         self,
         rows: str,
         path_id: Optional[int] = None,
-        metric: Literal[
-            None,
-            "cost",
-            "rows",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "cstall_us",
-            "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
+        metric: Union[
+            Literal[
+                None,
+                "cost",
+                "rows",
+                "exec_time_ms",
+                "est_rows",
+                "proc_rows",
+                "prod_rows",
+                "rle_prod_rows",
+                "cstall_us",
+                "pstall_us",
+                "mem_res_mb",
+                "mem_all_mb",
+            ],
+            tuple,
+            list,
         ] = "rows",
         metric_value: Optional[dict] = None,
         show_ancestors: bool = True,
@@ -176,23 +184,27 @@ class PerformanceTree:
             "mem_res_mb",
             "mem_all_mb",
         ]
-        if metric in available_metrics:
-            if metric not in [None, "cost", "rows"] and isinstance(
-                metric_value, NoneType
-            ):
+        if isinstance(metric, (str, NoneType)):
+            metric = [metric]
+        for me in metric:
+            if me in available_metrics:
+                if me not in [None, "cost", "rows"] and (
+                    isinstance(metric_value, NoneType) or me not in metric_value
+                ):
+                    raise ValueError(
+                        "Parameter 'metric_value' can "
+                        "not be empty when the metric "
+                        "is not in [None, cost, rows]."
+                    )
+            else:
                 raise ValueError(
-                    "Parameter 'metric_value' can not be empty when the metric "
-                    "is not in [None, cost, rows]."
+                    "Wrong value for parameter 'metric': "
+                    "It has to be one of the following: "
+                    f"[{', '.join([str(x) for x in available_metrics])}].\n"
+                    f"Found {me}."
                 )
-            self.metric = metric
-            self.metric_value = copy.deepcopy(metric_value)
-        else:
-            raise ValueError(
-                "Wrong value for parameter 'metric': "
-                "It has to be one of the following: "
-                f"[{', '.join([str(x) for x in available_metrics])}].\n"
-                f"Found {metric}."
-            )
+        self.metric = copy.deepcopy(metric)
+        self.metric_value = copy.deepcopy(metric_value)
         self.show_ancestors = show_ancestors
         d = copy.deepcopy(style)
         for color in ("color_low", "color_high"):
@@ -204,7 +216,7 @@ class PerformanceTree:
             elif isinstance(d[color], str):
                 d[color] = self._color_string_to_tuple(d[color])
         if "fillcolor" not in d:
-            d["fillcolor"] = "#ADD8E6"
+            d["fillcolor"] = "#FFFFFF"
         if "shape" not in d:
             d["shape"] = "circle"
         if "fontcolor" not in d:
@@ -477,7 +489,7 @@ class PerformanceTree:
             i += 1
         return res.count("|")
 
-    def _get_metric(self, row: str) -> int:
+    def _get_metric(self, row: str, metric: str) -> int:
         """
         Gets the metric of the
         specific row.
@@ -486,6 +498,8 @@ class PerformanceTree:
         ----------
         row: str
             Tree row.
+        metric: str
+            The metric to use.
 
         Returns
         -------
@@ -497,16 +511,16 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        if self.metric == "rows" and "Rows: " in row:
+        if metric == "rows" and "Rows: " in row:
             res = row.split("Rows: ")[1].split(" ")[0]
-        elif self.metric == "cost" and "Cost: " in row:
+        elif metric == "cost" and "Cost: " in row:
             res = row.split("Cost: ")[1].split(",")[0]
-        elif isinstance(self.metric, NoneType):
+        elif isinstance(metric, NoneType):
             return None
         else:
             path_id = self._get_label(row, return_path_id=True)
-            if path_id in self.metric_value:
-                res = self.metric_value[path_id]
+            if path_id in self.metric_value[metric]:
+                res = self.metric_value[metric][path_id]
                 if isinstance(res, NoneType):
                     return 0
                 return res
@@ -698,6 +712,47 @@ class PerformanceTree:
             relationships += [(id_initiator, tree_id)]
         return relationships
 
+    def _gen_label_table(self, label: str, colors: list) -> str:
+        """
+        Generates the Graphviz
+        labels table. It is used
+        when dealing with multiple
+        metrics
+
+        Parameters
+        ----------
+        label: str
+            The node label.
+        colors: list
+            A ``list`` of two
+            colors.
+
+        Returns
+        -------
+        str
+            Graphviz label.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        fontcolor = self.style["fontcolor"]
+        fillcolor = self.style["fillcolor"]
+        width = self.style["width"] * 30
+        height = self.style["height"] * 60
+        label = (
+            '<<TABLE border="1" cellborder="1" cellspacing="0" '
+            f'cellpadding="0"><TR><TD WIDTH="{width}" '
+            f'HEIGHT="{height}" BGCOLOR="{colors[0]}" ><FONT '
+            f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
+            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT '
+            f'COLOR="{fontcolor}">{label}</FONT></TD><TD '
+            f'WIDTH="{width}" HEIGHT="{height}" BGCOLOR="{colors[1]}">'
+            f'<FONT COLOR="{colors[1]}">.</FONT></TD></TR></TABLE>>'
+        )
+        return label
+
     def _gen_labels(self) -> str:
         """
         Generates the Graphviz
@@ -714,11 +769,18 @@ class PerformanceTree:
         for more information.
         """
         n, res = len(self.rows), ""
-        if not (isinstance(self.metric, NoneType)):
+        if not (isinstance(self.metric[0], NoneType)):
             all_metrics = [
-                math.log(1 + self._get_metric(self.rows[i])) for i in range(n)
+                math.log(1 + self._get_metric(self.rows[i], self.metric[0]))
+                for i in range(n)
             ]
             m_min, m_max = min(all_metrics), max(all_metrics)
+        if len(self.metric) > 1:
+            all_metrics_2 = [
+                math.log(1 + self._get_metric(self.rows[i], self.metric[1]))
+                for i in range(n)
+            ]
+            m_min_2, m_max_2 = min(all_metrics_2), max(all_metrics_2)
         relationships = self._gen_relationships()
         links = self._find_descendants(self.path_id, relationships) + [self.path_id]
         if self.show_ancestors:
@@ -728,15 +790,27 @@ class PerformanceTree:
             dummy_id = self.path_order[-1] + 1
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
-            if not (isinstance(self.metric, NoneType)):
+            if not (isinstance(self.metric[0], NoneType)):
                 alpha = (all_metrics[i] - m_min) / (m_max - m_min)
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
             label = self._get_label(self.rows[i])
+            if len(self.metric) > 1:
+                colors = [color]
+                if not (isinstance(self.metric[1], NoneType)):
+                    alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
+                    colors += [self._generate_gradient_color(alpha)]
+                else:
+                    colors += [self.style["fillcolor"]]
+                label = self._gen_label_table(label, colors)
             if tree_id in links:
                 row = self._format_row(self.rows[i].replace('"', "'"))
-                res += f'\t{tree_id} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"];\n'
+                params = f'tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"'
+                if len(self.metric) > 1:
+                    res += f"\t{tree_id} [{params}, width=0.8, height=0.8, label={label}];\n"
+                else:
+                    res += f'\t{tree_id} [style="filled", fillcolor="{color}", {params}, label="{label}"];\n'
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
                     info_fontcolor = self.style["info_fontcolor"]
@@ -747,7 +821,12 @@ class PerformanceTree:
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
                 row = self._format_row(self.rows[i].replace('"', "'"))
-                res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", tooltip="{row}", URL="#path_id={tree_id}"];\n'
+                params = f'tooltip="{row}", URL="#path_id={tree_id}"'
+                if len(self.metric) > 1:
+                    label = self._gen_label_table(tree_id, colors)
+                    res += f"\t{dummy_id} [label={label}, width=0.8, height=0.8, {params}];\n"
+                else:
+                    res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", {params}];\n'
         return res
 
     def _gen_links(self) -> str:
@@ -803,7 +882,11 @@ class PerformanceTree:
         for more information.
         """
         n = len(self.rows)
-        all_metrics = [math.log(1 + self._get_metric(self.rows[i])) for i in range(n)]
+        all_metrics = []
+        for me in self.metric:
+            all_metrics += [
+                math.log(1 + self._get_metric(self.rows[i], me)) for i in range(n)
+            ]
         m_min, m_max = min(all_metrics), max(all_metrics)
         cats = [0.0, 0.25, 0.5, 0.75, 1.0]
         cats = [
@@ -816,10 +899,12 @@ class PerformanceTree:
         alpha075 = self._generate_gradient_color(0.75)
         alpha1 = self._generate_gradient_color(1.0)
         res = '\tlegend [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
-        if isinstance(self.metric, NoneType):
+        if len(self.metric) == 1 and isinstance(self.metric[0], NoneType):
             legend = "Legend"
+        elif len(self.metric) > 1:
+            legend = f"{self.metric[0]} | {self.metric[1]}"
         else:
-            legend = self.metric
+            legend = self.metric[0]
         res += f'<tr><td bgcolor="#DFDFDF">{legend}</td></tr>'
         res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
@@ -852,9 +937,12 @@ class PerformanceTree:
         edge_color = self.style["edge_color"]
         edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
-        res += f'\tnode [shape={shape}, style=filled, fillcolor="{fillcolor}", fontcolor="{fontcolor}", width={width}, height={height}];\n'
+        if len(self.metric) == 1:
+            res += f'\tnode [shape={shape}, style=filled, fillcolor="{fillcolor}", fontcolor="{fontcolor}", width={width}, height={height}];\n'
+        else:
+            res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
-        if not (isinstance(self.metric, NoneType)):
+        if len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType)):
             res += self._gen_legend()
         else:
             res += "\n"
