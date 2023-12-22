@@ -216,7 +216,7 @@ class PerformanceTree:
             elif isinstance(d[color], str):
                 d[color] = self._color_string_to_tuple(d[color])
         if "fillcolor" not in d:
-            d["fillcolor"] = "#ADD8E6"
+            d["fillcolor"] = "#FFFFFF"
         if "shape" not in d:
             d["shape"] = "circle"
         if "fontcolor" not in d:
@@ -712,6 +712,47 @@ class PerformanceTree:
             relationships += [(id_initiator, tree_id)]
         return relationships
 
+    def _gen_label_table(self, label: str, colors: list) -> str:
+        """
+        Generates the Graphviz
+        labels table. It is used
+        when dealing with multiple
+        metrics
+
+        Parameters
+        ----------
+        label: str
+            The node label.
+        colors: list
+            A ``list`` of two
+            colors.
+
+        Returns
+        -------
+        str
+            Graphviz label.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        fontcolor = self.style["fontcolor"]
+        fillcolor = self.style["fillcolor"]
+        width = self.style["width"] * 30
+        height = self.style["height"] * 60
+        label = (
+            '<<TABLE border="1" cellborder="1" cellspacing="0" '
+            f'cellpadding="0"><TR><TD WIDTH="{width}" '
+            f'HEIGHT="{height}" BGCOLOR="{colors[0]}" ><FONT '
+            f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
+            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT '
+            f'COLOR="{fontcolor}">{label}</FONT></TD><TD '
+            f'WIDTH="{width}" HEIGHT="{height}" BGCOLOR="{colors[1]}">'
+            f'<FONT COLOR="{colors[1]}">.</FONT></TD></TR></TABLE>>'
+        )
+        return label
+
     def _gen_labels(self) -> str:
         """
         Generates the Graphviz
@@ -754,16 +795,22 @@ class PerformanceTree:
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
+            label = self._get_label(self.rows[i])
             if len(self.metric) > 1:
+                colors = [color]
                 if not (isinstance(self.metric[1], NoneType)):
                     alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
-                    color += ":" + self._generate_gradient_color(alpha)
+                    colors += [self._generate_gradient_color(alpha)]
                 else:
-                    color += ":" + self.style["fillcolor"]
-            label = self._get_label(self.rows[i])
+                    colors += [self.style["fillcolor"]]
+                label = self._gen_label_table(label, colors)
             if tree_id in links:
                 row = self._format_row(self.rows[i].replace('"', "'"))
-                res += f'\t{tree_id} [label="{label}", style="filled", fillcolor="{color}", tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"];\n'
+                params = f'tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"'
+                if len(self.metric) > 1:
+                    res += f"\t{tree_id} [{params}, width=0.8, height=0.8, label={label}];\n"
+                else:
+                    res += f'\t{tree_id} [style="filled", fillcolor="{color}", {params}, label="{label}"];\n'
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
                     info_fontcolor = self.style["info_fontcolor"]
@@ -774,7 +821,12 @@ class PerformanceTree:
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
                 row = self._format_row(self.rows[i].replace('"', "'"))
-                res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", tooltip="{row}", URL="#path_id={tree_id}"];\n'
+                params = f'tooltip="{row}", URL="#path_id={tree_id}"'
+                if len(self.metric) > 1:
+                    label = self._gen_label_table(tree_id, colors)
+                    res += f"\t{dummy_id} [label={label}, width=0.8, height=0.8, {params}];\n"
+                else:
+                    res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", {params}];\n'
         return res
 
     def _gen_links(self) -> str:
@@ -885,7 +937,10 @@ class PerformanceTree:
         edge_color = self.style["edge_color"]
         edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
-        res += f'\tnode [shape={shape}, style=filled, fillcolor="{fillcolor}", fontcolor="{fontcolor}", width={width}, height={height}];\n'
+        if len(self.metric) == 1:
+            res += f'\tnode [shape={shape}, style=filled, fillcolor="{fillcolor}", fontcolor="{fontcolor}", width={width}, height={height}];\n'
+        else:
+            res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
         if len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType)):
             res += self._gen_legend()

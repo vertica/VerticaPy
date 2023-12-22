@@ -1637,7 +1637,7 @@ class QueryProfiler:
                 Color used to fill the
                 nodes in case no gradient
                 is computed: ``metric=None``.
-                Default: #ADD8E6 (lightblue)
+                Default: #FFFFFF (white)
             - edge_color:
                 Edge color.
                 Default: #000000 (black)
