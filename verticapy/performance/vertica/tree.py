@@ -245,10 +245,20 @@ class PerformanceTree:
             d["info_rowsize"] = 30
         if "info_fontsize" not in d:
             d["info_fontsize"] = 8
+        if "pos_op_bgcolor" not in d:
+            d["pos_op_bgcolor"] = "#00FF00"
+        if "neg_op_bgcolor" not in d:
+            d["neg_op_bgcolor"] = "#FF0000"
+        if "op_color" not in d:
+            d["op_color"] = "#FFFFFF"
         if "display_operator" not in d:
             self.display_operator = True
         else:
             self.display_operator = bool(d["display_operator"])
+        if "display_suboperator" not in d:
+            self.display_suboperator = True
+        else:
+            self.display_suboperator = bool(d["display_suboperator"])
         self.style = d
         self.path_id_info = []
         if isinstance(path_id_info, int):
@@ -587,7 +597,7 @@ class PerformanceTree:
         Returns
         -------
         str
-            operator edge 
+            operator edge
             label.
 
         Examples
@@ -597,13 +607,13 @@ class PerformanceTree:
         """
         if self.display_operator:
             if "MERGE" in operator:
-                return "MERGE"
+                return ("MERGE", self.style["pos_op_bgcolor"])
             elif "PIPELINED" in operator:
-                return "PIPELINED"
+                return ("PIPELINED", self.style["pos_op_bgcolor"])
             elif "HASH" in operator:
-                return "HASH"
+                return ("HASH", self.style["neg_op_bgcolor"])
             elif "NO STATISTICS" in operator and "STORAGE ACCESS" in operator:
-                return "NOSTATS"
+                return ("NOSTATS", self.style["neg_op_bgcolor"])
         return None
 
     def _get_operator_edge(self, operator: str) -> Optional[str]:
@@ -620,7 +630,7 @@ class PerformanceTree:
         Returns
         -------
         str
-            operator edge 
+            operator edge
             xlabel.
 
         Examples
@@ -861,7 +871,11 @@ class PerformanceTree:
         return relationships
 
     def _gen_label_table(
-        self, label: str, colors: list, operator: Optional[str] = None, suboperator: Optional[str] = None,
+        self,
+        label: str,
+        colors: list,
+        operator: Optional[str] = None,
+        suboperator: Optional[tuple[Optional[str], str]] = None,
     ) -> str:
         """
         Generates the Graphviz
@@ -874,8 +888,8 @@ class PerformanceTree:
         label: str
             The node label.
         colors: list
-            A ``list`` of two
-            colors.
+            A ``list`` of one or
+            two colors.
 
         Returns
         -------
@@ -887,13 +901,25 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
+        if not (self.display_operator) and len(colors) == 1:
+            return f'"{label}", style="filled", fillcolor="{colors[0]}"'
         fontcolor = self.style["fontcolor"]
         fontsize = self.style["fontsize"]
         fillcolor = self.style["fillcolor"]
         width = self.style["width"] * 30
         height = self.style["height"] * 60
         operator = self._get_operator_icon(operator)
-        if self.display_operator and not(isinstance(operator, NoneType)):
+        if len(colors) > 1:
+            second_color = (
+                f'<TD WIDTH="{width}" HEIGHT="{height}" '
+                f'BGCOLOR="{colors[1]}"><FONT '
+                f'COLOR="{colors[1]}">.</FONT></TD>'
+            )
+            colspan = 4
+        else:
+            second_color = ""
+            colspan = 3
+        if self.display_operator and not (isinstance(operator, NoneType)):
             operator = (
                 f'<TD WIDTH="{width}" HEIGHT="{height}" '
                 f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
@@ -901,11 +927,14 @@ class PerformanceTree:
             )
         else:
             operator = ""
-        if self.display_operator and not(isinstance(suboperator, NoneType)):
+        if self.display_suboperator and (isinstance(suboperator, tuple)):
+            suboperator, color = suboperator
+            fontcolor = self.style["op_color"]
             suboperator = (
-                f'<TR><TD COLSPAN="4" WIDTH="{width / 3}" HEIGHT="{height}" '
-                f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="12" '
-                f'COLOR="{fontcolor}">{suboperator}</FONT></TD></TR>'
+                f'<TR><TD COLSPAN="{colspan}" WIDTH="{width / 3}"'
+                f' HEIGHT="{height}" BGCOLOR="{color}">'
+                f'<FONT POINT-SIZE="12" COLOR="{fontcolor}">'
+                f"<B>{suboperator}</B></FONT></TD></TR>"
             )
         else:
             suboperator = ""
@@ -915,9 +944,8 @@ class PerformanceTree:
             f'HEIGHT="{height}" BGCOLOR="{colors[0]}" ><FONT '
             f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
             f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
-            f'COLOR="{fontcolor}">{label}</FONT></TD>{operator}<TD '
-            f'WIDTH="{width}" HEIGHT="{height}" BGCOLOR="{colors[1]}">'
-            f'<FONT COLOR="{colors[1]}">.</FONT></TD></TR>{suboperator}</TABLE>>'
+            f'COLOR="{fontcolor}">{label}</FONT></TD>{operator}{second_color}'
+            f"</TR>{suboperator}</TABLE>>"
         )
         return label
 
@@ -941,7 +969,7 @@ class PerformanceTree:
         if len(self.metric) > 1 and self.display_operator:
             wh = 1.22
         elif self.display_operator:
-            wh = 0.82
+            wh = 1.1
         if not (isinstance(self.metric[0], NoneType)):
             all_metrics = [
                 math.log(1 + self._get_metric(self.rows[i], self.metric[0]))
@@ -972,22 +1000,19 @@ class PerformanceTree:
             else:
                 color = self.style["fillcolor"]
             label = self._get_label(self.rows[i])
+            colors = [color]
             if len(self.metric) > 1:
-                colors = [color]
                 if not (isinstance(self.metric[1], NoneType)):
                     alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
                     colors += [self._generate_gradient_color(alpha)]
                 else:
                     colors += [self.style["fillcolor"]]
-                label = self._gen_label_table(label, colors, operator=row, suboperator=suboperator)
+            label = self._gen_label_table(
+                label, colors, operator=row, suboperator=suboperator
+            )
             if tree_id in links:
                 params = f'width={wh}, height={wh}, tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"'
-                if len(self.metric) > 1:
-                    res += f"\t{tree_id} [{params}, label={label}];\n"
-                else:
-                    if self.display_operator:
-                        label = f"{label} {operator_icon}"
-                    res += f'\t{tree_id} [style="filled", fillcolor="{color}", {params}, label="{label}"];\n'
+                res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
                     info_fontcolor = self.style["info_fontcolor"]
@@ -998,14 +1023,10 @@ class PerformanceTree:
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
                 params = f'width={wh}, height={wh}, tooltip="{row}", URL="#path_id={tree_id}"'
-                if len(self.metric) > 1:
-                    label = self._gen_label_table(tree_id, colors, operator=row, suboperator=suboperator)
-                    res += f"\t{dummy_id} [label={label}, {params}];\n"
-                else:
-                    label = tree_id
-                    if self.display_operator:
-                        label = f"{label} {operator_icon}"
-                    res += f'\t{dummy_id} [label="{label}", style="filled", fillcolor="{color}", {params}];\n'
+                label = self._gen_label_table(
+                    tree_id, colors, operator=row, suboperator=suboperator
+                )
+                res += f"\t{dummy_id} [label={label}, {params}];\n"
         return res
 
     def _gen_links(self) -> str:
@@ -1119,7 +1140,7 @@ class PerformanceTree:
         edge_color = self.style["edge_color"]
         edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
-        if len(self.metric) == 1:
+        if not (self.display_operator):
             res += (
                 f"\tnode [shape={shape}, style=filled, "
                 f'fillcolor="{fillcolor}", fontsize="{fontsize}", '

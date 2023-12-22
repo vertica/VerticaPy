@@ -1669,14 +1669,30 @@ class QueryProfiler:
                 Maximum size of a line
                 in the information box.
                 Default: 30
-            - info_fontsize
+            - info_fontsize:
                 Information box font
                 size.
                 Default: 8
-            - display_operator: bool, optional
+            - op_color
+                Font color of the operators.
+                Default: #FFFFFF (white)
+            - neg_op_bgcolor:
+                Colors for negative operators
+                like HASH or NOSTATS.
+                Default: #FF0000 (red)
+            - pos_op_bgcolor:
+                Colors for positive operators
+                like MERGE or PIPELINED.
+                Default: #00FF00 (green)
+            - display_operator:
                 If set to ``True`` the
                 PATH ID operator of each
                 node will be displayed.
+            - display_suboperator:
+                If set to ``True`` the
+                PATH ID suboperator of
+                each node will be
+                displayed.
 
         Returns
         -------
