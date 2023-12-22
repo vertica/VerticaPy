@@ -63,6 +63,7 @@ class PerformanceTree:
         - proc_rows
         - prod_rows
         - rle_prod_rows
+        - clock_time_us
         - cstall_us
         - pstall_us
         - mem_res_mb
@@ -83,6 +84,8 @@ class PerformanceTree:
         List of nodes for which
         a tooltip node will be
         created.
+    style: dict, optional
+        Style of the overall tree.
 
     Attributes
     ----------
@@ -131,6 +134,7 @@ class PerformanceTree:
                 "proc_rows",
                 "prod_rows",
                 "rle_prod_rows",
+                "clock_time_us",
                 "cstall_us",
                 "pstall_us",
                 "mem_res_mb",
@@ -142,6 +146,7 @@ class PerformanceTree:
         metric_value: Optional[dict] = None,
         show_ancestors: bool = True,
         path_id_info: Optional[list] = None,
+        display_operator: bool = True,
         style: dict = {},
     ) -> None:
         qplan = rows.split("\n")
@@ -179,6 +184,7 @@ class PerformanceTree:
             "proc_rows",
             "prod_rows",
             "rle_prod_rows",
+            "clock_time_us",
             "cstall_us",
             "pstall_us",
             "mem_res_mb",
@@ -221,6 +227,8 @@ class PerformanceTree:
             d["shape"] = "circle"
         if "fontcolor" not in d:
             d["fontcolor"] = "#000000"
+        if "fontsize" not in d:
+            d["fontsize"] = 22
         if "width" not in d:
             d["width"] = 0.6
         if "height" not in d:
@@ -237,6 +245,10 @@ class PerformanceTree:
             d["info_rowsize"] = 30
         if "info_fontsize" not in d:
             d["info_fontsize"] = 8
+        if "display_operator" not in d:
+            d["display_operator"] = True
+        if "display_operator_edge" not in d:
+            d["display_operator_edge"] = True
         self.style = d
         self.path_id_info = []
         if isinstance(path_id_info, int):
@@ -489,6 +501,120 @@ class PerformanceTree:
             i += 1
         return res.count("|")
 
+    @staticmethod
+    def _get_operator(row: str) -> str:
+        """
+        Gets the operator of
+        the specific row.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+
+        Returns
+        -------
+        str
+            row operator.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        res = ""
+        i, n = 0, len(row)
+        while i < n and (row[i].isalpha() or row[i] in (" ", "-", ">")):
+            res += row[i]
+            i += 1
+        return res.strip()
+
+    def _get_operator_icon(self, operator: str) -> Optional[str]:
+        """
+        Gets the input
+        operator icon.
+
+        Parameters
+        ----------
+        operator: str
+            Tree operator.
+
+        Returns
+        -------
+        str
+            operator icon.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if self.style["display_operator"]:
+            if isinstance(operator, NoneType):
+                return "?"
+            elif "ANALYTICAL" in operator:
+                return "📈"
+            elif "STORAGE ACCESS" in operator:
+                return "🗄️"
+            elif "GROUPBY" in operator:
+                return "📊"
+            elif "SORT" in operator:
+                return "🔀"
+            elif "JOIN" in operator:
+                return "🔗"
+            elif "SELECT" in operator:
+                return "🔍"
+            elif "UNION" in operator:
+                return "➕"
+            elif "PROJ" in operator:
+                return "📐"
+            elif "COL" in operator:
+                return "📋"
+            return "?"
+        return None
+
+    def _get_operator_edge(self, operator: str, parent_operator: str) -> Optional[str]:
+        """
+        Gets the input
+        operator edge
+        label.
+
+        Parameters
+        ----------
+        operator: str
+            Node operator.
+        parent_operator: str
+            Node Parent operator.
+
+        Returns
+        -------
+        str
+            operator edge
+            label.
+
+        Examples
+        --------
+        See :py:meth:`verticapy.performance.vertica.tree`
+        for more information.
+        """
+        res = ""
+        if self.style["display_operator_edge"]:
+            if isinstance(operator, NoneType):
+                return "?"
+            if "Outer ->" in operator:
+                res = "O"
+            elif "Inner ->" in operator:
+                res = "I"
+                if "HASH" in parent_operator and res != "":
+                    res += "-H"
+                elif "HASH" in parent_operator:
+                    res = "H"
+            if "MERGE" in parent_operator and res != "":
+                res += "-M"
+            elif "MERGE" in parent_operator:
+                res = "M"
+        return res
+
     def _get_metric(self, row: str, metric: str) -> int:
         """
         Gets the metric of the
@@ -712,7 +838,12 @@ class PerformanceTree:
             relationships += [(id_initiator, tree_id)]
         return relationships
 
-    def _gen_label_table(self, label: str, colors: list) -> str:
+    def _gen_label_table(
+        self,
+        label: str,
+        colors: list,
+        operator: Optional[str] = None,
+    ) -> str:
         """
         Generates the Graphviz
         labels table. It is used
@@ -724,8 +855,8 @@ class PerformanceTree:
         label: str
             The node label.
         colors: list
-            A ``list`` of two
-            colors.
+            A ``list`` of one or
+            two colors.
 
         Returns
         -------
@@ -737,19 +868,40 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
+        if not (self.style["display_operator"]) and len(colors) == 1:
+            return f'"{label}", style="filled", fillcolor="{colors[0]}"'
         fontcolor = self.style["fontcolor"]
+        fontsize = self.style["fontsize"]
         fillcolor = self.style["fillcolor"]
         width = self.style["width"] * 30
         height = self.style["height"] * 60
+        operator = self._get_operator_icon(operator)
+        if len(colors) > 1:
+            second_color = (
+                f'<TD WIDTH="{width}" HEIGHT="{height}" '
+                f'BGCOLOR="{colors[1]}"><FONT '
+                f'COLOR="{colors[1]}">.</FONT></TD>'
+            )
+            colspan = 4
+        else:
+            second_color = ""
+            colspan = 3
+        if self.style["display_operator"] and not (isinstance(operator, NoneType)):
+            operator = (
+                f'<TD WIDTH="{width}" HEIGHT="{height}" '
+                f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
+                f'COLOR="{fontcolor}">{operator}</FONT></TD>'
+            )
+        else:
+            operator = ""
         label = (
             '<<TABLE border="1" cellborder="1" cellspacing="0" '
             f'cellpadding="0"><TR><TD WIDTH="{width}" '
             f'HEIGHT="{height}" BGCOLOR="{colors[0]}" ><FONT '
             f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
-            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT '
-            f'COLOR="{fontcolor}">{label}</FONT></TD><TD '
-            f'WIDTH="{width}" HEIGHT="{height}" BGCOLOR="{colors[1]}">'
-            f'<FONT COLOR="{colors[1]}">.</FONT></TD></TR></TABLE>>'
+            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
+            f'COLOR="{fontcolor}">{label}</FONT></TD>{operator}{second_color}'
+            f"</TR></TABLE>>"
         )
         return label
 
@@ -769,6 +921,11 @@ class PerformanceTree:
         for more information.
         """
         n, res = len(self.rows), ""
+        wh = 0.8
+        if len(self.metric) > 1 and self.style["display_operator"]:
+            wh = 1.22
+        elif self.style["display_operator"]:
+            wh = 1.1
         if not (isinstance(self.metric[0], NoneType)):
             all_metrics = [
                 math.log(1 + self._get_metric(self.rows[i], self.metric[0]))
@@ -790,27 +947,29 @@ class PerformanceTree:
             dummy_id = self.path_order[-1] + 1
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
+            row = self._format_row(self.rows[i].replace('"', "'"))
+            operator_icon = self._get_operator_icon(row)
             if not (isinstance(self.metric[0], NoneType)):
                 alpha = (all_metrics[i] - m_min) / (m_max - m_min)
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
             label = self._get_label(self.rows[i])
+            colors = [color]
             if len(self.metric) > 1:
-                colors = [color]
                 if not (isinstance(self.metric[1], NoneType)):
                     alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
                     colors += [self._generate_gradient_color(alpha)]
                 else:
                     colors += [self.style["fillcolor"]]
-                label = self._gen_label_table(label, colors)
+            label = self._gen_label_table(
+                label,
+                colors,
+                operator=row,
+            )
             if tree_id in links:
-                row = self._format_row(self.rows[i].replace('"', "'"))
-                params = f'tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"'
-                if len(self.metric) > 1:
-                    res += f"\t{tree_id} [{params}, width=0.8, height=0.8, label={label}];\n"
-                else:
-                    res += f'\t{tree_id} [style="filled", fillcolor="{color}", {params}, label="{label}"];\n'
+                params = f'width={wh}, height={wh}, tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"'
+                res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
                     info_fontcolor = self.style["info_fontcolor"]
@@ -820,13 +979,13 @@ class PerformanceTree:
                     html_content = html.escape(html_content).replace("\n", "<br/>")
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
-                row = self._format_row(self.rows[i].replace('"', "'"))
-                params = f'tooltip="{row}", URL="#path_id={tree_id}"'
-                if len(self.metric) > 1:
-                    label = self._gen_label_table(tree_id, colors)
-                    res += f"\t{dummy_id} [label={label}, width=0.8, height=0.8, {params}];\n"
-                else:
-                    res += f'\t{dummy_id} [label="{tree_id}", style="filled", fillcolor="{color}", {params}];\n'
+                params = f'width={wh}, height={wh}, tooltip="{row}", URL="#path_id={tree_id}"'
+                label = self._gen_label_table(
+                    tree_id,
+                    colors,
+                    operator=row,
+                )
+                res += f"\t{dummy_id} [label={label}, {params}];\n"
         return res
 
     def _gen_links(self) -> str:
@@ -851,15 +1010,21 @@ class PerformanceTree:
         if self.show_ancestors:
             links += self._find_ancestors(self.path_id, relationships)
         for i in range(n):
+            row = self._format_row(self.rows[i].replace('"', "'"))
             tree_id = self.path_order[i]
             dummy_id = self.path_order[-1] + 1
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             parent, child = relationships[i]
+            parent_row = ""
+            for j, lb in enumerate(self.path_order):
+                if lb == parent and j > 0:
+                    parent_row = self._format_row(self.rows[j].replace('"', "'"))
+            label = " " + self._get_operator_edge(row, parent_row) + " "
             if parent != child and child in links:
-                res += f"\t{parent} -> {child} [dir=back];\n"
+                res += f'\t{parent} -> {child} [dir=back, label="{label}"];\n'
             if child == self.path_id and tree_id != init_id and self.show_ancestors:
-                res += f"\t{parent} -> {dummy_id} [dir=back];\n"
+                res += f'\t{parent} -> {dummy_id} [dir=back, label="{label}"];\n'
             if tree_id in self.path_id_info:
                 res += (
                     f'\t{info_bubble} -> {tree_id} [dir=none, color="{info_color}"];\n'
@@ -932,13 +1097,19 @@ class PerformanceTree:
         fillcolor = self.style["fillcolor"]
         shape = self.style["shape"]
         fontcolor = self.style["fontcolor"]
+        fontsize = self.style["fontsize"]
         width = self.style["width"]
         height = self.style["height"]
         edge_color = self.style["edge_color"]
         edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
-        if len(self.metric) == 1:
-            res += f'\tnode [shape={shape}, style=filled, fillcolor="{fillcolor}", fontcolor="{fontcolor}", width={width}, height={height}];\n'
+        if not (self.style["display_operator"]):
+            res += (
+                f"\tnode [shape={shape}, style=filled, "
+                f'fillcolor="{fillcolor}", fontsize="{fontsize}", '
+                f'fontcolor="{fontcolor}", width={width}, '
+                f"height={height}];\n"
+            )
         else:
             res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'

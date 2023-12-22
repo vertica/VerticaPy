@@ -1564,6 +1564,7 @@ class QueryProfiler:
             "proc_rows",
             "prod_rows",
             "rle_prod_rows",
+            "clock_time_us",
             "cstall_us",
             "pstall_us",
             "mem_res_mb",
@@ -1603,6 +1604,7 @@ class QueryProfiler:
             - proc_rows
             - prod_rows
             - rle_prod_rows
+            - clock_time_us
             - cstall_us
             - pstall_us
             - mem_res_mb
@@ -1633,6 +1635,9 @@ class QueryProfiler:
             - fontcolor:
                 Font color.
                 Default: #000000 (black)
+            - fontsize:
+                Font size.
+                Default: 22
             - fillcolor:
                 Color used to fill the
                 nodes in case no gradient
@@ -1664,10 +1669,18 @@ class QueryProfiler:
                 Maximum size of a line
                 in the information box.
                 Default: 30
-            - info_fontsize
+            - info_fontsize:
                 Information box font
                 size.
                 Default: 8
+            - display_operator:
+                If set to ``True`` the
+                PATH ID operator of each
+                node will be displayed.
+            - display_operator_edge:
+                If set to ``True`` the
+                operator edge of each
+                node will be displayed.
 
         Returns
         -------
@@ -2238,8 +2251,10 @@ class QueryProfiler:
                     counter_value ELSE NULL END) AS cstall_us,
                 SUM(CASE counter_name WHEN 'producer stall (us)' THEN
                     counter_value ELSE NULL END) AS pstall_us,
+                SUM(CASE counter_name WHEN 'clock time (us)' THEN
+                    counter_value ELSE NULL END) AS clock_time_us,
                 ROUND(SUM(CASE counter_name WHEN 'memory reserved (bytes)' THEN
-                    counter_value ELSE NULL END)/1000000, 1.0) AS mem_res_mb,
+                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_res_mb,
                 ROUND(SUM(CASE counter_name WHEN 'memory allocated (bytes)' THEN 
                     counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb
             FROM
@@ -2268,6 +2283,7 @@ class QueryProfiler:
             "proc_rows",
             "prod_rows",
             "rle_prod_rows",
+            "clock_time_us",
             "cstall_us",
             "pstall_us",
             "mem_res_mb",
@@ -2315,16 +2331,17 @@ class QueryProfiler:
             used.
         metric: str, optional
             Metric to use. One of the following:
-             - all (all metrics are used).
-             - exec_time_ms (default)
-             - est_rows
-             - proc_rows
-             - prod_rows
-             - rle_prod_rows
-             - cstall_us
-             - pstall_us
-             - mem_res_mb
-             - mem_all_mb
+            - all (all metrics are used).
+            - exec_time_ms (default)
+            - est_rows
+            - proc_rows
+            - prod_rows
+            - rle_prod_rows
+            - clock_time_us
+            - cstall_us
+            - pstall_us
+            - mem_res_mb
+            - mem_all_mb
         path_id: str
             Path ID.
         kind: str, optional
@@ -2469,6 +2486,7 @@ class QueryProfiler:
                 "proc_rows",
                 "prod_rows",
                 "rle_prod_rows",
+                "clock_time_us",
                 "cstall_us",
                 "pstall_us",
                 "mem_res_mb",
