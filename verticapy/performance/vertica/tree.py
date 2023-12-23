@@ -605,8 +605,20 @@ class PerformanceTree:
                 return "?"
             if "OUTER ->" in operator:
                 res = "O"
+                if "OUTER (FILTER)" in parent_operator:
+                    res += "-F"
+                if "OUTER (BROADCAST)" in parent_operator:
+                    res += "-B"
+                if "OUTER (RESEGMENT)" in parent_operator:
+                    res += "-R"
             elif "INNER ->" in operator:
                 res = "I"
+                if "INNER (FILTER)" in parent_operator:
+                    res += "-F"
+                if "INNER (BROADCAST)" in parent_operator:
+                    res += "-B"
+                if "INNER (RESEGMENT)" in parent_operator:
+                    res += "-R"
                 if "HASH" in parent_operator:
                     res += "-H"
             elif "HASH" in parent_operator:
@@ -618,8 +630,6 @@ class PerformanceTree:
                 or "LOCAL RESEGMENT" in parent_operator
             ):
                 res += "-GLR"
-            if "BROADCAST" in operator:
-                res += "-B"
         if len(res) > 0 and res[0] == "-":
             res = res[1:]
         return res
