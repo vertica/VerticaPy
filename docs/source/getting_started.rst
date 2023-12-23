@@ -72,7 +72,6 @@ If you do not want to install extra dependencies, you can use the following comm
 
 To start playing with the API, create a new connection:
 
-
 .. code-block:: python
 
     import verticapy as vp
@@ -83,12 +82,16 @@ To start playing with the API, create a new connection:
             "port": "5433", 
             "database": "testdb", 
             "password": "XxX", 
-            "user": "dbadmin"
+            "user": "dbadmin",
         },
         name = "My_New_Vertica_Connection",
     )
 
-After a connection is created, you can use the `connect <https://www.vertica.com/python/documentation_last/connect/connect/index.php>`_ function to reconnect.
+.. note::
+
+    For more information, see: :ref:`connection`.
+
+After a connection is created, you can use the :py:func:`verticapy.connection.connect` function to reconnect.
 
 .. code-block:: python
 
@@ -98,14 +101,14 @@ Create a VerticaPy schema for native VerticaPy models (that is, models available
 
 .. important::
 
-  For more information on connection please visit :ref:`connection`
+  For more information on connection please visit :ref:`connection`.
 
 .. code-block:: python
 
     vp.create_verticapy_schema()
 
 
-You can now start playing with the library! A good starting point is the `Quick Start guide <https://www.vertica.com/python/quick-start.php>`_.
+You can now start playing with the library! A good starting point is the `Quick Start guide <https://github.com/vertica/VerticaPy#quickstart>`_.
 
 
 Install VerticaPyLab

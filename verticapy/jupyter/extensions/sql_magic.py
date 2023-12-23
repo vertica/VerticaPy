@@ -765,7 +765,7 @@ def sql_magic(
     connect to external Databases using
     the connection symbol. Detailled
     examples are available in
-    `this notebook <https://www.vertica.com/python/workshop/full_stack/dblink_integration/>`_.
+    `this notebook <https://www.vertica.com/python/old/workshop/full_stack/dblink_integration/>`_.
     """
 
     # We don't want to display the query/time twice if

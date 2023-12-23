@@ -61,19 +61,19 @@ def help_start() -> None:
             print("Invalid choice.\nRerun the help_start function when you need help.")
             return
     if response == 0:
-        link = "https://www.vertica.com/python/quick-start.php"
+        link = "https://www.vertica.com/python/old/quick-start.php"
     elif response == 1:
-        link = "https://www.vertica.com/python/documentation_last/datasets/"
+        link = "https://www.vertica.com/python/old/documentation_last/datasets/"
     elif response == 2:
-        link = "https://www.vertica.com/python/examples/"
+        link = "https://www.vertica.com/python/old/examples/"
     elif response == 3:
         link = "https://github.com/vertica/VerticaPy/"
     elif response == 4:
-        link = "https://www.vertica.com/python/documentation_last/utilities/set_option/"
+        link = "https://www.vertica.com/python/old/documentation_last/utilities/set_option/"
     elif response == 5:
-        link = "https://www.vertica.com/python/documentation_last/datasets/"
+        link = "https://www.vertica.com/python/old/documentation_last/datasets/"
     elif response == 6:
-        link = "https://www.vertica.com/python/documentation_last/extensions/sql/"
+        link = "https://www.vertica.com/python/old/documentation_last/extensions/sql/"
     elif response == -1:
         message = "Thank you for using the VerticaPy help module."
     elif response == 666:
