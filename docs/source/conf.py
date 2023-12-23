@@ -376,7 +376,6 @@ html_theme_options = {
     },
 }
 
-
 html_favicon = "_static/ot_favicon.svg"
 # Customization
 html_css_files = [

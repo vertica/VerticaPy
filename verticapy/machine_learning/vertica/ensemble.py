@@ -590,7 +590,7 @@ class RandomForestRegressor(Regressor, RandomForest):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     .. important::
@@ -1271,7 +1271,7 @@ class XGBRegressor(Regressor, XGBoost):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     .. important::
@@ -1976,7 +1976,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     .. important::
@@ -2916,7 +2916,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     .. important::
@@ -3838,7 +3838,7 @@ class IsolationForest(Clustering, Tree):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     Load data for machine learning

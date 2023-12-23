@@ -85,7 +85,7 @@ To start playing with the API, create a new connection:
         name = "My_New_Vertica_Connection",
     )
 
-After a connection is created, you can use the `connect <https://www.vertica.com/python/documentation_last/connect/connect/index.php>`_ function to reconnect.
+After a connection is created, you can use the `connect <https://www.vertica.com/python/old/documentation_last/connect/connect/index.php>`_ function to reconnect.
 
 .. code-block:: python
 
@@ -98,7 +98,7 @@ Create a VerticaPy schema for native VerticaPy models (that is, models available
     vp.create_verticapy_schema()
 
 
-You can now start playing with the library! A good starting point is the `Quick Start guide <https://www.vertica.com/python/quick-start.php>`_.
+You can now start playing with the library! A good starting point is the `Quick Start guide <https://www.vertica.com/python/old/quick-start.php>`_.
 
 
 Install VerticaPyLab

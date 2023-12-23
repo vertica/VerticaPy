@@ -25,7 +25,7 @@ Welcome to VerticaPy documentation
 
 
 **Previous versions**: Documentation of previous VerticaPy versions is available at
-`ww.vertica.com/python <https://www.vertica.com/python/documentation_last/>`__.
+`www.vertica.com/python/old <https://www.vertica.com/python/old/documentation_last/>`_.
 
 **Useful links**:
 
@@ -70,7 +70,6 @@ a Pythonic way to work with data stored in Vertica.
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
 
-
           The user guide offers deep insights into VerticaPy's core concepts with valuable context and explanations.
 
           +++
@@ -86,7 +85,6 @@ a Pythonic way to work with data stored in Vertica.
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
 
-
           The API reference provides concise information about VerticaPy's functions and methods with clear examples.
 
           +++
@@ -97,11 +95,10 @@ a Pythonic way to work with data stored in Vertica.
     
       .. card:: Examples
           :img-top: _static/examples.svg
-          :link: https://www.vertica.com/python/examples/
+          :link: ../../../examples/
           :text-align: center
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
-
 
           The Examples section showcases practical use cases of VerticaPy in real-world scenarios.
 
@@ -118,7 +115,6 @@ a Pythonic way to work with data stored in Vertica.
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
 
-
           The Contribution Guidelines outline the process for actively participating in the development of VerticaPy.
 
           +++
@@ -128,11 +124,10 @@ a Pythonic way to work with data stored in Vertica.
     
       .. card:: VerticaPy Website
           :img-top: _static/verticapy_website.svg
-          :link: http://localhost:1993/python/documentation
+          :link: ../../../
           :text-align: center
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
-
 
           The official VerticaPy website showcasing our success.
 

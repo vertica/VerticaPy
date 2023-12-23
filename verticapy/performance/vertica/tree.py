@@ -598,21 +598,30 @@ class PerformanceTree:
         for more information.
         """
         res = ""
+        operator = operator.upper()
+        parent_operator = parent_operator.upper()
         if self.style["display_operator_edge"]:
             if isinstance(operator, NoneType):
                 return "?"
-            if "Outer ->" in operator:
+            if "OUTER ->" in operator:
                 res = "O"
-            elif "Inner ->" in operator:
+            elif "INNER ->" in operator:
                 res = "I"
-                if "HASH" in parent_operator and res != "":
+                if "HASH" in parent_operator:
                     res += "-H"
-                elif "HASH" in parent_operator:
-                    res = "H"
-            if "MERGE" in parent_operator and res != "":
+            elif "HASH" in parent_operator:
+                res += "-H"
+            if "MERGE" in parent_operator:
                 res += "-M"
-            elif "MERGE" in parent_operator:
-                res = "M"
+            if (
+                "GLOBAL RESEGMENT" in parent_operator
+                or "LOCAL RESEGMENT" in parent_operator
+            ):
+                res += "-GLR"
+            if "BROADCAST" in operator:
+                res += "-B"
+        if len(res) > 0 and res[0] == "-":
+            res = res[1:]
         return res
 
     def _get_metric(self, row: str, metric: str) -> int:
