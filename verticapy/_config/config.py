@@ -309,6 +309,14 @@ def set_option(key: str, value: Any = None) -> None:
             Maximum number of rows to display. If the
             specified value is invalid, ``max_row`` is
             not changed.
+        - max_cellwidth:
+            Maximum width of any VerticaPy table's cell.
+            Can not be lesser than 280.
+            Default: 280
+        - max_tableheight:
+            Maximum height of VerticaPy tables.
+            Can not be lesser than 300.
+            Default: 300
         - mode:
             [str]
             Display mode for VerticaPy outputs, either:
@@ -700,6 +708,10 @@ register_option(Option("label_separator", None, "", optional_str_validator))
 register_option(Option("label_suffix", None, "", optional_str_validator))
 register_option(Option("max_columns", 50, "", st_positive_int_validator))
 register_option(Option("max_rows", 100, "", st_positive_int_validator))
+register_option(
+    Option("max_tableheight", 300, "", st_positive_int_validator)
+)  # min 300
+register_option(Option("max_cellwidth", 280, "", st_positive_int_validator))  # min 280
 register_option(Option("mode", "full", "", in_validator(["full", "light"])))
 register_option(Option("percent_bar", False, "", bool_validator))
 register_option(Option("print_info", True, "", bool_validator))

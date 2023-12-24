@@ -40,7 +40,7 @@ def print_table(
     relation.
     """
 
-    # Colors Definition
+    # Colors Definition & options
     theme = conf.get_option("theme")
 
     if theme == "light":
@@ -78,6 +78,11 @@ def print_table(
         fontcolor_index_i = "var(--color-announcement-text)"
     else:
         raise ValueError("Unrecognized 'theme'.")
+
+    maxwidth = conf.get_option("max_cellwidth")
+    maxwidth = max(280, maxwidth)
+    maxheight = conf.get_option("max_tableheight")
+    maxheight = max(300, maxheight)
 
     # Main Function
     dtype, percent = format_type(dtype, percent, dtype=dict)
@@ -153,7 +158,9 @@ def print_table(
         m, n = len(data_columns), len(data_columns[0])
         cell_width = []
         for row in data_columns:
-            cell_width += [min(5 * max([len(str(item)) for item in row]) + 80, 280)]
+            cell_width += [
+                min(5 * max([len(str(item)) for item in row]) + 80, maxwidth)
+            ]
         html_table = '<div class="verticapy_table"><table>'
         for i in range(n):
             if i == 0:
@@ -161,7 +168,7 @@ def print_table(
             if i == 1 and n > 0:
                 html_table += (
                     '<tbody style="display: block; max-height: '
-                    '300px; overflow-y: scroll;">'
+                    f'{maxheight}px; overflow-y: scroll;">'
                 )
             html_table += "<tr>"
             for j in range(m):
