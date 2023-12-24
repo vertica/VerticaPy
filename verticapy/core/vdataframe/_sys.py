@@ -406,7 +406,7 @@ class vDFSystem(vDFTyping):
 
             print(vdf.current_relation())
 
-        If we make any changes to the :py:class:`vDataFrame`,
+        If we make any changes to the :py:class:`~vDataFrame`,
         those will also be reflected in the ``current_relation``.
         For example, we normalize the data:
 
@@ -422,9 +422,9 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
-                Vertica is computing the current :py:class:`vDataFrame` relation.
-            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+            | :py:meth:`~verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current :py:class:`~vDataFrame` relation.
+            | :py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
 
         """
@@ -481,7 +481,7 @@ class vDFSystem(vDFTyping):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
         We can create the summary of the
-        :py:class:`vDataFrame` using:
+        :py:class:`~vDataFrame` using:
 
         .. code-block:: python
 
@@ -523,8 +523,8 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
-                Vertica is computing the current :py:class:`vDataFrame` relation.
+            | :py:meth:`~verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         self._update_catalog(erase=True)
         return self
@@ -577,8 +577,8 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
-                Vertica is computing the current :py:class:`vDataFrame` relation.
+            | :py:meth:`~verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         return not self.get_columns()
 
@@ -632,7 +632,7 @@ class vDFSystem(vDFTyping):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
         We can check the expected storage of the
-        :py:class:`vDataFrame` using:
+        :py:class:`~vDataFrame` using:
 
         .. code-block:: python
 
@@ -651,9 +651,9 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.memory_usage` : :py:class:`vDataFrame` memory usage
-            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
-                Vertica is computing the current :py:class:`vDataFrame` relation.
+            | :py:meth:`~verticapy.vDataFrame.memory_usage` : :py:class:`~vDataFrame` memory usage
+            | :py:meth:`~verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         if unit.lower() == "kb":
             div_unit = 1024
@@ -741,7 +741,7 @@ class vDFSystem(vDFTyping):
     def explain(self, digraph: bool = False) -> str:
         """
         Provides information on how Vertica is computing
-        the current :py:class:`vDataFrame` relation.
+        the current :py:class:`~vDataFrame` relation.
 
         Parameters
         ----------
@@ -784,7 +784,7 @@ class vDFSystem(vDFTyping):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
-        We can display the Query Plan of the :py:class:`vDataFrame`
+        We can display the Query Plan of the :py:class:`~vDataFrame`
         using:
 
         .. ipython:: python
@@ -793,7 +793,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+            | :py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
         """
         result = _executeSQL(
@@ -857,7 +857,7 @@ class vDFSystem(vDFTyping):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
-        Since the :py:class:`vDataFrame` just got created,
+        Since the :py:class:`~vDataFrame` just got created,
         it will have no modifications. We can check:
 
         .. ipython:: python
@@ -889,8 +889,8 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
-                Vertica is computing the current :py:class:`vDataFrame` relation.
+            | :py:meth:`~verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         if len(self._vars["history"]) == 0:
             result = "The vDataFrame was never modified."
@@ -945,7 +945,7 @@ class vDFSystem(vDFTyping):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
         We can see the memory usage of the
-        :py:class:`vDataFrame` using:
+        :py:class:`~vDataFrame` using:
 
         .. ipython:: python
 
@@ -953,8 +953,8 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.expected_store_usage` :
-                Returns the :py:class:`vDataFrame` expected store usage.
+            | :py:meth:`~verticapy.vDataFrame.expected_store_usage` :
+                Returns the :py:class:`~vDataFrame` expected store usage.
 
         """
         total = sum(sys.getsizeof(v) for v in self._vars) + sys.getsizeof(self)
@@ -1048,7 +1048,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+            | :py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
         """
         if isinstance(column1, int):
@@ -1153,7 +1153,7 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+            | :py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
         """
         if name == "":
@@ -1220,7 +1220,7 @@ class vDCSystem(vDCTyping):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
         We can see the memory usage of the
-        :py:class:`vDataColumn` using:
+        :py:class:`~vDataColumn` using:
 
         .. ipython:: python
 
@@ -1228,9 +1228,9 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.memory_usage` : :py:class:`vDataFrame` memory usage.
-            | :py:meth:`verticapy.vDataFrame.explain` : Information on how.
-                Vertica is computing the current :py:class:`vDataFrame` relation.
+            | :py:meth:`~verticapy.vDataFrame.memory_usage` : :py:class:`~vDataFrame` memory usage.
+            | :py:meth:`~verticapy.vDataFrame.explain` : Information on how.
+                Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         total = (
             sys.getsizeof(self)
@@ -1284,7 +1284,7 @@ class vDCSystem(vDCTyping):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
         We can check the expected storage of the
-        :py:class:`vDataFrame` using:
+        :py:class:`~vDataFrame` using:
 
         .. ipython:: python
 
@@ -1292,10 +1292,10 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.memory_usage` :
-                :py:class:`vDataColumn` memory usage.
-            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
-                Vertica is computing the current :py:class:`vDataFrame` relation.
+            | :py:meth:`~verticapy.vDataColumn.memory_usage` :
+                :py:class:`~vDataColumn` memory usage.
+            | :py:meth:`~verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         pre_comp = self._parent._get_catalog_value(self._alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -1396,8 +1396,8 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.add_copy` : Adds a
-                copy :py:class:`vDataColumn` to the parent vDataFrame.
+            | :py:meth:`~verticapy.vDataColumn.add_copy` : Adds a
+                copy :py:class:`~vDataColumn` to the parent vDataFrame.
         """
         old_name = quote_ident(self._alias)
         new_name = quote_ident(new_name)[1:-1]

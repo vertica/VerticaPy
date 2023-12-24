@@ -107,14 +107,14 @@ class NaiveBayes(MulticlassClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.MulticlassClassifier.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.MulticlassClassifier.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can
         be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.base.MulticlassClassifier.get_vertica_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.MulticlassClassifier.get_vertica_attributes`
         method.
 
     Examples
@@ -176,7 +176,7 @@ class NaiveBayes(MulticlassClassifier):
     You can easily divide your dataset
     into training and testing subsets
     using the
-    :py:meth:`vDataFrame.train_test_split`
+    :py:meth:`~vDataFrame.train_test_split`
     method. This is a crucial step when
     preparing your data for machine learning,
     as it allows you to evaluate the
@@ -194,7 +194,7 @@ class NaiveBayes(MulticlassClassifier):
         of your data split. However, please be aware
         that this approach may lead to reduced
         performance. For a more efficient data split,
-        you can use the :py:meth:`vDataFrame.to_db`
+        you can use the :py:meth:`~vDataFrame.to_db`
         method to save your results into ``tables``
         or ``temporary tables``. This will help
         enhance the overall performance of the
@@ -214,7 +214,7 @@ class NaiveBayes(MulticlassClassifier):
     In VerticaPy, balancing a dataset to
     address class imbalances is made
     straightforward through the
-    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`~verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing``
     module. This function enables users
     to rectify skewed class distributions
@@ -226,7 +226,7 @@ class NaiveBayes(MulticlassClassifier):
     Whether opting for over-sampling,
     under-sampling, or a combination
     of both, VerticaPy's
-    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`~verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process,
     empowering users to enhance the
     performance and fairness of their
@@ -331,7 +331,7 @@ class NaiveBayes(MulticlassClassifier):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -450,11 +450,11 @@ class NaiveBayes(MulticlassClassifier):
         using the test set, in which case you
         don't need to specify the predictors.
         Alternatively, you can pass only the
-        :py:class:`vDataFrame` to the
-        :py:meth:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes.predict`
+        :py:class:`~vDataFrame` to the
+        :py:meth:`~verticapy.machine_learning.vertica.naive_bayes.NaiveBayes.predict`
         function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the
+        the :py:class:`~vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -498,7 +498,7 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the :py:class:`vDataFrame`,
+        Probabilities are added to the :py:class:`~vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
@@ -694,7 +694,7 @@ class NaiveBayes(MulticlassClassifier):
     .. hint::
 
         The
-        :py:meth:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes.to_python`
+        :py:meth:`~verticapy.machine_learning.vertica.naive_bayes.NaiveBayes.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For
         specific details on how to use this method
@@ -834,7 +834,7 @@ class NaiveBayes(MulticlassClassifier):
 
 class BernoulliNB(NaiveBayes):
     """
-    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    :py:class:`~verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
     with parameter ``nbtype = 'bernoulli'``.
     """
 
@@ -846,7 +846,7 @@ class BernoulliNB(NaiveBayes):
 
 class CategoricalNB(NaiveBayes):
     """
-    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    :py:class:`~verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
     with parameter ``nbtype = 'categorical'``.
     """
 
@@ -858,7 +858,7 @@ class CategoricalNB(NaiveBayes):
 
 class GaussianNB(NaiveBayes):
     """
-    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    :py:class:`~verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
     with parameter ``nbtype = 'gaussian'``.
     """
 
@@ -868,7 +868,7 @@ class GaussianNB(NaiveBayes):
 
 class MultinomialNB(NaiveBayes):
     """
-    :py:class:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
+    :py:class:`~verticapy.machine_learning.vertica.naive_bayes.NaiveBayes`
     with parameter ``nbtype = 'multinomial'``.
     """
 

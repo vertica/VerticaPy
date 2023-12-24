@@ -27,7 +27,7 @@ from verticapy.machine_learning.memmodel.base import MulticlassClassifier
 
 class NaiveBayes(MulticlassClassifier):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``NaiveBayes`` algorithm.
 
@@ -139,7 +139,7 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel`
+        :py:meth:`~verticapy.machine_learning.memmodel`
         are defined entirely by their
         attributes. For example, ``prior``
         probabilities, ``classes`` and
@@ -226,7 +226,7 @@ class NaiveBayes(MulticlassClassifier):
         classes = ["C", "Q", "S"]
 
     Let's create a
-    :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
+    :py:class:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
     model.
 
     .. ipython:: python
@@ -246,7 +246,7 @@ class NaiveBayes(MulticlassClassifier):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -254,7 +254,7 @@ class NaiveBayes(MulticlassClassifier):
         model_nb.predict(data)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba`
+    :py:meth:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba`
     method to calculate the
     predicted probabilities
     for each class.
@@ -273,7 +273,7 @@ class NaiveBayes(MulticlassClassifier):
         cnames = ["age", "pclass", "survived", "sex"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -283,7 +283,7 @@ class NaiveBayes(MulticlassClassifier):
         model_nb.predict_sql(cnames)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba_sql`
     method to get the SQL code
     needed to deploy the model
     that computes predicted
@@ -457,7 +457,7 @@ class NaiveBayes(MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
+            :py:class:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
             for more information about the
             different methods and usages.
         """
@@ -567,7 +567,7 @@ class NaiveBayes(MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
+            :py:class:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
             for more information about the
             different methods and usages.
         """
@@ -702,7 +702,7 @@ class NaiveBayes(MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
+            :py:class:`~verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes`
             for more information about the
             different methods and usages.
         """

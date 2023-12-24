@@ -38,19 +38,19 @@ class PMMLModel(VerticaModel):
     name: str, optional
         Name of the model. The  model must be stored in
         the database. If it is not the case, you can use
-        :py:meth:`verticapy.machine_learning.vertica.import_models`
+        :py:meth:`~verticapy.machine_learning.vertica.import_models`
         to import your PMML model.
 
     Attributes
     ----------
     All attributes can be accessed using the
-    :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
+    :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
     method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_vertica_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_vertica_attributes`
         method.
     """
 

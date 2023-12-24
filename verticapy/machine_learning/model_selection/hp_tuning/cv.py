@@ -433,7 +433,7 @@ def randomized_search_cv(
         data = vpd.load_winequality()
 
     Next, we can initialize a
-    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -443,7 +443,7 @@ def randomized_search_cv(
         model = LogisticRegression()
 
     Now we can conveniently use the
-    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
+    :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
     function to find the K-Fold
     randomized search of an
     estimator.
@@ -501,9 +501,9 @@ def randomized_search_cv(
 
     .. note::
 
-        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
+        :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
         works almost the same as
-        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`.
+        :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`.
         The only difference is that
         the function will generate
         a random grid of parameters
@@ -511,7 +511,7 @@ def randomized_search_cv(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
             Computes the k-fold grid
             search of an estimator.
     """
@@ -913,7 +913,7 @@ def grid_search_cv(
         data = vpd.load_winequality()
 
     Next, we can initialize a
-    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -923,7 +923,7 @@ def grid_search_cv(
         model = LogisticRegression()
 
     Now we can conveniently use the
-    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`
+    :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`
     to search for the estimator using
     k-fold grid search.
 
@@ -1003,10 +1003,10 @@ def grid_search_cv(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.bayesian_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.bayesian_search_cv` :
             Computes the k-fold bayesian
             search of an estimator.
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
             Computes the K-Fold randomized
             search of an estimator.
     """
@@ -1582,7 +1582,7 @@ def bayesian_search_cv(
         data = vpd.load_winequality()
 
     Next, we can initialize a
-    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -1592,7 +1592,7 @@ def bayesian_search_cv(
         model = LogisticRegression()
 
     Now we can conveniently use the
-    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.bayesian_search_cv`
+    :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.bayesian_search_cv`
     function to find an optimal set
     of parameters estimator.
 
@@ -1661,10 +1661,10 @@ def bayesian_search_cv(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
             Computes the k-fold grid
             search of an estimator.
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
             Computes the K-Fold randomized
             search of an estimator.
     """
@@ -2100,14 +2100,14 @@ def enet_search_cv(
 
         - auto:
             detects if it is a
-            :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
-            or :py:class:`verticapy.machine_learning.vertica.linear_model.ElasticNet`.
+            :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+            or :py:class:`~verticapy.machine_learning.vertica.linear_model.ElasticNet`.
 
         - logit:
-            :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+            :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
 
         - enet:
-            :py:class:`verticapy.machine_learning.vertica.linear_model.ElasticNet`
+            :py:class:`~verticapy.machine_learning.vertica.linear_model.ElasticNet`
 
     cutoff: float, optional
         The model cutoff
@@ -2177,7 +2177,7 @@ def enet_search_cv(
         data = vpd.load_winequality()
 
     Next, we can initialize a
-    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -2187,7 +2187,7 @@ def enet_search_cv(
         model = LogisticRegression()
 
     Now we can conveniently use the
-    :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.enet_search_cv`
+    :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.enet_search_cv`
     function to perform the k-fold
     grid search using multiple ENet
     models.
@@ -2242,9 +2242,9 @@ def enet_search_cv(
 
         In VerticaPy, Elastic Net Cross-Validation
         (EnetCV) utilizes multiple
-        :py:class:`verticapy.machine_learning.vertica.linear_model.ElasticNet`
+        :py:class:`~verticapy.machine_learning.vertica.linear_model.ElasticNet`
         models for regression tasks and
-        :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+        :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
         models for classification tasks. It
         systematically tests various combinations
         of hyperparameters, such as the
@@ -2257,10 +2257,10 @@ def enet_search_cv(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
             Computes the k-fold grid
             search of an estimator.
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
             Computes the K-Fold randomized
             search of an estimator.
     """

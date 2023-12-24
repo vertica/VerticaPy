@@ -793,7 +793,7 @@ class vDFCorr(vDFEncode):
                     This method  uses a CROSS JOIN  during  computation
                     and      is     therefore computationally expensive
                     at  O(n * n),  where n is the  total  count of  the
-                    :py:class:`vDataFrame`.
+                    :py:class:`~vDataFrame`.
 
              - cramer:
                 Cramer's V (correlation between categories).
@@ -899,7 +899,7 @@ class vDFCorr(vDFEncode):
         :ref:`chart_gallery`.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.corr_pvalue` : Computes correlation and its p-value.
+            | :py:meth:`~verticapy.vDataFrame.corr_pvalue` : Computes correlation and its p-value.
         """
         method = str(method).lower()
         columns = format_type(columns, dtype=list, na_out=self.numcol())
@@ -971,7 +971,7 @@ class vDFCorr(vDFEncode):
                     This method  uses a CROSS JOIN  during  computation
                     and      is     therefore computationally expensive
                     at  O(n * n),  where n is the  total  count of  the
-                    :py:class:`vDataFrame`.
+                    :py:class:`~vDataFrame`.
              - cramer:
                 Cramer's V (correlation between categories).
              - biserial:
@@ -1007,7 +1007,7 @@ class vDFCorr(vDFEncode):
             )
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.corr` : Computes the correlation matrix.
+            | :py:meth:`~verticapy.vDataFrame.corr` : Computes the correlation matrix.
         """
         method = str(method).lower()
         column1, column2 = self.format_colnames(column1, column2)
@@ -1281,7 +1281,7 @@ class vDFCorr(vDFEncode):
         customization stays the same for the covariance matrix.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.corr` : Computes the correlation matrix.
+            | :py:meth:`~verticapy.vDataFrame.corr` : Computes the correlation matrix.
         """
         columns = format_type(columns, dtype=list)
         columns, focus = self.format_colnames(columns, focus)
@@ -1495,7 +1495,7 @@ class vDFCorr(vDFEncode):
         customization stays the same for the regression matrix.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.corr` : Computes the correlation matrix.
+            | :py:meth:`~verticapy.vDataFrame.corr` : Computes the correlation matrix.
         """
         columns = format_type(columns, dtype=list)
         if method == "beta":
@@ -1687,7 +1687,7 @@ class vDFCorr(vDFEncode):
                     This method  uses a CROSS JOIN  during  computation
                     and      is     therefore computationally expensive
                     at  O(n * n),  where n is the  total  count of  the
-                    :py:class:`vDataFrame`.
+                    :py:class:`~vDataFrame`.
              - cramer:
                 Cramer's V (correlation between categories).
              - biserial:
@@ -1777,7 +1777,7 @@ class vDFCorr(vDFEncode):
         :ref:`chart_gallery`.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.pacf` : Computes the partial autocorrelations.
+            | :py:meth:`~verticapy.vDataFrame.pacf` : Computes the partial autocorrelations.
         """
         method = str(method).lower()
         by = format_type(by, dtype=list)
@@ -1927,7 +1927,7 @@ class vDFCorr(vDFEncode):
                     This method  uses a CROSS JOIN  during  computation
                     and      is     therefore computationally expensive
                     at  O(n * n),  where n is the  total  count of  the
-                    :py:class:`vDataFrame`.
+                    :py:class:`~vDataFrame`.
              - cramer:
                 Cramer's V (correlation between categories).
              - biserial:
@@ -2012,7 +2012,7 @@ class vDFCorr(vDFEncode):
         stays the same for the PACF plot.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.acf` : Computes the autocorrelations.
+            | :py:meth:`~verticapy.vDataFrame.acf` : Computes the autocorrelations.
         """
         vml = get_vertica_mllib()
         if isinstance(by, str):
@@ -2204,7 +2204,7 @@ class vDFCorr(vDFEncode):
             outcomes during the Titanic disaster.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.iv_woe` : Computes IV / WOE table.
+            | :py:meth:`~verticapy.vDataColumn.iv_woe` : Computes IV / WOE table.
         """
         columns = format_type(columns, dtype=list)
         columns, y = self.format_colnames(columns, y)
@@ -2307,7 +2307,7 @@ class vDCCorr(vDCEncode):
             -making.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.iv_woe` : Draw IV Plot.
+            | :py:meth:`~verticapy.vDataFrame.iv_woe` : Draw IV Plot.
         """
         y = self._parent.format_colnames(y)
         assert self._parent[y].nunique() == 2, TypeError(

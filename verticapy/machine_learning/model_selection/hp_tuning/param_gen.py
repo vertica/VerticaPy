@@ -65,11 +65,11 @@ def parameter_grid(param_grid: dict) -> list[dict]:
 
         This function is essential for
         conducting a
-        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`.
+        :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`.
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.param_gen.gen_params_grid` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.param_gen.gen_params_grid` :
             Generates the estimator grid.
     """
     return [
@@ -118,7 +118,7 @@ def gen_params_grid(
     Examples
     --------
     Let's take
-    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     as an example model:
 
     .. ipython:: python
@@ -145,7 +145,7 @@ def gen_params_grid(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.param_gen.parameter_grid` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.param_gen.parameter_grid` :
             Generates a ``list`` of the
             different combinations of
             input parameters.

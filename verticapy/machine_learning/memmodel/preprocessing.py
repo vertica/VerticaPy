@@ -28,7 +28,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class Scaler(InMemoryModel):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of scalers.
 
     Parameters
@@ -206,7 +206,7 @@ class Scaler(InMemoryModel):
 
 class StandardScaler(Scaler):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of
     standard ``Scaler``.
 
@@ -221,7 +221,7 @@ class StandardScaler(Scaler):
 
     .. note::
 
-        :py:class:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
+        :py:class:`~verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
         are defined entirely by their
         attributes. For example, ``mean``,
         and ``std`` of feature(s) define
@@ -230,7 +230,7 @@ class StandardScaler(Scaler):
     Attributes
     ----------
     Attributes are identical to
-    :py:class:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
+    :py:class:`~verticapy.machine_learning.memmodel.preprocessing.Scaler`.
 
     Examples
     --------
@@ -254,7 +254,7 @@ class StandardScaler(Scaler):
         std = [0.5, 0.2]
 
     Let's create a
-    :py:class:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
+    :py:class:`~verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
     model.
 
     .. ipython:: python
@@ -270,7 +270,7 @@ class StandardScaler(Scaler):
     **Making In-Memory Transformation**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform`
+    :py:meth:`~verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform`
     method to do transformation.
 
     .. ipython:: python
@@ -286,7 +286,7 @@ class StandardScaler(Scaler):
         cnames = ['col1', 'col2']
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -319,7 +319,7 @@ class StandardScaler(Scaler):
 
 class MinMaxScaler(Scaler):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of
     ``MinMax`` scaler.
 
@@ -333,7 +333,7 @@ class MinMaxScaler(Scaler):
 
     .. note::
 
-        :py:class:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
+        :py:class:`~verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
         are defined entirely by their
         attributes. For example, ``minimum``,
         and ``maximum`` values of the input
@@ -343,7 +343,7 @@ class MinMaxScaler(Scaler):
     Attributes
     ----------
     Attributes are identical to
-    :py:class:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
+    :py:class:`~verticapy.machine_learning.memmodel.preprocessing.Scaler`.
 
     Examples
     --------
@@ -367,7 +367,7 @@ class MinMaxScaler(Scaler):
         max = [0.5, 0.2]
 
     Let's create a
-    :py:class:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
+    :py:class:`~verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
     model.
 
     .. ipython:: python
@@ -383,7 +383,7 @@ class MinMaxScaler(Scaler):
     **Making In-Memory Transformation**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform`
+    :py:meth:`~verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform`
     method to do transformation.
 
     .. ipython:: python
@@ -399,7 +399,7 @@ class MinMaxScaler(Scaler):
         cnames = ['col1', 'col2']
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -432,7 +432,7 @@ class MinMaxScaler(Scaler):
 
 class OneHotEncoder(InMemoryModel):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of one-hot encoder.
 
     Parameters
@@ -466,7 +466,7 @@ class OneHotEncoder(InMemoryModel):
 
     .. note::
 
-        :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+        :py:class:`~verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
         are defined entirely by their
         attributes. For example,
         ``categories`` to encode
@@ -501,7 +501,7 @@ class OneHotEncoder(InMemoryModel):
     flag.
 
     Let's create a
-    :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+    :py:class:`~verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
     model.
 
     .. ipython:: python
@@ -521,7 +521,7 @@ class OneHotEncoder(InMemoryModel):
     **Making In-Memory Transformation**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform`
+    :py:meth:`~verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform`
     method to do transformation.
 
     .. ipython:: python
@@ -537,7 +537,7 @@ class OneHotEncoder(InMemoryModel):
         cnames = ['sex', 'pclass']
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -645,7 +645,7 @@ class OneHotEncoder(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+            :py:class:`~verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
             for more information about the
             different methods and usages.
         """
@@ -703,7 +703,7 @@ class OneHotEncoder(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+            :py:class:`~verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
             for more information about the
             different methods and usages.
         """

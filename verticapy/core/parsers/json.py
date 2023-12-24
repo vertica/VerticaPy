@@ -68,7 +68,7 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
     ---------
     In this example, we will first create
     a *JSON* file using
-    :py:meth:`verticapy.vDataFrame.to_json`
+    :py:meth:`~verticapy.vDataFrame.to_json`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:
@@ -122,7 +122,7 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
         data = vpd.load_titanic()
 
     Let's convert the
-    :py:class:`vDataFrame`
+    :py:class:`~vDataFrame`
     to a JSON.
 
     .. ipython:: python
@@ -150,9 +150,9 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
 
     .. seealso::
 
-        | :py:func:`verticapy.read_csv` :
+        | :py:func:`~verticapy.read_csv` :
             Ingests a CSV file into the Vertica DB.
-        | :py:func:`verticapy.read_json` :
+        | :py:func:`~verticapy.read_json` :
             Ingests a JSON file into the Vertica DB.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
@@ -386,14 +386,14 @@ def read_json(
     Returns
     -------
     vDataFrame
-        The :py:class:`vDataFrame`
+        The :py:class:`~vDataFrame`
         of the relation.
 
     Examples
     --------
     In this example, we will first create
     a *JSON* file using
-    :py:meth:`verticapy.vDataFrame.to_json`
+    :py:meth:`~verticapy.vDataFrame.to_json`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:
@@ -447,7 +447,7 @@ def read_json(
         data = vpd.load_titanic()
 
     Let's convert the
-    :py:class:`vDataFrame`
+    :py:class:`~vDataFrame`
     to a JSON file.
 
     .. ipython:: python
@@ -584,13 +584,13 @@ def read_json(
 
     .. seealso::
 
-        | :py:func:`verticapy.read_file` :
+        | :py:func:`~verticapy.read_file` :
             Ingests an input file into the Vertica DB.
-        | :py:func:`verticapy.read_avro` :
+        | :py:func:`~verticapy.read_avro` :
             Ingests a AVRO file into the Vertica DB.
-        | :py:func:`verticapy.read_csv` :
+        | :py:func:`~verticapy.read_csv` :
             Ingests a CSV file into the Vertica DB.
-        | :py:func:`verticapy.read_pandas` :
+        | :py:func:`~verticapy.read_pandas` :
             Ingests the ``pandas.DataFrame``
             into the Vertica DB.
     """

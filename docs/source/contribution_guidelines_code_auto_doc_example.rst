@@ -72,7 +72,7 @@ Do not forget to use " ` ` " (without space in between) to show VerticaPy object
             use_numbers_as_suffix: bool = False,
         ) -> "vDataFrame":
         """     
-        Encodes the :py:class:`vDataColumn` with  the One-Hot Encoding algorithm.
+        Encodes the :py:class:`~vDataColumn` with  the One-Hot Encoding algorithm.
 
         One hot encoding will be done on the select column. The result will be outputted in new columns thus resulting in additional columns added to the table. 
         The first category/dummy will be dropped by default unless stated otherwise by the parameter ``drop_first``.
@@ -82,7 +82,7 @@ Do not forget to use " ` ` " (without space in between) to show VerticaPy object
 
 
      
-    Encodes the :py:class:`vDataColumn` with  the One-Hot Encoding algorithm.
+    Encodes the :py:class:`~vDataColumn` with  the One-Hot Encoding algorithm.
 
     One hot encoding will be done on the select column. The result will be outputted in new columns thus resulting in additional columns added to the table. 
     The first category/dummy will be dropped by default unless stated otherwise by the parameter ``drop_first``.
@@ -301,13 +301,13 @@ In this block we can reference other modules, functions or class. For example to
 
     .. seealso:: 
 
-    :py:func:`bar` : Similar bar plots
+    :py:func:`~bar` : Similar bar plots
 
 **Output:**
 
 .. seealso:: 
 
-   :py:func:`bar` : Similar bar plots
+   :py:func:`~bar` : Similar bar plots
 
 And to reference a module named vDataFrame:
 
@@ -399,8 +399,8 @@ Basic Example - Max Function
         .. note:: Something important that you want to share goes here.
 
         .. seealso:: 
-            | :py:func:`bar` : Similar bar plots
-            | :py:func:`corr` : Can create correlation table
+            | :py:func:`~bar` : Similar bar plots
+            | :py:func:`~corr` : Can create correlation table
 
         """
         return None
@@ -430,7 +430,7 @@ Advanced Example 1 - Bar Function
 
         .. versionadded:: 1.0
 
-        Draws the bar chart of the input :py:class:`vDataColumn` based
+        Draws the bar chart of the input :py:class:`~vDataColumn` based
         on an aggregation.
 
         Parameters
@@ -442,34 +442,34 @@ Advanced Example 1 - Bar Function
             | The method used to aggregate the data.
             | count   : Number of elements.
             | density : Percentage  of  the  distribution.
-            | mean    : Average  of the  :py:class:`vDataColumn` 'of'.
-            | min     : Minimum  of the  :py:class:`vDataColumn` 'of'.
-            | max     : Maximum  of the  :py:class:`vDataColumn` 'of'.
-            | sum     : Sum of the :py:class:`vDataColumn` 'of'.
-            | q%      : q Quantile of the :py:class:`vDataColumn` 'of'
+            | mean    : Average  of the  :py:class:`~vDataColumn` 'of'.
+            | min     : Minimum  of the  :py:class:`~vDataColumn` 'of'.
+            | max     : Maximum  of the  :py:class:`~vDataColumn` 'of'.
+            | sum     : Sum of the :py:class:`~vDataColumn` 'of'.
+            | q%      : q Quantile of the :py:class:`~vDataColumn` 'of'
                             (ex: 50% to get the median).
             
             It can also be a cutomized aggregation, for example:
             AVG(column1) + 5
         of: str, optional
-            The  :py:class:`vDataColumn` used to compute the  aggregation.
+            The  :py:class:`~vDataColumn` used to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements for vDataColumns
             1  and  2  to be used as categorical. For these
             elements, no  h is picked or computed.
         h: tuple, optional
-            Interval width of  the :py:class:`vDataColumn` 1 and 2 bars.
+            Interval width of  the :py:class:`~vDataColumn` 1 and 2 bars.
             Only  valid if the  vDataColumns are  numerical.
             Optimized  h will be  computed  if the parameter  is
             empty or invalid.
         kind: str, optional
             The BarChart Type.
                 | auto      : Regular  BarChart  based on  1  or 2
-                            :py:class:`vDataColumn`.
+                            :py:class:`~vDataColumn`.
                 | drilldown : Drill   Down  BarChart  based  on  2
-                            :py:class:`vDataColumn`.
+                            :py:class:`~vDataColumn`.
                 | stacked   : Stacked   BarChart    based    on  2
-                            :py:class:`vDataColumn`.
+                            :py:class:`~vDataColumn`.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -504,7 +504,7 @@ Advanced Example 1 - Bar Function
         .. note:: You can use any of the three libraries to plot this.
 
         .. seealso:: 
-            :py:func:`plottt.vDFPlot.bar`, :py:func:`plottt.vDFPlot.barh`
+            :py:func:`~plottt.vDFPlot.bar`, :py:func:`~plottt.vDFPlot.barh`
 
         """
 
@@ -567,7 +567,7 @@ Advanced Example 2 - Correlation Matrix
                             computes the Tau-B coefficient.
 
             .. Warning::
-                This method  uses a CROSS JOIN  during  computation and      is     therefore computationally expensive at  O(n * n),  where n is the  total  count of  the :py:class:`vDataFrame`.
+                This method  uses a CROSS JOIN  during  computation and      is     therefore computationally expensive at  O(n * n),  where n is the  total  count of  the :py:class:`~vDataFrame`.
             
             **cramer**    : 
                             Cramer's V
@@ -608,8 +608,8 @@ Advanced Example 2 - Correlation Matrix
         titanic.corr(method = "spearman")
     
         .. seealso::
-            | :py:func:`plottt.vDFPlot.bar` : Bar plot for stuff
-            | :py:func:`plottt.vDFPlot.barh` : SOme other similar plots
+            | :py:func:`~plottt.vDFPlot.bar` : Bar plot for stuff
+            | :py:func:`~plottt.vDFPlot.barh` : SOme other similar plots
     
     
         """

@@ -291,7 +291,7 @@ def verticapy_stats_vdf() -> "vDataFrame":
     """
     Returns a summary of the
     entire VerticaPy as a
-    :py:class:`vDataFrame`.
+    :py:class:`~vDataFrame`.
 
     Returns
     -------
@@ -330,7 +330,7 @@ def summarise_verticapy_chart(kind: str = "barh") -> PlottingObject:
     """
     Returns a summary of the
     entire VerticaPy as a
-    :py:class:`vDataFrame`.
+    :py:class:`~vDataFrame`.
 
     Returns
     -------

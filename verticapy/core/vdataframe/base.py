@@ -74,12 +74,12 @@ class vDataFrame(vDFAnimatedPlot):
     manipulate  the  relation  without
     mutating the underlying data in
     Vertica. When changes are made,
-    the :py:class:`vDataFrame` queries
+    the :py:class:`~vDataFrame` queries
     the Vertica database, which aggregates
     and returns the final result. The
-    :py:class:`vDataFrame` creates, for
+    :py:class:`~vDataFrame` creates, for
     each column of the relation, a Virtual
-    Column (:py:class:`vDataColumn`) that
+    Column (:py:class:`~vDataColumn`) that
     stores the column alias an all
     user transformations.
 
@@ -101,7 +101,7 @@ class vDataFrame(vDFAnimatedPlot):
         the ``input_relation`` must exclude
         the ``schema`` name. It can also be
         the SQL query used to create the
-        :py:class:`vDataFrame`.
+        :py:class:`~vDataFrame`.
         If it is a ``pandas.DataFrame``, a
         temporary local table is created.
         Otherwise, the vDataFrame is created
@@ -140,7 +140,7 @@ class vDataFrame(vDFAnimatedPlot):
         ``"$", "€", "£", "%", "@", "&", "§", "?", "!"``
     sql_push_ext: bool, optional
         If  set to ``True``, the  external
-        :py:class:`vDataFrame` attempts to
+        :py:class:`~vDataFrame` attempts to
         push the entire query to the external
         table (only DQL statements
         - SELECT;  for other statements,
@@ -152,19 +152,19 @@ class vDataFrame(vDFAnimatedPlot):
 
     Attributes
     ----------
-    vDataColumns : :py:class:`vDataColumn`
-        Each :py:class:`vDataColumn` of the
-        :py:class:`vDataFrame` is accessible
+    vDataColumns : :py:class:`~vDataColumn`
+        Each :py:class:`~vDataColumn` of the
+        :py:class:`~vDataFrame` is accessible
         by specifying its name between
         brackets. For example, to access
-        the :py:class:`vDataColumn` "myVC":
+        the :py:class:`~vDataColumn` "myVC":
         ``vDataFrame["myVC"]``.
 
     Examples
     --------
     In this example, we will look
     at some of the ways how we can
-    create a :py:class:`vDataFrame`.
+    create a :py:class:`~vDataFrame`.
 
     - From ``dictionary``
     - From ``numpy.array``
@@ -183,7 +183,7 @@ class vDataFrame(vDFAnimatedPlot):
     examples of applications of
     functions that be applied
     directly on the
-    :py:class:`vDataFrame`.
+    :py:class:`~vDataFrame`.
 
     ----
 
@@ -209,7 +209,7 @@ class vDataFrame(vDFAnimatedPlot):
     ^^^^^^^^^^^
 
     This is the most direct way to
-    create a :py:class:`vDataFrame`:
+    create a :py:class:`~vDataFrame`:
 
     .. ipython:: python
 
@@ -349,13 +349,13 @@ class vDataFrame(vDFAnimatedPlot):
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     We can use all the common mathematical
-    operators on the :py:class:`vDataFrame`.
+    operators on the :py:class:`~vDataFrame`.
 
     Pandas-Like
     ^^^^^^^^^^^^
 
     First let us re-create a simple
-    :py:class:`vDataFrame`:
+    :py:class:`~vDataFrame`:
 
     .. ipython:: python
 
@@ -417,7 +417,7 @@ class vDataFrame(vDFAnimatedPlot):
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5_2.html
 
     We can also perform mathematical calculations
-    on the elements inside the :py:class:`vDataFrame`
+    on the elements inside the :py:class:`~vDataFrame`
     quite conveniently:
 
     .. ipython:: python
@@ -439,16 +439,16 @@ class vDataFrame(vDFAnimatedPlot):
     ^^^^^^^^^
 
     SQL queries can be directly applied
-    on the :py:class:`vDataFrame` using
-    :py:class:`StringSQL`. This adds a new
-    level of flexibility to the :py:class:`vDataFrame`.
-    :py:class:`StringSQL` allows the user
+    on the :py:class:`~vDataFrame` using
+    :py:class:`~StringSQL`. This adds a new
+    level of flexibility to the :py:class:`~vDataFrame`.
+    :py:class:`~StringSQL` allows the user
     to generate formatted SQL queries in
     a string form. Since any SQL query in
     string format can be passed to the
-    :py:class:`vDataFrame`, you can seamlessly
-    pass the output of :py:class:`StringSQL`
-    directly to the :py:class:`vDataFrame`.
+    :py:class:`~vDataFrame`, you can seamlessly
+    pass the output of :py:class:`~StringSQL`
+    directly to the :py:class:`~vDataFrame`.
 
     .. ipython:: python
 
@@ -470,7 +470,7 @@ class vDataFrame(vDFAnimatedPlot):
 
     .. note::
 
-        Have a look at :py:class:`StringSQL`
+        Have a look at :py:class:`~StringSQL`
         for more details.
 
     Another example of a slightly
@@ -500,9 +500,9 @@ class vDataFrame(vDFAnimatedPlot):
     ~~~~~~~~~~~~~~~~~
 
     There are many methods that can be directly
-    used by :py:class:`vDataFrame`. Let us look
+    used by :py:class:`~vDataFrame`. Let us look
     at how conveiently we can call them. Here is
-    an example of the :py:meth:`vDataFrame.describe`
+    an example of the :py:meth:`~vDataFrame.describe`
     method:
 
     .. ipython:: python
@@ -529,15 +529,15 @@ class vDataFrame(vDFAnimatedPlot):
 
     .. note::
 
-        Explore :py:class:`vDataFrame`
-        and :py:class:`vDataColumn`
+        Explore :py:class:`~vDataFrame`
+        and :py:class:`~vDataColumn`
         different methods to see more
         examples.
 
     .. seealso::
 
-        | :py:class:`vDataColumn` :
-            Columns of :py:class:`vDataFrame` object.
+        | :py:class:`~vDataColumn` :
+            Columns of :py:class:`~vDataFrame` object.
     """
 
     @property
@@ -782,43 +782,43 @@ class vDataFrame(vDFAnimatedPlot):
 class vDataColumn(vDCPlot, StringSQL):
     """
     Python object that stores all user
-    transformations. If the :py:class:`vDataFrame`
+    transformations. If the :py:class:`~vDataFrame`
     represents the entire relation, a
-    :py:class:`vDataColumn` can be seen
+    :py:class:`~vDataColumn` can be seen
     as one column of that relation.
-    Through its abstractions, :py:class:`vDataColumn`
+    Through its abstractions, :py:class:`~vDataColumn`
     simplify several processes.
 
     Parameters
     ----------
     alias: str
-        :py:class:`vDataColumn` alias.
+        :py:class:`~vDataColumn` alias.
     transformations: list, optional
         List of the different  transformations.
         Each transformation must be similar to
         the following: ``(function, type, category)``
     parent: vDataFrame, optional
-        Parent of the :py:class:`vDataColumn`.
-        One :py:class:`vDataFrame` can have
-        multiple children :py:class:`vDataColumn`,
-        whereas one :py:class:`vDataColumn` can
+        Parent of the :py:class:`~vDataColumn`.
+        One :py:class:`~vDataFrame` can have
+        multiple children :py:class:`~vDataColumn`,
+        whereas one :py:class:`~vDataColumn` can
         only have one parent.
     catalog: dict, optional
         Catalog where each key corresponds to an
-        aggregation. :py:class:`vDataColumn` will
+        aggregation. :py:class:`~vDataColumn` will
         memorize the already computed aggregations
         to increase performance. The catalog is
-        updated when the parent :py:class:`vDataFrame`
+        updated when the parent :py:class:`~vDataFrame`
         is modified.
 
     Attributes
     ----------
     alias, str:
-        :py:class:`vDataColumn` alias.
+        :py:class:`~vDataColumn` alias.
     catalog, dict:
         Catalog of pre-computed aggregations.
     parent, vDataFrame:
-        Parent of the :py:class:`vDataColumn`.
+        Parent of the :py:class:`~vDataColumn`.
     transformations, str:
         List of the different transformations.
 
@@ -842,8 +842,8 @@ class vDataColumn(vDCPlot, StringSQL):
         :py:mod:`verticapy` are used as intended without
         interfering with functions from other libraries.
 
-    Let's create a :py:class:`vDataFrame`
-    with two :py:class:`vDataColumn`:
+    Let's create a :py:class:`~vDataFrame`
+    with two :py:class:`~vDataColumn`:
 
     .. ipython:: python
 
@@ -857,14 +857,14 @@ class vDataColumn(vDCPlot, StringSQL):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_1.html
 
-    "cats" and "reps" are :py:class:`vDataColumn`
+    "cats" and "reps" are :py:class:`~vDataColumn`
     objects. They can be accessed the same way as
     a ``dictionary`` or a ``pandas.DataFrame``.
     They represent the columns of the entire
     relation.
 
     For example, the following code will access
-    the :py:class:`vDataColumn` "cats":
+    the :py:class:`~vDataColumn` "cats":
 
     .. code-block:: python
 
@@ -872,16 +872,16 @@ class vDataColumn(vDCPlot, StringSQL):
 
     .. note::
 
-        :py:class:`vDataColumn` are columns inside a
-        :py:class:`vDataFrame`; they have their own
+        :py:class:`~vDataColumn` are columns inside a
+        :py:class:`~vDataFrame`; they have their own
         methods but cannot exist without a parent
-        :py:class:`vDataFrame`. Please refer to
-        :py:class:`vDataFrame` to see an entire
+        :py:class:`~vDataFrame`. Please refer to
+        :py:class:`~vDataFrame` to see an entire
         example.
 
     .. seealso::
 
-        | :py:class:`vDataFrame` :
+        | :py:class:`~vDataFrame` :
             Main VerticaPy dataset object.
     """
 

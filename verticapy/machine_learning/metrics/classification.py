@@ -371,7 +371,7 @@ def confusion_matrix(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -411,7 +411,7 @@ def confusion_matrix(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
         pos_label = 1
@@ -589,13 +589,13 @@ def accuracy_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _accuracy_score,
@@ -732,13 +732,13 @@ def balanced_accuracy_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _balanced_accuracy_score,
@@ -877,13 +877,13 @@ def critical_success_index(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _critical_success_index,
@@ -1025,13 +1025,13 @@ def diagnostic_odds_ratio(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _diagnostic_odds_ratio,
@@ -1170,13 +1170,13 @@ def f1_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _f1_score,
@@ -1314,13 +1314,13 @@ def false_negative_rate(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(_false_negative_rate, **locals())
 
@@ -1455,13 +1455,13 @@ def false_positive_rate(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _false_positive_rate,
@@ -1599,13 +1599,13 @@ def false_discovery_rate(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _false_discovery_rate,
@@ -1743,13 +1743,13 @@ def false_omission_rate(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _false_omission_rate,
@@ -1887,13 +1887,13 @@ def fowlkes_mallows_index(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _fowlkes_mallows_index,
@@ -2031,13 +2031,13 @@ def informedness(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _informedness,
@@ -2177,13 +2177,13 @@ def markedness(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _markedness,
@@ -2325,13 +2325,13 @@ def matthews_corrcoef(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _matthews_corrcoef,
@@ -2469,13 +2469,13 @@ def negative_predictive_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _negative_predictive_score,
@@ -2613,13 +2613,13 @@ def negative_likelihood_ratio(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _negative_likelihood_ratio,
@@ -2758,13 +2758,13 @@ def positive_likelihood_ratio(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _positive_likelihood_ratio,
@@ -2902,13 +2902,13 @@ def precision_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _precision_score,
@@ -3047,13 +3047,13 @@ def prevalence_threshold(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _prevalence_threshold,
@@ -3191,13 +3191,13 @@ def recall_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _recall_score,
@@ -3335,13 +3335,13 @@ def specificity_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_score(
         _specificity_score,
@@ -3828,13 +3828,13 @@ def best_cutoff(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         threshold, false_positive, true_positive = _compute_function_metrics(
@@ -3989,13 +3989,13 @@ def average_precision_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         recall, precision = _compute_function_metrics(
@@ -4212,13 +4212,13 @@ def roc_auc_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_auc_score(
         y_true=y_true,
@@ -4380,13 +4380,13 @@ def prc_auc_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return _compute_final_auc_score(
         y_true=y_true,
@@ -4537,13 +4537,13 @@ def log_loss(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         y_s = _get_yscore(y_score, labels, pos_label)
@@ -4950,7 +4950,7 @@ def classification_report(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:meth:`verticapy.set_option` function with
+        You can use the :py:meth:`~verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -4994,7 +4994,7 @@ def classification_report(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.score` : Computes the input ML metric.
+        | :py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
 
     # Initialization

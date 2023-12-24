@@ -104,7 +104,7 @@ def sql_magic(
         In the case of profiling (using ``PROFILE``
         keywords), the query will be executed twice:
         once for profiling and another time to build
-        the :py:class:`vDataFrame`.
+        the :py:class:`~vDataFrame`.
 
     Parameters
     ----------
@@ -337,7 +337,7 @@ def sql_magic(
     ==============================
 
     Results of a SQL Magic query are stored in a
-    :py:class:`vDataFrame`, which is assigned to
+    :py:class:`~vDataFrame`, which is assigned to
     a temporary variable called '_'. You can assign
     this temporary variable to a new variable to
     save your results.
@@ -387,8 +387,8 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_5.html
 
     Temporary results are stored in a
-    :py:class:`vDataFrame`, allowing
-    you to call :py:class:`vDataFrame`
+    :py:class:`~vDataFrame`, allowing
+    you to call :py:class:`~vDataFrame`
     methods:
 
     .. ipython:: python
@@ -400,8 +400,8 @@ def sql_magic(
 
     You can use variables in a SQL
     query with the ':' operator. This
-    variable can be a :py:class:`vDataFrame`,
-    a :py:class:`verticapy.core.tablesample.base.TableSample`, a ``pandas.DataFrame``,
+    variable can be a :py:class:`~vDataFrame`,
+    a :py:class:`~verticapy.core.tablesample.base.TableSample`, a ``pandas.DataFrame``,
     or any standard Python type.
 
     .. code-block:: python
@@ -465,7 +465,7 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_7.html
 
     You can do the same with a
-    :py:class:`verticapy.core.tablesample.base.TableSample`:
+    :py:class:`~verticapy.core.tablesample.base.TableSample`:
 
     .. code-block:: python
 
