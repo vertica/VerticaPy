@@ -1624,6 +1624,11 @@ class QueryProfiler:
             ``dictionary`` used to
             customize the tree.
 
+            - separate_legends:
+                If set to ``True``
+                and two metrics are
+                used, two legends will
+                be drawn.
             - color_low:
                 Color used as the lower
                 bound of the gradient.
@@ -1681,6 +1686,11 @@ class QueryProfiler:
                 If set to ``True`` the
                 operator edge of each
                 node will be displayed.
+            - display_proj:
+                If set to ``True`` the
+                projection of each STORAGE
+                ACCESS PATH ID will be
+                partially displayed.
 
         Returns
         -------
@@ -2168,7 +2178,7 @@ class QueryProfiler:
             FROM 
                 v_monitor.execution_engine_profiles 
             WHERE 
-                counter_name = 'execution time (us)' AND 
+                TRIM(counter_name) = 'execution time (us)' AND 
                 transaction_id={self.transaction_id} AND 
                 statement_id={self.statement_id}"""
         query = self._replace_schema_in_query(query)
@@ -2237,25 +2247,25 @@ class QueryProfiler:
                 node_name,
                 operator_name,
                 path_id,
-                ROUND(SUM(CASE counter_name WHEN 'execution time (us)' THEN
+                ROUND(SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
                     counter_value ELSE NULL END) / 1000, 3.0) AS exec_time_ms,
-                SUM(CASE counter_name WHEN 'estimated rows produced' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'estimated rows produced' THEN
                     counter_value ELSE NULL END) AS est_rows,
-                SUM(CASE counter_name WHEN 'rows processed' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'rows processed' THEN
                     counter_value ELSE NULL END) AS proc_rows,
-                SUM(CASE counter_name WHEN 'rows produced' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'rows produced' THEN
                     counter_value ELSE NULL END) AS prod_rows,
-                SUM(CASE counter_name WHEN 'rle rows produced' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'rle rows produced' THEN
                     counter_value ELSE NULL END) AS rle_prod_rows,
-                SUM(CASE counter_name WHEN 'consumer stall (us)' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'consumer stall (us)' THEN
                     counter_value ELSE NULL END) AS cstall_us,
-                SUM(CASE counter_name WHEN 'producer stall (us)' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
                     counter_value ELSE NULL END) AS pstall_us,
-                SUM(CASE counter_name WHEN 'clock time (us)' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'clock time (us)' THEN
                     counter_value ELSE NULL END) AS clock_time_us,
-                ROUND(SUM(CASE counter_name WHEN 'memory reserved (bytes)' THEN
+                ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
                     counter_value ELSE NULL END) / 1000000, 1.0) AS mem_res_mb,
-                ROUND(SUM(CASE counter_name WHEN 'memory allocated (bytes)' THEN 
+                ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
                     counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb
             FROM
                 v_monitor.execution_engine_profiles
@@ -2266,7 +2276,7 @@ class QueryProfiler:
             GROUP BY
                 1, 2, 3
             ORDER BY
-                CASE WHEN SUM(CASE counter_name WHEN 'execution time (us)' THEN
+                CASE WHEN SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
                     counter_value ELSE NULL END) IS NULL THEN 1 ELSE 0 END ASC,
                 5 DESC;"""
         query = self._replace_schema_in_query(query)
