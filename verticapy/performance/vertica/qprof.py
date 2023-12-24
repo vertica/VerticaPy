@@ -1691,6 +1691,13 @@ class QueryProfiler:
                 projection of each STORAGE
                 ACCESS PATH ID will be
                 partially displayed.
+            - display_etc:
+                If set to ``True`` and
+                ``path_is is not None``
+                the symbol "..." is used
+                to represent the ancestors
+                children when they have more
+                than 1.
 
         Returns
         -------

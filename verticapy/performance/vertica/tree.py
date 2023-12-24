@@ -254,6 +254,8 @@ class PerformanceTree:
             d["two_legend"] = False
         if "display_proj" not in d:
             d["display_proj"] = True
+        if "display_etc" not in d:
+            d["display_etc"] = True
         self.style = d
         self.path_id_info = []
         if isinstance(path_id_info, int):
@@ -618,6 +620,15 @@ class PerformanceTree:
                     res += "-B"
                 if "OUTER (RESEGMENT)" in parent_operator:
                     res += "-R"
+                if (
+                    "GLOBAL RESEGMENT" in parent_operator
+                    and "LOCAL RESEGMENT" in parent_operator
+                ):
+                    res += "-GLR"
+                elif "GLOBAL RESEGMENT" in parent_operator:
+                    res += "-GR"
+                elif "LOCAL RESEGMENT" in parent_operator:
+                    res += "-LR"
             elif "INNER ->" in operator:
                 res = "I"
                 if "CROSS JOIN" in parent_operator:
@@ -628,17 +639,38 @@ class PerformanceTree:
                     res += "-B"
                 if "INNER (RESEGMENT)" in parent_operator:
                     res += "-R"
+                if (
+                    "GLOBAL RESEGMENT" in parent_operator
+                    and "LOCAL RESEGMENT" in parent_operator
+                ):
+                    res += "-GLR"
+                elif "GLOBAL RESEGMENT" in parent_operator:
+                    res += "-GR"
+                elif "LOCAL RESEGMENT" in parent_operator:
+                    res += "-LR"
+                if "HASH" in parent_operator:
+                    res += "-H"
+            elif (
+                "GLOBAL RESEGMENT" in parent_operator
+                and "LOCAL RESEGMENT" in parent_operator
+            ):
+                res += "-GLR"
+                if "HASH" in parent_operator:
+                    res += "-H"
+            elif "GLOBAL RESEGMENT" in parent_operator:
+                res += "-GR"
+                if "HASH" in parent_operator:
+                    res += "-H"
+            elif "LOCAL RESEGMENT" in parent_operator:
+                res += "-LR"
                 if "HASH" in parent_operator:
                     res += "-H"
             elif "HASH" in parent_operator:
                 res += "-H"
             if "MERGE" in parent_operator:
                 res += "-M"
-            if (
-                "GLOBAL RESEGMENT" in parent_operator
-                or "LOCAL RESEGMENT" in parent_operator
-            ):
-                res += "-GLR"
+            if "PIPELINED" in parent_operator:
+                res += "-P"
         if len(res) > 0 and res[0] == "-":
             res = res[1:]
         return res
@@ -866,6 +898,39 @@ class PerformanceTree:
             relationships += [(id_initiator, tree_id)]
         return relationships
 
+    @staticmethod
+    def _get_nb_children(relationships: list[tuple]) -> dict:
+        """
+        Returns the number of
+        children by using the
+        input relationships.
+
+        Parameters
+        ----------
+        relationships: list
+            nodes relationships.
+
+        Returns
+        -------
+        dict
+            Number of children.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        nb_children = {}
+        n = len(relationships)
+        for i in range(n):
+            parent, child = relationships[i]
+            if parent != child:
+                if parent not in nb_children:
+                    nb_children[parent] = 1
+                else:
+                    nb_children[parent] += 1
+        return nb_children
+
     def _gen_label_table(
         self,
         label: str,
@@ -981,9 +1046,11 @@ class PerformanceTree:
                 m_max = max(m_max, m_max_2)
                 m_max_2 = m_max
         relationships = self._gen_relationships()
+        nb_children = self._get_nb_children(relationships)
         links = self._find_descendants(self.path_id, relationships) + [self.path_id]
         if self.show_ancestors:
-            links += self._find_ancestors(self.path_id, relationships)
+            ancestors = self._find_ancestors(self.path_id, relationships)
+            links += ancestors
         for i in range(n):
             tooltip_metrics = "\n"
             for j, x in enumerate(me):
@@ -1025,6 +1092,18 @@ class PerformanceTree:
                     )
                     html_content = html.escape(html_content).replace("\n", "<br/>")
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
+                if (
+                    self.style["display_etc"]
+                    and tree_id in ancestors
+                    and not (isinstance(self.path_id, NoneType))
+                    and nb_children[tree_id] > 1
+                ):
+                    descendants = self._find_descendants(tree_id, relationships)
+                    descendants_str = "Descendants: " + ", ".join(
+                        str(d) for d in descendants
+                    )
+                    descendants_str += f"\n\nTotal: {len(descendants)}"
+                    res += f'\t{100000 - tree_id} [label="...", tooltip="{descendants_str}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
                 params = f'width={wh}, height={wh}, tooltip="{row}", URL="#path_id={tree_id}"'
                 label = self._gen_label_table(
@@ -1050,12 +1129,14 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
-        res, n = "", len(self.rows)
+        res, n, done = "", len(self.rows), []
         relationships = self._gen_relationships()
+        nb_children = self._get_nb_children(relationships)
         links = self._find_descendants(self.path_id, relationships)
         info_color = self.style["info_color"]
         if self.show_ancestors:
-            links += self._find_ancestors(self.path_id, relationships)
+            ancestors = self._find_ancestors(self.path_id, relationships)
+            links += ancestors
         for i in range(n):
             row = self._format_row(self.rows[i].replace('"', "'"))
             tree_id = self.path_order[i]
@@ -1065,11 +1146,20 @@ class PerformanceTree:
             parent, child = relationships[i]
             parent_row = ""
             for j, lb in enumerate(self.path_order):
-                if lb == parent and j > 0:
+                if lb == parent and j >= 0:
                     parent_row = self._format_row(self.rows[j].replace('"', "'"))
             label = " " + self._get_operator_edge(row, parent_row) + " "
             if parent != child and child in links:
                 res += f'\t{parent} -> {child} [dir=back, label="{label}"];\n'
+            if (
+                self.style["display_etc"]
+                and parent in ancestors
+                and not (isinstance(self.path_id, NoneType))
+                and nb_children[parent] > 1
+                and parent not in done
+            ):
+                res += f"\t{parent} -> {100000 - parent} [dir=back];\n"
+                done += [parent]
             if child == self.path_id and tree_id != init_id and self.show_ancestors:
                 res += f'\t{parent} -> {dummy_id} [dir=back, label="{label}"];\n'
             if tree_id in self.path_id_info:
