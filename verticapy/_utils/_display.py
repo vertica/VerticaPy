@@ -39,6 +39,52 @@ def print_table(
     Returns the HTML code or string used to display the final
     relation.
     """
+
+    # Colors Definition & options
+    theme = conf.get_option("theme")
+
+    if theme == "light":
+        bgcolor = "#FFFFFF"
+        bgcolor_null = "#EEEEEE"
+        fontcolor_null = "#999999"
+        bgcolor_other = "#FAFAFA"
+        border_color_1 = "#AAAAAA"
+        border_color_2 = "#DDDDDD"
+        fontcolor = "#000000"
+        fontcolor_abc = "#000000"
+        fontcolor_index_j = "#000000"
+        fontcolor_index_i = "#000000"
+    elif theme == "dark":
+        bgcolor = "#000000"
+        bgcolor_null = "#222222"
+        fontcolor_null = "#999999"
+        bgcolor_other = "#050505"
+        border_color_1 = "#555555"
+        border_color_2 = "#333333"
+        fontcolor = "#FFFFFF"
+        fontcolor_abc = "#959DAD"
+        fontcolor_index_j = "#1A6AFF"
+        fontcolor_index_i = "#FFFFFF"
+    elif theme == "sphinx":
+        bgcolor = "var(--color-announcement-background)"
+        bgcolor_null = "#777777"
+        fontcolor_null = "#999999"
+        bgcolor_other = "var(--color-announcement-background)"
+        border_color_1 = "#888888"
+        border_color_2 = "#555555"
+        fontcolor = "var(--color-announcement-text)"
+        fontcolor_abc = "#959DAD"
+        fontcolor_index_j = "#1A6AFF"
+        fontcolor_index_i = "var(--color-announcement-text)"
+    else:
+        raise ValueError("Unrecognized 'theme'.")
+
+    maxwidth = conf.get_option("max_cellwidth")
+    maxwidth = max(280, maxwidth)
+    maxheight = conf.get_option("max_tableheight")
+    maxheight = max(300, maxheight)
+
+    # Main Function
     dtype, percent = format_type(dtype, percent, dtype=dict)
     if not return_html:
         data_columns_rep = [] + data_columns
@@ -112,7 +158,9 @@ def print_table(
         m, n = len(data_columns), len(data_columns[0])
         cell_width = []
         for row in data_columns:
-            cell_width += [min(5 * max([len(str(item)) for item in row]) + 80, 280)]
+            cell_width += [
+                min(5 * max([len(str(item)) for item in row]) + 80, maxwidth)
+            ]
         html_table = '<div class="verticapy_table"><table>'
         for i in range(n):
             if i == 0:
@@ -120,7 +168,7 @@ def print_table(
             if i == 1 and n > 0:
                 html_table += (
                     '<tbody style="display: block; max-height: '
-                    '300px; overflow-y: scroll;">'
+                    f'{maxheight}px; overflow-y: scroll;">'
                 )
             html_table += "<tr>"
             for j in range(m):
@@ -129,7 +177,7 @@ def print_table(
                     val = html.escape(val)
                 if isinstance(val, NoneType):
                     val = "[null]"
-                    color = "#999999"
+                    color = fontcolor_null
                 else:
                     if isinstance(val, bool) and (
                         conf.get_option("mode") in ("full", None)
@@ -139,32 +187,37 @@ def print_table(
                             if (val)
                             else "<center>&#10060;</center>"
                         )
-                    color = "black"
+                    if j == 0:
+                        color = fontcolor_index_j
+                    elif i == 0:
+                        color = fontcolor_index_i
+                    else:
+                        color = fontcolor
                 html_table += '<td style="background-color: '
                 if (
                     (j == 0)
                     or (i == 0)
                     or (conf.get_option("mode") not in ("full", None))
                 ):
-                    html_table += " #FFFFFF; "
+                    html_table += f" {bgcolor}; "
                 elif val == "[null]":
-                    html_table += " #EEEEEE; "
+                    html_table += f" {bgcolor_null}; "
                 else:
-                    html_table += " #FAFAFA; "
+                    html_table += f" {bgcolor_other}; "
                 html_table += f"color: {color}; white-space:nowrap; "
                 if conf.get_option("mode") in ("full", None):
                     if (j == 0) or (i == 0):
-                        html_table += "border: 1px solid #AAAAAA; "
+                        html_table += f"border: 1px solid {border_color_1}; "
                     else:
-                        html_table += "border-top: 1px solid #DDDDDD; "
+                        html_table += f"border-top: 1px solid {border_color_2}; "
                         if ((j == m - 1) and (i == n - 1)) or (j == m - 1):
-                            html_table += "border-right: 1px solid #AAAAAA; "
+                            html_table += f"border-right: 1px solid {border_color_1}; "
                         else:
-                            html_table += "border-right: 1px solid #DDDDDD; "
+                            html_table += f"border-right: 1px solid {border_color_2}; "
                         if ((j == m - 1) and (i == n - 1)) or (i == n - 1):
-                            html_table += "border-bottom: 1px solid #AAAAAA; "
+                            html_table += f"border-bottom: 1px solid {border_color_1}; "
                         else:
-                            html_table += "border-bottom: 1px solid #DDDDDD; "
+                            html_table += f"border-bottom: 1px solid {border_color_2}; "
                 if i == 0:
                     html_table += "height: 30px; "
                 if (j == 0) or (cell_width[j] < 120):
@@ -198,9 +251,7 @@ def print_table(
                                 elif category in ("int", "float", "binary", "uuid"):
                                     category = '<div style="margin-bottom: 6px; color: #19A26B;">123</div>'
                                 elif category == "text":
-                                    category = (
-                                        '<div style="margin-bottom: 6px;">Abc</div>'
-                                    )
+                                    category = f'<div style="margin-bottom: 6px; color: {fontcolor_abc}">Abc</div>'
                                 elif category in ("complex", "vmap"):
                                     category = '<div style="margin-bottom: 6px;">&#128736;</div>'
                                 elif category == "date":
@@ -242,12 +293,12 @@ def print_table(
                         )
                     html_table += f">{category}<b>{val}</b>{ctype}{missing_values}</td>"
                 elif cell_width[j] > 240:
-                    background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
+                    background = bgcolor_null if val == "[null]" else bgcolor_other
                     if conf.get_option("mode") not in ("full", None):
-                        background = "#FFFFFF"
+                        background = f"{bgcolor}"
                     html_table += (
                         f'><input style="background-color: {background}; border: none; '
-                        f'text-align: center; width: {cell_width[j] - 10}px;" '
+                        f'color: {fontcolor}; text-align: center; width: {cell_width[j] - 10}px;" '
                         f'type="text" value="{val}" readonly></td>'
                     )
                 else:

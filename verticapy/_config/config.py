@@ -259,14 +259,14 @@ def set_option(key: str, value: Any = None) -> None:
     key: str
         Option to set, one of the following:
 
-         - cache:
+        - cache:
             [bool]
             If set to True, vDataFrames save the
             computed aggregations in-memory.
-         - colors:
+        - colors:
             [list]
             List of colors used to draw the graphics.
-         - color_style:
+        - color_style:
             [str]
             Style used to color the graphics, one of the
             following:
@@ -274,42 +274,50 @@ def set_option(key: str, value: Any = None) -> None:
             "med", "orchid", "magenta", "orange",
             "vintage", "vivid", "berries", "refreshing",
             "summer", "tropical", "india", "default".
-         - count_on:
+        - count_on:
             [bool]
             If set to ``True``, the total number of rows in
             :py:class:`~vDataFrame` and :py:class:`~verticapy.core.tablesample.base.TableSample`
             is computed and displayed in the footer (if
             ``footer_on is True``).
-         - footer_on:
+        - footer_on:
             [bool]
             If set to ``True``, :py:class:`~vDataFrame` and
             :py:class:`~verticapy.core.tablesample.base.TableSample` show a footer that includes
             information about the displayed rows and columns.
-         - interactive:
+        - interactive:
             [bool]
             If set to ``True``, VerticaPy outputs are
             displayed in interactive tables.
-         - label_separator:
+        - label_separator:
             [str]
             Separator used to separate the query label from
             the ``label_suffix``. The default value is ``__``.
-         - label_suffix:
+        - label_suffix:
             [str]
             Label suffix to add to VerticaPy's query labels.
             It can be useful to track some specific activities.
             For example: Looking which user runs some specific
             VerticaPy functions. The default value is ``None``.
-         - max_columns:
+        - max_columns:
             [int]
             Maximum number of columns to display. If the
             specified value is invalid, ``max_columns`` is
             not changed.
-         - max_rows:
+        - max_rows:
             [int]
             Maximum number of rows to display. If the
             specified value is invalid, ``max_row`` is
             not changed.
-         - mode:
+        - max_cellwidth:
+            Maximum width of any VerticaPy table's cell.
+            Can not be lesser than 280.
+            Default: 280
+        - max_tableheight:
+            Maximum height of VerticaPy tables.
+            Can not be lesser than 300.
+            Default: 300
+        - mode:
             [str]
             Display mode for VerticaPy outputs, either:
 
@@ -318,38 +326,50 @@ def set_option(key: str, value: Any = None) -> None:
 
             **light**:
                 Minimalist display mode.
-         - percent_bar:
+        - percent_bar:
             [bool]
             If set to ``True``, the percent of non-missing
             values is displayed.
-         - print_info:
+        - plotting_lib:
+            [str]
+            Plotting library used to draw
+            the different graphics.
+            One of the following:
+            plotly | highcharts | matplotlib
+        - print_info:
             [bool]
             If set to ``True``, information is printed each
             time the :py:class:`~vDataFrame` is modified.
-         - random_state:
+        - random_state:
             [int]
             Integer used to seed random number generation
             in VerticaPy.
-         - save_query_profile:
+        - save_query_profile:
             [bool]
             If set to ``True``, all function calls are stored
             in the query profile table. This makes it possible
             to differentiate the VerticaPy logs from the
             Vertica logs. If set to ``False``, this functionality
             is deactivated.
-         - sql_on:
+        - sql_on:
             [bool]
             If set to ``True``, displays all SQL queries.
-         - temp_schema:
+        - temp_schema:
             [str]
             Specifies the temporary schema that certain
             methods / functions use to create intermediate
             objects, if needed.
-         - time_on:
+        - theme:
+            [str]
+            Theme used to display the
+            VerticaPy objects.
+            One of the following:
+            light | dark | sphinx (only for doc rendering)
+        - time_on:
             [bool]
             If set to ``True``, displays the elasped time
             for all SQL queries.
-         - tqdm:
+        - tqdm:
             [bool]
             If set to ``True``, a loading bar is displayed
             when using iterative functions.
@@ -688,6 +708,10 @@ register_option(Option("label_separator", None, "", optional_str_validator))
 register_option(Option("label_suffix", None, "", optional_str_validator))
 register_option(Option("max_columns", 50, "", st_positive_int_validator))
 register_option(Option("max_rows", 100, "", st_positive_int_validator))
+register_option(
+    Option("max_tableheight", 300, "", st_positive_int_validator)
+)  # min 300
+register_option(Option("max_cellwidth", 280, "", st_positive_int_validator))  # min 280
 register_option(Option("mode", "full", "", in_validator(["full", "light"])))
 register_option(Option("percent_bar", False, "", bool_validator))
 register_option(Option("print_info", True, "", bool_validator))
@@ -703,5 +727,13 @@ register_option(
         "plotly",
         "",
         in_validator(["highcharts", "matplotlib", "plotly"]),
+    )
+)
+register_option(
+    Option(
+        "theme",
+        "light",
+        "",
+        in_validator(["light", "dark", "sphinx"]),
     )
 )

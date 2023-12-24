@@ -60,7 +60,9 @@ class BarChart(PlotlyBase):
         Draws a bar chart using the Plotly API.
         """
         fig_base = self._get_fig(fig)
-        fig = px.bar(x=self.layout["labels"], y=self.data["y"])
+        fig = px.bar(
+            x=self.layout["labels"], y=self.data["y"], template=self._get_theme()
+        )
         if self.data["is_categorical"]:
             fig.update_xaxes(type="category")
         params = self._update_dict(self.init_layout_style, style_kwargs)
