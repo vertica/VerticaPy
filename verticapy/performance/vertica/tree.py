@@ -1016,7 +1016,9 @@ class PerformanceTree:
                     info_fontcolor = self.style["info_fontcolor"]
                     info_fontsize = self.style["info_fontsize"]
                     info_rowsize = self.style["info_rowsize"]
-                    html_content = textwrap.fill(row + tooltip_metrics, width=info_rowsize)
+                    html_content = textwrap.fill(
+                        row + tooltip_metrics, width=info_rowsize
+                    )
                     html_content = html.escape(html_content).replace("\n", "<br/>")
                     res += f'\t{info_bubble} [shape=plaintext, fontcolor="{info_fontcolor}", style="filled", fillcolor="{info_color}", width=0.4, height=0.6, fontsize={info_fontsize}, label=<{html_content}>, URL="#path_id={tree_id}"];\n'
             if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
