@@ -23,6 +23,7 @@ from typing import Literal, Optional, Union
 import numpy as np
 
 import verticapy._config.config as conf
+from verticapy._utils._sql._format import schema_relation
 from verticapy._typing import NoneType
 
 if conf.get_import_success("graphviz"):
@@ -249,6 +250,10 @@ class PerformanceTree:
             d["display_operator"] = True
         if "display_operator_edge" not in d:
             d["display_operator_edge"] = True
+        if "two_legend" not in d:
+            d["two_legend"] = False
+        if "display_proj" not in d:
+            d["display_proj"] = True
         self.style = d
         self.path_id_info = []
         if isinstance(path_id_info, int):
@@ -894,7 +899,7 @@ class PerformanceTree:
         fillcolor = self.style["fillcolor"]
         width = self.style["width"] * 30
         height = self.style["height"] * 60
-        operator = self._get_operator_icon(operator)
+        operator_icon = self._get_operator_icon(operator)
         if len(colors) > 1:
             second_color = (
                 f'<TD WIDTH="{width}" HEIGHT="{height}" '
@@ -905,22 +910,35 @@ class PerformanceTree:
         else:
             second_color = ""
             colspan = 3
-        if self.style["display_operator"] and not (isinstance(operator, NoneType)):
-            operator = (
+        proj = ""
+        if self.style["display_proj"] and "Projection: " in operator:
+            proj = operator.split("Projection: ")[1].split("\n")[0]
+            if len(proj) > 13:
+                proj = schema_relation(proj, do_quote=False)[1]
+            if len(proj) > 13:
+                proj = proj[:13] + ".."
+            proj = (
+                f'<TR><TD COLSPAN="{colspan}" WIDTH="{width}" '
+                f'HEIGHT="{height}" BGCOLOR="{fillcolor}" ><FONT '
+                f'POINT-SIZE="{fontsize // 2}" COLOR="{fontcolor}">'
+                f"{proj}</FONT></TD></TR>"
+            )
+        if self.style["display_operator"] and not (isinstance(operator_icon, NoneType)):
+            operator_icon = (
                 f'<TD WIDTH="{width}" HEIGHT="{height}" '
                 f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
-                f'COLOR="{fontcolor}">{operator}</FONT></TD>'
+                f'COLOR="{fontcolor}">{operator_icon}</FONT></TD>'
             )
         else:
-            operator = ""
+            operator_icon = ""
         label = (
             '<<TABLE border="1" cellborder="1" cellspacing="0" '
             f'cellpadding="0"><TR><TD WIDTH="{width}" '
             f'HEIGHT="{height}" BGCOLOR="{colors[0]}" ><FONT '
             f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
             f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
-            f'COLOR="{fontcolor}">{label}</FONT></TD>{operator}{second_color}'
-            f"</TR></TABLE>>"
+            f'COLOR="{fontcolor}">{label}</FONT></TD>{operator_icon}{second_color}'
+            f"</TR>{proj}</TABLE>>"
         )
         return label
 
@@ -939,29 +957,33 @@ class PerformanceTree:
         See :py:meth:`verticapy.performance.vertica.tree`
         for more information.
         """
-        n, res = len(self.rows), ""
+        n, res, me = len(self.rows), "", []
         wh = 0.8
         if len(self.metric) > 1 and self.style["display_operator"]:
             wh = 1.22
         elif self.style["display_operator"]:
             wh = 1.1
+        for j in range(len(self.metric)):
+            me += [[self._get_metric(self.rows[i], self.metric[j]) for i in range(n)]]
         if not (isinstance(self.metric[0], NoneType)):
-            all_metrics = [
-                math.log(1 + self._get_metric(self.rows[i], self.metric[0]))
-                for i in range(n)
-            ]
+            all_metrics = [math.log(1 + me[0][i]) for i in range(n)]
             m_min, m_max = min(all_metrics), max(all_metrics)
         if len(self.metric) > 1:
-            all_metrics_2 = [
-                math.log(1 + self._get_metric(self.rows[i], self.metric[1]))
-                for i in range(n)
-            ]
+            all_metrics_2 = [math.log(1 + me[1][i]) for i in range(n)]
             m_min_2, m_max_2 = min(all_metrics_2), max(all_metrics_2)
+            if not (self.style["two_legend"]):
+                m_min = min(m_min, m_min_2)
+                m_min_2 = m_min
+                m_max = max(m_max, m_max_2)
+                m_max_2 = m_max
         relationships = self._gen_relationships()
         links = self._find_descendants(self.path_id, relationships) + [self.path_id]
         if self.show_ancestors:
             links += self._find_ancestors(self.path_id, relationships)
         for i in range(n):
+            tooltip_metrics = "\n"
+            for j, x in enumerate(me):
+                tooltip_metrics += f"\n{self.metric[j]}: {x[i]}"
             tree_id = self.path_order[i]
             dummy_id = self.path_order[-1] + 1
             init_id = self.path_order[0]
@@ -987,7 +1009,7 @@ class PerformanceTree:
                 operator=row,
             )
             if tree_id in links:
-                params = f'width={wh}, height={wh}, tooltip="{row}", fixedsize=true, URL="#path_id={tree_id}"'
+                params = f'width={wh}, height={wh}, tooltip="{row}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}"'
                 res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
@@ -1050,10 +1072,17 @@ class PerformanceTree:
                 )
         return res
 
-    def _gen_legend(self) -> str:
+    def _gen_legend(self, metric: Optional[list] = None, idx: int = 0) -> str:
         """
         Generates the Graphviz
         legend.
+
+        Parameters
+        ----------
+        metric: list, optional
+            The metric to use.
+        idx: int, optional
+            Legend index.
 
         Returns
         -------
@@ -1067,7 +1096,7 @@ class PerformanceTree:
         """
         n = len(self.rows)
         all_metrics = []
-        for me in self.metric:
+        for me in metric:
             all_metrics += [
                 math.log(1 + self._get_metric(self.rows[i], me)) for i in range(n)
             ]
@@ -1082,13 +1111,13 @@ class PerformanceTree:
         alpha050 = self._generate_gradient_color(0.5)
         alpha075 = self._generate_gradient_color(0.75)
         alpha1 = self._generate_gradient_color(1.0)
-        res = '\tlegend [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
-        if len(self.metric) == 1 and isinstance(self.metric[0], NoneType):
+        res = f'\tlegend{idx} [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
+        if len(metric) == 1 and isinstance(metric[0], NoneType):
             legend = "Legend"
-        elif len(self.metric) > 1:
-            legend = f"{self.metric[0]} | {self.metric[1]}"
+        elif len(metric) > 1:
+            legend = f"{metric[0]} | {metric[1]}"
         else:
-            legend = self.metric[0]
+            legend = metric[0]
         res += f'<tr><td bgcolor="#DFDFDF">{legend}</td></tr>'
         res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
         res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
@@ -1133,7 +1162,11 @@ class PerformanceTree:
             res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
         if len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType)):
-            res += self._gen_legend()
+            if self.style["two_legend"] and len(self.metric) > 1:
+                res += self._gen_legend(metric=[self.metric[0]], idx=0)
+                res += self._gen_legend(metric=[self.metric[1]], idx=1)
+            else:
+                res += self._gen_legend(metric=self.metric)
         else:
             res += "\n"
         res += self._gen_labels() + "\n"
