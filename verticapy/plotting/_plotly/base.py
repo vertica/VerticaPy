@@ -14,17 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
-
-from verticapy.plotting.base import PlottingBase
-from verticapy._typing import ArrayLike
+from typing import Literal, Optional
 
 from plotly.graph_objs._figure import Figure
 import plotly.graph_objects as go
+import plotly.io as pio
 import numpy as np
+
+import verticapy._config.config as conf
+from verticapy.plotting.base import PlottingBase
+from verticapy._typing import ArrayLike
 
 
 class PlotlyBase(PlottingBase):
+    """
+    Plotly Base Class.
+    """
+
+    # Convert
+
     @staticmethod
     def _convert_labels_and_get_counts(
         pivot_array: ArrayLike,
@@ -83,13 +91,6 @@ class PlotlyBase(PlottingBase):
         return ids, labels, parents, values
 
     @staticmethod
-    def _get_fig(fig: Optional[Figure] = None) -> Figure:
-        if fig:
-            return fig
-        else:
-            return go.Figure()
-
-    @staticmethod
     def _convert_labels_for_heatmap(lst: list) -> list:
         result = []
         for item in lst:
@@ -100,6 +101,26 @@ class PlotlyBase(PlottingBase):
             # Append the average to the result list
             result.append(avg)
         return result
+
+    # Get
+
+    def _get_fig(self, fig: Optional[Figure] = None) -> Figure:
+        pio.templates.default = self._get_theme()
+        if fig:
+            return fig
+        else:
+            return go.Figure()
+
+    @staticmethod
+    def _get_theme() -> Literal["ggplot2", "plotly_white", "plotly_dark", "none"]:
+        theme = conf.get_option("theme")
+        if theme == "dark":
+            return "plotly_dark"
+        elif theme == "light":
+            return "plotly_white"
+        elif theme == "sphinx":
+            return "ggplot2"
+        return "none"
 
     @staticmethod
     def _get_max_decimal_point(arr: ArrayLike) -> int:
