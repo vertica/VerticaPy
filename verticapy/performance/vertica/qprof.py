@@ -1624,7 +1624,7 @@ class QueryProfiler:
             ``dictionary`` used to
             customize the tree.
 
-            - separate_legends:
+            - two_legend:
                 If set to ``True``
                 and two metrics are
                 used, two legends will

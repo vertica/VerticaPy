@@ -250,8 +250,8 @@ class PerformanceTree:
             d["display_operator"] = True
         if "display_operator_edge" not in d:
             d["display_operator_edge"] = True
-        if "separate_legends" not in d:
-            d["separate_legends"] = False
+        if "two_legend" not in d:
+            d["two_legend"] = False
         if "display_proj" not in d:
             d["display_proj"] = True
         self.style = d
@@ -971,11 +971,11 @@ class PerformanceTree:
         if len(self.metric) > 1:
             all_metrics_2 = [math.log(1 + me[1][i]) for i in range(n)]
             m_min_2, m_max_2 = min(all_metrics_2), max(all_metrics_2)
-        if not (self.style["separate_legends"]):
-            m_min = min(m_min, m_min_2)
-            m_min_2 = m_min
-            m_max = max(m_max, m_max_2)
-            m_max_2 = m_max
+            if not (self.style["two_legend"]):
+                m_min = min(m_min, m_min_2)
+                m_min_2 = m_min
+                m_max = max(m_max, m_max_2)
+                m_max_2 = m_max
         relationships = self._gen_relationships()
         links = self._find_descendants(self.path_id, relationships) + [self.path_id]
         if self.show_ancestors:
@@ -1162,7 +1162,7 @@ class PerformanceTree:
             res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
         if len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType)):
-            if self.style["separate_legends"] and len(self.metric) > 1:
+            if self.style["two_legend"] and len(self.metric) > 1:
                 res += self._gen_legend(metric=[self.metric[0]], idx=0)
                 res += self._gen_legend(metric=[self.metric[1]], idx=1)
             else:
