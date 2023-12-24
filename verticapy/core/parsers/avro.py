@@ -164,7 +164,7 @@ def read_avro(
     Returns
     -------
     vDataFrame
-        The :py:class:`vDataFrame`
+        The :py:class:`~vDataFrame`
         of the relation.
 
     Examples
@@ -295,13 +295,13 @@ def read_avro(
 
     .. seealso::
 
-        | :py:func:`verticapy.read_csv` :
+        | :py:func:`~verticapy.read_csv` :
             Ingests a CSV file into the Vertica DB.
-        | :py:func:`verticapy.read_file` :
+        | :py:func:`~verticapy.read_file` :
             Ingests an input file into the Vertica DB.
-        | :py:func:`verticapy.read_json` :
+        | :py:func:`~verticapy.read_json` :
             Ingests a JSON file into the Vertica DB.
-        | :py:func:`verticapy.read_pandas` :
+        | :py:func:`~verticapy.read_pandas` :
             Ingests the ``pandas.DataFrame``
             into the Vertica DB.
     """

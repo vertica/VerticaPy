@@ -25,7 +25,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class LinearModel(InMemoryModel):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of linear
     algorithms.
 
@@ -40,7 +40,7 @@ class LinearModel(InMemoryModel):
 
     .. note::
 
-        :py:meth:`verticapy.machine_learning.memmodel`
+        :py:meth:`~verticapy.machine_learning.memmodel`
         are defined entirely by their
         attributes. For example,
         ``coefficients`` and ``intercept``
@@ -74,7 +74,7 @@ class LinearModel(InMemoryModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModel`.
+    Let's create a :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModel`.
 
     .. ipython:: python
 
@@ -89,7 +89,7 @@ class LinearModel(InMemoryModel):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.linear_model.LinearModel.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -105,7 +105,7 @@ class LinearModel(InMemoryModel):
         cnames = ['col1', 'col2']
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -207,7 +207,7 @@ class LinearModel(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModel`
+            :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModel`
             for more information about the
             different methods and usages.
         """
@@ -266,7 +266,7 @@ class LinearModel(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
             for more information about the
             different methods and usages.
         """
@@ -353,7 +353,7 @@ class LinearModel(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModel`
+            :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModel`
             for more information about the
             different methods and usages.
         """
@@ -415,7 +415,7 @@ class LinearModel(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
             for more information about the
             different methods and usages.
         """
@@ -425,7 +425,7 @@ class LinearModel(InMemoryModel):
 
 class LinearModelClassifier(LinearModel):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     Implementation of linear
     algorithms for classification.
 
@@ -466,7 +466,7 @@ class LinearModelClassifier(LinearModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`.
+    Let's create a :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`.
 
     .. ipython:: python
 
@@ -481,7 +481,7 @@ class LinearModelClassifier(LinearModel):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -489,7 +489,7 @@ class LinearModelClassifier(LinearModel):
         model_lmc.predict(data)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba`
+    :py:meth:`~verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba`
     method to calculate the
     predicted probabilities
     for each class.
@@ -508,7 +508,7 @@ class LinearModelClassifier(LinearModel):
         cnames = ['col1', 'col2']
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -518,7 +518,7 @@ class LinearModelClassifier(LinearModel):
         model_lmc.predict_sql(cnames)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba_sql`
     method to get the SQL code
     needed to deploy the model
     that computes predicted
@@ -597,7 +597,7 @@ class LinearModelClassifier(LinearModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
             for more information about the
             different methods and usages.
         """
@@ -661,7 +661,7 @@ class LinearModelClassifier(LinearModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier`
             for more information about the
             different methods and usages.
         """

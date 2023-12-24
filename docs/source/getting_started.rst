@@ -91,7 +91,7 @@ To start playing with the API, create a new connection:
 
     For more information, see: :ref:`connection`.
 
-After a connection is created, you can use the :py:func:`verticapy.connection.connect` function to reconnect.
+After a connection is created, you can use the :py:func:`~verticapy.connection.connect` function to reconnect.
 
 .. code-block:: python
 

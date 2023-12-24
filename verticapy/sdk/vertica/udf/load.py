@@ -119,11 +119,11 @@ def import_lib_udf(
         database privileges. You can use the generated code to move it
         to the server and request the administrator with the necessary
         privileges to install it. Please look at:
-        :py:func:`verticapy.sdk.vertica.udf.generate_lib_udf`
+        :py:func:`~verticapy.sdk.vertica.udf.generate_lib_udf`
         for more information.
 
     .. seealso::
-        | :py:func:`verticapy.sdk.vertica.udf.generate_lib_udf` : Generates the UDF code.
+        | :py:func:`~verticapy.sdk.vertica.udf.generate_lib_udf` : Generates the UDF code.
     """
     directory = os.path.expanduser("~")
     session_name = f"{current_session()}_{username()}"

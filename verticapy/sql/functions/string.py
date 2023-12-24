@@ -89,7 +89,7 @@ def length(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LENGTH({expr})", "int")
@@ -162,7 +162,7 @@ def lower(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LOWER({expr})", "text")
@@ -242,7 +242,7 @@ def substr(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     if extent:
@@ -317,7 +317,7 @@ def upper(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"UPPER({expr})", "text")
@@ -399,7 +399,7 @@ def edit_distance(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -477,7 +477,7 @@ def soundex(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"SOUNDEX({expr})", "varchar")
@@ -558,7 +558,7 @@ def soundex_matches(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -641,7 +641,7 @@ def jaro_distance(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -721,7 +721,7 @@ def jaro_winkler_distance(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)

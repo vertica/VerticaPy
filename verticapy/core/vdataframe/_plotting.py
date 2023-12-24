@@ -166,8 +166,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.outliers_plot` : Outliers Plot.
-            | :py:meth:`verticapy.vDataColumn.boxplot` : Box Plot.
+            | :py:meth:`~verticapy.vDataFrame.outliers_plot` : Outliers Plot.
+            | :py:meth:`~verticapy.vDataColumn.boxplot` : Box Plot.
 
         """
         columns = format_type(columns, dtype=list)
@@ -223,7 +223,7 @@ class vDFPlot(vDFMachineLearning):
         ----------
         columns: SQLColumns
             ``list`` of the
-            :py:class:`vDataColumns`
+            :py:class:`~vDataColumns`
             names.
         method: str, optional
             The method used to aggregate the data.
@@ -234,29 +234,29 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
         of: str, optional
-            The :py:class:`vDataColumns` used
+            The :py:class:`~vDataColumns` used
             to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements
-            for :py:class:`vDataColumns` 1 and
+            for :py:class:`~vDataColumns` 1 and
             2 to be used as categorical. For
             these elements, no ``h`` is picked
             or computed.
@@ -268,13 +268,13 @@ class vDFPlot(vDFMachineLearning):
                 use ``h`` to discretize them first
         h: tuple, optional
             Interval width of the
-            :py:class:`vDataColumns`
+            :py:class:`~vDataColumns`
             1 and 2 bars.
 
             .. important::
 
                 Only valid if the
-                :py:class:`vDataColumns` are
+                :py:class:`~vDataColumns` are
                 numerical. Optimized ``h`` will
                 be computed if the parameter is
                 empty or invalid.
@@ -283,20 +283,20 @@ class vDFPlot(vDFMachineLearning):
 
             - auto:
                 Regular Bar Chart based on 1
-                or 2 :py:class:`vDataColumns`.
+                or 2 :py:class:`~vDataColumns`.
             - drilldown:
                 Drilldown Bar Chart.
             - pyramid:
                 Pyramid Density Bar Chart.
                 Only works if one of the two
-                :py:class:`vDataColumns` is
+                :py:class:`~vDataColumns` is
                 binary and the ``method='density'``.
             - stacked:
                 Stacked Bar Chart based on 2
-                :py:class:`vDataColumns`.
+                :py:class:`~vDataColumns`.
             - fully_stacked:
                 Fully Stacked Bar Chart based
-                on 2 :py:class:`vDataColumns`.
+                on 2 :py:class:`~vDataColumns`.
         categoryorder: str, optional
             How to sort the bars.
             One of the following options:
@@ -399,9 +399,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.bar` : Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
 
         """
         columns = format_type(columns, dtype=list)
@@ -492,14 +492,14 @@ class vDFPlot(vDFMachineLearning):
     ) -> PlottingObject:
         """
         Draws the horizontal bar chart of the
-        input :py:class:`vDataColumns` based
+        input :py:class:`~vDataColumns` based
         on an aggregation.
 
         Parameters
         ----------
         columns: SQLColumns
             ``list`` of the
-            :py:class:`vDataColumns`
+            :py:class:`~vDataColumns`
             names.
         method: str, optional
             The method used to aggregate the data.
@@ -510,29 +510,29 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
         of: str, optional
-            The :py:class:`vDataColumns` used
+            The :py:class:`~vDataColumns` used
             to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements
-            for :py:class:`vDataColumns` 1 and
+            for :py:class:`~vDataColumns` 1 and
             2 to be used as categorical. For
             these elements, no ``h`` is picked
             or computed.
@@ -544,13 +544,13 @@ class vDFPlot(vDFMachineLearning):
                 use ``h`` to discretize them first
         h: tuple, optional
             Interval width of the
-            :py:class:`vDataColumns`
+            :py:class:`~vDataColumns`
             1 and 2 bars.
 
             .. important::
 
                 Only valid if the
-                :py:class:`vDataColumns` are
+                :py:class:`~vDataColumns` are
                 numerical. Optimized ``h`` will
                 be computed if the parameter is
                 empty or invalid.
@@ -559,20 +559,20 @@ class vDFPlot(vDFMachineLearning):
 
             - auto:
                 Regular Bar Chart based
-                on 1 or 2 :py:class:`vDataColumns`.
+                on 1 or 2 :py:class:`~vDataColumns`.
             - drilldown:
                 Drilldown Bar Chart.
             - pyramid:
                 Pyramid Density Bar Chart.
                 Only works if one of the two
-                :py:class:`vDataColumns` is
+                :py:class:`~vDataColumns` is
                 binary and the ``method='density'``.
             - stacked:
                 Stacked Bar Chart based on 2
-                :py:class:`vDataColumns`.
+                :py:class:`~vDataColumns`.
             - fully_stacked:
                 Fully Stacked Bar Chart based
-                on 2 :py:class:`vDataColumns`.
+                on 2 :py:class:`~vDataColumns`.
 
         categoryorder: str, optional
             How to sort the bars.
@@ -676,9 +676,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.barh` : Horizontal Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
 
         """
@@ -755,13 +755,13 @@ class vDFPlot(vDFMachineLearning):
     ) -> PlottingObject:
         """
         Draws the nested pie chart of
-        the input :py:class:`vDataColumns`.
+        the input :py:class:`~vDataColumns`.
 
         Parameters
         ----------
         columns: SQLColumns
             ``list`` of the
-            :py:class:`vDataColumns`
+            :py:class:`~vDataColumns`
             names.
         method: str, optional
             The method used to aggregate the data.
@@ -772,29 +772,29 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
         of: str, optional
-            The :py:class:`vDataColumns` used
+            The :py:class:`~vDataColumns` used
             to compute the  aggregation.
         max_cardinality: int | tuple, optional
             Maximum number of distinct elements
-            for :py:class:`vDataColumns` 1 and 2
+            for :py:class:`~vDataColumns` 1 and 2
             to be used as categorical. For these
             elements, no  ``h
             is picked or computed.
@@ -888,9 +888,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`verticapy.vDataColumn.bar` : Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.pie` : Pie Chart.
+            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -928,7 +928,7 @@ class vDFPlot(vDFMachineLearning):
         ----------
         columns: SQLColumns
             ``list`` of  the
-            :py:class:`vDataColumns` names.
+            :py:class:`~vDataColumns` names.
             The ``list``  must have less
             than 5 elements.
         method: str, optional
@@ -940,25 +940,25 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
         of: str, optional
-            The :py:class:`vDataColumns` used
+            The :py:class:`~vDataColumns` used
             to compute the  aggregation.
         h: tuple, optional
             Interval width of the  input vDataColumns. Optimized
@@ -1053,9 +1053,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.hist` : Histogram.
+            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.hist` : Histogram.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -1201,9 +1201,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`verticapy.vDataColumn.density` : Density Plot.
+            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataColumn.density` : Density Plot.
 
         """
         vml = get_vertica_mllib()
@@ -1398,8 +1398,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`verticapy.vDataColumn.plot` : Line Plot.
+            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
 
         """
         columns = format_type(columns, dtype=list)
@@ -1546,8 +1546,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.plot` : Line Plot.
-            | :py:meth:`verticapy.vDataColumn.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
+            | :py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -1600,19 +1600,19 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation,
@@ -1692,19 +1692,19 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -1801,8 +1801,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.contour` : Contour Plot.
-            | :py:meth:`verticapy.vDataFrame.scatter_matrix` : Scatter Matrix.
+            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
+            | :py:meth:`~verticapy.vDataFrame.scatter_matrix` : Scatter Matrix.
 
         """
         columns = format_type(columns, dtype=list)
@@ -1928,8 +1928,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.hexbin` : Hexbin Plot.
-            | :py:meth:`verticapy.vDataFrame.heatmap` : Heatmap.
+            | :py:meth:`~verticapy.vDataFrame.hexbin` : Hexbin Plot.
+            | :py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -1976,19 +1976,19 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -2070,8 +2070,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.hexbin` : Hexbin Plot.
-            | :py:meth:`verticapy.vDataFrame.contour` : Contour Plot.
+            | :py:meth:`~verticapy.vDataFrame.hexbin` : Hexbin Plot.
+            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
 
         """
         columns = format_type(columns, dtype=list)
@@ -2131,19 +2131,19 @@ class vDFPlot(vDFMachineLearning):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
         of: str, optional
@@ -2219,8 +2219,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.heatmap` : Heatmap.
-            | :py:meth:`verticapy.vDataFrame.contour` : Contour Plot.
+            | :py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
+            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
 
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
@@ -2384,8 +2384,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.density` : Density Plot.
-            | :py:meth:`verticapy.vDataFrame.outliers_plot` : Outliers Plot.
+            | :py:meth:`~verticapy.vDataFrame.density` : Density Plot.
+            | :py:meth:`~verticapy.vDataFrame.outliers_plot` : Outliers Plot.
 
         """
         vml = get_vertica_mllib()
@@ -2531,8 +2531,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.contour` : Contour Plot.
-            | :py:meth:`verticapy.vDataFrame.heatmap` : Heatmap.
+            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
+            | :py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
 
         """
         columns = format_type(columns, dtype=list)
@@ -2671,8 +2671,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.scatter` : Scatter Plot.
-            | :py:meth:`verticapy.vDataFrame.boxplot` : Box Plot.
+            | :py:meth:`~verticapy.vDataFrame.scatter` : Scatter Plot.
+            | :py:meth:`~verticapy.vDataFrame.boxplot` : Box Plot.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -2906,8 +2906,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.boxplot` : Box Plot.
-            | :py:meth:`verticapy.vDataColumn.outliers_plot` : Outliers Plot.
+            | :py:meth:`~verticapy.vDataFrame.boxplot` : Box Plot.
+            | :py:meth:`~verticapy.vDataColumn.outliers_plot` : Outliers Plot.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -2964,19 +2964,19 @@ class vDCPlot(vDCScaler):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -3073,9 +3073,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3130,19 +3130,19 @@ class vDCPlot(vDCScaler):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -3239,9 +3239,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3294,19 +3294,19 @@ class vDCPlot(vDCScaler):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -3401,9 +3401,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`verticapy.vDataFrame.pie` : Pie Chart.
-            | :py:meth:`verticapy.vDataColumn.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | :py:meth:`~verticapy.vDataFrame.pie` : Pie Chart.
+            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3450,19 +3450,19 @@ class vDCPlot(vDCScaler):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -3537,8 +3537,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.pie` : Pie Chart.
-            | :py:meth:`verticapy.vDataColumn.pie` : Pie Chart.
+            | :py:meth:`~verticapy.vDataFrame.pie` : Pie Chart.
+            | :py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
 
         """
         by, of = self._parent.format_colnames(by, of)
@@ -3591,19 +3591,19 @@ class vDCPlot(vDCScaler):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -3697,9 +3697,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`verticapy.vDataColumn.bar` : Bar Chart.
+            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
         """
         if self.isnum() and not (self.isbool()):
@@ -3845,9 +3845,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.density` : Density Plot.
-            | :py:meth:`verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`verticapy.vDataColumn.hist` : Histogram.
+            | :py:meth:`~verticapy.vDataFrame.density` : Density Plot.
+            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataColumn.hist` : Histogram.
 
         """
         vml = get_vertica_mllib()
@@ -3931,19 +3931,19 @@ class vDCPlot(vDCScaler):
                 Percentage of the distribution.
             - mean:
                 Average of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - min:
                 Minimum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - max:
                 Maximum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - sum:
                 Sum of the
-                :py:class:`vDataColumns` ``of``.
+                :py:class:`~vDataColumns` ``of``.
             - q%:
                 q Quantile of the
-                :py:class:`vDataColumns` ``of``
+                :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
 
             It can also be a cutomized aggregation
@@ -4022,8 +4022,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`verticapy.vDataColumn.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
 
         """
         ts = self._parent.format_colnames(ts)
@@ -4153,8 +4153,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.plot` : Line Plot.
-            | :py:meth:`verticapy.vDataColumn.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
+            | :py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
 
         """
         ts, by = self._parent.format_colnames(ts, by)
@@ -4276,8 +4276,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`verticapy.vDataColumn.plot` : Line Plot.
+            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | :py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
 
         """
         return self._parent.range_plot(
@@ -4363,7 +4363,7 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.plot` : Line Plot.
+            | :py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
 
         """
         columns = [self._alias]

@@ -152,8 +152,8 @@ class vDFEncode(vDFFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.decode` : User Defined Encoding.
-            | :py:meth:`verticapy.vDataFrame.eval` : Evaluates an expression.
+            | :py:meth:`~verticapy.vDataFrame.decode` : User Defined Encoding.
+            | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates an expression.
         """
         return self.eval(name=name, expr=case_when(*args))
 
@@ -332,10 +332,10 @@ class vDFEncode(vDFFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.decode` : User Defined Encoding.
-            | :py:meth:`verticapy.vDataFrame.label_encode` : Label Encoding.
-            | :py:meth:`verticapy.vDataFrame.mean_encode` : Mean Encoding.
-            | :py:meth:`verticapy.vDataFrame.discretize` : Discretization.
+            | :py:meth:`~verticapy.vDataFrame.decode` : User Defined Encoding.
+            | :py:meth:`~verticapy.vDataFrame.label_encode` : Label Encoding.
+            | :py:meth:`~verticapy.vDataFrame.mean_encode` : Mean Encoding.
+            | :py:meth:`~verticapy.vDataFrame.discretize` : Discretization.
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -477,7 +477,7 @@ class vDCEncode(vDCFill):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut2.html
 
-        Let's discretize "age" using the :py:meth:`verticapy.vDataFrame.cut` method.
+        Let's discretize "age" using the :py:meth:`~verticapy.vDataFrame.cut` method.
 
         .. code-block:: python
 
@@ -511,7 +511,7 @@ class vDCEncode(vDCFill):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut4.html
 
-        Let's discretize "fare" using the :py:meth:`verticapy.vDataFrame.cut` method.
+        Let's discretize "fare" using the :py:meth:`~verticapy.vDataFrame.cut` method.
 
         .. code-block:: python
 
@@ -553,7 +553,7 @@ class vDCEncode(vDCFill):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut6.html
 
-        Let's discretize "parch" using the :py:meth:`verticapy.vDataFrame.cut` method.
+        Let's discretize "parch" using the :py:meth:`~verticapy.vDataFrame.cut` method.
 
         .. code-block:: python
 
@@ -600,10 +600,10 @@ class vDCEncode(vDCFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.decode` : User Defined Encoding.
-            | :py:meth:`verticapy.vDataFrame.label_encode` : Label Encoding.
-            | :py:meth:`verticapy.vDataFrame.mean_encode` : Mean Encoding.
-            | :py:meth:`verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
+            | :py:meth:`~verticapy.vDataFrame.decode` : User Defined Encoding.
+            | :py:meth:`~verticapy.vDataFrame.label_encode` : Label Encoding.
+            | :py:meth:`~verticapy.vDataFrame.mean_encode` : Mean Encoding.
+            | :py:meth:`~verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
         """
         labels = format_type(labels, dtype=list)
         assert self.isnum() or self.isdate(), TypeError(
@@ -736,10 +736,10 @@ class vDCEncode(vDCFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.case_when` : Conditional Statement.
-            | :py:meth:`verticapy.vDataFrame.eval` : Evaluates an expression.
-            | :py:meth:`verticapy.vDataFrame.label_encode` : Label Encoding.
-            | :py:meth:`verticapy.vDataFrame.mean_encode` : Mean Encoding.
+            | :py:meth:`~verticapy.vDataFrame.case_when` : Conditional Statement.
+            | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates an expression.
+            | :py:meth:`~verticapy.vDataFrame.label_encode` : Label Encoding.
+            | :py:meth:`~verticapy.vDataFrame.mean_encode` : Mean Encoding.
         """
         return self.apply(func=decode(StringSQL("{}"), *args))
 
@@ -1018,10 +1018,10 @@ class vDCEncode(vDCFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.decode` : User Defined Encoding.
-            | :py:meth:`verticapy.vDataFrame.label_encode` : Label Encoding.
-            | :py:meth:`verticapy.vDataFrame.mean_encode` : Mean Encoding.
-            | :py:meth:`verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
+            | :py:meth:`~verticapy.vDataFrame.decode` : User Defined Encoding.
+            | :py:meth:`~verticapy.vDataFrame.label_encode` : Label Encoding.
+            | :py:meth:`~verticapy.vDataFrame.mean_encode` : Mean Encoding.
+            | :py:meth:`~verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
         vml = get_vertica_mllib()
@@ -1331,10 +1331,10 @@ class vDCEncode(vDCFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.decode` : User Defined Encoding.
-            | :py:meth:`verticapy.vDataFrame.label_encode` : Label Encoding.
-            | :py:meth:`verticapy.vDataFrame.mean_encode` : Mean Encoding.
-            | :py:meth:`verticapy.vDataFrame.discretize` : Discretization.
+            | :py:meth:`~verticapy.vDataFrame.decode` : User Defined Encoding.
+            | :py:meth:`~verticapy.vDataFrame.label_encode` : Label Encoding.
+            | :py:meth:`~verticapy.vDataFrame.mean_encode` : Mean Encoding.
+            | :py:meth:`~verticapy.vDataFrame.discretize` : Discretization.
         """
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
@@ -1486,10 +1486,10 @@ class vDCEncode(vDCFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.decode` : User Defined Encoding.
-            | :py:meth:`verticapy.vDataFrame.mean_encode` : Mean Encoding.
-            | :py:meth:`verticapy.vDataFrame.discretize` : Discretization.
-            | :py:meth:`verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
+            | :py:meth:`~verticapy.vDataFrame.decode` : User Defined Encoding.
+            | :py:meth:`~verticapy.vDataFrame.mean_encode` : Mean Encoding.
+            | :py:meth:`~verticapy.vDataFrame.discretize` : Discretization.
+            | :py:meth:`~verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
         """
         if self.category() in ["date", "float"]:
             warning_message = (
@@ -1623,10 +1623,10 @@ class vDCEncode(vDCFill):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.decode` : User Defined Encoding.
-            | :py:meth:`verticapy.vDataFrame.label_encode` : Label Encoding.
-            | :py:meth:`verticapy.vDataFrame.discretize` : Discretization.
-            | :py:meth:`verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
+            | :py:meth:`~verticapy.vDataFrame.decode` : User Defined Encoding.
+            | :py:meth:`~verticapy.vDataFrame.label_encode` : Label Encoding.
+            | :py:meth:`~verticapy.vDataFrame.discretize` : Discretization.
+            | :py:meth:`~verticapy.vDataFrame.one_hot_encode` : One Hot Encoding.
         """
         response = self._parent.format_colnames(response)
         assert self._parent[response].isnum(), TypeError(

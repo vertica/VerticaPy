@@ -24,7 +24,7 @@ from verticapy._utils._sql._format import format_magic, format_type
 class StringSQL:
     """
     This class is utilized to represent SQL strings, with
-    :py:class:`vDataColumn`, for instance, inheriting from
+    :py:class:`~vDataColumn`, for instance, inheriting from
     this class. Its purpose is to streamline SQL operations
     in Python, enabling the use of Python operators with
     specific SQL strings to simplify operations and enhance
@@ -33,15 +33,15 @@ class StringSQL:
     Parameters
     ----------
     alias: str
-        Name of the :py:class:`StringSQL`.
+        Name of the :py:class:`~StringSQL`.
     category: str, optional
-        Category of the :py:class:`StringSQL`. This parameter
+        Category of the :py:class:`~StringSQL`. This parameter
         is crucial for performing accurate operations. For
         instance, it plays a significant role in distinguishing
         between the treatment of floats and text data.
     init_transf: str, optional
         Initial Transformation. It is employed to streamline
-        certain operations on :py:class:`vDataColumn`.
+        certain operations on :py:class:`~vDataColumn`.
 
     Attributes
     ----------
@@ -67,7 +67,7 @@ class StringSQL:
         :py:mod:`verticapy` are used as intended without
         interfering with functions from other libraries.
 
-    Let's create various :py:class:`StringSQL` objects.
+    Let's create various :py:class:`~StringSQL` objects.
 
     .. ipython:: python
 
@@ -79,7 +79,7 @@ class StringSQL:
         bool1 = vp.StringSQL('bool_col1', 'bool')
         bool2 = vp.StringSQL('bool_col2', 'bool')
 
-    The :py:class:`StringSQL` representation is a
+    The :py:class:`~StringSQL` representation is a
     straightforward string.
 
     .. ipython:: python
@@ -92,7 +92,7 @@ class StringSQL:
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     All mathematical operators are supported
-    for numerical :py:class:`StringSQL`.
+    for numerical :py:class:`~StringSQL`.
 
     .. ipython:: python
 
@@ -136,7 +136,7 @@ class StringSQL:
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     A lot of operators are supported
-    for text data-type :py:class:`StringSQL`.
+    for text data-type :py:class:`~StringSQL`.
 
     .. ipython:: python
 
@@ -154,7 +154,7 @@ class StringSQL:
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     A lot of operators are supported
-    for boolean data-type :py:class:`StringSQL`.
+    for boolean data-type :py:class:`~StringSQL`.
 
     .. ipython:: python
 
@@ -170,7 +170,7 @@ class StringSQL:
 
     .. important::
 
-        The '&' and '|' operators in :py:class:`StringSQL`
+        The '&' and '|' operators in :py:class:`~StringSQL`
         are distinct from the Python 'and' and 'or'
         operators.
 
@@ -179,9 +179,9 @@ class StringSQL:
         -circuit evaluation, meaning that the second
         operand is only evaluated if necessary.
 
-        In :py:class:`StringSQL`, '&' and '|' are used for
+        In :py:class:`~StringSQL`, '&' and '|' are used for
         boolean concatenation, not logical operations.
-        They combine two :py:class:`StringSQL` without
+        They combine two :py:class:`~StringSQL` without
         short-circuiting, meaning both sides of the
         operator are always evaluated.
 
@@ -207,7 +207,7 @@ class StringSQL:
 
     .. note::
 
-        The result is a :py:class:`StringSQL` object
+        The result is a :py:class:`~StringSQL` object
         that can be reused iteratively until we obtain
         the final SQL statement.
 
@@ -259,9 +259,9 @@ class StringSQL:
     Examples Using vDataFrame
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    :py:class:`vDataColumn` inherit from
-    :py:class:`StringSQL`, enabling operations
-    on :py:class:`vDataFrame` in a pandas-like
+    :py:class:`~vDataColumn` inherit from
+    :py:class:`~StringSQL`, enabling operations
+    on :py:class:`~vDataFrame` in a pandas-like
     manner.
 
     .. ipython:: python
@@ -278,7 +278,7 @@ class StringSQL:
 
     Let's display the result. It is noteworthy that
     the generated SQL was applied and utilized by
-    the :py:class:`vDataFrame`.
+    the :py:class:`~vDataFrame`.
 
     .. ipython:: python
         :suppress:
@@ -292,7 +292,7 @@ class StringSQL:
         :file: SPHINX_DIRECTORY/figures/core_string_sql_1.html
 
     For more examples, refer to the
-    :py:class:`vDataFrame` class.
+    :py:class:`~vDataFrame` class.
     """
 
     @property

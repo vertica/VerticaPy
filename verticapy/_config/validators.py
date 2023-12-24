@@ -29,7 +29,7 @@ def bool_validator(val: bool) -> Literal[True]:
 
         This function is useful for validating options
         during new code development.
-        The :py:func:`set_option` function utilizes it
+        The :py:func:`~set_option` function utilizes it
         to configure certain options.
 
     Parameters
@@ -63,7 +63,7 @@ def bool_validator(val: bool) -> Literal[True]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` : Sets VerticaPy options.
+        | :py:meth:`~verticapy.set_option` : Sets VerticaPy options.
     """
     if isinstance(val, bool):
         return True
@@ -81,7 +81,7 @@ def in_validator(values: list) -> Callable[[Any], Literal[True]]:
 
         This function is useful for validating options
         during new code development.
-        The :py:func:`set_option` function utilizes it
+        The :py:func:`~set_option` function utilizes it
         to configure certain options.
 
     Parameters
@@ -118,7 +118,7 @@ def in_validator(values: list) -> Callable[[Any], Literal[True]]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` : Sets VerticaPy options.
+        | :py:meth:`~verticapy.set_option` : Sets VerticaPy options.
     """
 
     def in_list(val: str):
@@ -140,7 +140,7 @@ def optional_bool_validator(val: Optional[bool]) -> Literal[True]:
 
         This function is useful for validating options
         during new code development.
-        The :py:func:`set_option` function utilizes it
+        The :py:func:`~set_option` function utilizes it
         to configure certain options.
 
     Parameters
@@ -177,7 +177,7 @@ def optional_bool_validator(val: Optional[bool]) -> Literal[True]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` : Sets VerticaPy options.
+        | :py:meth:`~verticapy.set_option` : Sets VerticaPy options.
     """
     if isinstance(val, bool) or isinstance(val, NoneType):
         return True
@@ -195,7 +195,7 @@ def optional_positive_int_validator(val: Optional[int]) -> Literal[True]:
 
         This function is useful for validating options
         during new code development.
-        The :py:func:`set_option` function utilizes it
+        The :py:func:`~set_option` function utilizes it
         to configure certain options.
 
     Parameters
@@ -232,7 +232,7 @@ def optional_positive_int_validator(val: Optional[int]) -> Literal[True]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` : Sets VerticaPy options.
+        | :py:meth:`~verticapy.set_option` : Sets VerticaPy options.
     """
     if (isinstance(val, int) and val >= 0) or isinstance(val, NoneType):
         return True
@@ -250,7 +250,7 @@ def optional_str_validator(val: Optional[str]) -> Literal[True]:
 
         This function is useful for validating options
         during new code development.
-        The :py:func:`set_option` function utilizes it
+        The :py:func:`~set_option` function utilizes it
         to configure certain options.
 
     Parameters
@@ -287,7 +287,7 @@ def optional_str_validator(val: Optional[str]) -> Literal[True]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` : Sets VerticaPy options.
+        | :py:meth:`~verticapy.set_option` : Sets VerticaPy options.
     """
     if isinstance(val, (str, NoneType)):
         return True
@@ -305,7 +305,7 @@ def str_validator(val: str) -> Literal[True]:
 
         This function is useful for validating options
         during new code development.
-        The :py:func:`set_option` function utilizes it
+        The :py:func:`~set_option` function utilizes it
         to configure certain options.
 
     Parameters
@@ -339,7 +339,7 @@ def str_validator(val: str) -> Literal[True]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` : Sets VerticaPy options.
+        | :py:meth:`~verticapy.set_option` : Sets VerticaPy options.
     """
     if isinstance(val, str):
         return True
@@ -357,7 +357,7 @@ def st_positive_int_validator(val: int) -> Literal[True]:
 
         This function is useful for validating options
         during new code development.
-        The :py:func:`set_option` function utilizes it
+        The :py:func:`~set_option` function utilizes it
         to configure certain options.
 
     Parameters
@@ -391,7 +391,7 @@ def st_positive_int_validator(val: int) -> Literal[True]:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` : Sets VerticaPy options.
+        | :py:meth:`~verticapy.set_option` : Sets VerticaPy options.
     """
     if isinstance(val, int) and val > 0:
         return True

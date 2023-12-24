@@ -50,12 +50,12 @@ pickle.DEFAULT_PROTOCOL = 4
 class vDFInOut(vDFSystem):
     def copy(self) -> "vDataFrame":
         """
-        Returns a deep copy of the :py:class:`vDataFrame`.
+        Returns a deep copy of the :py:class:`~vDataFrame`.
 
         Returns
         -------
         vDataFrame
-            The copy of the :py:class:`vDataFrame`.
+            The copy of the :py:class:`~vDataFrame`.
 
         Examples
         ---------
@@ -110,7 +110,7 @@ class vDFInOut(vDFSystem):
             data = vpd.load_titanic()
 
         Let's create a copy of data
-        :py:class:`vDataFrame`
+        :py:class:`~vDataFrame`
         and name it data_copy
 
         .. code-block:: python
@@ -133,14 +133,14 @@ class vDFInOut(vDFSystem):
         .. note::
 
             This function creates a deep copy of the
-            :py:class:`vDataFrame`. It enables you to
+            :py:class:`~vDataFrame`. It enables you to
             make modifications without altering the
-            main :py:class:`vDataFrame`.
+            main :py:class:`~vDataFrame`.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_pickle` :
-                Saves the :py:class:`vDataFrame` to a
+            | :py:meth:`~verticapy.vDataFrame.to_pickle` :
+                Saves the :py:class:`~vDataFrame` to a
                 Python pickle file.
         """
         return copy.deepcopy(self)
@@ -149,7 +149,7 @@ class vDFInOut(vDFSystem):
     def load(self, offset: int = -1) -> "vDataFrame":
         """
         Loads a previous structure of the
-        :py:class:`vDataFrame`.
+        :py:class:`~vDataFrame`.
 
         Parameters
         ----------
@@ -246,7 +246,7 @@ class vDFInOut(vDFSystem):
             filtered out from the vDataFrame.
 
         Now, let's load the last saved
-        :py:class:`vDataFrame`.
+        :py:class:`~vDataFrame`.
 
         .. code-block:: python
 
@@ -266,13 +266,13 @@ class vDFInOut(vDFSystem):
         .. note::
 
             You can observe that the last saved state of
-            :py:class:`vDataFrame` having 1234 elements
+            :py:class:`~vDataFrame` having 1234 elements
             has been loaded.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.save` :
-                Saves the current :py:class:`vDataFrame`
+            | :py:meth:`~verticapy.vDataFrame.save` :
+                Saves the current :py:class:`~vDataFrame`
                 structure.
         """
         save = self._vars["saving"][offset]
@@ -283,7 +283,7 @@ class vDFInOut(vDFSystem):
     def save(self) -> "vDataFrame":
         """
         Saves the current structure of the
-        :py:class:`vDataFrame`.
+        :py:class:`~vDataFrame`.
         This function is useful for loading
         previous transformations.
 
@@ -373,10 +373,10 @@ class vDFInOut(vDFSystem):
 
         .. note::
             You can observe that 699 element(s) were
-            filtered out from the :py:class:`vDataFrame`.
+            filtered out from the :py:class:`~vDataFrame`.
 
         Now, let's load the last saved
-        :py:class:`vDataFrame`.
+        :py:class:`~vDataFrame`.
 
         .. code-block:: python
 
@@ -396,13 +396,13 @@ class vDFInOut(vDFSystem):
         .. note::
 
             You can observe that the last saved state of
-            :py:class:`vDataFrame` having 1234 elements
+            :py:class:`~vDataFrame` having 1234 elements
             has been loaded.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.load` :
-                Loads a saved :py:class:`vDataFrame`
+            | :py:meth:`~verticapy.vDataFrame.load` :
+                Loads a saved :py:class:`~vDataFrame`
                 structure.
         """
         vdf = self.copy()
@@ -424,7 +424,7 @@ class vDFInOut(vDFSystem):
     ) -> Union[None, str, list[str]]:
         """
         Creates  a CSV  file  or  folder of CSV
-        files of  the  current :py:class:`vDataFrame`
+        files of  the  current :py:class:`~vDataFrame`
         relation.
 
         Parameters
@@ -445,19 +445,19 @@ class vDFInOut(vDFSystem):
             Char that will enclose the ``str``
             values.
         usecols: SQLColumns, optional
-            :py:class:`vDataColumn` to select from
-            the final :py:class:`vDataFrame` relation.
-            If empty, all :py:class:`vDataColumn` are
+            :py:class:`~vDataColumn` to select from
+            the final :py:class:`~vDataFrame` relation.
+            If empty, all :py:class:`~vDataColumn` are
             selected.
         header: bool, optional
             If set to ``False``, no header is
             written in the CSV file.
         new_header: list, optional
             List of columns used to replace
-            :py:class:`vDataColumn` name in
+            :py:class:`~vDataColumn` name in
             the CSV.
         order_by: SQLColumns | dict, optional
-            List of the :py:class:`vDataColumn`
+            List of the :py:class:`~vDataColumn`
             used to sort  the data, using asc
             order or a ``dictionary`` of all
             sorting methods. For example, to
@@ -554,7 +554,7 @@ class vDFInOut(vDFSystem):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_tocsv1.html
 
         Let's create the CSV file of the current
-        :py:class:`vDataFrame`.
+        :py:class:`~vDataFrame`.
 
         .. ipython:: python
 
@@ -580,13 +580,13 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_db` :
+            | :py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
-                :py:class:`vDataFrame` to the
+                :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | :py:meth:`verticapy.vDataFrame.to_json` :
+            | :py:meth:`~verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
-                :py:class:`vDataFrame` structure.
+                :py:class:`~vDataFrame` structure.
         """
         order_by, usecols, new_header = format_type(
             order_by, usecols, new_header, dtype=list
@@ -694,7 +694,7 @@ class vDFInOut(vDFSystem):
         segmented_by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
-        Saves the :py:class:`vDataFrame`
+        Saves the :py:class:`~vDataFrame`
         current relation to the Vertica
         database.
 
@@ -707,9 +707,9 @@ class vDFInOut(vDFSystem):
             Use  double  quotes '"' to avoid
             errors due to special characters.
         usecols: SQLColumns, optional
-            :py:class:`vDataColumn` to select from the
-            final :py:class:`vDataFrame` relation. If
-            empty, all :py:class:`vDataColumn` are
+            :py:class:`~vDataColumn` to select from the
+            final :py:class:`~vDataFrame` relation. If
+            empty, all :py:class:`~vDataColumn` are
             selected.
         relation_type: str, optional
             Type of the relation.
@@ -726,7 +726,7 @@ class vDFInOut(vDFSystem):
                 Inserts into an existing table.
         inplace: bool, optional
             If set to ``True``, the
-            :py:class:`vDataFrame` is replaced
+            :py:class:`~vDataFrame` is replaced
             with the new relation.
         db_filter: SQLExpression, optional
             Filter used before  creating the
@@ -743,7 +743,7 @@ class vDFInOut(vDFSystem):
             where each category represents ``1 / nb_split``
             of the entire distribution.
         order_by: SQLColumns | dict, optional
-            List of the :py:class:`vDataColumn` used to
+            List of the :py:class:`~vDataColumn` used to
             sort the data, using asc order or a
             ``dictionary`` of all sorting methods.
             For example, to sort by "column1"
@@ -924,8 +924,8 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            The :py:meth:`vDataFrame.to_db` method enables
-            you to save the :py:class:`vDataFrame` into
+            The :py:meth:`~vDataFrame.to_db` method enables
+            you to save the :py:class:`~vDataFrame` into
             various types of relations, including views,
             temporary tables, temporary local tables, and
             regular tables. It also allows for inserting
@@ -935,12 +935,12 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_csv` :
+            | :py:meth:`~verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
-                :py:class:`vDataFrame` structure.
-            | :py:meth:`verticapy.vDataFrame.to_json` :
+                :py:class:`~vDataFrame` structure.
+            | :py:meth:`~verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
-                :py:class:`vDataFrame` structure.
+                :py:class:`~vDataFrame` structure.
         """
         relation_type = relation_type.lower()
         usecols, order_by = format_type(usecols, order_by, dtype=list)
@@ -1040,7 +1040,7 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_geopandas(self, geometry: str) -> "GeoDataFrame":
         """
-        Converts the :py:class:`vDataFrame`
+        Converts the :py:class:`~vDataFrame`
         to a Geopandas ``DataFrame``.
 
         .. warning::
@@ -1060,7 +1060,7 @@ class vDFInOut(vDFSystem):
         -------
         geopandas.GeoDataFrame
             The ``geopandas.GeoDataFrame`` of
-            the current :py:class:`vDataFrame`
+            the current :py:class:`~vDataFrame`
             relation.
 
         Examples
@@ -1115,7 +1115,7 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_world()
 
-        Let's convert the :py:class:`vDataFrame`
+        Let's convert the :py:class:`~vDataFrame`
         to a Geopandas ``DataFrame``.
 
         .. code-block:: python
@@ -1141,13 +1141,13 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_db` :
+            | :py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
-                :py:class:`vDataFrame` to the
+                :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | :py:meth:`verticapy.vDataFrame.to_json` :
+            | :py:meth:`~verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
-                :py:class:`vDataFrame` structure.
+                :py:class:`~vDataFrame` structure.
         """
         if not conf.get_import_success("geopandas"):
             raise ImportError(
@@ -1185,7 +1185,7 @@ class vDFInOut(vDFSystem):
     ) -> Union[None, str, list[str]]:
         """
         Creates  a JSON file or folder of JSON
-        files of the  current :py:class:`vDataFrame`
+        files of the  current :py:class:`~vDataFrame`
         relation.
 
         Parameters
@@ -1200,11 +1200,11 @@ class vDFInOut(vDFSystem):
                 overwritten.
         usecols: SQLColumns, optional
             vDataColumns to select from the final
-            :py:class:`vDataFrame` relation. If
-            empty, all :py:class:`vDataColumn`
+            :py:class:`~vDataFrame` relation. If
+            empty, all :py:class:`~vDataColumn`
             are selected.
         order_by: str | dict | list, optional
-            List of the :py:class:`vDataColumn`
+            List of the :py:class:`~vDataColumn`
             used to sort the data, using asc order
             or ``dictionary`` of all sorting methods.
             For example, to sort by "column1" ASC
@@ -1300,7 +1300,7 @@ class vDFInOut(vDFSystem):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_tojson1.html
 
         Let's create the JSON file of the
-        current :py:class:`vDataFrame`.
+        current :py:class:`~vDataFrame`.
 
         .. ipython:: python
 
@@ -1329,13 +1329,13 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_db` :
+            | :py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
-                :py:class:`vDataFrame` to the
+                :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | :py:meth:`verticapy.vDataFrame.to_csv` :
+            | :py:meth:`~verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
-                :py:class:`vDataFrame` structure.
+                :py:class:`~vDataFrame` structure.
         """
         order_by, usecols = format_type(order_by, usecols, dtype=list)
         if n_files < 1:
@@ -1415,7 +1415,7 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_list(self) -> list:
         """
-        Converts the :py:class:`vDataFrame`
+        Converts the :py:class:`~vDataFrame`
         to a Python ``list``.
 
         .. warning::
@@ -1426,7 +1426,7 @@ class vDFInOut(vDFSystem):
         -------
         List
             The list of the current
-            :py:class:`vDataFrame`
+            :py:class:`~vDataFrame`
             relation.
 
         Examples
@@ -1481,7 +1481,7 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_titanic()
 
-        Let's convert the :py:class:`vDataFrame`
+        Let's convert the :py:class:`~vDataFrame`
         to a Python ``list``.
 
         .. ipython:: python
@@ -1501,8 +1501,8 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_numpy` :
-                Exports the :py:class:`vDataFrame` to
+            | :py:meth:`~verticapy.vDataFrame.to_numpy` :
+                Exports the :py:class:`~vDataFrame` to
                 a ``numpy.array``.
         """
         res = _executeSQL(
@@ -1529,7 +1529,7 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_numpy(self) -> np.ndarray:
         """
-        Converts the :py:class:`vDataFrame`
+        Converts the :py:class:`~vDataFrame`
         to a ``numpy.array``.
 
         .. warning::
@@ -1541,7 +1541,7 @@ class vDFInOut(vDFSystem):
         -------
         numpy.array
             The ``numpy.array`` of the
-            current :py:class:`vDataFrame`
+            current :py:class:`~vDataFrame`
             relation.
 
         Examples
@@ -1617,8 +1617,8 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_pandas` :
-                Exports the :py:class:`vDataFrame`
+            | :py:meth:`~verticapy.vDataFrame.to_pandas` :
+                Exports the :py:class:`~vDataFrame`
                 to a ``pandas.DataFrame``.
         """
         return np.array(self.to_list())
@@ -1638,7 +1638,7 @@ class vDFInOut(vDFSystem):
         -------
         pandas.DataFrame
             The ``pandas.DataFrame`` of the
-            current :py:class:`vDataFrame`
+            current :py:class:`~vDataFrame`
             relation.
 
         Examples
@@ -1693,7 +1693,7 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_titanic()
 
-        Let's convert the :py:class:`vDataFrame`
+        Let's convert the :py:class:`~vDataFrame`
         to a ``pandas.DataFrame``.
 
         .. code-block:: python
@@ -1719,8 +1719,8 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_numpy` :
-                Exports the :py:class:`vDataFrame` to a
+            | :py:meth:`~verticapy.vDataFrame.to_numpy` :
+                Exports the :py:class:`~vDataFrame` to a
                 ``numpy.array``.
         """
         data = _executeSQL(
@@ -1830,10 +1830,10 @@ class vDFInOut(vDFSystem):
             as int96 physical type (``True``) or int64
             physical type (``False``).
         by: SQLColumns, optional
-            :py:class:`vDataColumn` used in the partition.
+            :py:class:`~vDataColumn` used in the partition.
         order_by: str | dict | list, optional
             If specified as a ``list``: the ``list``
-            of :py:class:`vDataColumn` useed to sort
+            of :py:class:`~vDataColumn` useed to sort
             the data in ascending order.
             If specified as a ``dictionary``:
             a ``dictionary`` of all sorting methods.
@@ -1912,13 +1912,13 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_db` :
+            | :py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
-                :py:class:`vDataFrame` to the
+                :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | :py:meth:`verticapy.vDataFrame.to_csv` :
+            | :py:meth:`~verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
-                :py:class:`vDataFrame` structure.
+                :py:class:`~vDataFrame` structure.
         """
         order_by, by = format_type(order_by, by, dtype=list)
         if rowGroupSizeMB <= 0:
@@ -1949,7 +1949,7 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_pickle(self, name: str) -> "vDataFrame":
         """
-        Saves the :py:class:`vDataFrame`
+        Saves the :py:class:`~vDataFrame`
         to a Python pickle file.
 
         Parameters
@@ -2020,7 +2020,7 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_titanic()
 
-        Let's save the :py:class:`vDataFrame`
+        Let's save the :py:class:`~vDataFrame`
         to a Python pickle file.
 
         .. code-block:: python
@@ -2052,18 +2052,18 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            The structure of the :py:class:`vDataFrame`
+            The structure of the :py:class:`~vDataFrame`
             is saved and can be reused in another
             environment. However, the connection cannot
             be saved, and when unpickling the
-            :py:class:`vDataFrame`, you will still need
+            :py:class:`~vDataFrame`, you will still need
             to connect to the database and have access
             to data with the same structure.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.save` :
-                Saves the current :py:class:`vDataFrame`
+            | :py:meth:`~verticapy.vDataFrame.save` :
+                Saves the current :py:class:`~vDataFrame`
                 structure.
         """
         pickle.dump(self, open(name, "wb"))
@@ -2087,7 +2087,7 @@ class vDFInOut(vDFSystem):
     ) -> "vDataFrame":
         """
         Creates a SHP file of the current
-        :py:class:`vDataFrame` relation. For
+        :py:class:`~vDataFrame` relation. For
         the moment, files will be exported
         in the Vertica server.
 
@@ -2099,10 +2099,10 @@ class vDFInOut(vDFSystem):
             Absolute path where the SHP file
             is created.
         usecols: list, optional
-            :py:class:`vDataColumn` to select
-            from the final :py:class:`vDataFrame`
+            :py:class:`~vDataColumn` to select
+            from the final :py:class:`~vDataFrame`
             relation. If  empty, all
-            :py:class:`vDataColumn` are selected.
+            :py:class:`~vDataColumn` are selected.
         overwrite: bool, optional
             If set to ``True``, the function
             overwrites the index (if an index
@@ -2173,7 +2173,7 @@ class vDFInOut(vDFSystem):
             data = vpd.load_cities()
 
         Let's create the SHP file of the
-        current :py:class:`vDataFrame`.
+        current :py:class:`~vDataFrame`.
 
         .. code-block:: python
 
@@ -2190,9 +2190,9 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.to_db` :
+            | :py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
-                :py:class:`vDataFrame` to the
+                :py:class:`~vDataFrame` to the
                 Vertica Database.
         """
         usecols = format_type(usecols, dtype=list)

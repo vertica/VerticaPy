@@ -408,7 +408,7 @@ def cross_validate(
         data = vpd.load_winequality()
 
     Next, we can initialize a
-    :py:class:`verticapy.machine_learning.vertica.linear_model.LogisticRegression`
+    :py:class:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression`
     model:
 
     .. ipython:: python
@@ -418,7 +418,7 @@ def cross_validate(
         model = LogisticRegression()
 
     Now we can conveniently use the
-    :py:func:`verticapy.machine_learning.model_selection.model_validation.cross_validate`
+    :py:func:`~verticapy.machine_learning.model_selection.model_validation.cross_validate`
     function to evaluate our model.
 
     .. code-block:: python
@@ -487,17 +487,17 @@ def cross_validate(
         effectiveness of machine learning models.
 
         For example,
-        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`,
-        :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
+        :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv`,
+        :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv`
         and some other model validation functions
         are using Cross-Validation techniques.
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.grid_search_cv` :
             Computes the k-fold grid
             search of an estimator.
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.cv.randomized_search_cv` :
             Computes the K-Fold randomized
             search of an estimator.
     """
@@ -1013,7 +1013,7 @@ def learning_curve(
         })
 
     Let's proceed by creating a
-    :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier`
+    :py:class:`~verticapy.machine_learning.vertica.ensemble.RandomForestClassifier`
     model using the complete dataset.
 
     .. ipython:: python
@@ -1080,7 +1080,7 @@ def learning_curve(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.hp_tuning.plotting.validation_curve` :
+        | :py:func:`~verticapy.machine_learning.model_selection.hp_tuning.plotting.validation_curve` :
             Draws the validation curve.
     """
     sizes = format_type(sizes, dtype=list, na_out=[0.1, 0.33, 0.55, 0.78, 1.0])

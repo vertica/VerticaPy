@@ -24,14 +24,14 @@ levels of expertise and security preferences.
 Vertica Python Client Parameters
 --------------------------------
 
-The :py:func:`verticapy.connection.new_connection` function in VerticaPy relies on the ``vertica_python`` native client, a powerful tool designed for seamless integration with the VerticaPy ecosystem. This native client acts as a bridge between VerticaPy and the underlying Vertica database, facilitating efficient communication and data retrieval.
+The :py:func:`~verticapy.connection.new_connection` function in VerticaPy relies on the ``vertica_python`` native client, a powerful tool designed for seamless integration with the VerticaPy ecosystem. This native client acts as a bridge between VerticaPy and the underlying Vertica database, facilitating efficient communication and data retrieval.
 
 .. note::
 
    Visit the `official vertica_python GitHub <https://github.com/vertica/vertica-python>`_ for more information.
 
 
-The ``conn_info`` parameter utilized by the :py:func:`verticapy.connection.new_connection` function is a dictionary that aligns with the parameters supported by the ``vertica_python`` client. These parameters encompass various connection details, such as the host, port, database name, user credentials, and more. Each parameter in the ``conn_info`` dictionary corresponds to a specific aspect of the connection setup, ensuring users have fine-grained control over their connectivity preferences.
+The ``conn_info`` parameter utilized by the :py:func:`~verticapy.connection.new_connection` function is a dictionary that aligns with the parameters supported by the ``vertica_python`` client. These parameters encompass various connection details, such as the host, port, database name, user credentials, and more. Each parameter in the ``conn_info`` dictionary corresponds to a specific aspect of the connection setup, ensuring users have fine-grained control over their connectivity preferences.
 
 .. hint::
 
@@ -145,7 +145,7 @@ Discover the details of the majority of supported parameters in the table below.
 For additional examples and more in-depth information, please refer to the `official vertica_python GitHub <https://github.com/vertica/vertica-python>`_
 
 
-Additionally, the :py:func:`verticapy.connection.new_connection` function introduces an extra parameter, ``env`` which holds significance in enhancing connection security. This parameter, discussed in more detail later, enables users to configure an environment variable within the ``conn_info`` dictionary, offering an additional layer of control and customization for a secure and tailored connection experience.
+Additionally, the :py:func:`~verticapy.connection.new_connection` function introduces an extra parameter, ``env`` which holds significance in enhancing connection security. This parameter, discussed in more detail later, enables users to configure an environment variable within the ``conn_info`` dictionary, offering an additional layer of control and customization for a secure and tailored connection experience.
 
 Advanced Authentication Options (Kerberos & OAuth)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,7 +218,7 @@ VerticaPy auto connections provide a convenient and secure way to manage databas
 Auto Connection with Credential Storage (Unsecured)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Auto connections provide a hands-free option, simplifying the user experience by automatically managing credentials. This approach enhances ease of use but requires careful consideration, as credentials are stored in plaintext. Users can easily modify auto connections using functions like :py:func:`verticapy.connection.change_auto_connection` and :py:func:`verticapy.connection.delete_connection`, offering both flexibility and control over their connection setup. For those prioritizing security, the option to use environment variables within the input connection dictionary ensures a more robust and protected connection without compromising simplicity.
+Auto connections provide a hands-free option, simplifying the user experience by automatically managing credentials. This approach enhances ease of use but requires careful consideration, as credentials are stored in plaintext. Users can easily modify auto connections using functions like :py:func:`~verticapy.connection.change_auto_connection` and :py:func:`~verticapy.connection.delete_connection`, offering both flexibility and control over their connection setup. For those prioritizing security, the option to use environment variables within the input connection dictionary ensures a more robust and protected connection without compromising simplicity.
 
 In the provided example, we establish a new auto connection named ``VerticaDSN``. By utilizing the setting of ``auto=True`` (which is also the default), the connection is automatically saved to a designated directory. The path for saving this connection is determined by the ``VERTICAPY_CONNECTION`` environment variable. If this variable exists, the associated path is used; otherwise, the file is stored in a hidden folder named .vertica located in the home directory. This streamlined approach ensures that connections are efficiently managed and, if desired, conveniently located based on user preferences or system configurations.
 

@@ -126,7 +126,7 @@ def generate_lib_udf(
         privileges to install it.
 
     .. seealso::
-        | :py:func:`verticapy.sdk.vertica.udf.import_lib_udf` : Imports the UDF.
+        | :py:func:`~verticapy.sdk.vertica.udf.import_lib_udf` : Imports the UDF.
     """
     include_dependencies = format_type(include_dependencies, dtype=list)
     if not isinstance(include_dependencies, (list)):

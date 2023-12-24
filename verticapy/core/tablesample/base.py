@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 class TableSample:
     """
-    :py:class:`verticapy.core.tablesample.base.TableSample` sits at the
+    :py:class:`~verticapy.core.tablesample.base.TableSample` sits at the
     transition from 'Big Data' to 'Small
     Data'. This object allows you to
     conveniently  display your results
@@ -56,7 +56,7 @@ class TableSample:
     modules. It stores the aggregated
     result in-memory and can then be
     transformed into a ``pandas.DataFrame``
-    or :py:class:`vDataFrame`.
+    or :py:class:`~vDataFrame`.
 
     Parameters
     ----------
@@ -88,7 +88,7 @@ class TableSample:
 
     Examples
     --------
-    Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+    Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
     object:
 
     .. ipython:: python
@@ -141,13 +141,13 @@ class TableSample:
 
     .. note::
 
-        Explore :py:class:`verticapy.core.tablesample.base.TableSample`
+        Explore :py:class:`~verticapy.core.tablesample.base.TableSample`
         different methods to see more
         examples.
 
     .. seealso::
 
-        | :py:class:`vDataFrame` :
+        | :py:class:`~vDataFrame` :
             Main VerticaPy dataset object.
     """
 
@@ -332,7 +332,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -421,13 +421,13 @@ class TableSample:
 
     def append(self, tbs: "TableSample") -> "TableSample":
         """
-        Appends the input :py:class:`verticapy.core.tablesample.base.TableSample`
-        to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
+        Appends the input :py:class:`~verticapy.core.tablesample.base.TableSample`
+        to a target :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Parameters
         ----------
         tbs: TableSample
-            :py:class:`verticapy.core.tablesample.base.TableSample` to append.
+            :py:class:`~verticapy.core.tablesample.base.TableSample` to append.
 
         Returns
         -------
@@ -436,7 +436,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -513,14 +513,14 @@ class TableSample:
         .. warning::
 
             This will modify the main object, and
-            the input :py:class:`verticapy.core.tablesample.base.TableSample` will
+            the input :py:class:`~verticapy.core.tablesample.base.TableSample` will
             be appended to it.
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.merge` :
-                Merges the input :py:class:`verticapy.core.tablesample.base.TableSample`
-                to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.merge` :
+                Merges the input :py:class:`~verticapy.core.tablesample.base.TableSample`
+                to a target :py:class:`~verticapy.core.tablesample.base.TableSample`.
         """
         assert isinstance(tbs, TableSample), ValueError(
             "TableSamples can only be appended to another TableSample."
@@ -540,13 +540,13 @@ class TableSample:
     ) -> Literal["bool", "date", "float", "int", "undefined", "text",]:
         """
         Returns the category of data in a
-        specified :py:class:`verticapy.core.tablesample.base.TableSample`
+        specified :py:class:`~verticapy.core.tablesample.base.TableSample`
         column.
 
         Parameters
         ----------
         column: str
-            :py:class:`verticapy.core.tablesample.base.TableSample` column.
+            :py:class:`~verticapy.core.tablesample.base.TableSample` column.
 
         Returns
         -------
@@ -555,7 +555,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -599,8 +599,8 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.get_columns` :
-                Returns the :py:class:`verticapy.core.tablesample.base.TableSample` columns.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.get_columns` :
+                Returns the :py:class:`~verticapy.core.tablesample.base.TableSample` columns.
         """
         x = np.array(self[column])
         for xi in x:
@@ -618,7 +618,7 @@ class TableSample:
 
     def decimal_to_float(self) -> "TableSample":
         """
-        Converts all the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Converts all the :py:class:`~verticapy.core.tablesample.base.TableSample`
         ``decimals`` to ``floats``.
 
         Returns
@@ -628,7 +628,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -692,9 +692,9 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.category` :
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.category` :
                 Returns the category of data in a
-                specified :py:class:`verticapy.core.tablesample.base.TableSample`
+                specified :py:class:`~verticapy.core.tablesample.base.TableSample`
                 column.
         """
         for elem in self.values:
@@ -715,7 +715,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -755,20 +755,20 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.shape` :
-                Returns the :py:class:`verticapy.core.tablesample.base.TableSample` shape.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.shape` :
+                Returns the :py:class:`~verticapy.core.tablesample.base.TableSample` shape.
         """
         return list(self.values)
 
     def merge(self, tbs: "TableSample") -> "TableSample":
         """
-        Merges the input :py:class:`verticapy.core.tablesample.base.TableSample`
-        to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
+        Merges the input :py:class:`~verticapy.core.tablesample.base.TableSample`
+        to a target :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Parameters
         ----------
         tbs: TableSample
-            :py:class:`verticapy.core.tablesample.base.TableSample` to merge.
+            :py:class:`~verticapy.core.tablesample.base.TableSample` to merge.
 
         Returns
         -------
@@ -777,7 +777,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -852,14 +852,14 @@ class TableSample:
         .. warning::
 
             This will modify the main object, and
-            the input :py:class:`verticapy.core.tablesample.base.TableSample` will
+            the input :py:class:`~verticapy.core.tablesample.base.TableSample` will
             be merged to it.
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.append` :
-                Appends the input :py:class:`verticapy.core.tablesample.base.TableSample`
-                to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.append` :
+                Appends the input :py:class:`~verticapy.core.tablesample.base.TableSample`
+                to a target :py:class:`~verticapy.core.tablesample.base.TableSample`.
         """
         assert isinstance(tbs, TableSample), ValueError(
             "TableSamples can only be merged with other TableSamples."
@@ -879,11 +879,11 @@ class TableSample:
     def narrow(self, use_number_as_category: bool = False) -> Union[tuple, list]:
         """
         Returns the narrow representation
-        of the :py:class:`verticapy.core.tablesample.base.TableSample`.
+        of the :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -923,9 +923,9 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.merge` :
-                Merges the input :py:class:`verticapy.core.tablesample.base.TableSample`
-                to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.merge` :
+                Merges the input :py:class:`~verticapy.core.tablesample.base.TableSample`
+                to a target :py:class:`~verticapy.core.tablesample.base.TableSample`.
         """
         res = []
         d = copy.deepcopy(self.values)
@@ -977,7 +977,7 @@ class TableSample:
     ) -> "TableSample":
         """
         Returns the result of a SQL query
-        as a :py:class:`verticapy.core.tablesample.base.TableSample` object.
+        as a :py:class:`~verticapy.core.tablesample.base.TableSample` object.
 
         Parameters
         ----------
@@ -1008,7 +1008,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1043,7 +1043,7 @@ class TableSample:
 
         .. seealso::
 
-            | :py:class:`vDataFrame` :
+            | :py:class:`~vDataFrame` :
                 Main VerticaPy dataset object.
         """
         query = clean_query(query)
@@ -1095,7 +1095,7 @@ class TableSample:
 
     def shape(self) -> tuple[int, int]:
         """
-        Computes the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Computes the :py:class:`~verticapy.core.tablesample.base.TableSample`
         ``shape``.
 
         Returns
@@ -1105,7 +1105,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1145,8 +1145,8 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.get_columns` :
-                Returns the :py:class:`verticapy.core.tablesample.base.TableSample` columns.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.get_columns` :
+                Returns the :py:class:`~verticapy.core.tablesample.base.TableSample` columns.
         """
         cols = list(self.values)
         n, m = len(cols), len(self.values[cols[0]])
@@ -1171,7 +1171,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1223,9 +1223,9 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.merge` :
-                Merges the input :py:class:`verticapy.core.tablesample.base.TableSample`
-                to a target :py:class:`verticapy.core.tablesample.base.TableSample`.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.merge` :
+                Merges the input :py:class:`~verticapy.core.tablesample.base.TableSample`
+                to a target :py:class:`~verticapy.core.tablesample.base.TableSample`.
         """
         column = column.replace('"', "").lower()
         columns = [col for col in self.values]
@@ -1250,16 +1250,16 @@ class TableSample:
 
     def transpose(self) -> "TableSample":
         """
-        Transposes the :py:class:`verticapy.core.tablesample.base.TableSample`.
+        Transposes the :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Returns
         -------
         TableSample
-            transposed :py:class:`verticapy.core.tablesample.base.TableSample`.
+            transposed :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1311,14 +1311,14 @@ class TableSample:
         .. warning::
 
             This will modify the main object, and
-            the input :py:class:`verticapy.core.tablesample.base.TableSample` will
+            the input :py:class:`~verticapy.core.tablesample.base.TableSample` will
             be appended to it.
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.narrow` :
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.narrow` :
                 Returns the narrow representation of the
-                :py:class:`verticapy.core.tablesample.base.TableSample`.
+                :py:class:`~verticapy.core.tablesample.base.TableSample`.
         """
         index = [column for column in self.values]
         first_item = list(self.values.keys())[0]
@@ -1337,7 +1337,7 @@ class TableSample:
 
     def to_list(self) -> list:
         """
-        Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
         to a ``list``.
 
         Returns
@@ -1347,7 +1347,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1387,8 +1387,8 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_numpy` :
-                Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.to_numpy` :
+                Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
                 to a ``numpy.array``.
         """
         res = []
@@ -1405,7 +1405,7 @@ class TableSample:
 
     def to_numpy(self) -> np.ndarray:
         """
-        Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
         to a Numpy array.
 
         Returns
@@ -1415,7 +1415,7 @@ class TableSample:
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1455,26 +1455,26 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_list` :
-                Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.to_list` :
+                Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
                 to a Python ``list``.
         """
         return np.array(self.to_list())
 
     def to_pandas(self) -> pd.DataFrame:
         """
-        Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
         to a ``pandas.DataFrame``.
 
         Returns
         -------
         pandas.DataFrame
             ``pandas.DataFrame`` of the
-            :py:class:`verticapy.core.tablesample.base.TableSample`.
+            :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1514,8 +1514,8 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_numpy` :
-                Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.to_numpy` :
+                Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
                 to a ``numpy.array``.
         """
         if "index" in self.values:
@@ -1527,17 +1527,17 @@ class TableSample:
     def to_sql(self) -> str:
         """
         Generates the SQL query associated
-        to the :py:class:`verticapy.core.tablesample.base.TableSample`.
+        to the :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Returns
         -------
         str
             SQL query associated to
-            the :py:class:`verticapy.core.tablesample.base.TableSample`.
+            the :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1577,9 +1577,9 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_vdf` :
-                Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
-                to a :py:class:`vDataFrame`.
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.to_vdf` :
+                Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
+                to a :py:class:`~vDataFrame`.
         """
         sql = []
         n = len(self.values[list(self.values.keys())[0]])
@@ -1595,18 +1595,18 @@ class TableSample:
 
     def to_vdf(self) -> "vDataFrame":
         """
-        Converts the :py:class:`verticapy.core.tablesample.base.TableSample`
-        to a :py:class:`vDataFrame`.
+        Converts the :py:class:`~verticapy.core.tablesample.base.TableSample`
+        to a :py:class:`~vDataFrame`.
 
         Returns
         -------
         vDataFrame
-            :py:class:`vDataFrame` of the
-            :py:class:`verticapy.core.tablesample.base.TableSample`.
+            :py:class:`~vDataFrame` of the
+            :py:class:`~verticapy.core.tablesample.base.TableSample`.
 
         Examples
         --------
-        Let's import the :py:class:`verticapy.core.tablesample.base.TableSample`
+        Let's import the :py:class:`~verticapy.core.tablesample.base.TableSample`
         object:
 
         .. ipython:: python
@@ -1657,8 +1657,8 @@ class TableSample:
 
         .. seealso::
 
-            | :py:meth:`verticapy.core.tablesample.base.TableSample.to_sql` :
+            | :py:meth:`~verticapy.core.tablesample.base.TableSample.to_sql` :
                 Generates the SQL query associated
-                to the :py:class:`verticapy.core.tablesample.base.TableSample`.
+                to the :py:class:`~verticapy.core.tablesample.base.TableSample`.
         """
         return create_new_vdf(self.to_sql())

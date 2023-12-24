@@ -105,11 +105,11 @@ class Clustering(Unsupervised):
             model predictors are used.
         name: str, optional
             Name of the added
-            :py:class:`vDataColumn`.
+            :py:class:`~vDataColumn`.
             If empty, a name is generated.
         inplace: bool, optional
             If set to ``True``, the prediction
-            is added to the :py:class:`vDataFrame`.
+            is added to the :py:class:`~vDataFrame`.
 
         Returns
         -------
@@ -417,13 +417,13 @@ class KMeans(Clustering):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.Clustering.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
         method.
 
     Examples
@@ -493,7 +493,7 @@ class KMeans(Clustering):
     ^^^^^^^^^^^^^^^^^^^^^
 
     First we import the
-    :py:class:`verticapy.machine_learning.vertica.cluster.KMeans`
+    :py:class:`~verticapy.machine_learning.vertica.cluster.KMeans`
     model:
 
     .. code-block::
@@ -545,7 +545,7 @@ class KMeans(Clustering):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -637,7 +637,7 @@ class KMeans(Clustering):
     Plots - Voronoi
     ^^^^^^^^^^^^^^^^
 
-    :py:class:`verticapy.machine_learning.vertica.cluster.KMeans`
+    :py:class:`~verticapy.machine_learning.vertica.cluster.KMeans`
     models can be visualized by
     drawing their voronoi plots.
     For more examples, check out
@@ -774,7 +774,7 @@ class KMeans(Clustering):
     .. hint::
 
         The
-        :py:meth:`verticapy.machine_learning.vertica.tree.KMeans.to_python`
+        :py:meth:`~verticapy.machine_learning.vertica.tree.KMeans.to_python`
         method is used to retrieve the anomaly score.
         For specific details on how to
         use this method for different
@@ -912,7 +912,7 @@ class KMeans(Clustering):
         .. note::
 
             Look at
-            :py:class:`verticapy.machine_learning.memmodel.cluster.KMeans`
+            :py:class:`~verticapy.machine_learning.memmodel.cluster.KMeans`
             for more information.
         """
         return mm.KMeans(
@@ -1018,7 +1018,7 @@ class KMeans(Clustering):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.KMeans`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.KMeans`
             for more information about the
             different methods and usages.
         """
@@ -1117,13 +1117,13 @@ class KPrototypes(KMeans):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.Clustering.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
         method.
 
     Examples
@@ -1244,7 +1244,7 @@ class KPrototypes(KMeans):
     .. important::
 
         To train a model, you can directly
-        use the :py:class:`vDataFrame` or
+        use the :py:class:`~vDataFrame` or
         the name of the relation stored in
         the database.
 
@@ -1329,7 +1329,7 @@ class KPrototypes(KMeans):
 
         As we are using a categorical feature in this example,
         this plot cannot be drawn. It is only for numeric features.
-        Please have a look at :py:meth:`verticapy.machine_learning.vertica.KMeans`
+        Please have a look at :py:meth:`~verticapy.machine_learning.vertica.KMeans`
         for plotting examples.
 
     Plots - Voronoi
@@ -1346,7 +1346,7 @@ class KPrototypes(KMeans):
 
         As we are using a categorical feature in this example,
         this plot cannot be drawn. It is only for numeric features.
-        Please have a look at :py:meth:`verticapy.machine_learning.vertica.KMeans`
+        Please have a look at :py:meth:`~verticapy.machine_learning.vertica.KMeans`
         for plotting examples.
 
 
@@ -1364,7 +1364,7 @@ class KPrototypes(KMeans):
 
         As we are using a categorical feature in this example,
         this plot cannot be drawn. It is only for numeric features.
-        Please have a look at :py:meth:`verticapy.machine_learning.vertica.KMeans`
+        Please have a look at :py:meth:`~verticapy.machine_learning.vertica.KMeans`
         for plotting examples.
 
     .. note::
@@ -1463,7 +1463,7 @@ class KPrototypes(KMeans):
     .. hint::
 
         The
-        :py:meth:`verticapy.machine_learning.vertica.tree.KPrototypes.to_python`
+        :py:meth:`~verticapy.machine_learning.vertica.tree.KPrototypes.to_python`
         method is used to retrieve the anomaly score.
         For specific details on how to
         use this method for different
@@ -1573,7 +1573,7 @@ class KPrototypes(KMeans):
         .. note::
 
             Look at
-            :py:class:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+            :py:class:`~verticapy.machine_learning.memmodel.cluster.KPrototypes`
             for more information.
         """
         return mm.KPrototypes(
@@ -1722,13 +1722,13 @@ class BisectingKMeans(KMeans, Tree):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.Clustering.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes`
         method.
 
     Examples
@@ -1852,7 +1852,7 @@ class BisectingKMeans(KMeans, Tree):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -2102,7 +2102,7 @@ class BisectingKMeans(KMeans, Tree):
     .. hint::
 
         The
-        :py:meth:`verticapy.machine_learning.vertica.tree.BisectingKMeans.to_python`
+        :py:meth:`~verticapy.machine_learning.vertica.tree.BisectingKMeans.to_python`
         method is used to retrieve the anomaly score.
         For specific details on how to
         use this method for different
@@ -2242,7 +2242,7 @@ class BisectingKMeans(KMeans, Tree):
         .. note::
 
             Look at
-            :py:class:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+            :py:class:`~verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
             for more information.
         """
         return mm.BisectingKMeans(
@@ -2330,7 +2330,7 @@ class BisectingKMeans(KMeans, Tree):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.BisectingKMeans`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.BisectingKMeans`
             for more information about the
             different methods and usages.
         """
@@ -2438,7 +2438,7 @@ class BisectingKMeans(KMeans, Tree):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.BisectingKMeans`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.BisectingKMeans`
             for more information about the
             different methods and usages.
         """
@@ -2532,7 +2532,7 @@ class BisectingKMeans(KMeans, Tree):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.BisectingKMeans`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.BisectingKMeans`
             for more information about the
             different methods and usages.
         """
@@ -2622,7 +2622,7 @@ class DBSCAN(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
         method.
 
     Examples
@@ -2680,7 +2680,7 @@ class DBSCAN(VerticaModel):
     ^^^^^^^^^^^^^^^^^^^^^
 
     First we import the
-    :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+    :py:class:`~verticapy.machine_learning.vertica.cluster.DBSCAN`
     model:
 
     .. code-block::
@@ -2722,7 +2722,7 @@ class DBSCAN(VerticaModel):
     .. important::
 
         To train a model, you can directly
-        use the :py:class:`vDataFrame` or
+        use the :py:class:`~vDataFrame` or
         the name of the relation stored in
         the database.
 
@@ -2877,7 +2877,7 @@ class DBSCAN(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.DBSCAN`
             for more information about the
             different methods and usages.
         """
@@ -2910,7 +2910,7 @@ class DBSCAN(VerticaModel):
         X: SQLColumns, optional
             ``list`` of the predictors.
             If empty, all the numerical
-            `:py:class:`vDataColumn`
+            `:py:class:`~vDataColumn`
             are used.
         key_columns: SQLColumns, optional
             Columns not used during the
@@ -2968,7 +2968,7 @@ class DBSCAN(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.DBSCAN`
             for more information about the
             different methods and usages.
         """
@@ -3145,13 +3145,13 @@ class DBSCAN(VerticaModel):
 
     def predict(self) -> vDataFrame:
         """
-        Creates a :py:class:`vDataFrame`
+        Creates a :py:class:`~vDataFrame`
         of the model.
 
         Returns
         -------
         vDataFrame
-            the :py:class:`vDataFrame`
+            the :py:class:`~vDataFrame`
             including the prediction.
 
         Examples
@@ -3220,7 +3220,7 @@ class DBSCAN(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.DBSCAN`
             for more information about the
             different methods and usages.
         """
@@ -3318,7 +3318,7 @@ class DBSCAN(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.cluster.DBSCAN`
+            :py:class:`~verticapy.machine_learning.vertica.cluster.DBSCAN`
             for more information about the
             different methods and usages.
         """
@@ -3378,7 +3378,7 @@ class NearestCentroid(MulticlassClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
         method.
 
     Examples
@@ -3440,7 +3440,7 @@ class NearestCentroid(MulticlassClassifier):
     You can easily divide your dataset
     into training and testing subsets
     using the
-    :py:meth:`vDataFrame.train_test_split`
+    :py:meth:`~vDataFrame.train_test_split`
     method. This is a crucial step when
     preparing your data for machine learning,
     as it allows you to evaluate the
@@ -3458,7 +3458,7 @@ class NearestCentroid(MulticlassClassifier):
         of your data split. However, please be aware
         that this approach may lead to reduced
         performance. For a more efficient data split,
-        you can use the :py:meth:`vDataFrame.to_db`
+        you can use the :py:meth:`~vDataFrame.to_db`
         method to save your results into ``tables``
         or ``temporary tables``. This will help
         enhance the overall performance of the
@@ -3478,7 +3478,7 @@ class NearestCentroid(MulticlassClassifier):
     In VerticaPy, balancing a dataset to
     address class imbalances is made
     straightforward through the
-    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`~verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing``
     module. This function enables users
     to rectify skewed class distributions
@@ -3490,7 +3490,7 @@ class NearestCentroid(MulticlassClassifier):
     Whether opting for over-sampling,
     under-sampling, or a combination
     of both, VerticaPy's
-    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`~verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process,
     empowering users to enhance the
     performance and fairness of their
@@ -3547,7 +3547,7 @@ class NearestCentroid(MulticlassClassifier):
     ^^^^^^^^^^^^^^^^^^^^^
 
     First we import the
-    :py:class:`verticapy.machine_learning.vertica.cluster.NearestCentroid`
+    :py:class:`~verticapy.machine_learning.vertica.cluster.NearestCentroid`
     model:
 
     .. ipython:: python
@@ -3582,7 +3582,7 @@ class NearestCentroid(MulticlassClassifier):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -3645,7 +3645,7 @@ class NearestCentroid(MulticlassClassifier):
 
 
     You can also use the
-    :py:meth:`verticapy.machine_learning.vertica.cluster.NearestCentroid.score`
+    :py:meth:`~verticapy.machine_learning.vertica.cluster.NearestCentroid.score`
     function to compute any
     classification metric. The
     default metric is the accuracy:
@@ -3707,11 +3707,11 @@ class NearestCentroid(MulticlassClassifier):
         using the test set, in which case you
         don't need to specify the predictors.
         Alternatively, you can pass only the
-        :py:class:`vDataFrame` to the
-        :py:meth:`verticapy.machine_learning.vertica.cluster.NearestCentroid.predict`
+        :py:class:`~vDataFrame` to the
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.NearestCentroid.predict`
         function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the
+        the :py:class:`~vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -3755,7 +3755,7 @@ class NearestCentroid(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the :py:class:`vDataFrame`,
+        Probabilities are added to the :py:class:`~vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
@@ -3946,7 +3946,7 @@ class NearestCentroid(MulticlassClassifier):
     .. hint::
 
         The
-        :py:meth:`verticapy.machine_learning.vertica.cluster.NearestCentroid.to_python`
+        :py:meth:`~verticapy.machine_learning.vertica.cluster.NearestCentroid.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For
         specific details on how to use this method
@@ -4071,7 +4071,7 @@ class NearestCentroid(MulticlassClassifier):
         .. note::
 
             Look at
-            :py:class:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
+            :py:class:`~verticapy.machine_learning.memmodel.cluster.NearestCentroid`
             for more information.
         """
         return mm.NearestCentroid(

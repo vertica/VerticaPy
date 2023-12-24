@@ -170,7 +170,7 @@ def save_to_query_profile(
     Refer to the decorator to understand
     how to use this function:
 
-    :py:func:`verticapy._utils._sql._collect.save_verticapy_logs`
+    :py:func:`~verticapy._utils._sql._collect.save_verticapy_logs`
     """
     json_dict = format_type(json_dict, dtype=dict)
     value = conf.get_option("save_query_profile")

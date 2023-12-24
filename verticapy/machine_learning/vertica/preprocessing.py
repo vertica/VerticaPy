@@ -199,7 +199,7 @@ def balance(
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html
 
     .. seealso::
-        | :py:meth:`verticapy.vDataFrame.sample` : Sampling the dataset.
+        | :py:meth:`~verticapy.vDataFrame.sample` : Sampling the dataset.
     """
     _executeSQL(
         query=f"""
@@ -552,7 +552,7 @@ class Preprocessing(Unsupervised):
     ) -> vDataFrame:
         """
         Applies the model on a
-        :py:class:`vDataFrame`.
+        :py:class:`~vDataFrame`.
 
         Parameters
         ----------
@@ -566,7 +566,7 @@ class Preprocessing(Unsupervised):
             are invalid.
         X: SQLColumns, optional
             ``list`` of the input
-            :py:class:`vDataColumn`.
+            :py:class:`~vDataColumn`.
 
         Returns
         -------
@@ -673,7 +673,7 @@ class Preprocessing(Unsupervised):
     ) -> vDataFrame:
         """
         Applies the Inverse
-        Model on a :py:class:`vDataFrame`.
+        Model on a :py:class:`~vDataFrame`.
 
         Parameters
         ----------
@@ -687,7 +687,7 @@ class Preprocessing(Unsupervised):
             are invalid.
         X: SQLColumns, optional
             ``list`` of the input
-            :py:class:`vDataColumn`.
+            :py:class:`~vDataColumn`.
 
         Returns
         -------
@@ -812,7 +812,7 @@ class CountVectorizer(VerticaModel):
         This feature is deprecated and
         it will be removed on VerticaPy
         version 1.1.0. Please use:
-        :py:class:`verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer`
+        :py:class:`~verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer`
         instead.
 
     Parameters
@@ -858,7 +858,7 @@ class CountVectorizer(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes`
         method.
     """
 
@@ -1144,13 +1144,13 @@ class Scaler(Preprocessing):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes`
         method.
 
     Examples
@@ -1252,7 +1252,7 @@ class Scaler(Preprocessing):
 
     .. important::
 
-        To fit a model, you can directly use the :py:class:`vDataFrame`
+        To fit a model, you can directly use the :py:class:`~vDataFrame`
         or the name of the relation stored in the database.
 
     Model Parameters
@@ -1295,9 +1295,9 @@ class Scaler(Preprocessing):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_scaler_transform_3.html
 
     Please refer to
-    :py:meth:`verticapy.machine_learning.Scaler.transform`
+    :py:meth:`~verticapy.machine_learning.Scaler.transform`
     for more details on transforming
-    a :py:class:`vDataFrame`.
+    a :py:class:`~vDataFrame`.
 
     Similarly, you can perform the
     inverse transform to get the
@@ -1363,17 +1363,17 @@ class Scaler(Preprocessing):
     .. hint::
 
         The
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler.to_python`
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.Scaler.to_python`
         method is used to scale the data. For specific details on how
         to use this method for different model types, refer to the
         relevant documentation for each model.
 
     .. seealso::
-        | :py:class:`verticapy.machine_learning.vertica.preprocessing.StandardScaler` :
+        | :py:class:`~verticapy.machine_learning.vertica.preprocessing.StandardScaler` :
             Scalar with method set as ``zscore``.
-        | :py:class:`verticapy.machine_learning.vertica.preprocessing.RobustScaler` :
+        | :py:class:`~verticapy.machine_learning.vertica.preprocessing.RobustScaler` :
             Scalar with method set as ``robust_zscore``.
-        | :py:class:`verticapy.machine_learning.vertica.preprocessing.MinMaxScaler` :
+        | :py:class:`~verticapy.machine_learning.vertica.preprocessing.MinMaxScaler` :
             Scalar with method set as ``minmax``.
     """
 
@@ -1473,7 +1473,7 @@ class Scaler(Preprocessing):
         .. note::
 
             Look at
-            :py:class:`verticapy.machine_learning.memmodel.preprocessing.Scaler`
+            :py:class:`~verticapy.machine_learning.memmodel.preprocessing.Scaler`
             for more information.
         """
         if self.parameters["method"] == "minmax":
@@ -1491,7 +1491,7 @@ class StandardScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:class:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:class:`~verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1510,7 +1510,7 @@ class RobustScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:class:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:class:`~verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1529,7 +1529,7 @@ class MinMaxScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:class:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:class:`~verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1614,13 +1614,13 @@ class OneHotEncoder(Preprocessing):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes`
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes`
         method.
 
     Examples
@@ -1731,7 +1731,7 @@ class OneHotEncoder(Preprocessing):
 
     .. important::
 
-        To train a model, you can directly use the :py:class:`vDataFrame`
+        To train a model, you can directly use the :py:class:`~vDataFrame`
         or the name of the relation stored in the database.
 
     Classes
@@ -1768,9 +1768,9 @@ class OneHotEncoder(Preprocessing):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_ooe_transform_1.html
 
     Please refer to
-    :py:meth:`verticapy.machine_learning.OneHotEncoder.transform`
+    :py:meth:`~verticapy.machine_learning.OneHotEncoder.transform`
     for more details on transforming
-    a :py:class:`vDataFrame`.
+    a :py:class:`~vDataFrame`.
 
     Similarly, you can perform the
     inverse transform to get the
@@ -1837,7 +1837,7 @@ class OneHotEncoder(Preprocessing):
     .. hint::
 
         The
-        :py:meth:`verticapy.machine_learning.vertica.preprocessing.OneHotEncoder.to_python`
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.OneHotEncoder.to_python`
         method is used to transform the data and compute the different
         categories. For specific details on how to use this method for
         different model types, refer to the relevant documentation for
@@ -1996,7 +1996,7 @@ class OneHotEncoder(Preprocessing):
         .. note::
 
             Look at
-            :py:class:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+            :py:class:`~verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
             for more information.
         """
         return mm.OneHotEncoder(self.categories_, self.column_naming_, self.drop_first_)

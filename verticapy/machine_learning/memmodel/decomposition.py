@@ -26,7 +26,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class PCA(InMemoryModel):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``PCA`` algorithm.
 
@@ -41,7 +41,7 @@ class PCA(InMemoryModel):
 
     .. note::
 
-        :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+        :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
         are defined entirely by their
         attributes. For example,
         ``principal_components`` and
@@ -64,7 +64,7 @@ class PCA(InMemoryModel):
 
         from verticapy.machine_learning.memmodel.decomposition import PCA
 
-    A :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+    A :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
     model is defined by
     its ``principal_components``
     and ``mean`` value.
@@ -80,7 +80,7 @@ class PCA(InMemoryModel):
         mean = [0.1, 0.3]
 
     Let's create a
-    :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+    :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
     model.
 
     .. ipython:: python
@@ -96,7 +96,7 @@ class PCA(InMemoryModel):
     **Making In-Memory Transformation**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.transform`
+    :py:meth:`~verticapy.machine_learning.memmodel.decomposition.PCA.transform`
     method to do transformation.
 
     .. ipython:: python
@@ -113,7 +113,7 @@ class PCA(InMemoryModel):
         cnames = ['col1', 'col2']
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.transform_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.decomposition.PCA.transform_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -125,7 +125,7 @@ class PCA(InMemoryModel):
     **Perform an Oblimin Rotation**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
+    :py:meth:`~verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
     method to perform Oblimin (Varimax,
     Quartimax) rotation on PCA matrix.
 
@@ -138,7 +138,7 @@ class PCA(InMemoryModel):
         You can determine the type of
         rotation by adjusting value
         of gamma in
-        :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
+        :py:meth:`~verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
         method. It must be between
         ``0.0`` and ``1.0``.
 
@@ -159,7 +159,7 @@ class PCA(InMemoryModel):
         model_pca.rotate(gamma)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.get_attributes`
+    :py:meth:`~verticapy.machine_learning.memmodel.decomposition.PCA.get_attributes`
     method to check the attributes
     of the rotated model.
 
@@ -196,7 +196,7 @@ class PCA(InMemoryModel):
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
         Transforms and applies the
-        :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+        :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
         model to the input matrix.
 
         Parameters
@@ -250,7 +250,7 @@ class PCA(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+            :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
             for more information about the
             different methods and usages.
         """
@@ -268,7 +268,7 @@ class PCA(InMemoryModel):
         """
         Transforms and returns the
         SQL needed to deploy the
-        :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+        :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
         model.
 
         Parameters
@@ -330,7 +330,7 @@ class PCA(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+            :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
             for more information about the
             different methods and usages.
         """
@@ -362,7 +362,7 @@ class PCA(InMemoryModel):
         input matrix.
 
         Refer to
-        :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
+        :py:meth:`~verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
         for more information.
         """
         # This piece of code was taken from
@@ -392,7 +392,7 @@ class PCA(InMemoryModel):
         """
         Performs an Oblimin (Varimax,
         Quartimax) rotation on the
-        :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+        :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
         matrix.
 
         Parameters
@@ -464,7 +464,7 @@ class PCA(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.decomposition.PCA`
+            :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
             for more information about the
             different methods and usages.
         """
@@ -474,7 +474,7 @@ class PCA(InMemoryModel):
 
 class SVD(InMemoryModel):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``SVD`` Algorithm.
 
@@ -490,7 +490,7 @@ class SVD(InMemoryModel):
 
     .. note::
 
-        :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+        :py:class:`~verticapy.machine_learning.memmodel.decomposition.SVD`
         are defined entirely by their
         attributes. For example, ``vectors``
         and ``values`` define a SVD model.
@@ -512,7 +512,7 @@ class SVD(InMemoryModel):
 
         from verticapy.machine_learning.memmodel.decomposition import SVD
 
-    A :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+    A :py:class:`~verticapy.machine_learning.memmodel.decomposition.SVD`
     model is defined by
     its vectors and values.
     In this example, we will
@@ -527,7 +527,7 @@ class SVD(InMemoryModel):
         values = [0.1, 0.3]
 
     Let's create a
-    :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+    :py:class:`~verticapy.machine_learning.memmodel.decomposition.SVD`
     model.
 
     .. ipython:: python
@@ -543,7 +543,7 @@ class SVD(InMemoryModel):
     **Making In-Memory Transformation**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.transform`
+    :py:meth:`~verticapy.machine_learning.memmodel.decomposition.SVD.transform`
     method to do transformation.
 
     .. ipython:: python
@@ -559,7 +559,7 @@ class SVD(InMemoryModel):
         cnames = ['col1', 'col2']
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.transform_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.decomposition.SVD.transform_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -569,7 +569,7 @@ class SVD(InMemoryModel):
         model_svd.transform_sql(cnames)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.get_attributes`
+    :py:meth:`~verticapy.machine_learning.memmodel.decomposition.SVD.get_attributes`
     method to check the
     attributes of the
     rotated model.
@@ -608,7 +608,7 @@ class SVD(InMemoryModel):
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
         Transforms and applies the
-        :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+        :py:class:`~verticapy.machine_learning.memmodel.decomposition.SVD`
         model to the input matrix.
 
         Parameters
@@ -662,7 +662,7 @@ class SVD(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+            :py:class:`~verticapy.machine_learning.memmodel.decomposition.SVD`
             for more information about the
             different methods and usages.
         """
@@ -679,7 +679,7 @@ class SVD(InMemoryModel):
         Transforms and returns
         the SQL needed to deploy
         the
-        :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+        :py:class:`~verticapy.machine_learning.memmodel.decomposition.SVD`
         model.
 
         Parameters
@@ -734,7 +734,7 @@ class SVD(InMemoryModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.decomposition.SVD`
+            :py:class:`~verticapy.machine_learning.memmodel.decomposition.SVD`
             for more information about the
             different methods and usages.
         """

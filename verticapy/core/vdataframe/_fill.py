@@ -53,7 +53,7 @@ class vDFFill(vDFPivot):
         numeric_only: bool = False,
     ) -> "vDataFrame":
         """
-        Fills missing elements in :py:class:`vDataColumn`
+        Fills missing elements in :py:class:`~vDataColumn`
         using specific rules.
 
         Parameters
@@ -63,15 +63,15 @@ class vDFFill(vDFPivot):
             must be similar to the following:
             ``{"column1": val1 ..., "columnk": valk}``.
             Each key of the ``dictionary`` must be
-            a :py:class:`vDataColumn` . The missing
-            values of the input :py:class:`vDataColumn`
+            a :py:class:`~vDataColumn` . The missing
+            values of the input :py:class:`~vDataColumn`
             are replaced by the input value.
         method: dict, optional
             Method used to impute the missing values.
 
             - auto:
                 Mean for the numerical and Mode for the
-                categorical :py:class:`vDataColumn`.
+                categorical :py:class:`~vDataColumn`.
             - mean:
                 Average.
             - median:
@@ -79,18 +79,18 @@ class vDFFill(vDFPivot):
             - mode:
                 Mode (most occurent element).
             - 0ifnull:
-                0 when the :py:class:`vDataColumn`
+                0 when the :py:class:`~vDataColumn`
                 is ``None``, 1 otherwise.
 
             More Methods are available in the
-            :py:meth:`vDataColumn.fillna` method.
+            :py:meth:`~vDataColumn.fillna` method.
         numeric_only: bool, optional
             If parameters 'val' and 'method' are
             empty and 'numeric_only' is set to
-            ``True``, all numerical :py:class:`vDataColumn`
+            ``True``, all numerical :py:class:`~vDataColumn`
             are imputed by their average. If set
             to ``False``, all categorical
-            :py:class:`vDataColumn` are also
+            :py:class:`~vDataColumn` are also
             imputed by their mode.
 
         Returns
@@ -201,8 +201,8 @@ class vDFFill(vDFPivot):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.interpolate` : Fill missing values by interpolating.
-            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
+            | :py:meth:`~verticapy.vDataFrame.interpolate` : Fill missing values by interpolating.
+            | :py:meth:`~verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         val, method = format_type(val, method, dtype=dict)
         print_info = conf.get_option("print_info")
@@ -369,8 +369,8 @@ class vDFFill(vDFPivot):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
-            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
+            | :py:meth:`~verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
+            | :py:meth:`~verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         method = format_type(method, dtype=dict)
         by = format_type(by, dtype=list)
@@ -508,8 +508,8 @@ class vDCFill(vDCMath):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
-            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
+            | :py:meth:`~verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
+            | :py:meth:`~verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         assert (not isinstance(lower, NoneType)) or (
             not isinstance(upper, NoneType)
@@ -649,8 +649,8 @@ class vDCFill(vDCMath):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
-            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
+            | :py:meth:`~verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
+            | :py:meth:`~verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -865,8 +865,8 @@ class vDCFill(vDCMath):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.interpolate` : Fill missing values by interpolating.
-            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
+            | :py:meth:`~verticapy.vDataFrame.interpolate` : Fill missing values by interpolating.
+            | :py:meth:`~verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         method = method.lower()
         by, order_by = format_type(by, order_by, dtype=list)

@@ -124,9 +124,9 @@ class Option:
 
     .. seealso::
 
-        | :py:meth:`verticapy.register_option` :
+        | :py:meth:`~verticapy.register_option` :
             Registers the input option.
-        | :py:meth:`verticapy.set_option` :
+        | :py:meth:`~verticapy.set_option` :
             Sets VerticaPy options.
     """
 
@@ -189,7 +189,7 @@ def get_option(key: str) -> Any:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` :
+        | :py:meth:`~verticapy.set_option` :
             Sets VerticaPy options.
     """
     return _all_options[key].val
@@ -244,7 +244,7 @@ def register_option(op: Option) -> None:
 
     .. seealso::
 
-        | :py:meth:`verticapy.set_option` :
+        | :py:meth:`~verticapy.set_option` :
             Sets VerticaPy options.
     """
     _all_options[op.key] = op
@@ -277,13 +277,13 @@ def set_option(key: str, value: Any = None) -> None:
          - count_on:
             [bool]
             If set to ``True``, the total number of rows in
-            :py:class:`vDataFrame` and :py:class:`verticapy.core.tablesample.base.TableSample`
+            :py:class:`~vDataFrame` and :py:class:`~verticapy.core.tablesample.base.TableSample`
             is computed and displayed in the footer (if
             ``footer_on is True``).
          - footer_on:
             [bool]
-            If set to ``True``, :py:class:`vDataFrame` and
-            :py:class:`verticapy.core.tablesample.base.TableSample` show a footer that includes
+            If set to ``True``, :py:class:`~vDataFrame` and
+            :py:class:`~verticapy.core.tablesample.base.TableSample` show a footer that includes
             information about the displayed rows and columns.
          - interactive:
             [bool]
@@ -325,7 +325,7 @@ def set_option(key: str, value: Any = None) -> None:
          - print_info:
             [bool]
             If set to ``True``, information is printed each
-            time the :py:class:`vDataFrame` is modified.
+            time the :py:class:`~vDataFrame` is modified.
          - random_state:
             [int]
             Integer used to seed random number generation
@@ -410,7 +410,7 @@ def set_option(key: str, value: Any = None) -> None:
         Exercise caution when enabling this option,
         as it may result in decreased performance.
         VerticaPy will perform calculations to determine
-        the number of elements in a displayed :py:class:`vDataFrame`,
+        the number of elements in a displayed :py:class:`~vDataFrame`,
         which can have an impact on overall system performance.
 
     .. ipython:: python
@@ -503,7 +503,7 @@ def set_option(key: str, value: Any = None) -> None:
     .. hint::
 
         The light mode option streamlines the
-        display of :py:class:`vDataFrame`, creating
+        display of :py:class:`~vDataFrame`, creating
         a more minimalistic appearance that can
         enhance the fluidity of your notebook.
 
@@ -663,7 +663,7 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. seealso::
 
-        | :py:meth:`verticapy.get_option` :
+        | :py:meth:`~verticapy.get_option` :
             Returns the value of a specified option.
     """
     if key in _all_options:

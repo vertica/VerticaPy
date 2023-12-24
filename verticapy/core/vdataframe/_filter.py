@@ -149,8 +149,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.between` : Filters between two conditions.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.between` : Filters between two conditions.
         """
         self.filter(f"{self.format_colnames(ts)}::time = '{time}'")
         return self
@@ -312,8 +312,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.between` : Filters between two conditions.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.between` : Filters between two conditions.
         """
         if not 0 <= x <= 1:
             raise ValueError("Parameter 'x' must be between 0 and 1")
@@ -463,8 +463,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
         """
         if not isinstance(start, NoneType) and not isinstance(end, NoneType):
             condition = f"BETWEEN '{start}' AND '{end}'"
@@ -601,8 +601,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.between` : Filters between two conditions.
-            | :py:meth:`verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
+            | :py:meth:`~verticapy.vDataFrame.between` : Filters between two conditions.
+            | :py:meth:`~verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
         """
         if not isinstance(start_time, NoneType) and not (
             isinstance(end_time, NoneType)
@@ -723,8 +723,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.drop_duplicates` : Drops the vDataFrame duplicates.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.drop_duplicates` : Drops the vDataFrame duplicates.
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -839,8 +839,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
         """
         columns = format_type(columns, dtype=list)
         count = self.duplicated(columns=columns, count=True)
@@ -988,8 +988,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -1125,8 +1125,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
         """
         force_filter = True
         if "force_filter" in kwargs:
@@ -1319,8 +1319,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
         """
         ts = self.format_colnames(ts)
         first_date = _executeSQL(
@@ -1434,8 +1434,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
         """
         val = self.format_colnames(val)
         n = len(val[list(val.keys())[0]])
@@ -1561,8 +1561,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.first` : Filters the vDataFrame by only keeping the first records.
-            | :py:meth:`verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
+            | :py:meth:`~verticapy.vDataFrame.first` : Filters the vDataFrame by only keeping the first records.
+            | :py:meth:`~verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
         """
         ts = self.format_colnames(ts)
         last_date = _executeSQL(
@@ -1743,8 +1743,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.isin` : Checks whether specific records are in the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.isin` : Checks whether specific records are in the vDataFrame.
         """
         if x == 1:
             return self.copy()
@@ -1932,8 +1932,8 @@ class vDFFilter(vDFAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.isin` : Checks whether specific records are in the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.isin` : Checks whether specific records are in the vDataFrame.
         """
         order_by, usecols, expr = format_type(order_by, usecols, expr, dtype=list)
         if isinstance(conditions, Iterable) and not isinstance(conditions, str):
@@ -2052,8 +2052,8 @@ class vDCFilter(vDCAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.drop` : Drops the input vDataColumn.
-            | :py:meth:`verticapy.vDataFrame.drop_duplicates` : Drops the vDataFrame duplicates.
+            | :py:meth:`~verticapy.vDataColumn.drop` : Drops the input vDataColumn.
+            | :py:meth:`~verticapy.vDataFrame.drop_duplicates` : Drops the vDataFrame duplicates.
         """
         try:
             parent = self._parent
@@ -2182,8 +2182,8 @@ class vDCFilter(vDCAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.drop` : Drops the input vDataColumn.
-            | :py:meth:`verticapy.vDataFrame.drop_duplicates` : Drops the vDataFrame duplicates.
+            | :py:meth:`~verticapy.vDataColumn.drop` : Drops the input vDataColumn.
+            | :py:meth:`~verticapy.vDataFrame.drop_duplicates` : Drops the vDataFrame duplicates.
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -2321,8 +2321,8 @@ class vDCFilter(vDCAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.dropna` : Drops the vDataFrame missing values.
-            | :py:meth:`verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
+            | :py:meth:`~verticapy.vDataFrame.dropna` : Drops the vDataFrame missing values.
+            | :py:meth:`~verticapy.vDataFrame.drop` : Drops the vDataFrame input columns.
         """
         self._parent.filter(f"{self} IS NOT NULL")
         return self._parent
@@ -2426,8 +2426,8 @@ class vDCFilter(vDCAgg):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.balance` : Balances the vDataFrame.
-            | :py:meth:`verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
+            | :py:meth:`~verticapy.vDataFrame.balance` : Balances the vDataFrame.
+            | :py:meth:`~verticapy.vDataFrame.at_time` : Filters the vDataFrame at a specific time.
         """
         if isinstance(val, str) or not isinstance(val, Iterable):
             val = [val]

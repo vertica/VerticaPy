@@ -295,7 +295,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
 
@@ -328,7 +328,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         # Ensure intensity is between 0 and 1
@@ -367,7 +367,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if unit == "K":
@@ -398,7 +398,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         rows = row.split("\n")
@@ -427,7 +427,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if nb < 1e3:
@@ -464,7 +464,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         res = row
@@ -496,7 +496,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         res = ""
@@ -524,7 +524,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         res = ""
@@ -551,7 +551,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if self.style["display_operator"]:
@@ -599,7 +599,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         res = ""
@@ -662,7 +662,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if metric == "rows" and "Rows: " in row:
@@ -706,7 +706,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         res = [self.path_order[0]]
@@ -736,7 +736,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         for i, l in enumerate(level_initiators):
@@ -769,7 +769,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if node == self.path_order[0]:
@@ -815,7 +815,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if node == self.path_order[0]:
@@ -853,7 +853,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         n = len(self.rows)
@@ -893,7 +893,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if not (self.style["display_operator"]) and len(colors) == 1:
@@ -958,7 +958,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         n, res, me = len(self.rows), "", []
@@ -1047,7 +1047,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         res, n = "", len(self.rows)
@@ -1097,7 +1097,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         n = len(self.rows)
@@ -1145,7 +1145,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         fillcolor = self.style["fillcolor"]
@@ -1202,7 +1202,7 @@ class PerformanceTree:
 
         Examples
         --------
-        See :py:meth:`verticapy.performance.vertica.tree`
+        See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
         if not conf.get_import_success("graphviz"):

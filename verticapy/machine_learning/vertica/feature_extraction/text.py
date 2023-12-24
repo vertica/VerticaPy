@@ -151,7 +151,7 @@ class TfidfVectorizer(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
         method.
 
     Examples
@@ -192,7 +192,7 @@ class TfidfVectorizer(VerticaModel):
             "Data preprocessing is an important step in preparing data for machine learning.",
         ]
 
-    Next, we can insert this text into a :py:class:`vDataFrame`:
+    Next, we can insert this text into a :py:class:`~vDataFrame`:
 
     .. ipython:: python
 
@@ -304,7 +304,7 @@ class TfidfVectorizer(VerticaModel):
         model.stop_words_
 
     .. seealso::
-        | :py:meth:`verticapy.vDataColumn.pivot` : pivot vDataFrame.
+        | :py:meth:`~verticapy.vDataColumn.pivot` : pivot vDataFrame.
     """
 
     # Properties.

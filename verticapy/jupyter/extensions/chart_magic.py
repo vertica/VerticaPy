@@ -252,7 +252,7 @@ def chart_magic(
                 This method  uses a CROSS JOIN  during
                 computation and is therefore computationally
                 expensive at  O(n * n),  where n is the  total
-                count of  the :py:class:`vDataFrame`.
+                count of  the :py:class:`~vDataFrame`.
          - line:
             Line Plot.
          - negative_bar:
@@ -354,7 +354,7 @@ def chart_magic(
         amazon = load_amazon()
         iris = load_iris()
 
-    Use the :py:func:`set_option` function to set your
+    Use the :py:func:`~set_option` function to set your
     desired plotting library:
 
     .. ipython:: python
@@ -595,7 +595,7 @@ def chart_magic(
 
     .. note::
 
-        In this example, we use a :py:class:`vDataFrame`, but it's
+        In this example, we use a :py:class:`~vDataFrame`, but it's
         also possible to use a ``pandas.DataFrame``, a
         ``numpy.array``, and many other in-memory objects.
 

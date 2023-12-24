@@ -47,8 +47,8 @@ def best_k(
     **kwargs,
 ) -> int:
     """
-    Finds the :py:class:`verticapy.machine_learning.vertica.KMeans`
-    / :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+    Finds the :py:class:`~verticapy.machine_learning.vertica.KMeans`
+    / :py:class:`~verticapy.machine_learning.vertica.KPrototypes`
     ``k`` based on a score.
 
     Parameters
@@ -95,10 +95,10 @@ def best_k(
     use_kprototype: bool, optional
         If set to ``True``, the function
         uses the
-        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        :py:class:`~verticapy.machine_learning.vertica.KPrototypes`
         algorithm instead of
-        :py:class:`verticapy.machine_learning.vertica.KMeans`.
-        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        :py:class:`~verticapy.machine_learning.vertica.KMeans`.
+        :py:class:`~verticapy.machine_learning.vertica.KPrototypes`
         can handle categorical features.
     gamma: float, optional
         Only if ``use_kprototype = True``.
@@ -207,7 +207,7 @@ def best_k(
     ^^^^^^^^^^^^
 
     Let's compute the optimal ``k`` for our
-    :py:class:`verticapy.machine_learning.vertica.KMeans`
+    :py:class:`~verticapy.machine_learning.vertica.KMeans`
     algorithm and check if it aligns with
     the three clusters we observed earlier.
 
@@ -235,7 +235,7 @@ def best_k(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.kmeans.elbow` :
+        | :py:func:`~verticapy.machine_learning.model_selection.kmeans.elbow` :
             Draws an Elbow curve.
     """
     X = format_type(X, dtype=list)
@@ -356,10 +356,10 @@ def elbow(
     use_kprototype: bool, optional
         If set to ``True``, the function
         uses the
-        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        :py:class:`~verticapy.machine_learning.vertica.KPrototypes`
         algorithm instead of
-        :py:class:`verticapy.machine_learning.vertica.KMeans`.
-        :py:class:`verticapy.machine_learning.vertica.KPrototypes`
+        :py:class:`~verticapy.machine_learning.vertica.KMeans`.
+        :py:class:`~verticapy.machine_learning.vertica.KPrototypes`
         can handle categorical features.
     gamma: float, optional
         Only if ``use_kprototype = True``.
@@ -473,7 +473,7 @@ def elbow(
     ^^^^^^^^^^^^
 
     Let's compute the optimal ``k`` for our
-    :py:class:`verticapy.machine_learning.vertica.KMeans`
+    :py:class:`~verticapy.machine_learning.vertica.KMeans`
     algorithm and check if it aligns with the three
     clusters we observed earlier.
 
@@ -526,9 +526,9 @@ def elbow(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.kmeans.best_k` :
-            Finds the :py:class:`verticapy.machine_learning.vertica.KMeans` /
-            :py:class:`verticapy.machine_learning.vertica.KPrototypes` ``k``
+        | :py:func:`~verticapy.machine_learning.model_selection.kmeans.best_k` :
+            Finds the :py:class:`~verticapy.machine_learning.vertica.KMeans` /
+            :py:class:`~verticapy.machine_learning.vertica.KPrototypes` ``k``
             based on a score.
     """
     X = format_type(X, dtype=list)
