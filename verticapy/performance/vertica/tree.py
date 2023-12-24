@@ -610,6 +610,8 @@ class PerformanceTree:
                 return "?"
             if "OUTER ->" in operator:
                 res = "O"
+                if "CROSS JOIN" in parent_operator:
+                    res += "-X"
                 if "OUTER (FILTER)" in parent_operator:
                     res += "-F"
                 if "OUTER (BROADCAST)" in parent_operator:
@@ -618,6 +620,8 @@ class PerformanceTree:
                     res += "-R"
             elif "INNER ->" in operator:
                 res = "I"
+                if "CROSS JOIN" in parent_operator:
+                    res += "-X"
                 if "INNER (FILTER)" in parent_operator:
                     res += "-F"
                 if "INNER (BROADCAST)" in parent_operator:
@@ -920,7 +924,7 @@ class PerformanceTree:
             proj = (
                 f'<TR><TD COLSPAN="{colspan}" WIDTH="{width}" '
                 f'HEIGHT="{height}" BGCOLOR="{fillcolor}" ><FONT '
-                f'POINT-SIZE="{fontsize // 2}" COLOR="{fontcolor}">'
+                f'POINT-SIZE="{fontsize // 2.2}" COLOR="{fontcolor}">'
                 f"{proj}</FONT></TD></TR>"
             )
         if self.style["display_operator"] and not (isinstance(operator_icon, NoneType)):
