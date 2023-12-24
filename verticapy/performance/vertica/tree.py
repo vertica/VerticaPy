@@ -824,6 +824,38 @@ class PerformanceTree:
 
         return descendants
 
+    @staticmethod
+    def _find_children(node: int, relationships: list[tuple[int, int]]) -> list:
+        """
+        Method used to find the direct
+        children of a specific node in
+        a tree-like structure represented
+        by parent-child relationships.
+
+        Parameters
+        ----------
+        node: int
+            Node ID.
+        relationships: list
+            ``list`` of tuple
+            ``(parent, child)``
+
+        Returns
+        -------
+        list
+            list of children.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        children = []
+        for parent, child in relationships:
+            if parent == node:
+                children += [child]
+        return children
+
     def _find_ancestors(self, node: int, relationships: list[tuple[int, int]]) -> list:
         """
         Method used to find all ancestors
@@ -1098,7 +1130,15 @@ class PerformanceTree:
                     and not (isinstance(self.path_id, NoneType))
                     and nb_children[tree_id] > 1
                 ):
-                    descendants = self._find_descendants(tree_id, relationships)
+                    children = self._find_children(tree_id, relationships)
+                    other_children = []
+                    for child in children:
+                        if child not in links:
+                            other_children += [child]
+                    descendants = copy.deepcopy(other_children)
+                    for child in other_children:
+                        descendants += self._find_descendants(child, relationships)
+
                     descendants_str = "Descendants: " + ", ".join(
                         str(d) for d in descendants
                     )
