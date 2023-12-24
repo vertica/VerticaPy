@@ -1138,6 +1138,7 @@ class PerformanceTree:
                     descendants = copy.deepcopy(other_children)
                     for child in other_children:
                         descendants += self._find_descendants(child, relationships)
+
                     descendants_str = "Descendants: " + ", ".join(
                         str(d) for d in descendants
                     )
