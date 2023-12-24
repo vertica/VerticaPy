@@ -136,10 +136,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_10k.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_10k.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train_10k.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_10k.html
 
   .. tab:: Prediction Run Time
 
@@ -166,10 +166,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_10k.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10k.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction_10k.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10k.html
 
 
   .. tab:: Mean Squared Error
@@ -197,10 +197,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_10k.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_10k.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse_10k.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_10k.html
 
 
 .. tab:: 100K
@@ -230,10 +230,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_100k.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_100k.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train_100k.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_100k.html
 
   .. tab:: Prediction Run Time
 
@@ -260,10 +260,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_100k.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100k.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction_100k.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100k.html
 
 
   .. tab:: Mean Squared Error
@@ -291,10 +291,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_100k.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_100k.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse_100k.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_100k.html
 
 
 .. tab:: 1M
@@ -324,10 +324,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_1m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train_1m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html
 
   .. tab:: Prediction Run Time
 
@@ -354,10 +354,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_1m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction_1m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html
 
 
   .. tab:: Mean Squared Error
@@ -385,10 +385,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_1m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse_1m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html
 
 
 
@@ -419,10 +419,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_10m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_10m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train_10m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_10m.html
 
   .. tab:: Prediction Run Time
 
@@ -449,10 +449,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_10m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction_10m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10m.html
 
 
   .. tab:: Mean Squared Error
@@ -480,10 +480,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_10m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_10m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse_10m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_10m.html
 
 
 
@@ -516,10 +516,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_train_100m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_100m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_train_100m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_100m.html
 
   .. tab:: Prediction Run Time
 
@@ -546,10 +546,10 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_prediction_100m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_prediction_100m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100m.html
 
 
   .. tab:: Mean Squared Error
@@ -577,9 +577,9 @@ Browse throught the different tabs to see the results:
           width = 600,
           height = 500,
           )
-      fig.write_html("/project/data/VerticaPy/docs/figures/benchmark_arima_mse_100m.html")
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_100m.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/benchmark_arima_mse_100m.html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_100m.html
 
 

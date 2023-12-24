@@ -50,24 +50,10 @@ Dataset
   .. list-table:: 
       :header-rows: 1
 
-      * - # of Rows
+      * - No. of Rows
+        - No. of Columns
       * - 25 M
-
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.express as px
-    col_des = ['No. of Columns', 'No. of Feature Columns']
-    vals = [106, 105] 
-    df = pd.DataFrame({'des': col_des, 'vals': vals})
-    fig = px.bar(df, x='des', y='vals', 
-      color='des')
-    fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html")
-
-  .. raw:: html
-    :file: SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html
+        - 106
 
   Datatypes of data: :bdg-primary-line:`Float`
 
@@ -491,22 +477,12 @@ Dataset
 
 
 
-  .. ipython:: python
-    :suppress:
+  .. list-table:: 
+      :header-rows: 1
 
-    import plotly.express as px
-    col_des = ['No. of Columns', 'No. of Feature Columns']
-    vals = [106, 105] 
-    df = pd.DataFrame({'des': col_des, 'vals': vals})
-    fig = px.bar(df, x='des', y='vals', 
-      color='des')
-    fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html")
-
-  .. raw:: html
-    :file: SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data_cols.html
-
-
+      * - No. of Columns
+      * - 106
+      
   Datatypes of data: :bdg-primary-line:`Float`
 
 .. note::

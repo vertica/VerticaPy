@@ -79,20 +79,11 @@ Datasets
     :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data.html
 
 
-  .. ipython:: python
-    :suppress:
+  .. list-table:: 
+      :header-rows: 1
 
-    import plotly.express as px
-    col_des = ['No. of Columns', 'No. of Feature Columns']
-    vals = [29, 28] 
-    df = pd.DataFrame({'des': col_des, 'vals': vals})
-    fig = px.bar(df, x='des', y='vals', 
-      color='des')
-    fig.update_layout(xaxis_title=None, yaxis_title=None,showlegend=False)
-    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data_cols.html")
-
-  .. raw:: html
-    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data_cols.html
+      * - No. of Columns
+      * - 29
 
 
   Datatypes of data: :bdg-primary-line:`Float`
@@ -120,21 +111,11 @@ Datasets
 
 
 
-  .. ipython:: python
-    :suppress:
+  .. list-table:: 
+      :header-rows: 1
 
-    import plotly.express as px
-    col_des = ['No. of Columns', 'No. of Feature Columns']
-    vals = [106, 105] 
-    df = pd.DataFrame({'des': col_des, 'vals': vals})
-    fig = px.bar(df, x='des', y='vals', 
-      color='des')
-    fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data_cols.html")
-
-  .. raw:: html
-    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data_cols.html
-
+      * - No. of Columns
+      * - 106
 
   Datatypes of data: :bdg-primary-line:`Float`
 
@@ -691,13 +672,16 @@ Dataset
 
 **Amazon**
 
-Size: 25 M
+.. list-table:: 
+    :header-rows: 1
 
-Number of columns : 106
+    * - No. of Rows
+      - No. of Columns
+    * - 25 M
+      - 106
 
-Datatypes of data: Float
+Datatypes of data: :bdg-primary-line:`Float`
 
-Number of feature columns: 105
 
 .. note::
 
