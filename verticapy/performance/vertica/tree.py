@@ -256,6 +256,8 @@ class PerformanceTree:
             d["display_proj"] = True
         if "display_etc" not in d:
             d["display_etc"] = True
+        if "network_edge" not in d:
+            d["network_edge"] = True
         self.style = d
         self.path_id_info = []
         if isinstance(path_id_info, int):
@@ -1088,7 +1090,6 @@ class PerformanceTree:
             for j, x in enumerate(me):
                 tooltip_metrics += f"\n{self.metric[j]}: {x[i]}"
             tree_id = self.path_order[i]
-            dummy_id = self.path_order[-1] + 1
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             row = self._format_row(self.rows[i].replace('"', "'"))
@@ -1144,14 +1145,6 @@ class PerformanceTree:
                     )
                     descendants_str += f"\n\nTotal: {len(descendants)}"
                     res += f'\t{100000 - tree_id} [label="...", tooltip="{descendants_str}"];\n'
-            if tree_id == self.path_id and tree_id != init_id and self.show_ancestors:
-                params = f'width={wh}, height={wh}, tooltip="{row}", URL="#path_id={tree_id}"'
-                label = self._gen_label_table(
-                    tree_id,
-                    colors,
-                    operator=row,
-                )
-                res += f"\t{dummy_id} [label={label}, {params}];\n"
         return res
 
     def _gen_links(self) -> str:
@@ -1180,7 +1173,6 @@ class PerformanceTree:
         for i in range(n):
             row = self._format_row(self.rows[i].replace('"', "'"))
             tree_id = self.path_order[i]
-            dummy_id = self.path_order[-1] + 1
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             parent, child = relationships[i]
@@ -1189,8 +1181,14 @@ class PerformanceTree:
                 if lb == parent and j >= 0:
                     parent_row = self._format_row(self.rows[j].replace('"', "'"))
             label = " " + self._get_operator_edge(row, parent_row) + " "
-            if parent != child and child in links:
-                res += f'\t{parent} -> {child} [dir=back, label="{label}"];\n'
+            style = "solid"
+            if self.style["network_edge"]:
+                if "B" in label:
+                    style = "dotted"
+                elif "R" in label:
+                    style = "dashed"
+                if parent != child and child in links:
+                    res += f'\t{parent} -> {child} [dir=back, label="{label}", style={style}];\n'
             if (
                 self.style["display_etc"]
                 and parent in ancestors
@@ -1201,7 +1199,7 @@ class PerformanceTree:
                 res += f"\t{parent} -> {100000 - parent} [dir=back];\n"
                 done += [parent]
             if child == self.path_id and tree_id != init_id and self.show_ancestors:
-                res += f'\t{parent} -> {dummy_id} [dir=back, label="{label}"];\n'
+                res += f'\t{parent} -> {tree_id} [dir=back, label="{label}", style={style}];\n'
             if tree_id in self.path_id_info:
                 res += (
                     f'\t{info_bubble} -> {tree_id} [dir=none, color="{info_color}"];\n'
