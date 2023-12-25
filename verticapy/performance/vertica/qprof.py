@@ -1678,6 +1678,13 @@ class QueryProfiler:
                 Information box font
                 size.
                 Default: 8
+            - network_edge:
+                If set to ``True`` the
+                network edges will all
+                have their own style:
+                dotted for BROADCAST,
+                dashed for RESEGMENT
+                else solid.
             - display_operator:
                 If set to ``True`` the
                 PATH ID operator of each
