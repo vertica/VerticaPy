@@ -104,13 +104,6 @@ class PlotlyBase(PlottingBase):
 
     # Get
 
-    def _get_fig(self, fig: Optional[Figure] = None) -> Figure:
-        pio.templates.default = self._get_theme()
-        if fig:
-            return fig
-        else:
-            return go.Figure()
-
     @staticmethod
     def _get_theme() -> Literal["ggplot2", "plotly_white", "plotly_dark", "none"]:
         theme = conf.get_option("theme")
@@ -121,6 +114,16 @@ class PlotlyBase(PlottingBase):
         elif theme == "sphinx":
             return "ggplot2"
         return "none"
+
+    def _get_fig(self, fig: Optional[Figure] = None) -> Figure:
+        pio.templates.default = self._get_theme()
+        if fig:
+            res = fig
+        else:
+            res = go.Figure()
+        if conf.get_option("theme") == "sphinx":
+            res.update_layout(plot_bgcolor="var(--color-announcement-background)")
+        return res
 
     @staticmethod
     def _get_max_decimal_point(arr: ArrayLike) -> int:
