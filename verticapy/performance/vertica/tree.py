@@ -1212,7 +1212,12 @@ class PerformanceTree:
                         node = child
                     res += f'\t{parent} -> {node} [dir=back, label="{label}"];\n'
                 done += [parent]
-            if child == self.path_id and tree_id != init_id and self.show_ancestors:
+            if (
+                child == self.path_id
+                and tree_id != init_id
+                and self.show_ancestors
+                and parent not in done
+            ):
                 res += f'\t{parent} -> {tree_id} [dir=back, label="{label}", style={style}];\n'
             if tree_id in self.path_id_info:
                 res += (
