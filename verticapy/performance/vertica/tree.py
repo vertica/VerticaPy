@@ -1187,8 +1187,8 @@ class PerformanceTree:
                     style = "dotted"
                 elif "R" in label:
                     style = "dashed"
-                if parent != child and child in links:
-                    res += f'\t{parent} -> {child} [dir=back, label="{label}", style={style}];\n'
+            if parent != child and child in links:
+                res += f'\t{parent} -> {child} [dir=back, label="{label}", style={style}];\n'
             if (
                 self.style["display_etc"]
                 and parent in ancestors
@@ -1196,7 +1196,21 @@ class PerformanceTree:
                 and nb_children[parent] > 1
                 and parent not in done
             ):
-                res += f"\t{parent} -> {100000 - parent} [dir=back];\n"
+                children = self._find_children(parent, relationships)
+                other_children = []
+                for child in children:
+                    if child not in links:
+                        other_children += [child]
+                for child in other_children:
+                    for j, p in enumerate(self.path_order):
+                        if p == child:
+                            break
+                    row_j = self.rows[j]
+                    label = " " + self._get_operator_edge(row_j, parent_row) + " "
+                    node = 100000 - parent
+                    if child == self.path_id:
+                        node = child
+                    res += f'\t{parent} -> {node} [dir=back, label="{label}"];\n'
                 done += [parent]
             if child == self.path_id and tree_id != init_id and self.show_ancestors:
                 res += f'\t{parent} -> {tree_id} [dir=back, label="{label}", style={style}];\n'
