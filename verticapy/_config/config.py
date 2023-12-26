@@ -256,8 +256,8 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. important::
 
-        Some options may not be available in VerticaPy 
-        1.0.0. To access all available options, please 
+        Some options may not be available in VerticaPy
+        1.0.0. To access all available options, please
         use VerticaPy 1.0.1 or a higher version.
 
     Parameters

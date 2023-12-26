@@ -44,10 +44,10 @@ class QueryProfiler:
 
     .. important::
 
-        Most of the classes are not available in 
-        Version 1.0.0. Please use Version 1.0.1 
-        or higher. Alternatively, you can use the 
-        ``help`` function to explore the functionalities 
+        Most of the classes are not available in
+        Version 1.0.0. Please use Version 1.0.1
+        or higher. Alternatively, you can use the
+        ``help`` function to explore the functionalities
         of your current documentation.
 
     The :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` is a valuable tool for
