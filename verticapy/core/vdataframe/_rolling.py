@@ -235,7 +235,7 @@ class vDFRolling(vDFCorr):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.analytic` : Advanced Analytical functions.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.analytic` : Advanced Analytical functions.
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         if len(window) != 2:
@@ -501,7 +501,7 @@ class vDFRolling(vDFCorr):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
                 window function.
         """
         return self.rolling(
@@ -639,7 +639,7 @@ class vDFRolling(vDFCorr):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
                 window function.
         """
         return self.rolling(
@@ -777,7 +777,7 @@ class vDFRolling(vDFCorr):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
                 window function.
         """
         return self.rolling(
@@ -915,7 +915,7 @@ class vDFRolling(vDFCorr):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.rolling` : Advanced analytical
                 window function.
         """
         return self.rolling(

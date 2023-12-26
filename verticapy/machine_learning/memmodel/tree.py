@@ -1575,7 +1575,7 @@ class NonBinaryTree(Tree):
         A ``NonBinaryTree`` tree.
         ``NonBinaryTree`` can be
         generated with the
-        :py:meth:`~vDataFrame.chaid`
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
         method.
     classes: ArrayLike, optional
         The classes for the
@@ -1604,7 +1604,7 @@ class NonBinaryTree(Tree):
 
     We will first generate a
     non-binary tree using
-    :py:meth:`~verticapy.vDataFrame.chaid`
+    vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
     method. For this example,
     we will use the Titanic
     dataset.
@@ -1638,7 +1638,7 @@ class NonBinaryTree(Tree):
         data = vpd.load_titanic()
 
     Lets create a non-binary tree using
-    :py:meth:`~verticapy.vDataFrame.chaid`
+    vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
     method.
 
     .. ipython:: python
@@ -1848,7 +1848,7 @@ class NonBinaryTree(Tree):
 
         Let's generate a
         non-binary tree by using
-        :py:meth:`~verticapy.vDataFrame.chaid`
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
         method. For this example,
         we will use the Titanic
         dataset.
@@ -1928,7 +1928,7 @@ class NonBinaryTree(Tree):
 
         Let's generate a
         non-binary tree by using
-        :py:meth:`~verticapy.vDataFrame.chaid`
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
         method. For this example,
         we will use the Titanic
         dataset.
@@ -2041,7 +2041,7 @@ class NonBinaryTree(Tree):
 
         Let's generate a
         non-binary tree by using
-        :py:meth:`~verticapy.vDataFrame.chaid`
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
         method. For this example,
         we will use the Titanic
         dataset.
@@ -2123,7 +2123,7 @@ class NonBinaryTree(Tree):
 
         Let's generate a
         non-binary tree by using
-        :py:meth:`~verticapy.vDataFrame.chaid`
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
         method. For this example,
         we will use the Titanic
         dataset.
@@ -2327,7 +2327,7 @@ class NonBinaryTree(Tree):
 
         Let's generate a
         non-binary tree by using
-        :py:meth:`~verticapy.vDataFrame.chaid`
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid`
         method. For this example,
         we will use the Titanic
         dataset.

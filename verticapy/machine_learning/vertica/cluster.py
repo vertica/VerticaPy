@@ -3440,7 +3440,7 @@ class NearestCentroid(MulticlassClassifier):
     You can easily divide your dataset
     into training and testing subsets
     using the
-    :py:meth:`~vDataFrame.train_test_split`
+    vDataFrame.:py:meth:`~verticapy.vDataFrame.train_test_split`
     method. This is a crucial step when
     preparing your data for machine learning,
     as it allows you to evaluate the
@@ -3458,7 +3458,7 @@ class NearestCentroid(MulticlassClassifier):
         of your data split. However, please be aware
         that this approach may lead to reduced
         performance. For a more efficient data split,
-        you can use the :py:meth:`~vDataFrame.to_db`
+        you can use the vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db`
         method to save your results into ``tables``
         or ``temporary tables``. This will help
         enhance the overall performance of the

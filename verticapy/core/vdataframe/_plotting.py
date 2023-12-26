@@ -166,8 +166,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.outliers_plot` : Outliers Plot.
-            | :py:meth:`~verticapy.vDataColumn.boxplot` : Box Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.outliers_plot` : Outliers Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.boxplot` : Box Plot.
 
         """
         columns = format_type(columns, dtype=list)
@@ -399,9 +399,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
 
         """
         columns = format_type(columns, dtype=list)
@@ -676,9 +676,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
 
         """
@@ -888,9 +888,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -1053,9 +1053,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.hist` : Histogram.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.hist` : Histogram.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -1201,9 +1201,9 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`~verticapy.vDataColumn.density` : Density Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.density` : Density Plot.
 
         """
         vml = get_vertica_mllib()
@@ -1398,8 +1398,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
 
         """
         columns = format_type(columns, dtype=list)
@@ -1546,8 +1546,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
-            | :py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -1801,8 +1801,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
-            | :py:meth:`~verticapy.vDataFrame.scatter_matrix` : Scatter Matrix.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.scatter_matrix` : Scatter Matrix.
 
         """
         columns = format_type(columns, dtype=list)
@@ -1928,8 +1928,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.hexbin` : Hexbin Plot.
-            | :py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.hexbin` : Hexbin Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -2070,8 +2070,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.hexbin` : Hexbin Plot.
-            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.hexbin` : Hexbin Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
 
         """
         columns = format_type(columns, dtype=list)
@@ -2219,8 +2219,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
-            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
 
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
@@ -2384,8 +2384,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.density` : Density Plot.
-            | :py:meth:`~verticapy.vDataFrame.outliers_plot` : Outliers Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.density` : Density Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.outliers_plot` : Outliers Plot.
 
         """
         vml = get_vertica_mllib()
@@ -2531,8 +2531,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
-            | :py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.contour` : Contour Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.heatmap` : Heatmap.
 
         """
         columns = format_type(columns, dtype=list)
@@ -2671,8 +2671,8 @@ class vDFPlot(vDFMachineLearning):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.scatter` : Scatter Plot.
-            | :py:meth:`~verticapy.vDataFrame.boxplot` : Box Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.scatter` : Scatter Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.boxplot` : Box Plot.
 
         """
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -2906,8 +2906,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.boxplot` : Box Plot.
-            | :py:meth:`~verticapy.vDataColumn.outliers_plot` : Outliers Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.boxplot` : Box Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.outliers_plot` : Outliers Plot.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3073,9 +3073,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.barh` : Horizontal Bar Chart.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3239,9 +3239,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
-            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.bar` : Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3401,9 +3401,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`~verticapy.vDataFrame.pie` : Pie Chart.
-            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.pie` : Pie Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3537,8 +3537,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.pie` : Pie Chart.
-            | :py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.pie` : Pie Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
 
         """
         by, of = self._parent.format_colnames(by, of)
@@ -3697,9 +3697,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.hist` : Histogram.
-            | :py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
-            | :py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.hist` : Histogram.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.barh` : Horizontal Bar Chart.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
 
         """
         if self.isnum() and not (self.isbool()):
@@ -3845,9 +3845,9 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.density` : Density Plot.
-            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`~verticapy.vDataColumn.hist` : Histogram.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.density` : Density Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.hist` : Histogram.
 
         """
         vml = get_vertica_mllib()
@@ -4022,8 +4022,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
 
         """
         ts = self._parent.format_colnames(ts)
@@ -4153,8 +4153,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
-            | :py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.range_plot` : Range Plot.
 
         """
         ts, by = self._parent.format_colnames(ts, by)
@@ -4276,8 +4276,8 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
-            | :py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.range_plot` : Range Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
 
         """
         return self._parent.range_plot(
@@ -4363,7 +4363,7 @@ class vDCPlot(vDCScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
 
         """
         columns = [self._alias]

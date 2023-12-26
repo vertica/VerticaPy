@@ -288,7 +288,8 @@ def print_table(
                             val = ""
                     elif cell_width[j] > 240:
                         val = (
-                            '<input style="border: none; text-align: center; width: '
+                            f'<input style="background-color: {background}; font-weight: bold;'
+                            f"color: {fontcolor}; border: none; text-align: center; width: "
                             f'{cell_width[j] - 10}px;" type="text" value="{val}" readonly>'
                         )
                     html_table += f">{category}<b>{val}</b>{ctype}{missing_values}</td>"

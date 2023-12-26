@@ -110,7 +110,7 @@ def regexp_count(
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -199,7 +199,7 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -305,7 +305,7 @@ def regexp_instr(
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -396,7 +396,7 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -501,7 +501,7 @@ def regexp_replace(
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     target = format_magic(target)
@@ -602,7 +602,7 @@ def regexp_substr(
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)

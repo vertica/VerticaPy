@@ -42,7 +42,15 @@ class QueryProfiler:
     """
     Base class to profile queries.
 
-    The :py:class:`~QueryProfiler` is a valuable tool for
+    .. important::
+
+        Most of the classes are not available in
+        Version 1.0.0. Please use Version 1.0.1
+        or higher. Alternatively, you can use the
+        ``help`` function to explore the functionalities
+        of your current documentation.
+
+    The :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` is a valuable tool for
     anyone seeking to comprehend the reasons behind
     a query's lack of performance. It incorporates a
     set of functions inspired by the original QPROF
@@ -62,7 +70,7 @@ class QueryProfiler:
     ----------
     .. important::
 
-        :py:class:`~QueryProfiler` can only be instantiated with
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` can only be instantiated with
         either a query or a combination of a transaction
         ID and a statement ID. These parameters cannot be
         both defined and undefined simultaneously.
@@ -170,7 +178,7 @@ class QueryProfiler:
     ^^^^^^^^^^^^^^^
 
     First, let's import the
-    :py:class:`~QueryProfiler`
+    :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
     object.
 
     .. ipython:: python
@@ -178,7 +186,7 @@ class QueryProfiler:
         from verticapy.performance.vertica import QueryProfiler
 
     There are multiple ways how we can use the
-    :py:class:`~QueryProfiler`.
+    :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
 
     - From ``transaction_id`` and ``statement_id``
     - From SQL generated from verticapy functions
@@ -373,7 +381,7 @@ class QueryProfiler:
 
         By changing the ``idx`` value above, you
         can check out all the steps of the
-        :py:class:`~QueryProfiler`.
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
 
     **SQL Query**
 
@@ -1093,7 +1101,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1160,7 +1168,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. ipython:: python
@@ -1226,7 +1234,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1292,7 +1300,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1409,7 +1417,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1492,7 +1500,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1714,7 +1722,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1865,7 +1873,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2153,7 +2161,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2225,7 +2233,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2428,7 +2436,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2584,7 +2592,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2634,7 +2642,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`~QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
