@@ -90,7 +90,7 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     category = to_dtype_category(expr)
     expr = [format_magic(expr)]
@@ -167,7 +167,7 @@ def nullifzero(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"NULLIFZERO({expr})", cat)
@@ -239,7 +239,7 @@ def zeroifnull(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"ZEROIFNULL({expr})", cat)

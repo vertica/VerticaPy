@@ -151,7 +151,7 @@ class vDFScaler(vDFText):
             different numerical intervals so it's probably a good
             idea to normalize them.
 
-        Let's use the vDataFrame.:py:meth:`~verticapy.vDataFrame.scale` method to
+        Let's use the ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.scale` method to
         normalize the data.
 
         .. code-block:: python
@@ -323,7 +323,7 @@ class vDCScaler(vDCText):
             in different numerical intervals so it's probably a
             good idea to normalize them.
 
-        Let's use the vDataColumn.:py:meth:`~verticapy.vDataColumn.scale` method to
+        Let's use the ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.scale` method to
         normalize the data.
 
         .. code-block:: python

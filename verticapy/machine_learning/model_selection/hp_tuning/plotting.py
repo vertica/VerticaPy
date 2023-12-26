@@ -645,7 +645,7 @@ def plot_acf_pacf(
         amazon = amazon[amazon["state"] == "ACRE"]
 
     We can have a look at the time-series plot
-    using the vDataFrame.:py:meth:`~verticapy.vDataFrame.plot`:
+    using the ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.plot`:
 
     .. code-block::
 

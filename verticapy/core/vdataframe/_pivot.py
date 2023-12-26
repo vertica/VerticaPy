@@ -158,9 +158,9 @@ class vDFPivot(vDFJoinUnionSort):
             as the computations involved can be resource-intensive.
 
         .. seealso::
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.merge_similar_names` : Merges
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.merge_similar_names` : Merges
                 columns with similar names.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
         vmap_col = format_type(vmap_col, dtype=list)
         if not vmap_col:
@@ -283,7 +283,7 @@ class vDFPivot(vDFJoinUnionSort):
             features, ensuring consistent information.
 
         .. seealso::
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
         columns = self.get_columns()
         skip_word = format_type(skip_word, dtype=list)
@@ -395,7 +395,7 @@ class vDFPivot(vDFJoinUnionSort):
             statements to perform the job.
 
         .. seealso::
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
         index, columns = format_type(index, columns, dtype=list, na_out=self.numcol())
         index, columns = self.format_colnames(index, columns)
@@ -553,7 +553,7 @@ class vDFPivot(vDFJoinUnionSort):
             statements to perform the job.
 
         .. seealso::
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.narrow` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.narrow` :
                 Narrow Table for a :py:class:`~vDataFrame`.
         """
         if isinstance(prefix, NoneType):
@@ -686,7 +686,7 @@ class vDFPivot(vDFJoinUnionSort):
             which case you must specify ``delimiter`` as ``False``).
 
         .. seealso::
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
 
         # Type check

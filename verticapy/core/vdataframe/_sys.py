@@ -422,9 +422,9 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.explain` : Information on how
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explain` : Information on how
                 Vertica is computing the current :py:class:`~vDataFrame` relation.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.info` : Displays information
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
 
         """
@@ -523,7 +523,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.explain` : Information on how
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explain` : Information on how
                 Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         self._update_catalog(erase=True)
@@ -577,7 +577,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.explain` : Information on how
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explain` : Information on how
                 Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         return not self.get_columns()
@@ -651,8 +651,8 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.memory_usage` : :py:class:`~vDataFrame` memory usage
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.explain` : Information on how
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.memory_usage` : :py:class:`~vDataFrame` memory usage
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explain` : Information on how
                 Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         if unit.lower() == "kb":
@@ -793,7 +793,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.info` : Displays information
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
         """
         result = _executeSQL(
@@ -889,7 +889,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.explain` : Information on how
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explain` : Information on how
                 Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         if len(self._vars["history"]) == 0:
@@ -953,7 +953,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.expected_store_usage` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.expected_store_usage` :
                 Returns the :py:class:`~vDataFrame` expected store usage.
 
         """
@@ -1048,7 +1048,7 @@ class vDFSystem(vDFTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.info` : Displays information
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
         """
         if isinstance(column1, int):
@@ -1153,7 +1153,7 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.info` : Displays information
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.info` : Displays information
                 about the different vDataFrame transformations
         """
         if name == "":
@@ -1228,8 +1228,8 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.memory_usage` : :py:class:`~vDataFrame` memory usage.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.explain` : Information on how.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.memory_usage` : :py:class:`~vDataFrame` memory usage.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explain` : Information on how.
                 Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         total = (
@@ -1292,9 +1292,9 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | vDataColumn.:py:meth:`~verticapy.vDataColumn.memory_usage` :
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.memory_usage` :
                 :py:class:`~vDataColumn` memory usage.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.explain` : Information on how
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explain` : Information on how
                 Vertica is computing the current :py:class:`~vDataFrame` relation.
         """
         pre_comp = self._parent._get_catalog_value(self._alias, "store_usage")
@@ -1396,7 +1396,7 @@ class vDCSystem(vDCTyping):
 
         .. seealso::
 
-            | vDataColumn.:py:meth:`~verticapy.vDataColumn.add_copy` : Adds a
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.add_copy` : Adds a
                 copy :py:class:`~vDataColumn` to the parent vDataFrame.
         """
         old_name = quote_ident(self._alias)

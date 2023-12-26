@@ -24,12 +24,15 @@ levels of expertise and security preferences.
 Vertica Python Client Parameters
 --------------------------------
 
+.. important::
+
+   This section introduces the ``vertica_python`` client connector and covers all possible parameters. It is used to establish the foundation for the final VerticaPy connection. If you prefer to directly learn how to create a VerticaPy connection, you can skip this part.
+
 The :py:func:`~verticapy.connection.new_connection` function in VerticaPy relies on the ``vertica_python`` native client, a powerful tool designed for seamless integration with the VerticaPy ecosystem. This native client acts as a bridge between VerticaPy and the underlying Vertica database, facilitating efficient communication and data retrieval.
 
 .. note::
 
    Visit the `official vertica_python GitHub <https://github.com/vertica/vertica-python>`_ for more information.
-
 
 The ``conn_info`` parameter utilized by the :py:func:`~verticapy.connection.new_connection` function is a dictionary that aligns with the parameters supported by the ``vertica_python`` client. These parameters encompass various connection details, such as the host, port, database name, user credentials, and more. Each parameter in the ``conn_info`` dictionary corresponds to a specific aspect of the connection setup, ensuring users have fine-grained control over their connectivity preferences.
 
@@ -99,7 +102,7 @@ Discover the details of the majority of supported parameters in the table below.
 |                        | TCP connection or read/write operation).                           |
 |                        | Default: None (no timeout)                                         |
 +------------------------+--------------------------------------------------------------------+
-| disable_copy_local     | COPY FROM LOCAL.                                                   |
+| disable_copy_local     | Whether copying local files into the database is disabled.         |
 |                        | Default: False                                                     |
 +------------------------+--------------------------------------------------------------------+
 | kerberos_host_name     | Kerberos Authentication.                                           |
@@ -213,12 +216,10 @@ To authenticate via Kerberos, follow these steps:
 Auto Connection (Recommended)
 -----------------------------
 
-VerticaPy auto connections provide a convenient and secure way to manage database connections. When creating an auto connection, user credentials (username and password) are stored securely, and the connection details can be easily retrieved without exposing sensitive information. Auto connections simplify the connection process, making it suitable for shared environments or scenarios where manual credential input is not desired. The connection details are stored in a file determined by the ``VERTICAPY_CONNECTION`` environment variable or in a hidden folder (``.vertica``) in the home directory by default. Auto connections enhance ease of use while prioritizing security and confidentiality.
+Auto connections provide a hands-free option, simplifying the user experience by automatically managing credentials. This approach enhances ease of use but requires careful consideration, as credentials are stored in plaintext. Users can easily modify auto connections using functions like :py:func:`~verticapy.connection.change_auto_connection` and :py:func:`~verticapy.connection.delete_connection`, offering both flexibility and control over their connection setup. The connection details are stored in a file determined by the ``VERTICAPY_CONNECTION`` environment variable or in a hidden folder (``.vertica``) in the home directory by default. For those prioritizing security, the option to use environment variables within the input connection dictionary ensures a more robust and protected connection without compromising simplicity.
 
 Auto Connection with Credential Storage (Unsecured)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Auto connections provide a hands-free option, simplifying the user experience by automatically managing credentials. This approach enhances ease of use but requires careful consideration, as credentials are stored in plaintext. Users can easily modify auto connections using functions like :py:func:`~verticapy.connection.change_auto_connection` and :py:func:`~verticapy.connection.delete_connection`, offering both flexibility and control over their connection setup. For those prioritizing security, the option to use environment variables within the input connection dictionary ensures a more robust and protected connection without compromising simplicity.
 
 In the provided example, we establish a new auto connection named ``VerticaDSN``. By utilizing the setting of ``auto=True`` (which is also the default), the connection is automatically saved to a designated directory. The path for saving this connection is determined by the ``VERTICAPY_CONNECTION`` environment variable. If this variable exists, the associated path is used; otherwise, the file is stored in a hidden folder named .vertica located in the home directory. This streamlined approach ensures that connections are efficiently managed and, if desired, conveniently located based on user preferences or system configurations.
 
@@ -390,142 +391,150 @@ You can also access the current connector object if needed.
 Creating a Connection Directly from a Connector
 -----------------------------------------------
 
-Whether leveraging ``vertica_python``, exploring supported protocols, or interfacing with ODBC/JDBC connectors, VerticaPy allows users to tailor their connection method to specific needs. 
+Whether leveraging ``vertica_python``, exploring supported protocols, or interfacing with ODBC/JDBC connectors, VerticaPy allows users to tailor their connection method to specific needs.
 
-Native vertica_python client
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Explore the various tabs to learn how to establish a connection using the specific connection. 
 
-In certain scenarios, you may need to create a connection directly from a connector in VerticaPy. This section provides a step-by-step guide on establishing a connection using a connector, offering flexibility in managing connections within your Python environment.
+.. tab:: vertica_python
 
-To create a connection directly from a cursor, follow these steps:
+   Native vertica_python client
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: python
+   In certain scenarios, you may need to create a connection directly from a connector in VerticaPy. This section provides a step-by-step guide on establishing a connection using a connector, offering flexibility in managing connections within your Python environment.
 
-   # Import VerticaPy.
-   import verticapy as vp
-   
-   # Import the client.
-   import vertica_python
+   To create a connection directly from a cursor, follow these steps:
 
-   # Creating a vertica_python connection directory.
-   conn_info = {
-      "host": "your_host", # ex: 127.0.0.1
-      "port": "5433",
-      "database": "your_database", # ex: testdb
-      "password": "XxX",
-      "user": "your_user", # ex: dbadmin
-   }
+   .. code-block:: python
 
-   # Setting the connection.
-   conn = vertica_python.connect(** conn_info)
+      # Import VerticaPy.
+      import verticapy as vp
+      
+      # Import the client.
+      import vertica_python
 
-   # Linking this connection to VerticaPy.
-   vp.set_connection(conn)
+      # Creating a vertica_python connection directory.
+      conn_info = {
+         "host": "your_host", # ex: 127.0.0.1
+         "port": "5433",
+         "database": "your_database", # ex: testdb
+         "password": "XxX",
+         "user": "your_user", # ex: dbadmin
+      }
 
-Now, the connection ``conn`` will be utilized throughout the entire API.
+      # Setting the connection.
+      conn = vertica_python.connect(** conn_info)
 
-.. warning::
+      # Linking this connection to VerticaPy.
+      vp.set_connection(conn)
 
-   As we are directly using the connector, the ``ENV`` parameter is not supported.
+   Now, the connection ``conn`` will be utilized throughout the entire API.
 
-.. important::
+   .. warning::
 
-   This connection is not saved by VerticaPy, and it cannot be automatically reused. In the event of a connection loss, manual recreation and reconfiguration are required.
+      As we are directly using the connector, the ``ENV`` parameter is not supported.
 
-ODBC Connector (Not Recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   .. important::
 
-The same process can be applied to set up an ODBC connection. We create the connector and then set it in VerticaPy.
+      This connection is not saved by VerticaPy, and it cannot be automatically reused. In the event of a connection loss, manual recreation and reconfiguration are required.
 
-.. code-block:: python
+.. tab:: pyodbc
 
-   # Import VerticaPy.
-   import verticapy as vp
-   
-   # Import the ODBC Module.
-   import pyodbc
+   ODBC Connector (Not Recommended)
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   # Option 1 - credentials.
-   # Connecting with DSN credentials
+   The same process can be applied to set up an ODBC connection. We create the connector and then set it in VerticaPy.
 
-   # Credentials.
-   driver = "/Library/Vertica/ODBC/lib/libverticaodbc.dylib"
-   server = "10.211.55.14"
-   database = "testdb"
-   port = "5433"
-   uid = "dbadmin"
-   pwd = "XxX"
-   dsn = (
-      "DRIVER={}; SERVER={}; DATABASE={}; PORT={}; UID={}; PWD={};"
-   ).format(
-      driver, 
-      server, 
-      database, 
-      port, 
-      uid, 
-      pwd,
-   )
-   # Connect.
-   conn = pyodbc.connect(dsn)
+   .. code-block:: python
 
-   # Option 2 - DSN.
-   # Connecting with the DSN
+      # Import VerticaPy.
+      import verticapy as vp
+      
+      # Import the ODBC Module.
+      import pyodbc
 
-   # DSN.
-   dsn = ("DSN=VerticaDSN")
+      # Option 1 - credentials.
+      # Connecting with DSN credentials
 
-   # Connect.
-   conn = pyodbc.connect(dsn, autocommit = True)
+      # Credentials.
+      driver = "/Library/Vertica/ODBC/lib/libverticaodbc.dylib"
+      server = "10.211.55.14"
+      database = "testdb"
+      port = "5433"
+      uid = "dbadmin"
+      pwd = "XxX"
+      dsn = (
+         "DRIVER={}; SERVER={}; DATABASE={}; PORT={}; UID={}; PWD={};"
+      ).format(
+         driver, 
+         server, 
+         database, 
+         port, 
+         uid, 
+         pwd,
+      )
+      # Connect.
+      conn = pyodbc.connect(dsn)
 
-   # Setting the connection in the VerticaPy API.
-   vp.set_connection(conn)
+      # Option 2 - DSN.
+      # Connecting with the DSN
 
-.. warning::
+      # DSN.
+      dsn = ("DSN=VerticaDSN")
 
-   This type of connection is not recommended, as some functionalities might not be supported. With the native client, we strive to accommodate all continuous changes, including the integration of complex data types, vmaps, special data types and more...
+      # Connect.
+      conn = pyodbc.connect(dsn, autocommit = True)
 
-JDBC Connector (Not Recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      # Setting the connection in the VerticaPy API.
+      vp.set_connection(conn)
 
-The same process can be applied to set up an JDBC connection. We create the connector and then set it in VerticaPy.
+   .. warning::
 
-.. code-block:: python
-   
-   # Import VerticaPy.
-   import verticapy as vp
-   
-   # Import the JDBC Module.
-   import jaydebeapi
+      This type of connection is not recommended, as some functionalities might not be supported. With the native client, we strive to accommodate all continuous changes, including the integration of complex data types, vmaps, special data types and more...
 
-   # Credentials.
-   database = "testdb"
-   hostname = "your_host"
-   port = "5433"
-   uid = "dbadmin"
-   pwd = "XxX"
+.. tab:: jaydebeapi
 
-   # Vertica JDBC class name.
-   jdbc_driver_name = "com.vertica.jdbc.Driver"
+   JDBC Connector (Not Recommended)
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   # Vertica JDBC driver path.
-   jdbc_driver_loc = "/Library/Vertica/JDBC/vertica-jdbc-9.3.1-0.jar"
+   The same process can be applied to set up an JDBC connection. We create the connector and then set it in VerticaPy.
 
-   # JDBC connection string.
-   connection_string = 'jdbc:vertica://' + hostname + ':' + port + '/' + database
-   url = '{}:user={};password={}'.format(connection_string, uid, pwd)
-   conn = jaydebeapi.connect(
-      jdbc_driver_name, 
-      connection_string, 
-      {'user': uid, 'password': pwd}, 
-      jars = jdbc_driver_loc,
-   )
+   .. code-block:: python
+      
+      # Import VerticaPy.
+      import verticapy as vp
+      
+      # Import the JDBC Module.
+      import jaydebeapi
 
-   # Setting the connection in the VerticaPy API.
-   vp.set_connection(conn)
+      # Credentials.
+      database = "testdb"
+      hostname = "your_host"
+      port = "5433"
+      uid = "dbadmin"
+      pwd = "XxX"
 
-.. warning::
+      # Vertica JDBC class name.
+      jdbc_driver_name = "com.vertica.jdbc.Driver"
 
-   This type of connection is not recommended, as some functionalities might not be supported. With the native client, we strive to accommodate all continuous changes, including the integration of complex data types, vmaps, special data types and more...
+      # Vertica JDBC driver path.
+      jdbc_driver_loc = "/Library/Vertica/JDBC/vertica-jdbc-9.3.1-0.jar"
+
+      # JDBC connection string.
+      connection_string = 'jdbc:vertica://' + hostname + ':' + port + '/' + database
+      url = '{}:user={};password={}'.format(connection_string, uid, pwd)
+      conn = jaydebeapi.connect(
+         jdbc_driver_name, 
+         connection_string, 
+         {'user': uid, 'password': pwd}, 
+         jars = jdbc_driver_loc,
+      )
+
+      # Setting the connection in the VerticaPy API.
+      vp.set_connection(conn)
+
+   .. warning::
+
+      This type of connection is not recommended, as some functionalities might not be supported. With the native client, we strive to accommodate all continuous changes, including the integration of complex data types, vmaps, special data types and more...
       
 Closing Connections
 -------------------

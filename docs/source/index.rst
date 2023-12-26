@@ -20,26 +20,20 @@ Welcome to VerticaPy documentation
         Documentation 1.0.x
     </div>
 
-
 **Date**: |today| **Latest Version**: |version|
-
 
 **Previous versions**: Documentation of previous VerticaPy versions is available at
 `www.vertica.com/python/old <https://www.vertica.com/python/old/documentation_last/>`_.
 
 **Useful links**:
 
-`Source Repository <https://github.com/vertica/VerticaPy>`__ |
-`Issues & Ideas <https://github.com/vertica/VerticaPy/issues>`__ |
-`Q&A Support <https://github.com/vertica/VerticaPy/discussions>`__ |
+`Source Repository <https://github.com/vertica/VerticaPy>`_ |
+`Issues & Ideas <https://github.com/vertica/VerticaPy/issues>`_ |
+`Q&A Support <https://github.com/vertica/VerticaPy/discussions>`_ |
 
 
 :mod:`verticapy` is a Python library that provides an interface to interact with the 
-Vertica database using Python programming. Vertica is a high-performance analytical database designed 
-for big data analytics. VerticaPy aims to simplify data analysis and machine learning tasks by providing 
-a Pythonic way to work with data stored in Vertica.
-
-
+Vertica database using the Python programming language. Vertica is a high-performance analytical database designed for big data analytics. VerticaPy aims to simplify data analysis and machine learning tasks by providing a Pythonic way to work with data stored in Vertica.
 
 .. grid:: 3
 

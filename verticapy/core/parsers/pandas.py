@@ -116,7 +116,7 @@ def read_pandas(
 
     In this example, we will first create
     a ``pandas.DataFrame`` using
-    vDataFrame.:py:meth:`~verticapy.vDataFrame.to_pandas`
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_pandas`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:

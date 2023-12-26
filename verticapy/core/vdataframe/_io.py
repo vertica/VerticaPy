@@ -139,7 +139,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_pickle` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_pickle` :
                 Saves the :py:class:`~vDataFrame` to a
                 Python pickle file.
         """
@@ -271,7 +271,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.save` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.save` :
                 Saves the current :py:class:`~vDataFrame`
                 structure.
         """
@@ -401,7 +401,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.load` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.load` :
                 Loads a saved :py:class:`~vDataFrame`
                 structure.
         """
@@ -580,11 +580,11 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
                 :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_json` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
                 :py:class:`~vDataFrame` structure.
         """
@@ -924,7 +924,7 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            The vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db` method enables
+            The ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db` method enables
             you to save the :py:class:`~vDataFrame` into
             various types of relations, including views,
             temporary tables, temporary local tables, and
@@ -935,10 +935,10 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_csv` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
                 :py:class:`~vDataFrame` structure.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_json` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
                 :py:class:`~vDataFrame` structure.
         """
@@ -1141,11 +1141,11 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
                 :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_json` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
                 :py:class:`~vDataFrame` structure.
         """
@@ -1329,11 +1329,11 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
                 :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_csv` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
                 :py:class:`~vDataFrame` structure.
         """
@@ -1501,7 +1501,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_numpy` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_numpy` :
                 Exports the :py:class:`~vDataFrame` to
                 a ``numpy.array``.
         """
@@ -1617,7 +1617,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_pandas` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_pandas` :
                 Exports the :py:class:`~vDataFrame`
                 to a ``pandas.DataFrame``.
         """
@@ -1719,7 +1719,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_numpy` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_numpy` :
                 Exports the :py:class:`~vDataFrame` to a
                 ``numpy.array``.
         """
@@ -1912,11 +1912,11 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
                 :py:class:`~vDataFrame` to the
                 Vertica Database.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_csv` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
                 :py:class:`~vDataFrame` structure.
         """
@@ -2062,7 +2062,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.save` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.save` :
                 Saves the current :py:class:`~vDataFrame`
                 structure.
         """
@@ -2190,7 +2190,7 @@ class vDFInOut(vDFSystem):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db` :
                 Saves the current structure of
                 :py:class:`~vDataFrame` to the
                 Vertica Database.

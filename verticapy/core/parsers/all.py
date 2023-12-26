@@ -128,7 +128,7 @@ def read_file(
     --------
     In this example, we will first create
     a *CSV* file using
-    vDataFrame.:py:meth:`~verticapy.vDataFrame.to_csv`
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_csv`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:

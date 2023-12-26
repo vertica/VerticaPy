@@ -107,7 +107,7 @@ Below are the configuration on which the tests were carried out:
 Comparison
 ^^^^^^^^^^^
 
-Browse throught the different tabs to see the results:
+Browse through the different tabs to view the results.
 
 .. tab:: 10K
 

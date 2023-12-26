@@ -151,8 +151,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
-            | vDataColumn.:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.bar` : Bar Chart.
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
@@ -302,8 +302,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.animated_bar` : Animated Bar Chart.
-            | vDataColumn.:py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.animated_bar` : Animated Bar Chart.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.pie` : Pie Chart.
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
@@ -442,8 +442,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.plot` : Line Plot.
         """
         columns = format_type(columns, dtype=list)
         columns, ts, by = self.format_colnames(columns, ts, by)
@@ -614,8 +614,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.scatter` : Scatter Plot.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.scatter` : Scatter Plot.
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)

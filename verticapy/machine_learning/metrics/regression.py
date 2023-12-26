@@ -143,7 +143,7 @@ def aic_score(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(y_true, y_score, input_relation, metrics="aic", k=k)
 
@@ -230,7 +230,7 @@ def bic_score(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(y_true, y_score, input_relation, metrics="bic", k=k)
 
@@ -316,7 +316,7 @@ def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="explained_variance"
@@ -404,7 +404,7 @@ def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(y_true, y_score, input_relation, metrics="max_error")
 
@@ -492,7 +492,7 @@ def mean_absolute_error(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(y_true, y_score, input_relation, metrics="mae")
 
@@ -583,7 +583,7 @@ def mean_squared_error(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="rmse" if root else "mse"
@@ -673,7 +673,7 @@ def mean_squared_log_error(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(y_true, y_score, input_relation, metrics="msle")
 
@@ -761,7 +761,7 @@ def median_absolute_error(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="median_absolute_error"
@@ -846,7 +846,7 @@ def quantile_error(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return regression_report(y_true, y_score, input_relation, metrics=f"qe{100 * q}%")
 
@@ -943,7 +943,7 @@ def r2_score(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     if adj:
         kwargs = {"metrics": "r2_adj", "k": k}
@@ -1034,7 +1034,7 @@ def anova_table(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     n, avg = _executeSQL(
         query=f"""
@@ -1247,7 +1247,7 @@ def regression_report(
 
     .. seealso::
 
-        | vDataFrame.:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.score` : Computes the input ML metric.
     """
     return_scalar = False
     if isinstance(metrics, str):
