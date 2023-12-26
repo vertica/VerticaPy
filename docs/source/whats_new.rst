@@ -19,4 +19,5 @@ ____
 .. toctree::
 
   whats_new_v1_0_0
+  whats_new_v1_0_1
   
