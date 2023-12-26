@@ -68,7 +68,7 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
     ---------
     In this example, we will first create
     a *JSON* file using
-    vDataFrame.:py:meth:`~verticapy.vDataFrame.to_json`
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_json`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:
@@ -393,7 +393,7 @@ def read_json(
     --------
     In this example, we will first create
     a *JSON* file using
-    vDataFrame.:py:meth:`~verticapy.vDataFrame.to_json`
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_json`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:

@@ -4,7 +4,6 @@
 ARIMA
 ======
 
-
 ARIMA (AutoRegressive Integrated Moving Average) models combine the 
 abilities of ``AUTOREGRESSOR`` and ``MOVING_AVERAGE`` models by 
 making future predictions based on both preceding time series 
@@ -107,387 +106,7 @@ Below are the configuration on which the tests were carried out:
 Comparison
 ^^^^^^^^^^^
 
-Browse throught the different tabs to see the results:
-
-.. tab:: 10K
-
-  .. tab:: Training Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [0.022, 0.064]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_10k.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_10k.html
-
-  .. tab:: Prediction Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [0.028, 0.006]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10k.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10k.html
-
-
-  .. tab:: Mean Squared Error
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [24.54, 24.6]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='MSE'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_10k.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_10k.html
-
-
-.. tab:: 100K
-
-  .. tab:: Training Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [0.055, 0.745]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_100k.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_100k.html
-
-  .. tab:: Prediction Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [0.056, 0.019]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100k.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100k.html
-
-
-  .. tab:: Mean Squared Error
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [30.53, 24.97]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='MSE'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_100k.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_100k.html
-
-
-.. tab:: 1M
-
-  .. tab:: Training Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [0.515, 8.923]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html
-
-  .. tab:: Prediction Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [0.364, 0.027]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html
-
-
-  .. tab:: Mean Squared Error
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [27.94, 25]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='MSE'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html
-
-
-
-.. tab:: 10M
-
-  .. tab:: Training Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [4.775, 93.307]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_10m.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_10m.html
-
-  .. tab:: Prediction Run Time
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [3.785, 0.333]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='Time (minutes)'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10m.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10m.html
-
-
-  .. tab:: Mean Squared Error
-
-    .. ipython:: python
-      :suppress:
-
-      import plotly.graph_objects as go
-      labels = ['Vertica', 'Python']
-      heights = [28.52, 24.99]
-      colors = ["#1A6AFF", '#f0d917']
-      fig = go.Figure()
-      for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
-      fig.update_layout(
-          title='Vertica vs Python',
-          yaxis=dict(title='MSE'),
-          width = 600,
-          height = 500,
-          )
-      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_10m.html")
-
-    .. raw:: html
-      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_10m.html
-
-
-
-
+Browse through the different tabs to view the results.
 
 .. tab:: 100M
 
@@ -582,4 +201,373 @@ Browse throught the different tabs to see the results:
     .. raw:: html
       :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_100m.html
 
+.. tab:: 10M
 
+  .. tab:: Training Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [4.775, 93.307]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_10m.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_10m.html
+
+  .. tab:: Prediction Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [3.785, 0.333]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10m.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10m.html
+
+
+  .. tab:: Mean Squared Error
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [28.52, 24.99]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='MSE'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_10m.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_10m.html
+
+.. tab:: 1M
+
+  .. tab:: Training Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [0.515, 8.923]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_1m.html
+
+  .. tab:: Prediction Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [0.364, 0.027]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_1m.html
+
+
+  .. tab:: Mean Squared Error
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [27.94, 25]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='MSE'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_1m.html
+
+.. tab:: 100K
+
+  .. tab:: Training Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [0.055, 0.745]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_100k.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_100k.html
+
+  .. tab:: Prediction Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [0.056, 0.019]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100k.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_100k.html
+
+
+  .. tab:: Mean Squared Error
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [30.53, 24.97]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='MSE'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_100k.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_100k.html
+
+.. tab:: 10K
+
+  .. tab:: Training Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [0.022, 0.064]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_train_10k.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_train_10k.html
+
+  .. tab:: Prediction Run Time
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [0.028, 0.006]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='Time (minutes)'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10k.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_prediction_10k.html
+
+  .. tab:: Mean Squared Error
+
+    .. ipython:: python
+      :suppress:
+
+      import plotly.graph_objects as go
+      labels = ['Vertica', 'Python']
+      heights = [24.54, 24.6]
+      colors = ["#1A6AFF", '#f0d917']
+      fig = go.Figure()
+      for label, height, color in zip(labels, heights, colors):
+          fig.add_trace(go.Bar(
+              x=[label],
+              y=[height],
+              marker_color=color,
+              text=[height],
+              textposition='outside',
+              name=label,
+          ))
+      fig.update_layout(
+          title='Vertica vs Python',
+          yaxis=dict(title='MSE'),
+          width = 600,
+          height = 500,
+          )
+      fig.write_html("SPHINX_DIRECTORY/figures/benchmark_arima_mse_10k.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/benchmark_arima_mse_10k.html

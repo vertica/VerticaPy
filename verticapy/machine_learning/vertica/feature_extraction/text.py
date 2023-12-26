@@ -304,7 +304,7 @@ class TfidfVectorizer(VerticaModel):
         model.stop_words_
 
     .. seealso::
-        | vDataColumn.:py:meth:`~verticapy.vDataColumn.pivot` : pivot vDataFrame.
+        | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.pivot` : pivot vDataFrame.
     """
 
     # Properties.

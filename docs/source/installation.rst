@@ -60,7 +60,7 @@ instructions of the `Vertica Community Edition Virtual Machine Installation Guid
 Install VerticaPy
 ------------------
 
-To install VerticaPy with all the depenedencies, including some geospatial packages such as GeoPandas and Descartes, run the following **pip** command:
+To install VerticaPy with all the dependencies, including some geospatial packages such as GeoPandas and Descartes, run the following **pip** command:
 
 >>> pip3 install verticapy[all]
 

@@ -171,7 +171,7 @@ class vDFJoinUnionSort(vDFMath):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.join` : Joins the
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.join` : Joins the
                 :py:class:`~vDataFrame` with another one or an
                 ``input_relation``.
         """
@@ -662,7 +662,7 @@ class vDFJoinUnionSort(vDFMath):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.append` : Append a
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.append` : Append a
                 :py:class:`~vDataFrame` with another one or an
                 ``input_relation``.
         """
@@ -865,7 +865,7 @@ class vDFJoinUnionSort(vDFMath):
 
         .. seealso::
 
-            | vDataFrame.:py:meth:`~verticapy.vDataFrame.append` : Append a
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.append` : Append a
                 :py:class:`~vDataFrame` with another one or an
                 ``input_relation``.
         """

@@ -69,12 +69,12 @@ Bug fixes
 - Adjusted-R squared now works with "k" parameter.
 - Corrected calculation of Prevalence Threshold.
 - Fixed nested pie plots.
-- Improved vDataFrame.:py:meth:`~verticapy.vDataFrame.balance` method.
+- Improved ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.balance` method.
 - load_model accepts feature names with parentheses.
 - ``pandas_to_vertica`` method is renamed :py:func:`~verticapy.pandas.read_pandas` and it can now work with ``pandas.DataFrames`` that have a column full of ``NaN`` values.
 - :py:class:`~verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer` replaces :py:class:`~verticapy.machine_learning.vertica.CountVectorizer`.
 - AutoML Error: An error prompt is now displayed when no model fits.
-- Cramer's V calculation is now fixed. See vDataFrame.:py:meth:`~verticapy.vDataFrame.corr`.
+- Cramer's V calculation is now fixed. See ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.corr`.
 - Colors can now be changed correctly for Matplotlib Candlestick plot 
 - :py:class:`~verticapy.machine_learning.vertica.IsolationForest` Anomaly plot is now fixed.
 - Plotly :py:class:`~verticapy.machine_learning.vertica.LocalOutlierFactor` 3D plot is fixed.
@@ -161,7 +161,7 @@ Plotting
       colors = ["black", "yellow"],
     )
 
-- Plotly vDataFrame.:py:meth:`~verticapy.vDataFrame.scatter` plot now has the option to plot Bubble plot.
+- Plotly ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.scatter` plot now has the option to plot Bubble plot.
 - Plotly Pie chart now has the option to change color and size.
 - Highcharts Histogram plot is now available.
 - Plotly Histogram plot now allows multiple plots.
@@ -332,7 +332,7 @@ Others
 
 - Now we use the ``DISTRIBUTED_SEEDED_RANDOM`` function instead of ``SEEDED_RANDOM`` in Vertica versions higher than 23.
 - Some new functions that help in viewing and using nested data:
-  - vDataFrame.:py:meth:`~verticapy.vDataFrame.explode_array` is a :py:class:`~verticapy.vDataFrame` function that allows users to expand the contents of a nested column.
+  - ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explode_array` is a :py:class:`~verticapy.vDataFrame` function that allows users to expand the contents of a nested column.
 - Changes that do not affect the user experience include:
   - Code restructuring to improve readability and better collaboration using PEP8 standard.
   - Improved the code pylint score to 9+, which makes the code more professional and efficient.

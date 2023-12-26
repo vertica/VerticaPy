@@ -153,8 +153,15 @@ class QueryProfiler:
 
     Attributes
     ----------
-    request: str
-        Query.
+    request: str | list
+        Query. It can also be a ``list``
+        of ``tuples``, with each ``tuple``
+        containing a transaction ID and
+        statement ID. If the input is a
+        ``list`` of ``integers``, they
+        will be treated as transactions,
+        and the statements will always
+        be set to ``1``.
     transaction_id: int
         Transaction ID.
     statement_id: int
@@ -741,7 +748,7 @@ class QueryProfiler:
     @save_verticapy_logs
     def __init__(
         self,
-        request: Optional[str] = None,
+        request: Union[None, str, list[int], list[tuple[int, int]]] = None,
         resource_pool: Optional[str] = None,
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
@@ -751,6 +758,38 @@ class QueryProfiler:
         create_local_temporary_copy: bool = False,
         overwrite: bool = False,
     ) -> None:
+        self.transactions = []
+        self.transactions_idx = 0
+        if isinstance(request, tuple) and len(request) == 2:
+            request = [request]
+        if isinstance(request, list):
+            for tr in request:
+                if isinstance(tr, int):
+                    self.transactions += [(tr, 1)]
+                elif isinstance(tr, tuple):
+                    if (
+                        len(tr) == 2
+                        and isinstance(tr[0], int)
+                        and isinstance(tr[1], int)
+                    ):
+                        self.transactions += [tr]
+            request = None
+            if isinstance(transaction_id, NoneType) and len(self.transactions) > 0:
+                transaction_id = self.transactions[0][0]
+                statement_id = self.transactions[0][1]
+            else:
+                if isinstance(statement_id, NoneType):
+                    statement_id = 1
+                find = False
+                for i, tr in enumerate(self.transactions):
+                    if tr[0] == transaction_id and tr[1] == statement_id:
+                        self.transactions_idx = i
+                        find = True
+                        break
+                if not (find):
+                    self.transactions = [
+                        (transaction_id, statement_id)
+                    ] + self.transactions
         if create_local_temporary_copy and create_copy:
             raise ValueError(
                 "'create_copy' and 'create_local_temporary_copy'"
@@ -1005,6 +1044,19 @@ class QueryProfiler:
                         )
                     except:
                         exists = False
+
+                if table == "query_plan_profiles" and len(self.transactions) == 0:
+                    self.transactions = _executeSQL(
+                        f"""SELECT 
+                                transaction_id, 
+                                statement_id 
+                            FROM {new_schema}.{new_table} 
+                            GROUP BY 1, 2;""",
+                        title="Getting the transactions and statement ids.",
+                        method="fetchall",
+                    )
+                    self.transactions = [tuple(tr) for tr in self.transactions]
+
             if create_table or not (exists):
                 if conf.get_option("print_info"):
                     print(
@@ -1031,6 +1083,40 @@ class QueryProfiler:
                     )
                     warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
+
+    # Navigation
+
+    def next(self):
+        """
+        A utility function to utilize
+        the next transaction from
+        the ``QueryProfiler`` stack.
+        """
+        idx = self.transactions_idx
+        n = len(self.transactions)
+        if idx + 1 == n:
+            idx = 0
+        else:
+            idx = idx + 1
+        self.transactions_idx = idx
+        self.transaction_id = self.transactions[idx][0]
+        self.statement_id = self.transactions[idx][1]
+
+    def previous(self):
+        """
+        A utility function to utilize
+        the previous transaction from
+        the ``QueryProfiler`` stack.
+        """
+        idx = self.transactions_idx
+        n = len(self.transactions)
+        if idx - 1 == -1:
+            idx = n - 1
+        else:
+            idx = idx - 1
+        self.transactions_idx = idx
+        self.transaction_id = self.transactions[idx][0]
+        self.statement_id = self.transactions[idx][1]
 
     # Main Method
 
