@@ -502,7 +502,7 @@ class QueryProfiler:
 
         qprof.get_qplan_tree(
             path_id=1,
-            path_id_info=[5, 6],
+            path_id_info=[1, 3],
             metric='cost',
             shape='square',
             color_low='#0000FF',
@@ -514,7 +514,7 @@ class QueryProfiler:
 
         res = qprof.get_qplan_tree(
             path_id=1,
-            path_id_info=[5, 6],
+            path_id_info=[1, 3],
             metric='cost',
             shape='square',
             color_low='#0000FF',
