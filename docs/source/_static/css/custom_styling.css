@@ -177,8 +177,6 @@ h2{
   /* padding: 2rem 0.75rem; */ /* From Vertica Website */
   /* align-items: center; */
   justify-content: center;
-  
-  /* flex-direction: column; TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 }
 
 /* Container at the top for all buttons and search etc */
@@ -985,6 +983,10 @@ article, article .align-default {
 }
 
 /* Hiding the code block counter */
-.gp {
-  display: none;
+.gp, .gh {
+  font-size:0;
+}
+.gh::after {
+  font-size: 12px;
+  content: "Out: ";
 }

@@ -255,9 +255,9 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.head` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.head` :
                 Get head of the :py:class:`~vDataFrame`.
-            | :py:meth:`~verticapy.vDataColumn.tail` :
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.tail` :
                 Get tail of the :py:class:`~vDataFrame`.
         """
         exclude_columns = format_type(exclude_columns, dtype=list)
@@ -331,9 +331,9 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataColumn.head` :
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.head` :
                 Get head of the :py:class:`~vDataColumn`.
-            | :py:meth:`~verticapy.vDataFrame.tail` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.tail` :
                 Get tail of the :py:class:`~vDataFrame`.
         """
         return self.iloc(limit=limit, offset=0)
@@ -416,7 +416,7 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.select` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.select` :
                 Select columns from the :py:class:`~vDataFrame`.
         """
         columns = format_type(columns, dtype=list, na_out=self.get_columns())
@@ -560,7 +560,7 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.iloc` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.iloc` :
                 Select rows from the :py:class:`~vDataFrame`.
         """
         m = len(self.get_columns())
@@ -645,9 +645,9 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.head` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.head` :
                 Get head of the :py:class:`~vDataFrame`.
-            | :py:meth:`~verticapy.vDataColumn.tail` :
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.tail` :
                 Get tail of the :py:class:`~vDataColumn`.
         """
         return self.iloc(limit=limit, offset=-1)
@@ -727,7 +727,7 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.iloc` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.iloc` :
                 Get custom rows from a :py:class:`~vDataFrame`.
         """
         columns = format_type(columns, dtype=list)
@@ -949,9 +949,9 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.head` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.head` :
                 Get head of the :py:class:`~vDataFrame`.
-            | :py:meth:`~verticapy.vDataColumn.tail` :
+            | vDataColumn.:py:meth:`~verticapy.vDataColumn.tail` :
                 Get tail of the :py:class:`~vDataColumn`.
         """
         return self.iloc(limit=limit)
@@ -1027,9 +1027,9 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.select` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.select` :
                 Select columns from the :py:class:`~vDataFrame`.
-            | :py:meth:`~verticapy.vDataFrame.iloc` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.iloc` :
                 Select rows from the :py:class:`~vDataFrame`.
         """
         if offset < 0:
@@ -1122,9 +1122,9 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.select` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.select` :
                 Select columns from the :py:class:`~vDataFrame`.
-            | :py:meth:`~verticapy.vDataFrame.nsmallest` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.nsmallest` :
                 Select the smallest values of a column from the :py:class:`~vDataFrame`.
         """
         query = f"""
@@ -1210,9 +1210,9 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.select` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.select` :
                 Select columns from the :py:class:`~vDataFrame`.
-            | :py:meth:`~verticapy.vDataFrame.nlargest` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.nlargest` :
                 Select the largest values of a column from the :py:class:`~vDataFrame`.
         """
         return TableSample.read_sql(
@@ -1292,9 +1292,9 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.head` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.head` :
                 Get head of the :py:class:`~vDataFrame`.
-            | :py:meth:`~verticapy.vDataFrame.tail` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.tail` :
                 Get tail of the :py:class:`~vDataFrame`.
         """
         return self.iloc(limit=limit, offset=-1)

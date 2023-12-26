@@ -137,7 +137,7 @@ def pcsv(
     --------
     In this example, we will first create
     a *CSV* file using
-    :py:meth:`~verticapy.vDataFrame.to_csv`
+    vDataFrame.:py:meth:`~verticapy.vDataFrame.to_csv`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:
@@ -476,7 +476,7 @@ def read_csv(
     --------
     In this example, we will first create
     a *CSV* file using
-    :py:meth:`~verticapy.vDataFrame.to_csv`
+    vDataFrame.:py:meth:`~verticapy.vDataFrame.to_csv`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:

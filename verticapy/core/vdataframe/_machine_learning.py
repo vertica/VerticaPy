@@ -138,7 +138,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.sample` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.sample` :
                 Sampling the Dataset.
         """
         if isinstance(weight, str):
@@ -188,7 +188,7 @@ class vDFMachineLearning(vDFScaler):
         """
         Returns the complete  disjunctive table of  the vDataFrame.
         Numerical  features  are transformed  to categorical using
-        the :py:meth:`~verticapy.vDataFrame.discretize` method.
+        the vDataFrame.:py:meth:`~verticapy.vDataFrame.discretize` method.
         Applying PCA on TCDT leads to MCA (Multiple correspondence
         analysis).
 
@@ -462,7 +462,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.chaid_columns` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid_columns` :
                 Returns the columns picked by the CHAID algorithm
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
@@ -661,7 +661,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.chaid` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid` :
                 Returns a CHAID (Chi-square Automatic Interaction Detector) tree.
         """
         columns = format_type(columns, dtype=list)
@@ -780,7 +780,7 @@ class vDFMachineLearning(vDFScaler):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers.html
 
         Now we can see which values are outliers
-        by using the :py:meth:`~verticapy.vDataFrame.outliers`
+        by using the vDataFrame.:py:meth:`~verticapy.vDataFrame.outliers`
         method:
 
         .. code-block:: python
@@ -806,7 +806,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.outliers_plot` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.outliers_plot` :
                 Plots the outliers.
         """
         columns = format_type(columns, dtype=list)
@@ -943,7 +943,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.chaid` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.chaid` :
                 Returns a CHAID (Chi-square Automatic Interaction Detector) tree.
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
@@ -1081,7 +1081,7 @@ class vDFMachineLearning(vDFScaler):
 
         We can create a new :py:class:`~vDataFrame` that
         has a combination of the original columns using
-        the :py:meth:`~verticapy.vDataFrame.polynomial_comb`
+        the vDataFrame.:py:meth:`~verticapy.vDataFrame.polynomial_comb`
         method:
 
         .. ipython:: python
@@ -1110,7 +1110,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.corr` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.corr` :
                 Computes the correlation matrix.
         """
         columns = format_type(columns, dtype=list)
@@ -1356,7 +1356,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.add_duplicates` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.add_duplicates` :
                 Add duplicates of values based on weights.
         """
         unique_id, item_id, ts = self.format_colnames(unique_id, item_id, ts)
@@ -1695,7 +1695,7 @@ class vDFMachineLearning(vDFScaler):
 
         You can easily divide your dataset into training
         and testing subsets using the
-        :py:meth:`~vDataFrame.train_test_split` method.
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.train_test_split` method.
 
         .. code-block:: python
 
@@ -1966,7 +1966,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.analytic` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.analytic` :
                 Use an advanced analytical function on one or
                 two specific :py:class:`~vDataColumn`.
         """
@@ -2050,7 +2050,7 @@ class vDFMachineLearning(vDFScaler):
 
         Now, we can easily divide the dataset into
         training and testing subsets using the
-        :py:meth:`~vDataFrame.train_test_split`
+        vDataFrame.:py:meth:`~verticapy.vDataFrame.train_test_split`
         method.
 
         .. ipython:: python
@@ -2075,12 +2075,12 @@ class vDFMachineLearning(vDFScaler):
             to ensure reproducibility, requiring an index
             to prevent collisions. It is highly recommended
             to save the results as tables using the
-            :py:meth:`~vDataFrame.to_db` method to expedite
+            vDataFrame.:py:meth:`~verticapy.vDataFrame.to_db` method to expedite
             the process and ensure consistent results.
 
         .. seealso::
 
-            | :py:meth:`~verticapy.vDataFrame.sample` :
+            | vDataFrame.:py:meth:`~verticapy.vDataFrame.sample` :
                 Downsamples the input :py:class:`~vDataFrame`.
         """
         order_by = format_type(order_by, dtype=list)

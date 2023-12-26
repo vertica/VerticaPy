@@ -502,7 +502,7 @@ class vDataFrame(vDFAnimatedPlot):
     There are many methods that can be directly
     used by :py:class:`~vDataFrame`. Let us look
     at how conveiently we can call them. Here is
-    an example of the :py:meth:`~vDataFrame.describe`
+    an example of the vDataFrame.:py:meth:`~verticapy.vDataFrame.describe`
     method:
 
     .. ipython:: python

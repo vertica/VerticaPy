@@ -78,7 +78,7 @@ def random() -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("RANDOM()", "float")
 
@@ -149,7 +149,7 @@ def randomint(n: int) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL(f"RANDOMINT({n})", "int")
 
@@ -221,6 +221,6 @@ def seeded_random(random_state: int) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL(f"SEEDED_RANDOM({random_state})", "float")

@@ -199,7 +199,7 @@ def balance(
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html
 
     .. seealso::
-        | :py:meth:`~verticapy.vDataFrame.sample` : Sampling the dataset.
+        | vDataFrame.:py:meth:`~verticapy.vDataFrame.sample` : Sampling the dataset.
     """
     _executeSQL(
         query=f"""
