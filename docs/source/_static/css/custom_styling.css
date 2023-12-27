@@ -382,12 +382,12 @@ h2{
 
 /* Changing color of class/functions */
 .sig-prename {
-  color: #00008b;
+  color: var(--color-link);
   font-weight: 400;
 }
 
 .sig-name {
-  color: #00008b;
+  color: var(--color-link);
 }
 
 .content {

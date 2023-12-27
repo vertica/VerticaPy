@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import copy
 from typing import Optional, Union
 
+import matplotlib as mpl
 from matplotlib.axes import Axes
 from matplotlib.pyplot import Figure
 import matplotlib.pyplot as plt
@@ -38,6 +39,7 @@ class MatplotlibBase(PlottingBase):
         dim: int = 2,
         style_kwargs: Optional[dict] = None,
     ) -> tuple[Axes, Figure]:
+        theme = conf.get_option("theme")
         style_kwargs = format_type(style_kwargs, dtype=dict)
         kwargs = copy.deepcopy(style_kwargs)
         if "figsize" in kwargs and isinstance(kwargs, tuple):
@@ -64,6 +66,22 @@ class MatplotlibBase(PlottingBase):
                 else:
                     ax.grid()
             ax.set_axisbelow(set_axis_below)
+            if theme == "sphinx":
+                fig.patch.set_alpha(0.0)
+                plt.title("", color="#888888")
+                plt.xlabel("", color="#888888")
+                plt.ylabel("", color="#888888")
+                plt.xticks(color="#888888")
+                plt.yticks(color="#888888")
+            elif theme == "dark":
+                ax.set_facecolor("#11111A")
+                plt.title("", color="#AAAAAA")
+                plt.xlabel("", color="#AAAAAA")
+                plt.ylabel("", color="#AAAAAA")
+                plt.xticks(color="#AAAAAA")
+                plt.yticks(color="#AAAAAA")
+            elif theme == "light":
+                ...
             return ax, fig, kwargs
         else:
             return ax, plt, kwargs
