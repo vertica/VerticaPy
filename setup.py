@@ -40,7 +40,7 @@ setuptools.setup(
         "matplotlib>=3.5.2",
         "numpy>=1.11.0",
         "pandas>=0.23.0",
-        "vertica-highcharts>=0.1.2",
+        "vertica-highcharts>=0.1.4",
         "scipy>=1.0.0",
         "tqdm>=4.0.0",
         "vertica-python>=1.2.0",

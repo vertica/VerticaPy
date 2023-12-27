@@ -99,7 +99,6 @@ class BarChart2D(HighchartsBase):
             "title": {"text": ""},
             "chart": {"type": "column"},
             "xAxis": {"type": "category"},
-            "legend": {"enabled": False},
             "colors": self.get_colors(),
             "xAxis": {
                 "title": {"text": self.layout["columns"][0]},
