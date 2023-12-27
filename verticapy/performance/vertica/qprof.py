@@ -1046,8 +1046,10 @@ class QueryProfiler:
                 except:
                     if conf.get_option("print_info") and idx == 0:
                         print("Some tables seem to not exist...")
-                        print("Creating a copy of the performance tables...")
-                        print(f"The key used to build up the tables is: {self.key_id}")
+                        print("Creating a copy of the performance tables...\n")
+                        print(
+                            f"The key used to build up the tables is: {self.key_id}\n"
+                        )
                         print("You can access the key by using the 'key_id' attribute.")
                     exists = False
                     idx += 1
