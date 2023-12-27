@@ -6,24 +6,6 @@ from bs4 import BeautifulSoup
 search_directory = "build/"
 rst_ignore_directory = "./source/"
 
-# Iterate through all HTML files in the directory and its subdirectories
-files_to_ignore = get_ignore_file_names(rst_ignore_directory)
-for root, _, files in os.walk(search_directory):
-    for filename in files:
-        if filename.endswith(".html") and filename not in files_to_ignore:
-            file_path = os.path.join(root, filename)
-            with open(file_path, "r", encoding="utf-8") as file:
-                html_content = file.read()
-            if count_elements_in_toc_tree(html_content) >= 1:
-                headings = extract_headings(html_content)
-                if not headings == None:
-                    process_html_file(file_path, create_html_list(headings))
-                    print(f"Updated:{file_path}")
-                else:
-                    print(f"Heading Unchanged:{file_path}")
-            else:
-                print(f"No TOC:{file_path}")
-
 
 def count_elements_in_toc_tree(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
@@ -133,17 +115,16 @@ def process_content(content, replace_content):
     matches = re.findall(pattern, content, re.DOTALL)
 
     # Print a statement to confirm if matches are found
-    if matches:
-        print("Matches found!")
-    else:
-        print("No matches found.")
+    # if matches:
+    #     print("Matches found!")
+    # else:
+    #     print("No matches found.")
 
     # Process each match and replace it with the desired content
     html_content = None
     for match in matches:
         # print(match)
         modified_match = f"""
-            {match}
             {replace_content}        
         """
         html_content = content.replace(match, modified_match)
@@ -163,5 +144,23 @@ def get_ignore_file_names(folder_path):
 
     html_files = [file.replace(".rst", ".html") for file in rst_files]
     # Print the list of .rst files
-    html_files.append("index.html")  # For Jupyter Notebooks
     return html_files
+
+
+# Iterate through all HTML files in the directory and its subdirectories
+files_to_ignore = get_ignore_file_names(rst_ignore_directory)
+for root, _, files in os.walk(search_directory):
+    for filename in files:
+        if filename.endswith(".html") and filename not in files_to_ignore:
+            file_path = os.path.join(root, filename)
+            with open(file_path, "r", encoding="utf-8") as file:
+                html_content = file.read()
+            if count_elements_in_toc_tree(html_content) >= 1:
+                headings = extract_headings(html_content)
+                if not headings == None:
+                    process_html_file(file_path, create_html_list(headings))
+                    print(f"Updated:{file_path}")
+                else:
+                    print(f"Heading Unchanged:{file_path}")
+            else:
+                print(f"No TOC:{file_path}")
