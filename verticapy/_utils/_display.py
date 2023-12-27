@@ -58,21 +58,21 @@ def print_table(
         bgcolor = "#000000"
         bgcolor_null = "#222222"
         fontcolor_null = "#999999"
-        bgcolor_other = "#050505"
+        bgcolor_other = "#18181A"
         border_color_1 = "#555555"
         border_color_2 = "#333333"
-        fontcolor = "#FFFFFF"
+        fontcolor = "#FFFFCC"
         fontcolor_abc = "#959DAD"
         fontcolor_index_j = "#1A6AFF"
         fontcolor_index_i = "#FFFFFF"
     elif theme == "sphinx":
         bgcolor = "var(--color-announcement-background)"
-        bgcolor_null = "#777777"
+        bgcolor_null = "var(--color-background-hover)"
         fontcolor_null = "#999999"
-        bgcolor_other = "var(--color-announcement-background)"
+        bgcolor_other = "var(--color-admonition-background)"
         border_color_1 = "#888888"
         border_color_2 = "#555555"
-        fontcolor = "var(--color-announcement-text)"
+        fontcolor = "var(--color-content-foreground)"
         fontcolor_abc = "#959DAD"
         fontcolor_index_j = "#1A6AFF"
         fontcolor_index_i = "var(--color-announcement-text)"
@@ -288,7 +288,7 @@ def print_table(
                             val = ""
                     elif cell_width[j] > 240:
                         val = (
-                            f'<input style="background-color: {background}; font-weight: bold;'
+                            f'<input style="background-color: {bgcolor}; font-weight: bold;'
                             f"color: {fontcolor}; border: none; text-align: center; width: "
                             f'{cell_width[j] - 10}px;" type="text" value="{val}" readonly>'
                         )
@@ -298,7 +298,7 @@ def print_table(
                     if conf.get_option("mode") not in ("full", None):
                         background = f"{bgcolor}"
                     html_table += (
-                        f'><input style="background-color: {background}; border: none; '
+                        f'><input style="background-color: {bgcolor}; border: none; '
                         f'color: {fontcolor}; text-align: center; width: {cell_width[j] - 10}px;" '
                         f'type="text" value="{val}" readonly></td>'
                     )

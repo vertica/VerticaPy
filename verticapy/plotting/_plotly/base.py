@@ -105,21 +105,29 @@ class PlotlyBase(PlottingBase):
     # Get
 
     def _get_fig(self, fig: Optional[Figure] = None) -> Figure:
+        theme = conf.get_option("theme")
         pio.templates.default = self._get_theme()
         if fig:
-            return fig
+            res = fig
         else:
-            return go.Figure()
+            res = go.Figure()
+        if theme == "sphinx":
+            res.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict({"color": "#888888"}),
+            )
+        return res
 
     @staticmethod
-    def _get_theme() -> Literal["ggplot2", "plotly_white", "plotly_dark", "none"]:
+    def _get_theme() -> Literal["plotly_white", "plotly_dark", "none"]:
         theme = conf.get_option("theme")
         if theme == "dark":
             return "plotly_dark"
         elif theme == "light":
             return "plotly_white"
         elif theme == "sphinx":
-            return "ggplot2"
+            return "none"
         return "none"
 
     @staticmethod

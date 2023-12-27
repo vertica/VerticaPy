@@ -54,17 +54,15 @@ Below are the configuration on which the tests were carried out:
         - OS
         - OS Version
         - Processor freq. (per node)
-        - Processor cores (per node) 
       * - 23.3.0-5
         - On-Premises VM
         - 4 node 
-        - N/A
+        - 36, 2 threads per core
         - 755 GB
         - Enterprise
         - Red Hat Enterprise Linux  
         - 8.7 (Ootpa)   
         - 2.3 GHz  
-        - 36, 2 threads per core
 
 .. tab:: Python
 
@@ -80,7 +78,6 @@ Below are the configuration on which the tests were carried out:
         - OS
         - OS Version
         - Processor freq. (per node)
-        - Processor cores (per node) 
       * - 0.14.0
         - N/A
         - N/A
@@ -90,7 +87,6 @@ Below are the configuration on which the tests were carried out:
         - Red Hat Enterprise Linux  
         - 8.7 (Ootpa)   
         - 2.3 GHz  
-        - N/A
 
 
 **Parameters:** p = 5, d = 1, q = 1

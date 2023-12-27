@@ -475,6 +475,16 @@ class PerformanceTree:
         while len(res) > 0 and res[0] in ("+", "-", " ", "|", ">"):
             res = res[1:]
         if return_path_id:
+            if "PATH ID: " not in res:
+                if "INSERT" in res:
+                    return -1001
+                if "DELETE" in res:
+                    return -1002
+                if "UPDATE" in res:
+                    return -1003
+                if "MERGE" in res:
+                    return -1004
+                return -1000
             res = res.split("PATH ID: ")[1].split(")")[0]
             res = re.sub(r"[^0-9]", "", res)
             if len(res) == 0:
@@ -538,6 +548,38 @@ class PerformanceTree:
             i += 1
         return res.strip()
 
+    def _get_special_operator(self, operator: str) -> Optional[str]:
+        """
+        Gets the input
+        special operator.
+
+        Parameters
+        ----------
+        operator: str
+            Tree operator.
+
+        Returns
+        -------
+        str
+            special operator.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if isinstance(operator, NoneType):
+            return "?"
+        if "INSERT" in operator:
+            return "I"
+        if "DELETE" in operator:
+            return "D"
+        if "UPDATE" in operator:
+            return "U"
+        if "MERGE" in operator:
+            return "M"
+        return "?"
+
     def _get_operator_icon(self, operator: str) -> Optional[str]:
         """
         Gets the input
@@ -561,6 +603,14 @@ class PerformanceTree:
         if self.style["display_operator"]:
             if isinstance(operator, NoneType):
                 return "?"
+            elif "INSERT" in operator:
+                return "📥"
+            elif "DELETE" in operator:
+                return "🗑️"
+            elif "UPDATE" in operator:
+                return "🔄"
+            elif "MERGE" in operator:
+                return "🔄"
             elif "ANALYTICAL" in operator:
                 return "📈"
             elif "STORAGE ACCESS" in operator:
@@ -967,7 +1017,7 @@ class PerformanceTree:
 
     def _gen_label_table(
         self,
-        label: str,
+        label: Union[int, str],
         colors: list,
         operator: Optional[str] = None,
     ) -> str:
@@ -995,6 +1045,8 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
+        if isinstance(label, int) and label < -1000:
+            label = self._get_special_operator(operator)
         if not (self.style["display_operator"]) and len(colors) == 1:
             return f'"{label}", style="filled", fillcolor="{colors[0]}"'
         fontcolor = self.style["fontcolor"]
