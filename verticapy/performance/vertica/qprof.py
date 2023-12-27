@@ -151,10 +151,15 @@ class QueryProfiler:
         Unique ID used to build up the
         different Performance tables
         savings.
+    transactions: list
+        ``list`` of ``tuples``:
+        ``(transaction_id, statement_id)``.
+        It includes all the transactions
+        of the current schema.
     transaction_id: int
-        Transaction ID.
+        Current Transaction ID.
     statement_id: int
-        Statement ID.
+        Current Statement ID.
     target_schema: dict
         Name of the schema used to store
         all the Vertica monitor and internal
@@ -287,6 +292,14 @@ class QueryProfiler:
             key_id='MYKEY',
             target_schema='MYSCHEMA',
         )
+
+    You can access all the transactions 
+    of a specific schema by utilizing 
+    the 'transactions' attribute.
+
+    .. code-block:: python
+
+        qprof.transactions
 
     **SQL generated from VerticaPy functions**
 
@@ -1101,8 +1114,8 @@ class QueryProfiler:
             )
         except TypeError:
             raise QueryError(
-                f"No transaction with transaction_id={transaction_id} "
-                f"and statement_id={statement_id} was found in the "
+                f"No transaction with transaction_id={self.transaction_id} "
+                f"and statement_id={self.statement_id} was found in the "
                 "v_internal.dc_requests_issued table."
             )
 
