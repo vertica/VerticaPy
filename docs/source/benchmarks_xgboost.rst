@@ -251,16 +251,15 @@ algorithm that was tested:
         - Deploy mode
         - Executor Memory
         - Driver Memory
-        - Total Executor Cores
       * - 3.3.1
         - N/A
         - N/A
-        - N/A
+        - 36 ( Per Worker)
         - N/A
         - client
         - 70GB
         - 50GB
-        - 36 ( Per Worker)
+
 
 Parameters
 -----------
@@ -710,7 +709,7 @@ Test Environment
         - r4.8xlarge
         - 3 nodes
         - N/A
-        - 244
+        - 244 GB
         - Eon
         - Red Hat Enterprise Linux 
         - 8.5 (Ootpa)
