@@ -68,6 +68,7 @@ class MatplotlibBase(PlottingBase):
             ax.set_axisbelow(set_axis_below)
             if theme == "sphinx":
                 fig.patch.set_alpha(0.0)
+                ax.set_facecolor("none")
                 plt.title("", color="#888888")
                 plt.xlabel("", color="#888888")
                 plt.ylabel("", color="#888888")
