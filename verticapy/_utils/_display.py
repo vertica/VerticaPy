@@ -67,7 +67,7 @@ def print_table(
         fontcolor_index_i = "#FFFFFF"
     elif theme == "sphinx":
         bgcolor = "var(--color-announcement-background)"
-        bgcolor_null = "#777777"
+        bgcolor_null = "var(--color-background-hover)"
         fontcolor_null = "#999999"
         bgcolor_other = "var(--color-admonition-background)"
         border_color_1 = "#888888"
