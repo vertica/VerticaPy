@@ -288,7 +288,7 @@ def print_table(
                             val = ""
                     elif cell_width[j] > 240:
                         val = (
-                            f'<input style="background-color: {background}; font-weight: bold;'
+                            f'<input style="background-color: {bgcolor}; font-weight: bold;'
                             f"color: {fontcolor}; border: none; text-align: center; width: "
                             f'{cell_width[j] - 10}px;" type="text" value="{val}" readonly>'
                         )
@@ -298,7 +298,7 @@ def print_table(
                     if conf.get_option("mode") not in ("full", None):
                         background = f"{bgcolor}"
                     html_table += (
-                        f'><input style="background-color: {background}; border: none; '
+                        f'><input style="background-color: {bgcolor}; border: none; '
                         f'color: {fontcolor}; text-align: center; width: {cell_width[j] - 10}px;" '
                         f'type="text" value="{val}" readonly></td>'
                     )

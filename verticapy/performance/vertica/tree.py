@@ -475,6 +475,8 @@ class PerformanceTree:
         while len(res) > 0 and res[0] in ("+", "-", " ", "|", ">"):
             res = res[1:]
         if return_path_id:
+            if "PATH ID: " not in res:
+                return -1
             res = res.split("PATH ID: ")[1].split(")")[0]
             res = re.sub(r"[^0-9]", "", res)
             if len(res) == 0:
@@ -561,6 +563,8 @@ class PerformanceTree:
         if self.style["display_operator"]:
             if isinstance(operator, NoneType):
                 return "?"
+            elif "INSERT" in operator:
+                return "📥"
             elif "ANALYTICAL" in operator:
                 return "📈"
             elif "STORAGE ACCESS" in operator:
