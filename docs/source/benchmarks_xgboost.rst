@@ -253,16 +253,15 @@ algorithm that was tested:
         - Deploy mode
         - Executor Memory
         - Driver Memory
-        - Total Executor Cores
       * - 3.3.1
         - N/A
         - N/A
-        - N/A
+        - 36 ( Per Worker)
         - N/A
         - client
         - 70GB
         - 50GB
-        - 36 ( Per Worker)
+
 
 Parameters
 -----------
@@ -720,7 +719,7 @@ Test Environment
         - 2.4GHz
         - N/A
         - 32
-        - 244
+        - 244 GB
         - 3
         - SSD
 
