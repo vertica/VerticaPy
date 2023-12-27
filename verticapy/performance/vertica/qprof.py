@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
+import uuid
 import warnings
 
 from tqdm.auto import tqdm
@@ -50,14 +51,14 @@ class QueryProfiler:
         ``help`` function to explore the functionalities
         of your current documentation.
 
-    The :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` is a valuable tool for
-    anyone seeking to comprehend the reasons behind
-    a query's lack of performance. It incorporates a
-    set of functions inspired by the original QPROF
-    project, while introducing an enhanced feature
-    set. This includes the capability to generate
-    graphics and dashboards, facilitating a
-    comprehensive exploration of the data.
+    The :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+    is a valuable tool for anyone seeking to comprehend
+    the reasons behind a query's lack of performance.
+    It incorporates a set of functions inspired by the
+    original QPROF project, while introducing an
+    enhanced feature set. This includes the capability
+    to generate graphics and dashboards, facilitating
+    a comprehensive exploration of the data.
 
     Moreover, it offers greater convenience by
     allowing interaction with an object that
@@ -70,23 +71,34 @@ class QueryProfiler:
     ----------
     .. important::
 
-        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` can only be instantiated with
-        either a query or a combination of a transaction
-        ID and a statement ID. These parameters cannot be
-        both defined and undefined simultaneously.
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        can only be instantiated with either a query or a
+        combination of transactions ID and a statements ID.
 
-    request: str, optional
-        Query to run.
-        The option to run a query is available when
-        targeting a query that has not been previously
-        executed in the database.
+    request: str | list, optional
+        Three options are possible for this parameter:
 
-        .. warning::
+        - A ``list`` of ``tuples``:
+            ``(transaction_id, statement_id)``.
+        - A ``list`` of ``integers``:
+            the ``transaction_id``; the ``statement_id``
+            will automatically be set to 1.
+        - A query:
+            The option to run a query is available when
+            targeting a query that has not been previously
+            executed in the database.
 
-            It's important to exercise caution; if the
-            query is time-consuming, it will require a
-            significant amount of time to execute before
-            proceeding to the next steps.
+            .. warning::
+
+                It's important to exercise caution; if the
+                query is time-consuming, it will require a
+                significant amount of time to execute before
+                proceeding to the next steps.
+    key_id: int, optional
+        This parameter is utilized to load information
+        from another ``target_schema``. It is considered
+        a good practice to save the queries you intend
+        to profile.
     resource_pool: str, optional
         Specify the name of the resource pool to utilize
         when executing the query. Refer to the Vertica
@@ -103,15 +115,6 @@ class QueryProfiler:
         within the system.
     statement_id: int, optional
         ID of the statement.
-    add_profile: bool, optional
-        If set to true and the request does not include a
-        profile, this option adds the profile keywords at
-        the beginning of the query before executing it.
-
-        .. note::
-
-            This parameter is used only when ``request`` is
-            defined.
     target_schema: str | dict, optional
         Name of the schemas to use to store
         all the Vertica monitor and internal
@@ -120,36 +123,18 @@ class QueryProfiler:
         used to map all the Vertica DC tables.
         If the tables do not exist, VerticaPy
         will try to create them automatically.
-        You can ensure this operation by setting
-        ``create_copy=True``.
-    create_copy: bool, optional
-        If set to ``True``, tables or local temporary
-        tables will be created by using the schema
-        definition of ``target_schema`` parameter
-        to store all the Vertica monitor and internal
-        meta-tables.
-
-        .. note::
-
-            This parameter is used only when
-            ``create_local_temporary_copy=False``.
-    create_local_temporary_copy: bool, optional
-        If set to ``True``, local temporary tables
-        will be created to store all the Vertica
-        monitor and internal meta-tables.
-
-        .. note::
-
-            This parameter is used only when
-            ``create_copy=False``.
-    overwrite: bool
+    overwrite: bool, optional
         If set to ``True`` overwrites the
         existing performance tables.
+    add_profile: bool, optional
+        If set to ``True`` and the request does not include
+        a profile, this option adds the profile keywords at
+        the beginning of the query before executing it.
 
         .. note::
 
-            This parameter is used only when
-            ``create_local_temporary_copy=True``.
+            This parameter is used only when ``request`` is
+            defined.
 
     Attributes
     ----------
@@ -162,6 +147,10 @@ class QueryProfiler:
         will be treated as transactions,
         and the statements will always
         be set to ``1``.
+    key_id: int
+        Unique ID used to build up the
+        different Performance tables
+        savings.
     transaction_id: int
         Transaction ID.
     statement_id: int
@@ -262,7 +251,7 @@ class QueryProfiler:
         being the targetted schema. To overwrite
         the tables, use: ``overwrite=True``.
         Finally, if you just need local temporary
-        table, use: ``create_local_temporary_copy=True``.
+        table, use the ``v_temp_schema`` schema.
 
         Example:
 
@@ -271,9 +260,33 @@ class QueryProfiler:
             qprof = QueryProfiler(
                 transaction_id=45035996273800581,
                 statement_id=48,
-                target_schema='MYSCHEMA',
+                target_schema='v_temp_schema',
                 overwrite=True,
             )
+
+    **Multiple Transactions ID and Statements ID**
+
+    You can also construct an object based on multiple
+    transactions and statement IDs by using a list of
+    transactions and statements.
+
+    .. code-block:: python
+
+        qprof = QueryProfiler(
+            [(tr1, st2), (tr2, st2), (tr3, st3)],
+            target_schema='MYSCHEMA',
+            overwrite=True,
+        )
+
+    A ``key_id`` will be generated, which you can
+    then use to reload the object.
+
+    .. code-block:: python
+
+        qprof = QueryProfiler(
+            key_id='MYKEY',
+            target_schema='MYSCHEMA',
+        )
 
     **SQL generated from VerticaPy functions**
 
@@ -299,7 +312,8 @@ class QueryProfiler:
     .. code-block:: python
 
         qprof = QueryProfiler(
-            "SELECT * FROM " + titanic["age","fare"].fillna().current_relation())
+            "SELECT * FROM " + titanic["age","fare"].fillna().current_relation()
+        )
 
     **Directly From SQL Query**
 
@@ -326,8 +340,8 @@ class QueryProfiler:
         print(f"tid={tid};sid={sid}")
 
     To avoid recomputing a query, you
-    can also directly use a statement
-    ID and a transaction ID.
+    can also directly use its statement
+    ID and its transaction ID.
 
     .. ipython:: python
 
@@ -356,6 +370,15 @@ class QueryProfiler:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html
+
+    .. note::
+
+        You can use the method without parameters
+        to obtain a list of all available tables.
+
+        .. ipython:: python
+
+            qprof.get_table()
 
     Executing a QPROF step
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -749,14 +772,13 @@ class QueryProfiler:
     def __init__(
         self,
         request: Union[None, str, list[int], list[tuple[int, int]]] = None,
+        key_id: Optional[str] = None,
         resource_pool: Optional[str] = None,
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
-        add_profile: bool = True,
         target_schema: Union[None, str, dict] = None,
-        create_copy: bool = False,
-        create_local_temporary_copy: bool = False,
         overwrite: bool = False,
+        add_profile: bool = True,
     ) -> None:
         self.transactions = []
         self.transactions_idx = 0
@@ -790,41 +812,18 @@ class QueryProfiler:
                     self.transactions = [
                         (transaction_id, statement_id)
                     ] + self.transactions
-        if create_local_temporary_copy and create_copy:
-            raise ValueError(
-                "'create_copy' and 'create_local_temporary_copy'"
-                " can not be both set to True."
-            )
-        if create_copy and isinstance(target_schema, NoneType):
-            warning_message = (
-                "'create_copy' is set to True but 'target_schema' "
-                " is empty. The parameters will be both ignored."
-            )
-            warnings.warn(warning_message, Warning)
-        if create_local_temporary_copy and not (isinstance(target_schema, NoneType)):
-            warning_message = (
-                "'create_local_temporary_copy' is set to True but "
-                "'target_schema' is not empty.\nThe parameter "
-                "'target_schema' will be ignored."
-            )
-            warnings.warn(warning_message, Warning)
-        if not (isinstance(request, NoneType)) and (
-            not (isinstance(transaction_id, NoneType))
-            or not (isinstance(statement_id, NoneType))
-        ):
-            raise ValueError(
-                "If the parameter 'request' is defined, you cannot "
-                "simultaneously define 'transaction_id' or "
-                "'statement_id'."
-            )
-        elif isinstance(request, NoneType) and (
-            isinstance(transaction_id, NoneType) or isinstance(statement_id, NoneType)
-        ):
-            raise ValueError(
-                "Both 'transaction_id' and 'statement_id' must "
-                "be defined, or alternatively, the 'request' parameter "
-                "must be defined."
-            )
+        if isinstance(key_id, NoneType):
+            self.key_id = str(uuid.uuid1()).replace("-", "")
+        else:
+            if isinstance(key_id, int):
+                self.key_id = str(key_id)
+            elif isinstance(key_id, str):
+                self.key_id = key_id
+            else:
+                raise TypeError(
+                    "Wrong type for parameter 'key_id'. Expecting "
+                    f"an integer or a string. Found {type(key_id)}."
+                )
         if not (isinstance(request, NoneType)):
             if not (isinstance(resource_pool, NoneType)):
                 _executeSQL(
@@ -855,15 +854,17 @@ class QueryProfiler:
                 method="fetchrow",
             )
             self.request = request
+            if (transaction_id, statement_id) not in self.transactions:
+                self.transactions = [(transaction_id, statement_id)] + self.transactions
 
-        if not (isinstance(transaction_id, int)):
+        if not (isinstance(transaction_id, (int, NoneType))):
             raise ValueError(
                 "Wrong type for Parameter transaction_id.\n"
                 f"Expected integer, found {type(transaction_id)}."
             )
         else:
             self.transaction_id = transaction_id
-        if not (isinstance(statement_id, int)):
+        if not (isinstance(statement_id, (int, NoneType))):
             raise ValueError(
                 "Wrong type for Parameter transaction_id.\n"
                 f"Expected integer, found {type(statement_id)}."
@@ -872,9 +873,8 @@ class QueryProfiler:
             self.statement_id = statement_id
 
         # Building the target_schema
-        if create_local_temporary_copy:
+        if target_schema == "v_temp_schema":
             self.target_schema = self._v_temp_schema_dict()
-            create_table = True
         else:
             if isinstance(target_schema, str):
                 self.target_schema = {}
@@ -882,32 +882,13 @@ class QueryProfiler:
                     self.target_schema[schema] = target_schema
             else:
                 self.target_schema = copy.deepcopy(target_schema)
-            create_table = create_copy
 
         self.overwrite = overwrite
-        self._create_copy_v_table(create_table=create_table)
+        self._create_copy_v_table()
 
-        # Getting the request
+        # Setting the request.
         if not (hasattr(self, "request")):
-            query = f"""
-                SELECT 
-                    request 
-                FROM v_internal.dc_requests_issued 
-                WHERE transaction_id = {transaction_id}
-                  AND   statement_id = {statement_id};"""
-            query = self._replace_schema_in_query(query)
-            try:
-                self.request = _executeSQL(
-                    query,
-                    title="Getting the corresponding query",
-                    method="fetchfirstelem",
-                )
-            except TypeError:
-                raise QueryError(
-                    f"No transaction with transaction_id={transaction_id} "
-                    f"and statement_id={statement_id} was found in the "
-                    "v_internal.dc_requests_issued table."
-                )
+            self._set_request()
 
     # Tools
 
@@ -983,9 +964,9 @@ class QueryProfiler:
             "dc_requests_issued": "v_internal",
             "dc_query_executions": "v_internal",
             "dc_explain_plans": "v_internal",
+            "execution_engine_profiles": "v_monitor",
             "query_plan_profiles": "v_monitor",
             "query_profiles": "v_monitor",
-            "execution_engine_profiles": "v_monitor",
             "resource_pool_status": "v_monitor",
             "host_resources": "v_monitor",
         }
@@ -1002,7 +983,7 @@ class QueryProfiler:
             "host_resources",
         ]
 
-    def _create_copy_v_table(self, create_table: bool = True) -> None:
+    def _create_copy_v_table(self) -> None:
         """
         Functions to create a copy
         of the performance tables.
@@ -1014,10 +995,11 @@ class QueryProfiler:
         v_temp_table_dict = self._v_table_dict()
         v_config_table_list = self._v_config_table_list()
         loop = v_temp_table_dict.items()
-        if conf.get_option("print_info") and create_table:
-            print("Creating a copy of the performance tables...")
+        if conf.get_option("print_info"):
+            print("Searching the performance tables...")
         if conf.get_option("tqdm"):
             loop = tqdm(loop, total=len(loop))
+        idx = 0
         for table, schema in loop:
             sql = "CREATE "
             exists = True
@@ -1026,7 +1008,27 @@ class QueryProfiler:
                 and schema in self.target_schema
             ):
                 new_schema = self.target_schema[schema]
-                new_table = f"{table}_{self.statement_id}_{self.transaction_id}"
+                new_table = f"qprof_{table}_{self.key_id}"
+                if table == "dc_requests_issued" and len(self.transactions) == 0:
+                    self.transactions = _executeSQL(
+                        f"""SELECT 
+                                transaction_id, 
+                                statement_id 
+                            FROM {new_schema}.{new_table}
+                            ORDER BY 
+                            time DESC,
+                            transaction_id DESC,
+                            statement_id DESC;""",
+                        title="Getting the transactions and statement ids.",
+                        method="fetchall",
+                    )
+                    self.transactions = [tuple(tr) for tr in self.transactions]
+                    if len(self.transactions) == 0:
+                        raise ValueError("No transactions found.")
+                    if isinstance(self.transaction_id, NoneType):
+                        self.transaction_id = self.transactions[0][0]
+                    if isinstance(self.statement_id, NoneType):
+                        self.statement_id = self.transactions[0][1]
                 if new_schema == "v_temp_schema":
                     sql += f"LOCAL TEMPORARY TABLE {new_table} ON COMMIT PRESERVE ROWS "
                 else:
@@ -1036,28 +1038,21 @@ class QueryProfiler:
                     sql += f" WHERE transaction_id={self.transaction_id} "
                     sql += f"AND statement_id={self.statement_id}"
                 target_tables[table] = new_table
-                if not (create_table):
-                    try:
-                        _executeSQL(
-                            f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
-                            title="Looking if the relation exists.",
-                        )
-                    except:
-                        exists = False
-
-                if table == "query_plan_profiles" and len(self.transactions) == 0:
-                    self.transactions = _executeSQL(
-                        f"""SELECT 
-                                transaction_id, 
-                                statement_id 
-                            FROM {new_schema}.{new_table} 
-                            GROUP BY 1, 2;""",
-                        title="Getting the transactions and statement ids.",
-                        method="fetchall",
+                try:
+                    _executeSQL(
+                        f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
+                        title="Looking if the relation exists.",
                     )
-                    self.transactions = [tuple(tr) for tr in self.transactions]
+                except:
+                    if conf.get_option("print_info") and idx == 0:
+                        print("Some tables seem to not exist...")
+                        print("Creating a copy of the performance tables...")
+                        print(f"The key used to build up the tables is: {self.key_id}")
+                        print("You can access the key by using the 'key_id' attribute.")
+                    exists = False
+                    idx += 1
 
-            if create_table or not (exists):
+            if not (exists):
                 if conf.get_option("print_info"):
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
@@ -1084,6 +1079,31 @@ class QueryProfiler:
                     warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
 
+    def _set_request(self):
+        """
+        Computes and sets the current
+        ``transaction_id`` request.
+        """
+        query = f"""
+            SELECT 
+                request 
+            FROM v_internal.dc_requests_issued 
+            WHERE transaction_id = {self.transaction_id}
+              AND   statement_id = {self.statement_id};"""
+        query = self._replace_schema_in_query(query)
+        try:
+            self.request = _executeSQL(
+                query,
+                title="Getting the corresponding query",
+                method="fetchfirstelem",
+            )
+        except TypeError:
+            raise QueryError(
+                f"No transaction with transaction_id={transaction_id} "
+                f"and statement_id={statement_id} was found in the "
+                "v_internal.dc_requests_issued table."
+            )
+
     # Navigation
 
     def next(self):
@@ -1101,6 +1121,7 @@ class QueryProfiler:
         self.transactions_idx = idx
         self.transaction_id = self.transactions[idx][0]
         self.statement_id = self.transactions[idx][1]
+        self._set_request()
 
     def previous(self):
         """
@@ -1117,6 +1138,7 @@ class QueryProfiler:
         self.transactions_idx = idx
         self.transaction_id = self.transactions[idx][0]
         self.statement_id = self.transactions[idx][1]
+        self._set_request()
 
     # Main Method
 
@@ -1853,6 +1875,8 @@ class QueryProfiler:
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
+        if len(rows) == "":
+            raise ValueError("The Query Plan is empty. Its data might have been lost.")
         metric_value = {}
         if isinstance(metric, (str, NoneType)):
             metric = [metric]
