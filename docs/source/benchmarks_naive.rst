@@ -50,7 +50,7 @@ Dataset
   .. list-table:: 
       :header-rows: 1
 
-      * - No. of Rows
+      * - # of Rows
         - No. of Columns
       * - 25 M
         - 106
@@ -78,17 +78,16 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 11.1.0-0
           - On-Premises VM
           - 1 node
-          - N/A
+          - 8
           - 20393864 kB
           - Enterprise
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
+
 
   .. tab:: Multi Node
 
@@ -104,17 +103,16 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 11.1.0-0
           - On-Premises VM
           - 4 nodes
-          - N/A
+          - 8
           - 20393864 kB 
           - Enterprise
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
+
 
 
 .. tab:: Spark
@@ -134,17 +132,16 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 3.2.1
           - On-Premises VM
           - 1 node
-          - N/A
+          - 8
           - 20393864 kB
           - NA
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
+
 
   .. tab:: Multi Node
 
@@ -160,17 +157,16 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 3.2.1
           - On-Premises VM
           - 4 nodes
-          - N/A
+          - 8
           - 20393864 kB 
           - NA
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
+
 
 Comparison
 ^^^^^^^^^^^
@@ -220,9 +216,9 @@ Comparison
 
       import plotly.graph_objects as go
       data = {
-          'Metric': ['Train model', 'Prediction'],
-          'Spark': [145.70, 1095.79],
-          'Vertica': [9.08, 207.56]
+          'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
+          'Spark': [145.70, 1095.79, 150.55, 146.58],
+          'Vertica': [9.08, 207.56, 0.99, 2.19]
       }
       fig = go.Figure()
       bar_width = 0.22  # Set the width of each bar
@@ -352,9 +348,9 @@ Comparison
 
       import plotly.graph_objects as go
       data = {
-          'Metric': ['Train model', 'Prediction'],
-          'Spark': [69.16, 1134.03],
-          'Vertica': [4.83, 103.90]
+          'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
+          'Spark': [69.16, 1134.03, 64.46, 63.70],
+          'Vertica': [4.83, 103.90, 0.74, 0.78]
       }
       fig = go.Figure()
       bar_width = 0.22  # Set the width of each bar

@@ -144,17 +144,16 @@ algorithm that was tested:
         - OS
         - OS Version
         - Processor freq. (per node)
-        - Processor cores (per node) 
       * - 23.4
         - On Premise VM
         - 4 node 
-        - N/A
+        - 36, 2 threads per core
         - 755 GB
         - Enterprise
         - Red Hat Enterprise Linux  
         - 8.7 (Ootpa)   
         - 2.3 GHz  
-        - 36, 2 threads per core
+
 
 
 .. tab:: Amazon Redshift
@@ -170,7 +169,7 @@ algorithm that was tested:
         - vCPU (per node)
         - Memory (per node)
         - Deploy Mode
-      * - ???
+      * - Jan 2023
         - ra3.16xlarge
         - 4 node
         - 48
@@ -190,7 +189,7 @@ algorithm that was tested:
         - vCPU (per node)
         - Memory (per node)
         - Deploy Mode
-      * - ???
+      * - Jan 2023
         - ml.m5.24xlarge
         - 1 node
         - 96
@@ -208,7 +207,7 @@ algorithm that was tested:
         - vCPU (per node)
         - Memory (per node)
         - Deploy Mode
-      * - ???
+      * - Jan 2023
         - ml.m5.24xlarge
         - 3 nodes
         - 96
@@ -675,7 +674,7 @@ Dataset
 .. list-table:: 
     :header-rows: 1
 
-    * - No. of Rows
+    * - # of Rows
       - No. of Columns
     * - 25 M
       - 106
@@ -706,21 +705,19 @@ Test Environment
         - Processor freq. (per node)
         - Processor cores (per node) 
         - Type
-        - CPU Memory
         - No. of nodes
         - Storage type
       * - 11.1.0-0
         - r4.8xlarge
         - 3 nodes
         - N/A
-        - N/A
+        - 244
         - Eon
         - Red Hat Enterprise Linux 
         - 8.5 (Ootpa)
         - 2.4GHz
         - N/A
         - 32
-        - 244
         - 3
         - SSD
 
@@ -740,19 +737,18 @@ Test Environment
         - Processor freq. (per node)
         - Processor cores (per node) 
         - Type
-        - RAM
       * - 11.1.0-0
         - On Premise VM
         - 3 node cluster
         - N/A
-        - N/A
+        - 32727072 kB
         - Enterprise
         - Red Hat Enterprise Linux 
         - 8.5 (Ootpa)
         - 2.4GHz
         - 4
         - 32
-        - 32727072 kB
+
 
 
 Comparison
