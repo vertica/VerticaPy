@@ -293,8 +293,8 @@ class QueryProfiler:
             target_schema='MYSCHEMA',
         )
 
-    You can access all the transactions 
-    of a specific schema by utilizing 
+    You can access all the transactions
+    of a specific schema by utilizing
     the 'transactions' attribute.
 
     .. code-block:: python

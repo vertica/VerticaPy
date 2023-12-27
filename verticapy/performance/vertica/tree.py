@@ -476,13 +476,13 @@ class PerformanceTree:
             res = res[1:]
         if return_path_id:
             if "PATH ID: " not in res:
-                if "INSERT" in operator:
+                if "INSERT" in res:
                     return -1001
-                if "DELETE" in operator:
+                if "DELETE" in res:
                     return -1002
-                if "UPDATE" in operator:
+                if "UPDATE" in res:
                     return -1003
-                if "MERGE" in operator:
+                if "MERGE" in res:
                     return -1004
                 return -1000
             res = res.split("PATH ID: ")[1].split(")")[0]
