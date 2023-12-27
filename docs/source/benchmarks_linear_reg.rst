@@ -59,17 +59,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 8.0.1
           - On Premise VM
           - 3 node cluster
-          - N/A
+          - 36, 2 threads per core
           - 755 GB
           - Enterprise
           - Red Hat Enterprise Linux 
           - 8.7 (Ootpa)
           - 2.4GHz
-          - 36, 2 threads per core
 
     Vertica: ``max iter = 100``, ``e = 10^-6``
 
@@ -87,17 +85,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 2.02
           - N/A
           - N/A
-          - N/A
+          - 36, 2 threads per core
           - 755 GB
           - N/A
           - Red Hat Enterprise Linux 
           - 8.7 (Ootpa)
           - 2.4GHz
-          - 36, 2 threads per core
 
     Spark: ``max iter = 100``, ``e = 10^-6``
 

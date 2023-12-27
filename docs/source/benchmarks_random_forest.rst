@@ -81,17 +81,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 11.1.0-0
           - On-Premises VM
           - 1 node
-          - N/A
+          - 8
           - 20393864 kB
           - Enterprise
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
   .. tab:: Multi Node
 
@@ -107,17 +105,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 11.1.0-0
           - On-Premises VM
           - 4 nodes
-          - N/A
+          - 8
           - 20393864 kB 
           - Enterprise
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
 
 .. tab:: Spark
@@ -137,17 +133,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 3.2.1
           - On-Premises VM
           - 1 node
-          - N/A
+          - 8
           - 20393864 kB
           - NA
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
   .. tab:: Multi Node
 
@@ -163,17 +157,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 3.2.1
           - On-Premises VM
           - 4 nodes
-          - N/A
+          - 8
           - 20393864 kB 
           - NA
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
 
 Comparison
