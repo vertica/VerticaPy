@@ -23,7 +23,7 @@ for root, _, files in os.walk(search_directory):
                     print(f"Heading Unchanged:{file_path}")
             else:
                 print(f"No TOC:{file_path}")
-                
+
 
 def count_elements_in_toc_tree(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -171,6 +171,5 @@ def get_ignore_file_names(folder_path):
 
     html_files = [file.replace('.rst', '.html') for file in rst_files]
     # Print the list of .rst files
+    html_files.append("index.html") # For Jupyter Notebooks
     return html_files
-
-
