@@ -26,6 +26,8 @@ import verticapy._config.config as conf
 from verticapy._utils._sql._format import schema_relation
 from verticapy._typing import NoneType
 
+from verticapy.plotting.base import get_default_graphviz_options
+
 if conf.get_import_success("graphviz"):
     import graphviz
     from graphviz import Source
@@ -150,6 +152,12 @@ class PerformanceTree:
         display_operator: bool = True,
         style: dict = {},
     ) -> None:
+        if len(rows) == 0 or "PATH ID" not in rows:
+            raise ValueError(
+                "No PATH ID detected in the Query Plan.\n"
+                "It seems to be empty.\nAre you sured to have "
+                "profiled your query?"
+            )
         qplan = rows.split("\n")
         n = len(qplan)
         self.rows, tmp_rows = [], []
@@ -160,12 +168,6 @@ class PerformanceTree:
             tmp_rows += [qplan[i]]
         self.rows += ["\n".join(tmp_rows)]
         self.path_order = [self._get_label(row) for row in self.rows]
-        if len(self.path_order) == 0:
-            raise ValueError(
-                "No PATH ID detected in the Query Plan.\n"
-                "It seems to be empty.\nAre you sured to have "
-                "profiled your query?"
-            )
         if isinstance(path_id, NoneType):
             path_id = self.path_order[0]
         if isinstance(path_id, int) and path_id in self.path_order:
@@ -214,6 +216,44 @@ class PerformanceTree:
         self.metric_value = copy.deepcopy(metric_value)
         self.show_ancestors = show_ancestors
         d = copy.deepcopy(style)
+        self._set_style(d)
+        self.path_id_info = []
+        if isinstance(path_id_info, int):
+            path_id_info = [path_id_info]
+        if isinstance(path_id_info, list):
+            for i in path_id_info:
+                if i not in self.path_order:
+                    raise ValueError(
+                        "Wrong value for parameter 'path_id_info':\n"
+                        f"It has to be integers in [{', '.join([str(p) for p in self.path_order])}].\n"
+                        f"Found {i}."
+                    )
+            self.path_id_info = [i for i in path_id_info]
+        elif isinstance(path_id_info, NoneType):
+            self.path_id_info = []
+        else:
+            raise ValueError(
+                "Wrong type for parameter 'path_id_info'.\n"
+                "It should be a list of integers.\n"
+                f"Found: {type(path_id_info)}."
+            )
+
+    # Styling
+    def _set_style(self, d: dict) -> None:
+        """
+        Sets the current tree style.
+
+        Parameters
+        ----------
+        d: dict
+            Styling ``dict``.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        default_params = get_default_graphviz_options()
         for color in ("color_low", "color_high"):
             if color not in d:
                 if color == "color_low":
@@ -222,12 +262,13 @@ class PerformanceTree:
                     d[color] = (255, 0, 0)
             elif isinstance(d[color], str):
                 d[color] = self._color_string_to_tuple(d[color])
+        d["bgcolor"] = default_params["bgcolor"]
         if "fillcolor" not in d:
-            d["fillcolor"] = "#FFFFFF"
+            d["fillcolor"] = default_params["fillcolor"]
         if "shape" not in d:
             d["shape"] = "circle"
         if "fontcolor" not in d:
-            d["fontcolor"] = "#000000"
+            d["fontcolor"] = default_params["fontcolor"]
         if "fontsize" not in d:
             d["fontsize"] = 22
         if "width" not in d:
@@ -235,7 +276,7 @@ class PerformanceTree:
         if "height" not in d:
             d["height"] = 0.6
         if "edge_color" not in d:
-            d["edge_color"] = "#000000"
+            d["edge_color"] = default_params["edge_color"]
         if "edge_style" not in d:
             d["edge_style"] = "solid"
         if "info_color" not in d:
@@ -259,26 +300,6 @@ class PerformanceTree:
         if "network_edge" not in d:
             d["network_edge"] = True
         self.style = d
-        self.path_id_info = []
-        if isinstance(path_id_info, int):
-            path_id_info = [path_id_info]
-        if isinstance(path_id_info, list):
-            for i in path_id_info:
-                if i not in self.path_order:
-                    raise ValueError(
-                        "Wrong value for parameter 'path_id_info':\n"
-                        f"It has to be integers in [{', '.join([str(p) for p in self.path_order])}].\n"
-                        f"Found {i}."
-                    )
-            self.path_id_info = [i for i in path_id_info]
-        elif isinstance(path_id_info, NoneType):
-            self.path_id_info = []
-        else:
-            raise ValueError(
-                "Wrong type for parameter 'path_id_info'.\n"
-                "It should be a list of integers.\n"
-                f"Found: {type(path_id_info)}."
-            )
 
     # Utils
     @staticmethod
@@ -600,35 +621,64 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
+        theme = conf.get_option("theme")
         if self.style["display_operator"]:
             if isinstance(operator, NoneType):
                 return "?"
-            elif "INSERT" in operator:
-                return "📥"
-            elif "DELETE" in operator:
-                return "🗑️"
-            elif "UPDATE" in operator:
-                return "🔄"
-            elif "MERGE" in operator:
-                return "🔄"
-            elif "ANALYTICAL" in operator:
-                return "📈"
-            elif "STORAGE ACCESS" in operator:
-                return "🗄️"
-            elif "GROUPBY" in operator:
-                return "📊"
-            elif "SORT" in operator:
-                return "🔀"
-            elif "JOIN" in operator:
-                return "🔗"
-            elif "SELECT" in operator:
-                return "🔍"
-            elif "UNION" in operator:
-                return "➕"
-            elif "PROJ" in operator:
-                return "📐"
-            elif "COL" in operator:
-                return "📋"
+            if theme == "sphinx":
+                if "INSERT" in operator:
+                    return "I"
+                elif "DELETE" in operator:
+                    return "D"
+                elif "UPDATE" in operator:
+                    return "U"
+                elif "MERGE" in operator:
+                    return "M"
+                elif "ANALYTICAL" in operator:
+                    return "A"
+                elif "STORAGE ACCESS" in operator:
+                    return "SA"
+                elif "GROUPBY" in operator:
+                    return "GB"
+                elif "SORT" in operator:
+                    return "S"
+                elif "JOIN" in operator:
+                    return "J"
+                elif "SELECT" in operator:
+                    return "S"
+                elif "UNION" in operator:
+                    return "U"
+                elif "PROJ" in operator:
+                    return "P"
+                elif "COL" in operator:
+                    return "C"
+            else:
+                if "INSERT" in operator:
+                    return "📥"
+                elif "DELETE" in operator:
+                    return "🗑️"
+                elif "UPDATE" in operator:
+                    return "🔄"
+                elif "MERGE" in operator:
+                    return "🔄"
+                elif "ANALYTICAL" in operator:
+                    return "📈"
+                elif "STORAGE ACCESS" in operator:
+                    return "🗄️"
+                elif "GROUPBY" in operator:
+                    return "📊"
+                elif "SORT" in operator:
+                    return "🔀"
+                elif "JOIN" in operator:
+                    return "🔗"
+                elif "SELECT" in operator:
+                    return "🔍"
+                elif "UNION" in operator:
+                    return "➕"
+                elif "PROJ" in operator:
+                    return "📐"
+                elif "COL" in operator:
+                    return "📋"
             return "?"
         return None
 
@@ -1233,6 +1283,7 @@ class PerformanceTree:
                 if lb == parent and j >= 0:
                     parent_row = self._format_row(self.rows[j].replace('"', "'"))
             label = " " + self._get_operator_edge(row, parent_row) + " "
+            color = self.style["edge_color"]
             style = "solid"
             if self.style["network_edge"]:
                 if "B" in label:
@@ -1240,7 +1291,7 @@ class PerformanceTree:
                 elif "R" in label:
                     style = "dashed"
             if parent != child and child in links:
-                res += f'\t{parent} -> {child} [dir=back, label="{label}", style={style}];\n'
+                res += f'\t{parent} -> {child} [dir=back, label="{label}", style={style}, fontcolor="{color}"];\n'
             if (
                 self.style["display_etc"]
                 and parent in ancestors
@@ -1262,7 +1313,8 @@ class PerformanceTree:
                     node = 100000 - parent
                     if child == self.path_id:
                         node = child
-                    res += f'\t{parent} -> {node} [dir=back, label="{label}"];\n'
+                    color = self.style["edge_color"]
+                    res += f'\t{parent} -> {node} [dir=back, label="{label}", fontcolor="{color}"];\n'
                 done += [parent]
             if (
                 child == self.path_id
@@ -1323,12 +1375,15 @@ class PerformanceTree:
             legend = f"{metric[0]} | {metric[1]}"
         else:
             legend = metric[0]
-        res += f'<tr><td bgcolor="#DFDFDF">{legend}</td></tr>'
-        res += f'<tr><td bgcolor="{alpha0}">{cats[0]}</td></tr>'
-        res += f'<tr><td bgcolor="{alpha025}">{cats[1]}</td></tr>'
-        res += f'<tr><td bgcolor="{alpha050}">{cats[2]}</td></tr>'
-        res += f'<tr><td bgcolor="{alpha075}">{cats[3]}</td></tr>'
-        res += f'<tr><td bgcolor="{alpha1}">{cats[4]}</td></tr>'
+        default_params = get_default_graphviz_options()
+        bgcolor = default_params["legend_bgcolor"]
+        fontcolor = default_params["legend_fontcolor"]
+        res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">{legend}</FONT></td></tr>'
+        res += f'<tr><td BGCOLOR="{alpha0}"><FONT COLOR="{fontcolor}">{cats[0]}</FONT></td></tr>'
+        res += f'<tr><td BGCOLOR="{alpha025}"><FONT COLOR="{fontcolor}">{cats[1]}</FONT></td></tr>'
+        res += f'<tr><td BGCOLOR="{alpha050}"><FONT COLOR="{fontcolor}">{cats[2]}</FONT></td></tr>'
+        res += f'<tr><td BGCOLOR="{alpha075}"><FONT COLOR="{fontcolor}">{cats[3]}</FONT></td></tr>'
+        res += f'<tr><td BGCOLOR="{alpha1}"><FONT COLOR="{fontcolor}">{cats[4]}</FONT></td></tr>'
         res += "</table>>]\n\n"
         return res
 
@@ -1347,6 +1402,7 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
+        bgcolor = self.style["bgcolor"]
         fillcolor = self.style["fillcolor"]
         shape = self.style["shape"]
         fontcolor = self.style["fontcolor"]
@@ -1356,6 +1412,7 @@ class PerformanceTree:
         edge_color = self.style["edge_color"]
         edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
+        res += f'\tgraph [bgcolor="{bgcolor}"]\n'
         if not (self.style["display_operator"]):
             res += (
                 f"\tnode [shape={shape}, style=filled, "

@@ -26,6 +26,7 @@ from verticapy._typing import ArrayLike, NoneType
 from verticapy._utils._sql._format import clean_query, format_magic, format_type
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
+from verticapy.plotting.base import get_default_graphviz_options
 
 if conf.get_import_success("graphviz"):
     import graphviz
@@ -538,6 +539,41 @@ class Tree(InMemoryModel):
                     break
         return output_kind
 
+    @staticmethod
+    def _init_style_tree(
+        node_style: dict,
+        edge_style: dict,
+        leaf_style: dict,
+    ) -> tuple[dict, dict, dict]:
+        """
+        Initialize the tree's style.
+        """
+        default_params = get_default_graphviz_options()
+
+        # node
+        if "fillcolor" not in node_style:
+            node_style["fillcolor"] = default_params["fillcolor"]
+        if "fontcolor" not in node_style:
+            node_style["fontcolor"] = default_params["fontcolor"]
+        if "color" not in node_style:
+            node_style["color"] = default_params["fontcolor"]
+        # leaf
+        if "fillcolor" not in leaf_style:
+            leaf_style["fillcolor"] = default_params["fillcolor"]
+        if "fontcolor" not in leaf_style:
+            leaf_style["fontcolor"] = default_params["fontcolor"]
+        if "shape" not in leaf_style:
+            leaf_style["shape"] = "none"
+        if "color" not in leaf_style:
+            leaf_style["color"] = default_params["fontcolor"]
+        # edge
+        if "color" not in edge_style:
+            edge_style["color"] = default_params["edge_color"]
+        if "fontcolor" not in edge_style:
+            edge_style["fontcolor"] = default_params["edge_color"]
+
+        return node_style, edge_style, leaf_style
+
     def to_graphviz(
         self,
         feature_names: Optional[ArrayLike] = None,
@@ -546,7 +582,7 @@ class Tree(InMemoryModel):
         percent: bool = False,
         vertical: bool = True,
         node_style: Optional[dict] = None,
-        arrow_style: Optional[dict] = None,
+        edge_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
     ) -> str:
         """
@@ -579,9 +615,9 @@ class Tree(InMemoryModel):
             the tree. For a list of
             options, see the:
             `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
-        arrow_style: dict, optional
+        edge_style: dict, optional
             ``dictionary`` of options
-            to customize each arrow of
+            to customize each edge of
             the tree. For a list of
             options, see the:
             `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
@@ -653,22 +689,30 @@ class Tree(InMemoryModel):
             specific to your class of interest,
             please refer to that particular class.
         """
+        # Styling.
         feature_names, classes_color = format_type(
             feature_names, classes_color, dtype=list
         )
         node_style = format_type(
             node_style, dtype=dict, na_out={"shape": "box", "style": "filled"}
         )
-        arrow_style, leaf_style = format_type(arrow_style, leaf_style, dtype=dict)
+        edge_style, leaf_style = format_type(edge_style, leaf_style, dtype=dict)
+        default_params = get_default_graphviz_options()
+        bgcolor = default_params["bgcolor"]
+        node_style, edge_style, leaf_style = self._init_style_tree(
+            node_style, edge_style, leaf_style
+        )
+
+        # Main code.
         empty_color = False
         if len(classes_color) == 0:
             empty_color = True
             classes_color = self._default_colors()
+        rank = ""
         if not vertical:
-            position = '\ngraph [rankdir = "LR"];'
-        else:
-            position = ""
-        n, res = len(self.children_left_), "digraph Tree{" + position
+            rank = 'rankdir = "LR", '
+        position = f'\ngraph [{rank}bgcolor="{bgcolor}"];'
+        n, res = len(self.children_left_), "digraph Tree {" + position
         for i in range(n):
             if self.children_left_[i] != self.children_right_[i]:
                 if feature_names:
@@ -681,15 +725,17 @@ class Tree(InMemoryModel):
                     q, not_q = "<=", ">"
                 res += f'\n{i} [label="{name}"{self._flat_dict(node_style)}]'
                 res += f'\n{i} -> {self.children_left_[i]} [label="{q} {self.threshold_[i]}"'
-                res += f"{self._flat_dict(arrow_style)}]\n{i} -> {self.children_right_[i]} "
-                res += f'[label="{not_q} {self.threshold_[i]}"{self._flat_dict(arrow_style)}]'
+                res += (
+                    f"{self._flat_dict(edge_style)}]\n{i} -> {self.children_right_[i]} "
+                )
+                res += f'[label="{not_q} {self.threshold_[i]}"{self._flat_dict(edge_style)}]'
             else:
-                color = ""
+                bgcolor = node_style["fillcolor"]
+                fontcolor = node_style["fontcolor"]
+                fontcolor_legend = default_params["legend_fontcolor"]
                 if isinstance(self.value_[i], (int, float)):
                     label = f'"{self.value_[i]}"'
                 elif hasattr(self, "psy"):
-                    if not leaf_style:
-                        leaf_style = {"shape": "none"}
                     if not empty_color:
                         color = classes_color[0]
                     else:
@@ -711,39 +757,41 @@ class Tree(InMemoryModel):
                             color_anomaly += str(hex(rgb[idx]))[2:]
                     label = (
                         '<<table border="0" cellspacing="0"> <tr>'
-                        f'<td port="port1" border="1" bgcolor="{color}"'
-                        '><b> leaf </b></td></tr><tr><td port="port0" '
-                        'border="1" align="left"> leaf_path_length: '
+                        f'<td port="port1" border="1" bgcolor="{bgcolor}"'
+                        f'><FONT color="{fontcolor_legend}"><b>leaf</b></FONT></td>'
+                        '</tr><tr><td port="port0" border="1" align="left">'
+                        "leaf_path_length: "
                         f'{self.value_[i][0]} </td></tr><tr><td port="port1"'
                         ' border="1" align="left"> training_row_count: '
                         f'{self.value_[i][1]} </td></tr><tr><td port="port2" '
                         f'border="1" align="left" bgcolor="{color_anomaly}">'
-                        f" anomaly_score: {anomaly_score} </td></tr></table>>"
+                        f'<FONT color="#111111"> anomaly_score: {anomaly_score} '
+                        "</FONT> </td></tr></table>>"
                     )
                 else:
-                    if not leaf_style:
-                        leaf_style = {"shape": "none"}
                     if len(self.classes_) == 0:
                         classes_ = [k for k in range(len(self.value_[i]))]
                     else:
                         classes_ = copy.deepcopy(self.classes_)
-                    color = classes_color[
+                    bgcolor = classes_color[
                         (np.argmax(self.value_[i])) % len(classes_color)
                     ]
                     label = (
                         '<<table border="0" cellspacing="0"> <tr>'
-                        f'<td port="port1" border="1" bgcolor="{color}">'
-                        f"<b> prediction: {classes_[np.argmax(self.value_[i])]} "
-                        "</b></td></tr>"
+                        f'<td port="port1" border="1" bgcolor="{bgcolor}"'
+                        f' color="{fontcolor}"><FONT color="{fontcolor_legend}">'
+                        f"<b>prediction: {classes_[np.argmax(self.value_[i])]} "
+                        "</b></FONT></td></tr>"
                     )
                     for j in range(len(self.value_[i])):
                         if percent:
                             val = str(round(self.value_[i][j] * 100, round_pred)) + "%"
                         else:
                             val = round(self.value_[i][j], round_pred)
-                        label += f'<tr><td port="port{j}" border="1" align="left">'
+                        label += f'<tr><td port="port{j}" border="1" align="left" color="{fontcolor}">'
                         label += (
-                            f" {self._get_output_kind}({classes_[j]}): {val} </td></tr>"
+                            f'<FONT color="{fontcolor}">{self._get_output_kind}'
+                            f"({classes_[j]}): {val}</FONT></td></tr>"
                         )
                     label += "</table>>"
                 res += f"\n{i} [label={label}{self._flat_dict(leaf_style)}]"
@@ -2189,7 +2237,7 @@ class NonBinaryTree(Tree):
         percent: bool = False,
         vertical: bool = True,
         node_style: Optional[dict] = None,
-        arrow_style: Optional[dict] = None,
+        edge_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
         process: bool = True,
     ) -> str:
@@ -2197,8 +2245,11 @@ class NonBinaryTree(Tree):
         Returns the code for
         a Graphviz tree.
         """
-        node_style, arrow_style, leaf_style = format_type(
-            node_style, arrow_style, leaf_style, dtype=dict
+        node_style, edge_style, leaf_style = format_type(
+            node_style, edge_style, leaf_style, dtype=dict
+        )
+        node_style, edge_style, leaf_style = self._init_style_tree(
+            node_style, edge_style, leaf_style
         )
         classes_color = format_type(classes_color, dtype=list)
         if process and len(classes_color) == 0:
@@ -2241,7 +2292,7 @@ class NonBinaryTree(Tree):
                 res += f'\n{tree["node_id"]} [label="{split_predictor}"{self._flat_dict(node_style)}]'
                 if tree["children"][c]["is_leaf"] or tree["children"][c]["children"]:
                     res += f'\n{tree["node_id"]} -> {tree["children"][c]["node_id"]}'
-                    res += f'[label="{q} {c}"{self._flat_dict(arrow_style)}]'
+                    res += f'[label="{q} {c}"{self._flat_dict(edge_style)}]'
                 res += self._to_graphviz_tree(
                     tree=tree["children"][c],
                     classes_color=classes_color,
@@ -2249,7 +2300,7 @@ class NonBinaryTree(Tree):
                     percent=percent,
                     vertical=vertical,
                     node_style=node_style,
-                    arrow_style=arrow_style,
+                    edge_style=edge_style,
                     leaf_style=leaf_style,
                     process=False,
                 )
@@ -2268,7 +2319,7 @@ class NonBinaryTree(Tree):
         percent: bool = False,
         vertical: bool = True,
         node_style: Optional[dict] = None,
-        arrow_style: Optional[dict] = None,
+        edge_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
     ) -> str:
         """
@@ -2299,9 +2350,9 @@ class NonBinaryTree(Tree):
             the tree. For a list of
             options, see the:
             `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
-        arrow_style: dict, optional
+        edge_style: dict, optional
             ``dictionary`` of options
-            to customize each arrow of
+            to customize each edge of
             the tree. For a list of
             options, see the:
             `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
@@ -2380,6 +2431,6 @@ class NonBinaryTree(Tree):
             percent,
             vertical,
             node_style,
-            arrow_style,
+            edge_style,
             leaf_style,
         )

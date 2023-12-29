@@ -793,10 +793,25 @@ class QueryProfiler:
         overwrite: bool = False,
         add_profile: bool = True,
     ) -> None:
+        # TRANSACTIONS ARE STORED AS A LIST OF (tr_id, st_id) AND
+        # AN INDEX USED TO NAVIGATE THROUGH THE DIFFERENT tuples.
         self.transactions = []
         self.transactions_idx = 0
+
+        # CASE WHEN EMPTY BUT tr_id AND st_id ARE DEFINED.
+        if isinstance(request, NoneType) or (
+            isinstance(request, (list, tuple)) and len(request) == 0
+        ):
+            if isinstance(transaction_id, int) and isinstance(statement_id, int):
+                self.transactions = [(transaction_id, statement_id)]
+            elif isinstance(transaction_id, int):
+                self.transactions = [(transaction_id, 1)]  # Default statement_id to 1
+
+        # CASE WHEN TUPLE OF TWO ELEMENTS: (tr_id, st_id)
         if isinstance(request, tuple) and len(request) == 2:
             request = [request]
+
+        # CASE WHEN LIST OF tr_id OR LIST OF (tr_id, st_id)
         if isinstance(request, list):
             for tr in request:
                 if isinstance(tr, int):
@@ -808,7 +823,6 @@ class QueryProfiler:
                         and isinstance(tr[1], int)
                     ):
                         self.transactions += [tr]
-            request = None
             if isinstance(transaction_id, NoneType) and len(self.transactions) > 0:
                 transaction_id = self.transactions[0][0]
                 statement_id = self.transactions[0][1]
@@ -825,6 +839,12 @@ class QueryProfiler:
                     self.transactions = [
                         (transaction_id, statement_id)
                     ] + self.transactions
+
+        # SETTING THE request TO None IF IT IS NOT A QUERY.
+        if not (isinstance(request, str)):
+            request = None
+
+        # CHECKING key_id; CREATING ONE IF IT DOES NOT EXIST.
         if isinstance(key_id, NoneType):
             self.key_id = str(uuid.uuid1()).replace("-", "")
         else:
@@ -837,6 +857,8 @@ class QueryProfiler:
                     "Wrong type for parameter 'key_id'. Expecting "
                     f"an integer or a string. Found {type(key_id)}."
                 )
+
+        # LOOKING AT A POSSIBLE QUERY TO EXECUTE.
         if not (isinstance(request, NoneType)):
             if not (isinstance(resource_pool, NoneType)):
                 _executeSQL(
@@ -885,7 +907,7 @@ class QueryProfiler:
         else:
             self.statement_id = statement_id
 
-        # Building the target_schema
+        # BUILDING THE target_schema.
         if target_schema == "v_temp_schema":
             self.target_schema = self._v_temp_schema_dict()
         else:
@@ -899,7 +921,7 @@ class QueryProfiler:
         self.overwrite = overwrite
         self._create_copy_v_table()
 
-        # Setting the request.
+        # SETTING THE request.
         if not (hasattr(self, "request")):
             self._set_request()
 
@@ -1770,7 +1792,8 @@ class QueryProfiler:
                 Default: '#FF0000' (red)
             - fontcolor:
                 Font color.
-                Default: #000000 (black)
+                Default (light-m): #000000 (black)
+                Default (dark-m): #FFFFFF (white)
             - fontsize:
                 Font size.
                 Default: 22
@@ -1778,10 +1801,12 @@ class QueryProfiler:
                 Color used to fill the
                 nodes in case no gradient
                 is computed: ``metric=None``.
-                Default: #FFFFFF (white)
+                Default (light-m): #FFFFFF (white)
+                Default (dark-m): #000000 (black)
             - edge_color:
                 Edge color.
-                Default: #000000 (black)
+                Default (light-m): #000000 (black)
+                Default (dark-m): #FFFFFF (white)
             - edge_style:
                 Edge Style.
                 Default: 'solid'.

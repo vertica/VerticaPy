@@ -391,7 +391,15 @@ h2{
 }
 
 .content {
-  /* padding: 3.5em 3em; */
+  width: calc(100% - 21em);
+}
+
+.toc-scroll {
+  width: 12em;
+}
+
+.sidebar-drawer {
+  width: 20em;
 }
 
 .main{
@@ -467,7 +475,7 @@ p {
 
 /* Cards on Index Page */
 .custom-card-2 {
-  height: 320px; /* Adjust the desired height */
+  height: 360px; /* Adjust the desired height */
 }
 
 /* Cards on Machine Learning page */
@@ -517,12 +525,12 @@ p {
 
 /* Cards on Benchmarks pages */
 .custom-card-10 {
-  height: 145px; /* Adjust the desired height */
+  height: 190px; /* Adjust the desired height */
 }
 
 /* Cards on Performance pages */
 .custom-card-11 {
-  height: 145px; /* Adjust the desired height */
+  height: 190px; /* Adjust the desired height */
 }
 
 /* End cards */

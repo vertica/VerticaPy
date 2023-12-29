@@ -51,6 +51,41 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 """
+GRAPHVIZ DEFAULT Options: They are used when drawing trees.
+"""
+
+
+def get_default_graphviz_options():
+    """
+    Returns the default graphviz options.
+    """
+    theme = conf.get_option("theme")
+    d = {}
+    if theme == "dark":
+        d["bgcolor"] = "#000000DD"
+        d["fillcolor"] = "#000000DD"
+        d["fontcolor"] = "#FFFFFF"
+        d["edge_color"] = "#FFFFFF"
+        d["legend_bgcolor"] = "#000000"
+        d["legend_fontcolor"] = "#FFFFFF"
+    elif theme == "sphinx":
+        d["bgcolor"] = "#FFFFFF00"
+        d["fillcolor"] = "#FFFFFF00"
+        d["fontcolor"] = "#666666"
+        d["edge_color"] = "#666666"
+        d["legend_bgcolor"] = "#666666"
+        d["legend_fontcolor"] = "#000000"
+    else:
+        d["bgcolor"] = "#FFFFFFDD"
+        d["fillcolor"] = "#FFFFFFDD"
+        d["fontcolor"] = "#000000"
+        d["edge_color"] = "#000000"
+        d["legend_bgcolor"] = "#DFDFDF"
+        d["legend_fontcolor"] = "#000000"
+    return d
+
+
+"""
 Colors Options: They are used when drawing graphics.
 """
 
