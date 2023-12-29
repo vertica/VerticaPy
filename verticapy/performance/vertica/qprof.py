@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+import re
 from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
 import uuid
 import warnings
@@ -142,12 +143,20 @@ class QueryProfiler:
         ``(transaction_id, statement_id)``.
         It includes all the transactions
         of the current schema.
+    requests: list
+        ``list`` of ``str``:
+        Transactions Queries.
+    qdurations: list
+        ``list`` of ``int``:
+        Queries Durations (seconds).
     key_id: int
         Unique ID used to build up the
         different Performance tables
         savings.
     request: str
         Current Query.
+    qduration: int
+        Current Query Duration (seconds).
     transaction_id: int
         Current Transaction ID.
     statement_id: int
@@ -374,6 +383,33 @@ class QueryProfiler:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html
+
+    .. note::
+
+        You can use the method without parameters
+        to obtain a list of all available tables.
+
+        .. ipython:: python
+
+            qprof.get_table()
+
+    We can also look at all the object
+    transactions:
+
+    .. code-block:: python
+
+        qprof.get_transactions()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_transactions('dc_requests_issued')
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_transactions_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_transactions_1.html
 
     .. note::
 
@@ -912,8 +948,11 @@ class QueryProfiler:
         self.overwrite = overwrite
         self._create_copy_v_table()
 
-        # SETTING THE request.
+        # SETTING THE requests.
         self._set_request()
+
+        # SETTING THE queries durations.
+        self._set_qduration()
 
     # Tools
 
@@ -1111,31 +1150,103 @@ class QueryProfiler:
     def _set_request(self):
         """
         Computes and sets the current
+        ``transaction_id`` requests.
+        """
+        self.requests = []
+        for tr_id, st_id in self.transactions:
+            query = f"""
+                SELECT 
+                    request 
+                FROM v_internal.dc_requests_issued 
+                WHERE transaction_id = {tr_id}
+                  AND   statement_id = {st_id};"""
+            query = self._replace_schema_in_query(query)
+            try:
+                res = _executeSQL(
+                    query,
+                    title="Getting the corresponding query",
+                    method="fetchfirstelem",
+                )
+                self.requests += [res]
+            except TypeError:
+                raise QueryError(
+                    f"No transaction with transaction_id={tr_id} "
+                    f"and statement_id={st_id} was found in the "
+                    "v_internal.dc_requests_issued table."
+                )
+        self.request = self.requests[self.transactions_idx]
+
+    def _set_qduration(self):
+        """
+        Computes and sets the current
         ``transaction_id`` request.
         """
-        query = f"""
-            SELECT 
-                request 
-            FROM v_internal.dc_requests_issued 
-            WHERE transaction_id = {self.transaction_id}
-              AND   statement_id = {self.statement_id};"""
-        query = self._replace_schema_in_query(query)
-        try:
-            self.request = _executeSQL(
-                query,
-                title="Getting the corresponding query",
-                method="fetchfirstelem",
-            )
-        except TypeError:
-            raise QueryError(
-                f"No transaction with transaction_id={self.transaction_id} "
-                f"and statement_id={self.statement_id} was found in the "
-                "v_internal.dc_requests_issued table."
-            )
+        self.qdurations = []
+        for tr_id, st_id in self.transactions:
+            query = f"""
+                SELECT
+                    query_duration_us 
+                FROM 
+                    v_monitor.query_profiles 
+                WHERE 
+                    transaction_id={self.transaction_id} AND 
+                    statement_id={self.statement_id};"""
+            query = self._replace_schema_in_query(query)
+            try:
+                res = _executeSQL(
+                    query,
+                    title="Getting the corresponding query duration.",
+                    method="fetchfirstelem",
+                )
+                self.qdurations += [res]
+            except TypeError:
+                raise QueryError(
+                    f"No transaction with transaction_id={tr_id} "
+                    f"and statement_id={st_id} was found in the "
+                    "v_internal.dc_requests_issued table."
+                )
+        self.qduration = self.qdurations[self.transactions_idx]
 
     # Navigation
 
-    def next(self):
+    def set_position(self, idx: Union[int, tuple]) -> None:
+        """
+        A utility function to utilize
+        a specific transaction from
+        the ``QueryProfiler`` stack.
+        """
+        n = len(self.transactions)
+        if isinstance(idx, int) and not (0 <= idx < n):
+            raise ValueError(f"Incorrect index, it should be between 0 and {n - 1}")
+        else:
+            if isinstance(idx, tuple):
+                if len(idx) != 2 or (
+                    not (isinstance(idx[0], int)) or not (isinstance(idx[1], int))
+                ):
+                    raise ValueError(
+                        "When 'idx' is a tuple, it should be made of two integers."
+                    )
+                found = False
+                for j, tr in enumerate(self.transactions):
+                    if tr == idx:
+                        idx = j
+                        found = True
+                        break
+                if not (found):
+                    raise ValueError(f"Transaction not found: {idx}.")
+            if isinstance(idx, int):
+                self.transactions_idx = idx
+                self.transaction_id = self.transactions[idx][0]
+                self.statement_id = self.transactions[idx][1]
+                self.request = self.requests[idx]
+                self.qduration = self.qdurations[idx]
+            else:
+                raise TypeError(
+                    "Wrong type for parameter 'idx'. Expecting: int or tuple."
+                    f"\nFound: {type(idx)}."
+                )
+
+    def next(self) -> None:
         """
         A utility function to utilize
         the next transaction from
@@ -1150,9 +1261,10 @@ class QueryProfiler:
         self.transactions_idx = idx
         self.transaction_id = self.transactions[idx][0]
         self.statement_id = self.transactions[idx][1]
-        self._set_request()
+        self.request = self.requests[idx]
+        self.qduration = self.qdurations[idx]
 
-    def previous(self):
+    def previous(self) -> None:
         """
         A utility function to utilize
         the previous transaction from
@@ -1167,7 +1279,8 @@ class QueryProfiler:
         self.transactions_idx = idx
         self.transaction_id = self.transactions[idx][0]
         self.statement_id = self.transactions[idx][1]
-        self._set_request()
+        self.request = self.requests[idx]
+        self.qduration = self.qdurations[idx]
 
     # Main Method
 
@@ -1202,7 +1315,77 @@ class QueryProfiler:
         }
         return steps_id[idx](*args, **kwargs)
 
-    # Tables
+    # Tables / Transactions
+
+    def get_transactions(self) -> vDataFrame:
+        """
+        Returns all the transactions
+        linked to the ``QueryProfiler``
+        object.
+
+        Returns
+        -------
+        vDataFrame
+            transactions.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily look at all
+        the transactions:
+
+        .. code-block:: python
+
+            qprof.get_transactions()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_transactions_1.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        labels = []
+        for query in self.requests:
+            lb = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
+            if len(lb) > 0:
+                labels += [lb[0][1:-1]]
+            else:
+                labels += [None]
+        n = len(self.transactions)
+        current_query = [
+            (self.transaction_id, self.statement_id) == tr for tr in self.transactions
+        ]
+
+        return vDataFrame(
+            {
+                "index": [i for i in range(n)],
+                "is_current": current_query,
+                "transaction_id": [tr[0] for tr in self.transactions],
+                "statement_id": [tr[1] for tr in self.transactions],
+                "request_label": labels,
+                "request": copy.deepcopy(self.requests),
+                "qduration": [qd / 1000000 for qd in self.qdurations],
+            }
+        )
 
     def get_table(self, table_name: Optional[str] = None) -> Union[list, vDataFrame]:
         """
@@ -1465,21 +1648,7 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
-        query = f"""
-            SELECT
-                query_duration_us 
-            FROM 
-                v_monitor.query_profiles 
-            WHERE 
-                transaction_id={self.transaction_id} AND 
-                statement_id={self.statement_id};"""
-        query = self._replace_schema_in_query(query)
-        qd = _executeSQL(
-            query,
-            title="Getting the corresponding query",
-            method="fetchfirstelem",
-        )
-        return float(qd / self._get_interval(unit))
+        return float(self.qduration / self._get_interval(unit))
 
     # Step 3: Query execution steps
     def get_qsteps(
