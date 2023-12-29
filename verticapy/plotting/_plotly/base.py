@@ -104,10 +104,14 @@ class PlotlyBase(PlottingBase):
 
     # Get
 
-    def _get_fig(self, fig: Optional[Figure] = None) -> Figure:
+    def _get_fig(
+        self, fig: Optional[Figure] = None, data: Optional[dict] = None
+    ) -> Figure:
         theme = conf.get_option("theme")
         pio.templates.default = self._get_theme()
-        if fig:
+        if data:
+            res = go.Figure(data)
+        elif fig:
             res = fig
         else:
             res = go.Figure()

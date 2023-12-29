@@ -1421,7 +1421,7 @@ class BisectingKMeans(Clustering, Tree):
         vertical = ""
         if not vertical:
             position = '\ngraph [rankdir = "LR"];'
-        res = "digraph Tree{" + position
+        res = "digraph Tree {" + position
         for i in range(n):
             if (len(self.cluster_size_) == n) and (len(self.cluster_score_) == n):
                 if "bgcolor" in node_style and (

@@ -159,7 +159,6 @@ class NestedPieChart(PlotlyBase):
             **self.init_trace_style,
         )
         layout = go.Layout(margin=go.layout.Margin(t=0, l=0, r=0, b=0))
-        figure = {"data": [trace], "layout": layout}
-        fig = go.Figure(figure)
+        fig = self._get_fig(fig, data={"data": [trace], "layout": layout})
         fig.update_layout(**style_kwargs)
         return fig

@@ -116,6 +116,11 @@ Browse through the different tabs to view the results.
       heights = [157.763, 1123.966]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -146,6 +151,11 @@ Browse through the different tabs to view the results.
       heights = [57.052, 5.422]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -177,6 +187,11 @@ Browse through the different tabs to view the results.
       heights = [32.66, 24.99]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -209,6 +224,11 @@ Browse through the different tabs to view the results.
       heights = [4.775, 93.307]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -239,6 +259,11 @@ Browse through the different tabs to view the results.
       heights = [3.785, 0.333]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -270,6 +295,11 @@ Browse through the different tabs to view the results.
       heights = [28.52, 24.99]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -302,6 +332,11 @@ Browse through the different tabs to view the results.
       heights = [0.515, 8.923]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -332,6 +367,11 @@ Browse through the different tabs to view the results.
       heights = [0.364, 0.027]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -363,6 +403,11 @@ Browse through the different tabs to view the results.
       heights = [27.94, 25]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -395,6 +440,11 @@ Browse through the different tabs to view the results.
       heights = [0.055, 0.745]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -425,6 +475,11 @@ Browse through the different tabs to view the results.
       heights = [0.056, 0.019]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -456,6 +511,11 @@ Browse through the different tabs to view the results.
       heights = [30.53, 24.97]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -488,6 +548,11 @@ Browse through the different tabs to view the results.
       heights = [0.022, 0.064]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -518,6 +583,11 @@ Browse through the different tabs to view the results.
       heights = [0.028, 0.006]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -548,6 +618,11 @@ Browse through the different tabs to view the results.
       heights = [24.54, 24.6]
       colors = ["#1A6AFF", '#f0d917']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],

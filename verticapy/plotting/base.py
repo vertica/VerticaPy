@@ -117,6 +117,16 @@ COLORS_OPTIONS: dict[str, list] = {
         "#4E2A84",
         "#00008B",
     ],
+    "sphinx": [
+        "#1A6AFF",
+        "#FE5016",
+        "#33C180",
+        "#FDE159",
+        "#4E2A84",
+        "#888888",
+        "#00008B",
+        "#03C03C",
+    ],
 }
 
 
@@ -317,7 +327,10 @@ class PlottingBase(PlottingBaseSQL):
                 return d["color"][idx % len(d["color"])]
         elif isinstance(idx, NoneType):
             if not conf.get_option("colors"):
-                colors = COLORS_OPTIONS["default"]
+                if conf.get_option("theme") == "sphinx":
+                    colors = COLORS_OPTIONS["sphinx"]
+                else:
+                    colors = COLORS_OPTIONS["default"]
                 all_colors = [plt_colors.cnames[key] for key in plt_colors.cnames]
                 random.shuffle(all_colors)
                 for c in all_colors:

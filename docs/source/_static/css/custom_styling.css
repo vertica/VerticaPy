@@ -16,6 +16,15 @@ h2{
   color: var(--color-announcement-text);
 }
 
+/* HEADER + PAGE */
+.content {
+  width:60em;
+}
+
+.sidebar-drawer {
+  width: calc(50% - 31em)
+}
+
 /* Side nav bar */
 .current {
   font-size: 0.7rem; 
@@ -218,6 +227,12 @@ h2{
   justify-content: center;
 }
 
+@media (max-width: 650px) {
+    .top-bottom-container {
+       display: none;
+  }
+}
+
 .toc-drawer {
   z-index: 1;
   margin-top: 20px;
@@ -388,18 +403,6 @@ h2{
 
 .sig-name {
   color: var(--color-link);
-}
-
-.content {
-  width: calc(100% - 21em);
-}
-
-.toc-scroll {
-  width: 12em;
-}
-
-.sidebar-drawer {
-  width: 20em;
 }
 
 .main{
@@ -997,4 +1000,24 @@ article, article .align-default {
 .gh::after {
   font-size: 12px;
   content: "Out: ";
+}
+
+/* Improving mobile header */
+@media (max-width: 50em) {
+  .top-bottom-container {
+    display: none;
+  }
+  .announcement {
+    height: 120px;
+    margin-bottom: -32px;
+  }
+  .top_search {
+    display: none;
+  }
+  .github-button svg {
+    display: none;
+  }
+}
+#Logo_Layer_2 {
+  margin-left: 20px;
 }

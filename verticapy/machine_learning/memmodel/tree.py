@@ -2311,7 +2311,7 @@ class NonBinaryTree(Tree):
                 if not vertical:
                     rank = 'rankdir = "LR", '
                 position = f'\ngraph [{rank}bgcolor="{bgcolor}"];'
-                res = "digraph Tree{" + position + res + "\n}"
+                res = "digraph Tree {" + position + res + "\n}"
             return res
 
     def to_graphviz(
