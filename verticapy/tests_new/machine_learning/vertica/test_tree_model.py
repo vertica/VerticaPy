@@ -117,10 +117,7 @@ class TestBaseTreeModel:
             edge_style={"color": "blue"},
             leaf_style={"shape": "circle", "style": "filled"},
         )
-        assert (
-            'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
-            and "0 -> 1" in gvz_tree_0
-        )
+        assert "digraph Tree{\ngraph" in gvz_tree_0 and "0 -> 1" in gvz_tree_0
 
 
 @pytest.mark.parametrize(

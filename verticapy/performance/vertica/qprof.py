@@ -69,24 +69,24 @@ class QueryProfiler:
 
     Parameters
     ----------
-    .. important::
+    transactions: str | tuple | list, optional
+        Six options are possible for this parameter:
 
-        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
-        can only be instantiated with either a query or a
-        combination of transactions ID and a statements ID.
-
-    request: str | list, optional
-        Three options are possible for this parameter:
-
+        - An ``integer``:
+            It will represent the ``transaction_id``,
+            the ``statement_id`` will be set to 1.
+        - A ``tuple``:
+            ``(transaction_id, statement_id)``.
         - A ``list`` of ``tuples``:
             ``(transaction_id, statement_id)``.
         - A ``list`` of ``integers``:
             the ``transaction_id``; the ``statement_id``
             will automatically be set to 1.
-        - A query:
-            The option to run a query is available when
-            targeting a query that has not been previously
-            executed in the database.
+        - A ``str``:
+            The query to execute.
+        - A ``list`` of ``str``:
+            The ``list`` of queries to execute. Each
+            query will be execute iteratively.
 
             .. warning::
 
@@ -94,6 +94,11 @@ class QueryProfiler:
                 query is time-consuming, it will require a
                 significant amount of time to execute before
                 proceeding to the next steps.
+
+        .. note::
+
+            A combination of the three first options can
+            also be used in a ``list``.
     key_id: int, optional
         This parameter is utilized to load information
         from another ``target_schema``. It is considered
@@ -109,12 +114,6 @@ class QueryProfiler:
 
             This parameter is used only when ``request`` is
             defined.
-    transaction_id: int, optional
-        ID of the transaction. It refers to a unique
-        identifier assigned to a specific transaction
-        within the system.
-    statement_id: int, optional
-        ID of the statement.
     target_schema: str | dict, optional
         Name of the schemas to use to store
         all the Vertica monitor and internal
@@ -138,24 +137,17 @@ class QueryProfiler:
 
     Attributes
     ----------
-    request: str | list
-        Query. It can also be a ``list``
-        of ``tuples``, with each ``tuple``
-        containing a transaction ID and
-        statement ID. If the input is a
-        ``list`` of ``integers``, they
-        will be treated as transactions,
-        and the statements will always
-        be set to ``1``.
-    key_id: int
-        Unique ID used to build up the
-        different Performance tables
-        savings.
     transactions: list
         ``list`` of ``tuples``:
         ``(transaction_id, statement_id)``.
         It includes all the transactions
         of the current schema.
+    key_id: int
+        Unique ID used to build up the
+        different Performance tables
+        savings.
+    request: str
+        Current Query.
     transaction_id: int
         Current Transaction ID.
     statement_id: int
@@ -243,10 +235,7 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof = QueryProfiler(
-            transaction_id=45035996273800581,
-            statement_id=48,
-        )
+        qprof = QueryProfiler((45035996273800581, 48))
 
     .. important::
 
@@ -263,8 +252,7 @@ class QueryProfiler:
         .. code-block:: python
 
             qprof = QueryProfiler(
-                transaction_id=45035996273800581,
-                statement_id=48,
+                (45035996273800581, 48),
                 target_schema='v_temp_schema',
                 overwrite=True,
             )
@@ -352,16 +340,19 @@ class QueryProfiler:
         sid = qprof.statement_id
         print(f"tid={tid};sid={sid}")
 
+    Or simply:
+
+    .. ipython:: python
+
+        print(self.transactions)
+
     To avoid recomputing a query, you
     can also directly use its statement
     ID and its transaction ID.
 
     .. ipython:: python
 
-        qprof = QueryProfiler(
-            transaction_id = tid,
-            statement_id = sid,
-        )
+        qprof = QueryProfiler((tid, sid))
 
     Accessing the different Performance Tables
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -784,11 +775,9 @@ class QueryProfiler:
     @save_verticapy_logs
     def __init__(
         self,
-        request: Union[None, str, list[int], list[tuple[int, int]]] = None,
+        transactions: Union[None, str, list[int], list[tuple[int, int]]] = None,
         key_id: Optional[str] = None,
         resource_pool: Optional[str] = None,
-        transaction_id: Optional[int] = None,
-        statement_id: Optional[int] = None,
         target_schema: Union[None, str, dict] = None,
         overwrite: bool = False,
         add_profile: bool = True,
@@ -798,22 +787,17 @@ class QueryProfiler:
         self.transactions = []
         self.transactions_idx = 0
 
-        # CASE WHEN EMPTY BUT tr_id AND st_id ARE DEFINED.
-        if isinstance(request, NoneType) or (
-            isinstance(request, (list, tuple)) and len(request) == 0
-        ):
-            if isinstance(transaction_id, int) and isinstance(statement_id, int):
-                self.transactions = [(transaction_id, statement_id)]
-            elif isinstance(transaction_id, int):
-                self.transactions = [(transaction_id, 1)]  # Default statement_id to 1
+        # List of queries to execute.
+        requests = []
 
         # CASE WHEN TUPLE OF TWO ELEMENTS: (tr_id, st_id)
-        if isinstance(request, tuple) and len(request) == 2:
-            request = [request]
+        if isinstance(transactions, tuple) and len(transactions) == 2:
+            transactions = [transactions]
 
-        # CASE WHEN LIST OF tr_id OR LIST OF (tr_id, st_id)
-        if isinstance(request, list):
-            for tr in request:
+        # CASE WHEN LIST OF tr_id OR LIST OF (tr_id, st_id) OR queries
+        # IT CAN ALSO BE A COMBINATION OF THE THREE TYPES.
+        elif isinstance(transactions, list):
+            for tr in transactions:
                 if isinstance(tr, int):
                     self.transactions += [(tr, 1)]
                 elif isinstance(tr, tuple):
@@ -823,26 +807,42 @@ class QueryProfiler:
                         and isinstance(tr[1], int)
                     ):
                         self.transactions += [tr]
-            if isinstance(transaction_id, NoneType) and len(self.transactions) > 0:
-                transaction_id = self.transactions[0][0]
-                statement_id = self.transactions[0][1]
-            else:
-                if isinstance(statement_id, NoneType):
-                    statement_id = 1
-                find = False
-                for i, tr in enumerate(self.transactions):
-                    if tr[0] == transaction_id and tr[1] == statement_id:
-                        self.transactions_idx = i
-                        find = True
-                        break
-                if not (find):
-                    self.transactions = [
-                        (transaction_id, statement_id)
-                    ] + self.transactions
+                elif isinstance(tr, str):
+                    requests += [tr]
+                else:
+                    raise TypeError(
+                        f"Wrong type inside {transactions}. Expecting: "
+                        f"int, tuple or str.\nFound {type(tr)}."
+                    )
 
-        # SETTING THE request TO None IF IT IS NOT A QUERY.
-        if not (isinstance(request, str)):
-            request = None
+        # CASE WHEN integer
+        elif isinstance(transactions, int):
+            self.transactions = [(transactions, 1)]  # DEFAULT STATEMENT: 1
+
+        # CASE WHEN str
+        elif isinstance(transactions, str):
+            requests += [transactions]
+
+        elif isinstance(transactions, NoneType) and (
+            isinstance(key_id, NoneType) or isinstance(target_schema, NoneType)
+        ):
+            raise ValueError(
+                "When 'transactions' is not defined, a 'key_id' and a "
+                "'target_schema' "
+                "must be defined to retrieve all the "
+                "transactions."
+            )
+
+        elif isinstance(transactions, NoneType):
+            ...
+
+        else:
+            raise TypeError(
+                "Wrong type for parameter 'transactions'. Expecting "
+                "one of the following types: tuple[int, int] | "
+                "list of tuple[int, int] | integer | list of integer "
+                f"| string | list of strings.\nFound {type(transactions)}."
+            )
 
         # CHECKING key_id; CREATING ONE IF IT DOES NOT EXIST.
         if isinstance(key_id, NoneType):
@@ -859,53 +859,44 @@ class QueryProfiler:
                 )
 
         # LOOKING AT A POSSIBLE QUERY TO EXECUTE.
-        if not (isinstance(request, NoneType)):
-            if not (isinstance(resource_pool, NoneType)):
+        if len(requests) > 0:
+            for request in requests:
+                if not (isinstance(resource_pool, NoneType)):
+                    _executeSQL(
+                        f"SET SESSION RESOURCE POOL {resource_pool} ;",
+                        title="Setting the resource pool.",
+                        method="cursor",
+                    )
+                if add_profile:
+                    fword = clean_query(request).strip().split()[0].lower()
+                    if fword != "profile":
+                        request = "PROFILE " + request
                 _executeSQL(
-                    f"SET SESSION RESOURCE POOL {resource_pool} ;",
-                    title="Setting the resource pool.",
+                    request,
+                    title="Executing the query.",
                     method="cursor",
                 )
-            if add_profile:
-                fword = clean_query(request).strip().split()[0].lower()
-                if fword != "profile":
-                    request = "profile " + request
-            _executeSQL(
-                request,
-                title="Executing the query.",
-                method="cursor",
-            )
-            query = """
-                SELECT
-                    transaction_id,
-                    statement_id
-                FROM QUERY_REQUESTS 
-                WHERE session_id = (SELECT current_session())
-                  AND is_executing='f'
-                ORDER BY start_timestamp DESC LIMIT 1;"""
-            transaction_id, statement_id = _executeSQL(
-                query,
-                title="Getting transaction_id, statement_id.",
-                method="fetchrow",
-            )
-            self.request = request
-            if (transaction_id, statement_id) not in self.transactions:
-                self.transactions = [(transaction_id, statement_id)] + self.transactions
+                query = """
+                    SELECT
+                        transaction_id,
+                        statement_id
+                    FROM QUERY_REQUESTS 
+                    WHERE session_id = (SELECT current_session())
+                      AND is_executing='f'
+                    ORDER BY start_timestamp DESC LIMIT 1;"""
+                transaction_id, statement_id = _executeSQL(
+                    query,
+                    title="Getting transaction_id, statement_id.",
+                    method="fetchrow",
+                )
+                self.transactions += [(transaction_id, statement_id)]
 
-        if not (isinstance(transaction_id, (int, NoneType))):
-            raise ValueError(
-                "Wrong type for Parameter transaction_id.\n"
-                f"Expected integer, found {type(transaction_id)}."
-            )
-        else:
-            self.transaction_id = transaction_id
-        if not (isinstance(statement_id, (int, NoneType))):
-            raise ValueError(
-                "Wrong type for Parameter transaction_id.\n"
-                f"Expected integer, found {type(statement_id)}."
-            )
-        else:
-            self.statement_id = statement_id
+        if len(self.transactions) == 0 and isinstance(key_id, NoneType):
+            raise ValueError("No transactions found.")
+
+        elif len(self.transactions) != 0:
+            self.transaction_id = self.transactions[0][0]
+            self.statement_id = self.transactions[0][1]
 
         # BUILDING THE target_schema.
         if target_schema == "v_temp_schema":
@@ -922,8 +913,7 @@ class QueryProfiler:
         self._create_copy_v_table()
 
         # SETTING THE request.
-        if not (hasattr(self, "request")):
-            self._set_request()
+        self._set_request()
 
     # Tools
 
@@ -1060,6 +1050,8 @@ class QueryProfiler:
                     self.transactions = [tuple(tr) for tr in self.transactions]
                     if len(self.transactions) == 0:
                         raise ValueError("No transactions found.")
+                    self.transaction_id = self.transactions[0][0]
+                    self.statement_id = self.transactions[0][1]
                     if isinstance(self.transaction_id, NoneType):
                         self.transaction_id = self.transactions[0][0]
                     if isinstance(self.statement_id, NoneType):
