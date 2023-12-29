@@ -337,6 +337,11 @@ The comparison analysis on both datasets follows:
       heights = [107.45, 720, 0, 1085.84]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -414,6 +419,11 @@ The comparison analysis on both datasets follows:
       heights = [13.76, 9.11, 5.69, 96.8]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -459,6 +469,11 @@ The comparison analysis on both datasets follows:
       heights = [6.1, 2.08, 0.47, 7.26]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -505,6 +520,11 @@ The comparison analysis on both datasets follows:
       heights = [1.27, 8, 3.84, 51.77]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -542,6 +562,11 @@ The comparison analysis on both datasets follows:
       heights = [24.95, 7, 4.33, 56.7]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -591,6 +616,11 @@ The comparison analysis on both datasets follows:
       heights = [6.105, 7, 9.78, 122.08]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -632,6 +662,11 @@ The comparison analysis on both datasets follows:
       heights = [40.53, 7, 9.83, 119.09]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -935,6 +970,11 @@ Comparison
 ..   predict_times = [128.86, 119.83, 19.1]
 ..   colors = ["#1A6AFF", 'green', 'purple']
 ..   fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
 ..   bar_width = 0.3  # Set the width of each bar
 ..   gap_width = -0.1  # Set the gap width between bars
 ..   fig.add_trace(

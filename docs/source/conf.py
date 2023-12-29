@@ -270,7 +270,7 @@ html_theme_options = {
 
                             <a href="./home.html">
                             
-                                <svg id="Logo_Layer_2" data-name="Logo_Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.57 29.89" height="70%" width="70%" fill="var(--color-announcement-text)">
+                                <svg id="Logo_Layer_2" data-name="Logo_Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.57 29.89" height="30px" width="180px" fill="var(--color-announcement-text)">
                                 <g id="Logo_Layer_1-2" data-name="Logo_Layer 1">
                                     <g>
                                     <g>

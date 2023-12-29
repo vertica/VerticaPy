@@ -122,6 +122,11 @@ Browse through the tabs to see the time comparison:
             heights = [1748.51, 2568.68]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],
@@ -153,6 +158,11 @@ Browse through the tabs to see the time comparison:
             heights = [84.7, 216]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],
@@ -184,6 +194,11 @@ Browse through the tabs to see the time comparison:
             heights = [26.39, 96.98]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],
@@ -215,6 +230,11 @@ Browse through the tabs to see the time comparison:
             heights = [4.49, 1.43]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],
@@ -249,6 +269,11 @@ Browse through the tabs to see the time comparison:
             heights = [1808.56, 1788.75]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],
@@ -280,6 +305,11 @@ Browse through the tabs to see the time comparison:
             heights = [85.93, 68.47]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],
@@ -311,6 +341,11 @@ Browse through the tabs to see the time comparison:
             heights = [82.60, 2.09]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],
@@ -342,6 +377,11 @@ Browse through the tabs to see the time comparison:
             heights = [4.81, 0.7]
             colors = ["#1A6AFF", 'black']
             fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
             for label, height, color in zip(labels, heights, colors):
                 fig.add_trace(go.Bar(
                     x=[label],

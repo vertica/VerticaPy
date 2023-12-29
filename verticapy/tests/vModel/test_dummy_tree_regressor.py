@@ -337,7 +337,7 @@ class TestDummyTreeRegressor:
             edge_style={"color": "blue"},
             leaf_style={"shape": "circle", "style": "filled"},
         )
-        assert "digraph Tree{" in gvz_tree_0
+        assert "digraph Tree {" in gvz_tree_0
         assert "0 -> 1" in gvz_tree_0
 
     def test_get_tree(self, model):

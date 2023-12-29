@@ -549,7 +549,7 @@ class TestXGBC:
             edge_style={"color": "blue"},
             leaf_style={"shape": "circle", "style": "filled"},
         )
-        assert "digraph Tree{" in gvz_tree_1
+        assert "digraph Tree {" in gvz_tree_1
         assert "0 -> 1" in gvz_tree_1
 
     def test_get_tree(self, model):
