@@ -2305,10 +2305,12 @@ class NonBinaryTree(Tree):
                     process=False,
                 )
             if process:
+                rank = ""
+                default_params = get_default_graphviz_options()
+                bgcolor = default_params["bgcolor"]
                 if not vertical:
-                    position = '\ngraph [rankdir = "LR"];'
-                else:
-                    position = ""
+                    rank = 'rankdir = "LR", '
+                position = f'\ngraph [{rank}bgcolor="{bgcolor}"];'
                 res = "digraph Tree{" + position + res + "\n}"
             return res
 
