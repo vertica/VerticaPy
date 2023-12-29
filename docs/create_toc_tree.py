@@ -1,31 +1,16 @@
 import os
 import re
+from typing import Optional
+
 from bs4 import BeautifulSoup
 
-
-search_directory = "build/"
-rst_ignore_directory = "./source/"
-
-# Iterate through all HTML files in the directory and its subdirectories
-files_to_ignore = get_ignore_file_names(rst_ignore_directory)
-for root, _, files in os.walk(search_directory):
-    for filename in files:
-        if filename.endswith(".html") and filename not in files_to_ignore:
-            file_path = os.path.join(root, filename)
-            with open(file_path, "r", encoding="utf-8") as file:
-                html_content = file.read()
-            if count_elements_in_toc_tree(html_content) >= 1:
-                headings = extract_headings(html_content)
-                if not headings == None:
-                    process_html_file(file_path, create_html_list(headings))
-                    print(f"Updated:{file_path}")
-                else:
-                    print(f"Heading Unchanged:{file_path}")
-            else:
-                print(f"No TOC:{file_path}")
+# Main Functions
 
 
-def count_elements_in_toc_tree(html_content):
+def count_elements_in_toc_tree(html_content: str) -> int:
+    """
+    ...
+    """
     soup = BeautifulSoup(html_content, "html.parser")
     toc_tree = soup.find("div", class_="toc-tree")
 
@@ -37,7 +22,10 @@ def count_elements_in_toc_tree(html_content):
         return 0
 
 
-def extract_headings(html_content):
+def extract_headings(html_content: str) -> Optional[list]:
+    """
+    ...
+    """
     soup = BeautifulSoup(html_content, "html.parser")
     headings = []
 
@@ -69,7 +57,11 @@ def extract_headings(html_content):
         return None
 
 
-def create_html_list(headings):
+def create_html_list(headings: list) -> str:
+    """
+    ...
+    """
+
     # for h2_heading in headings:
     #     print(f"Section ID: {h2_heading['section_id']}, Heading: {h2_heading['heading']}, Reference: {h2_heading['reference']}")
     #     for h3_heading in h2_heading['subheadings']:
@@ -100,7 +92,10 @@ def create_html_list(headings):
 # file_path = 'verticapy.machine_learning.vertica.linear_model.LinearRegression.html'
 
 
-def get_headers(file_path):
+def get_headers(file_path: str) -> Optional[str]:
+    """
+    ...
+    """
     with open(file_path, "r", encoding="utf-8") as file:
         html_content = file.read()
     if count_elements_in_toc_tree(html_content) > 2:
@@ -110,7 +105,11 @@ def get_headers(file_path):
         print(f"Not applicable to:{file_path}")
 
 
-def process_html_file(file_path, replace_content):
+def process_html_file(file_path: str, replace_content: str) -> None:
+    """
+    ...
+    """
+
     # Read the HTML file
     with open(file_path, "r") as file:
         content = file.read()
@@ -124,7 +123,11 @@ def process_html_file(file_path, replace_content):
             file.write(modified_content)
 
 
-def process_content(content, replace_content):
+def process_content(content: str, replace_content: str):
+    """
+    ...
+    """
+
     # Define the pattern to search for
     # pattern = r'<a class="reference internal" href="#">.*?</a><ul>'
     pattern = r'<a class="reference internal" href="#">.*?</a><ul>.*?</ul>'
@@ -154,7 +157,7 @@ def process_content(content, replace_content):
         return None
 
 
-def get_ignore_file_names(folder_path):
+def get_ignore_file_names(folder_path: str) -> list:
     # Get a list of all files in the folder
     files = os.listdir(folder_path)
 
@@ -165,3 +168,26 @@ def get_ignore_file_names(folder_path):
     # Print the list of .rst files
     html_files.append("index.html")  # For Jupyter Notebooks
     return html_files
+
+
+if __name__ == "__main__":
+    search_directory = "build/"
+    rst_ignore_directory = "./source/"
+
+    # Iterate through all HTML files in the directory and its subdirectories
+    files_to_ignore = get_ignore_file_names(rst_ignore_directory)
+    for root, _, files in os.walk(search_directory):
+        for filename in files:
+            if filename.endswith(".html") and filename not in files_to_ignore:
+                file_path = os.path.join(root, filename)
+                with open(file_path, "r", encoding="utf-8") as file:
+                    html_content = file.read()
+                if count_elements_in_toc_tree(html_content) >= 1:
+                    headings = extract_headings(html_content)
+                    if not headings == None:
+                        process_html_file(file_path, create_html_list(headings))
+                        print(f"Updated:{file_path}")
+                    else:
+                        print(f"Heading Unchanged:{file_path}")
+                else:
+                    print(f"No TOC:{file_path}")

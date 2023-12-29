@@ -1327,7 +1327,7 @@ class BisectingKMeans(Clustering, Tree):
         percent: bool = False,
         vertical: bool = True,
         node_style: Optional[dict] = None,
-        arrow_style: Optional[dict] = None,
+        edge_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
     ) -> str:
         """
@@ -1353,7 +1353,7 @@ class BisectingKMeans(Clustering, Tree):
             tree. For a list of options,
             see the:
             `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
-        arrow_style: dict, optional
+        edge_style: dict, optional
             Dictionary  of options to
             customize each arrow of the
             tree. For a list of options,
@@ -1416,7 +1416,7 @@ class BisectingKMeans(Clustering, Tree):
         node_style, leaf_style = format_type(
             node_style, leaf_style, dtype=dict, na_out={"shape": "none"}
         )
-        arrow_style = format_type(arrow_style, dtype=dict)
+        edge_style = format_type(edge_style, dtype=dict)
         n = len(self.children_left_)
         vertical = ""
         if not vertical:
@@ -1466,8 +1466,8 @@ class BisectingKMeans(Clustering, Tree):
                 flat_dict_str = self._flat_dict(leaf_style)
             res += f"\n{i} [label={label}{flat_dict_str}]"
             if self.children_left_[i] != self.children_right_[i]:
-                res += f'\n{i} -> {self.children_left_[i]} [label=""{self._flat_dict(arrow_style)}]'
-                res += f'\n{i} -> {self.children_right_[i]} [label=""{self._flat_dict(arrow_style)}]'
+                res += f'\n{i} -> {self.children_left_[i]} [label=""{self._flat_dict(edge_style)}]'
+                res += f'\n{i} -> {self.children_right_[i]} [label=""{self._flat_dict(edge_style)}]'
         return res + "\n}"
 
 

@@ -3130,7 +3130,7 @@ class Tree:
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "box", "style": "filled"},
-        arrow_style: Optional[dict] = None,
+        edge_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
     ) -> str:
         """
@@ -3164,9 +3164,9 @@ class Tree:
             the tree. For a list of
             options, see the:
             `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
-        arrow_style: dict, optional
+        edge_style: dict, optional
             ``dictionary`` of options
-            to customize each arrow of
+            to customize each edge of
             the tree. For a list of
             options, see the:
             `Graphviz API <https://graphviz.org/doc/info/attrs.html>`_ .
@@ -3285,7 +3285,7 @@ class Tree:
             percent=percent,
             vertical=vertical,
             node_style=node_style,
-            arrow_style=arrow_style,
+            edge_style=edge_style,
             leaf_style=leaf_style,
         )
 

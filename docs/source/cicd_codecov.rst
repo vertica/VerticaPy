@@ -21,7 +21,7 @@ For the latest statistics on code-coverage of
 ``VerticaPy`` please look at 
 `this link <https://app.codecov.io/gh/vertica/VerticaPy>`_.
 
-.. image:: /_static/img_code_coverage_1.PNG
+.. image:: /_static/img_code_coverage_1.png
     :width: 50%
     :align: center
 
@@ -31,7 +31,7 @@ Not only does it provide a wholistic view of the
 contributors and in-depth understanding of which 
 folders/functions are lacking behind the most. 
 
-.. image:: /_static/img_code_coverage_2.PNG
+.. image:: /_static/img_code_coverage_2.png
 
 In the details, we can see the total number of lines
 as well as the number of lines in each folder that have
@@ -42,7 +42,7 @@ at the exact lines that are missing unit tests.
 This can guide contributors in understanding the 
 gaps in testing.
 
-.. image:: /_static/img_code_coverage_3.PNG
+.. image:: /_static/img_code_coverage_3.png
 
 In summary, developers use code coverage tools to gain 
 insights into which parts of their code are well-tested 
