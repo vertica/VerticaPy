@@ -490,7 +490,7 @@ class vDFRead(vDFUtils):
         Returns
         -------
         tuple
-            (number of lines, number of columns)
+            (number of rows, number of columns)
 
         Examples
         ---------
