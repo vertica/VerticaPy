@@ -22,7 +22,7 @@ import warnings
 
 from tqdm.auto import tqdm
 
-from verticapy.errors import ExtensionError, QueryError
+from verticapy.errors import EmptyParameter, ExtensionError, QueryError
 
 from verticapy.core.vdataframe import vDataFrame
 
@@ -393,32 +393,23 @@ class QueryProfiler:
 
             qprof.get_table()
 
-    We can also look at all the object
-    transactions:
+    We can also look at all the
+    object queries information:
 
     .. code-block:: python
 
-        qprof.get_transactions()
+        qprof.get_queries()
 
     .. ipython:: python
         :suppress:
 
-        result = qprof.get_transactions('dc_requests_issued')
-        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_transactions_1.html", "w")
+        result = qprof.get_queries('dc_requests_issued')
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_transactions_1.html
-
-    .. note::
-
-        You can use the method without parameters
-        to obtain a list of all available tables.
-
-        .. ipython:: python
-
-            qprof.get_table()
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html
 
     Executing a QPROF step
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -956,7 +947,40 @@ class QueryProfiler:
 
     # Tools
 
+    def _check_vdf_empty(vdf: vDataFrame) -> Literal[True]:
+        """
+        Checks if the vDataFrame is empty and
+        raises the appropriate error message.
+        """
+        n, m = vdf.shape()
+        if m == 0:
+            raise EmptyParameter(
+                "Failed to generate the final chart. Please check for any "
+                "errors or issues with the data, and ensure that all required "
+                "parameters are correctly set.\n"
+                "Something abnormal happened. The vDataFrame seems to have "
+                "no columns. This can occur if there was an error in the "
+                "data ingestion or if the tables were modified after being "
+                "ingested."
+            )
+        elif n == 0:
+            raise EmptyParameter(
+                "Failed to generate the final chart. Please check for any "
+                "errors or issues with the data, and ensure that all required "
+                "parameters are correctly set.\n"
+                "The performance data needed to execute the operation is "
+                "empty. This suggests that the information related to the "
+                "specific transaction may not have been stored properly or "
+                "might have been erased. We recommend saving this information "
+                "in a different schema and multiple times to avoid any loss."
+            )
+        return True
+
     def _get_interval_str(self, unit: Literal["s", "m", "h"]) -> str:
+        """
+        Converts the input str to the
+        corresponding interval.
+        """
         unit = str(unit).lower()
         if unit.startswith("s"):
             div = "00:00:01"
@@ -969,6 +993,10 @@ class QueryProfiler:
         return div
 
     def _get_interval(self, unit: Literal["s", "m", "h"]) -> int:
+        """
+        Converts the input str to the
+        corresponding integer.
+        """
         unit = str(unit).lower()
         if unit.startswith("s"):
             div = 1000000
@@ -989,6 +1017,12 @@ class QueryProfiler:
             "pie",
         ],
     ) -> Callable:
+        """
+        Returns the input object
+        chart method: The one to
+        use to draw the final
+        graphic.
+        """
         kind = str(kind).lower()
         if kind == "pie":
             return v_object.pie
@@ -1000,6 +1034,10 @@ class QueryProfiler:
             ValueError("Incorrect parameter 'kind'.")
 
     def _replace_schema_in_query(self, query: SQLExpression) -> SQLExpression:
+        """
+        Map all the relations in the
+        query to the current ones.
+        """
         if not (hasattr(self, "target_schema")) or isinstance(
             self.target_schema, NoneType
         ):
@@ -1013,6 +1051,11 @@ class QueryProfiler:
 
     @staticmethod
     def _v_temp_schema_dict() -> dict:
+        """
+        Tables used by the ``QueryProfiler``
+        object to link the main relation to
+        the temporary schema.
+        """
         return {
             "v_internal": "v_temp_schema",
             "v_monitor": "v_temp_schema",
@@ -1189,8 +1232,8 @@ class QueryProfiler:
                 FROM 
                     v_monitor.query_profiles 
                 WHERE 
-                    transaction_id={self.transaction_id} AND 
-                    statement_id={self.statement_id};"""
+                    transaction_id={tr_id} AND 
+                    statement_id={st_id};"""
             query = self._replace_schema_in_query(query)
             try:
                 res = _executeSQL(
@@ -1315,18 +1358,18 @@ class QueryProfiler:
         }
         return steps_id[idx](*args, **kwargs)
 
-    # Tables / Transactions
+    # Perf/Query Tables
 
-    def get_transactions(self) -> vDataFrame:
+    def get_queries(self) -> vDataFrame:
         """
-        Returns all the transactions
-        linked to the ``QueryProfiler``
-        object.
+        Returns all the queries
+        and their respective information,
+        of a ``QueryProfiler`` object.
 
         Returns
         -------
         vDataFrame
-            transactions.
+            queries information.
 
         Examples
         --------
@@ -1353,10 +1396,10 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_transactions()
+            qprof.get_queries()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_transactions_1.html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html
 
         .. note::
 
@@ -1770,6 +1813,7 @@ class QueryProfiler:
         query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query)
         if show:
+            self._check_vdf_empty(vdf)
             fun = self._get_chart_method(vdf["execution_step"], kind)
             return fun(
                 method="max",
@@ -2239,6 +2283,7 @@ class QueryProfiler:
         query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         if show:
+            self._check_vdf_empty(vdf)
             fun = self._get_chart_method(vdf["path_line"], kind)
             return fun(
                 method="sum",
@@ -2520,6 +2565,7 @@ class QueryProfiler:
         if reverse:
             columns.reverse()
         if show:
+            self._check_vdf_empty(vdf)
             fun = self._get_chart_method(vdf, kind)
             return fun(
                 columns=columns,
@@ -2869,6 +2915,7 @@ class QueryProfiler:
             cond += f"path_id = {path_id}"
         vdf = self.get_qexecution_report().search(cond)
         if show:
+            self._check_vdf_empty(vdf)
             if multi:
                 vdf["path_id"].apply("'path_id=' || {}::VARCHAR")
                 fun = self._get_chart_method(vdf, kind)
