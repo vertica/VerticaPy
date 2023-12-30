@@ -947,7 +947,7 @@ class QueryProfiler:
 
     # Tools
 
-    def _check_vdf_empty(vdf: vDataFrame) -> Literal[True]:
+    def _check_vdf_empty(self, vdf: vDataFrame) -> Literal[True]:
         """
         Checks if the vDataFrame is empty and
         raises the appropriate error message.
