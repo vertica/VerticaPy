@@ -93,30 +93,31 @@ def _dict_to_json_string(
     if add_identifier:
         json += f'"verticapy_id": "{gb_conn.vpy_session_identifier}", '
     for key in json_dict:
-        object_type = None
-        if hasattr(json_dict[key], "object_type"):
-            object_type = json_dict[key].object_type
-        json += f'"{key}": '
-        if isinstance(json_dict[key], bool):
-            json += "true" if json_dict[key] else "false"
-        elif isinstance(json_dict[key], (float, int)):
-            json += str(json_dict[key])
-        elif json_dict[key] is None:
-            json += "null"
-        elif object_type == "vDataFrame":
-            json_dict_str = json_dict[key].current_relation().replace('"', '\\"')
-            json += f'"{json_dict_str}"'
-        elif object_type == "VerticaModel":
-            json += f'"{json_dict[key]._model_type}"'
-        elif isinstance(json_dict[key], dict):
-            json += _dict_to_json_string(json_dict=json_dict[key])
-        elif isinstance(json_dict[key], list):
-            json_dict_str = ";".join([str(item) for item in json_dict[key]])
-            json += f'"{json_dict_str}"'
-        else:
-            json_dict_str = str(json_dict[key]).replace('"', '\\"')
-            json += f'"{json_dict_str}"'
-        json += ", "
+        if key != "local_ns" and not (isinstance(key, str) and key.startswith("_")):
+            object_type = None
+            if hasattr(json_dict[key], "object_type"):
+                object_type = json_dict[key].object_type
+            json += f'"{key}": '
+            if isinstance(json_dict[key], bool):
+                json += "true" if json_dict[key] else "false"
+            elif isinstance(json_dict[key], (float, int)):
+                json += str(json_dict[key])
+            elif json_dict[key] is None:
+                json += "null"
+            elif object_type == "vDataFrame":
+                json_dict_str = json_dict[key].current_relation().replace('"', '\\"')
+                json += f'"{json_dict_str}"'
+            elif object_type == "VerticaModel":
+                json += f'"{json_dict[key]._model_type}"'
+            elif isinstance(json_dict[key], dict):
+                json += _dict_to_json_string(json_dict=json_dict[key])
+            elif isinstance(json_dict[key], list):
+                json_dict_str = ";".join([str(item) for item in json_dict[key]])
+                json += f'"{json_dict_str}"'
+            else:
+                json_dict_str = str(json_dict[key]).replace('"', '\\"')
+                json += f'"{json_dict_str}"'
+            json += ", "
     json = json[:-2] + "}"
     return json
 

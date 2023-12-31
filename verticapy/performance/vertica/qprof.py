@@ -135,6 +135,17 @@ class QueryProfiler:
 
             This parameter is used only when ``request`` is
             defined.
+    check_tables: bool, optional
+        If set to ``True`` all the transactions of
+        the different Performance tables will be
+        checked and a warning will be raised in
+        case of incomplete data.
+
+        .. warning::
+
+            This parameter will aggregate on many
+            tables using many parameters. It will
+            make the process much more expensive.
 
     Attributes
     ----------
@@ -808,6 +819,7 @@ class QueryProfiler:
         target_schema: Union[None, str, dict] = None,
         overwrite: bool = False,
         add_profile: bool = True,
+        check_tables: bool = True,
     ) -> None:
         # TRANSACTIONS ARE STORED AS A LIST OF (tr_id, st_id) AND
         # AN INDEX USED TO NAVIGATE THROUGH THE DIFFERENT tuples.
@@ -944,6 +956,10 @@ class QueryProfiler:
 
         # SETTING THE queries durations.
         self._set_qduration()
+
+        # WARNING MESSAGES.
+        if check_tables:
+            self._check_v_table()
 
     # Tools
 
@@ -1189,6 +1205,53 @@ class QueryProfiler:
                     )
                     warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
+
+    def _check_v_table(self) -> None:
+        """
+        Checks if all the transactions
+        exist in all the different tables.
+        """
+        tables = list(self._v_table_dict().keys())
+        tables_schema = self._v_table_dict()
+        warning_message = ""
+        for tr_id, st_id in self.transactions:
+            for table_name in tables:
+                if (
+                    "resource_pool_status" not in table_name
+                    and "host_resources" not in table_name
+                ):
+                    if len(self.target_tables) == 0:
+                        sc, tb = tables_schema[table_name], table_name
+                    else:
+                        tb = self.target_tables[table_name]
+                        schema = tables_schema[table_name]
+                        sc = self.target_schema[schema]
+                    query = f"""
+                        SELECT
+                            transaction_id,
+                            statement_id
+                        FROM {sc}.{tb}
+                        WHERE
+                            transaction_id = {tr_id}
+                        AND statement_id = {st_id}
+                        LIMIT 1"""
+                    res = _executeSQL(
+                        query,
+                        title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
+                        method="fetchall",
+                    )
+                    if not (res):
+                        warning_message += f"({tr_id}, {st_id}) -> {sc}.{tb}\n"
+        if len(warning_message) > 0:
+            warning_message = "Some transactions are missing:\n\n" + warning_message
+            warning_message += (
+                "\nThis could potentially lead to incorrect computations or "
+                "errors. Please review the various tables and investigate "
+                "why this data is missing. It may have been accidentally "
+                "deleted or automatically removed, especially if you are "
+                "directly working on the performance tables."
+            )
+            warnings.warn(warning_message, Warning)
 
     def _set_request(self):
         """
