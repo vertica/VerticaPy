@@ -831,7 +831,7 @@ class QueryProfiler:
 
         # CASE WHEN TUPLE OF TWO ELEMENTS: (tr_id, st_id)
         if isinstance(transactions, tuple) and len(transactions) == 2:
-            transactions = [transactions]
+            self.transactions = [transactions]
 
         # CASE WHEN LIST OF tr_id OR LIST OF (tr_id, st_id) OR queries
         # IT CAN ALSO BE A COMBINATION OF THE THREE TYPES.
