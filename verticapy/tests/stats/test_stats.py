@@ -216,6 +216,7 @@ class TestStats:
             period=12,
             mult=True,
             polynomial_order=-1,
+            use_row=False,
         )
         assert result["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result["passengers_seasonal"].avg() == pytest.approx(1.0)
@@ -227,6 +228,7 @@ class TestStats:
             period=12,
             mult=False,
             polynomial_order=-1,
+            use_row=False,
         )
         assert result2["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result2["passengers_seasonal"].avg() == pytest.approx(
@@ -241,6 +243,7 @@ class TestStats:
             mult=True,
             polynomial_order=2,
             estimate_seasonality=True,
+            use_row=False,
         )
         assert result2["passengers_trend"].avg() == pytest.approx(280.298611111111)
         assert result2["passengers_seasonal"].avg() == pytest.approx(1.0)
