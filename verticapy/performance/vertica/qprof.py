@@ -46,10 +46,10 @@ class QueryProfiler:
 
     .. important::
 
-        This class is currently under development 
-        and remains in beta. Please note that the 
-        parameters may undergo changes in the future. 
-        We plan to introduce a stable version in 
+        This class is currently under development
+        and remains in beta. Please note that the
+        parameters may undergo changes in the future.
+        We plan to introduce a stable version in
         VerticaPy 1.0.3 or later.
 
     .. important::
