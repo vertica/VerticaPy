@@ -12,12 +12,17 @@ Options
 :py:func:`~verticapy.set_option` function has more options:
   - ``max_cellwidth``: Maximum width of any VerticaPy table's cell.
   - ``max_tableheight``: Maximum height of VerticaPy tables.
-  - ``theme``: Theme used to display the VerticaPy objects ('light' or 'dark').
+  - ``theme``: Theme used to display the VerticaPy objects ('light', 'dark' or 'sphinx').
+
+Data Preparation
+-----------------
+
+ - :py:func:`~verticapy.machine_learning.model_selection.statistical_tests.seasonal_decompose` can now handle multiple variables. It uses the ``ROW`` data type for more consistency. And a new parameter ``genSQL`` is also available to generate the final SQL query.
 
 QueryProfiler
 --------------
 
-:py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` class offers an extended set of functionalities, enabling the creation of complex trees with multiple metrics.
+ - :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` class offers an extended set of functionalities, enabling the creation of complex trees with multiple metrics.
   
 Others
 -------

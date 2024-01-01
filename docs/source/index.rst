@@ -40,7 +40,7 @@ Vertica database using the Python programming language. Vertica is a high-perfor
 
         .. card:: Installation Guide
           :img-top: _static/installation_guide.svg
-          :link: installation
+          :link: getting_started
           :link-type: ref
           :text-align: center
           :class-card: custom-card-2

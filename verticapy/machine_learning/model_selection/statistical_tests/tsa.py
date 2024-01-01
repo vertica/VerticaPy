@@ -1472,8 +1472,8 @@ def seasonal_decompose(
     columns: SQLColumns,
     ts: str,
     by: Optional[SQLColumns] = None,
-    period: int = -1,
-    polynomial_order: int = 1,
+    period: Union[int, tuple, list] = -1,
+    polynomial_order: Union[int, tuple, list] = 1,
     estimate_seasonality: bool = True,
     rule: Optional[TimeInterval] = None,
     mult: bool = False,
@@ -1516,7 +1516,7 @@ def seasonal_decompose(
     ----------
     input_relation: SQLRelation
         Input relation.
-    columns: str
+    columns: SQLColumns
         Input :py:class:`vDataColumn`
         to decompose.
     ts: str
