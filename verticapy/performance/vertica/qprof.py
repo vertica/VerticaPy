@@ -1763,15 +1763,24 @@ class QueryProfiler:
         kind: Literal[
             "bar",
             "barh",
-            "pie",
-        ] = "pie",
+        ] = "bar",
         categoryorder: Literal[
             "trace",
             "category ascending",
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "sum descending",
         show: bool = True,
         **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
@@ -1801,9 +1810,6 @@ class QueryProfiler:
             - barh:
                 Horizontal Bar Chart.
 
-            - pie:
-                Pie Chart.
-
         categoryorder: str, optional
             How to sort the bars.
             One of the following options:
@@ -1813,6 +1819,16 @@ class QueryProfiler:
             - category descending
             - total ascending
             - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
 
         show: bool, optional
             If set to True, the Plotting object
@@ -1865,7 +1881,10 @@ class QueryProfiler:
         div = self._get_interval_str(unit)
         query = f"""
             SELECT
-                execution_step, 
+                REPLACE(COALESCE(REGEXP_SUBSTR(
+                    execution_step, '(.+):'), execution_step), ':', '') AS step,
+                REPLACE(COALESCE(REGEXP_SUBSTR(
+                    execution_step, ':(.+)'), execution_step), ':', '') AS substep,
                 (completion_time - time) / '{div}'::interval AS elapsed
             FROM 
                 v_internal.dc_query_executions 
@@ -1877,12 +1896,14 @@ class QueryProfiler:
         vdf = vDataFrame(query)
         if show:
             self._check_vdf_empty(vdf)
-            fun = self._get_chart_method(vdf["execution_step"], kind)
+            fun = self._get_chart_method(vdf, kind)
             return fun(
+                columns=["step", "substep"],
                 method="max",
                 of="elapsed",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                kind="drilldown",
                 **style_kwargs,
             )
         return vdf
