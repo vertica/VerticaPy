@@ -1,0 +1,10 @@
+name: Trackable Change
+description: >-
+  Please only use this, if you've been advised to do so after a discussion.
+body:
+  - type: textarea
+    attributes:
+      label: What is the observed bug, the requested behavior-change, or the new feature?
+      description: A clear and concise description.
+    validations:
+      required: true

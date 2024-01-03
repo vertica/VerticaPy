@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Bug Reports (and other issues)
+    url: https://github.com/vertica/VerticaPy/discussions/categories/potential-bug
+    about: Possible bugs can be raised as a "Potential bug" discussion.
+  - name: Feature Request / Enhancement
+    url: https://github.com/vertica/VerticaPy/discussions/categories/ideas
+    about: Feature requests can be raised as an "Ideas" discussion.
