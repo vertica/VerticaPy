@@ -555,10 +555,12 @@ class vDataFrame(vDFAnimatedPlot):
         sql_push_ext: bool = True,
         _empty: bool = False,
         _is_sql_magic: int = 0,
+        _clean_query: bool = True,
     ) -> None:
         self._vars = {
             "allcols_ind": -1,
             "count": -1,
+            "clean_query": _clean_query,
             "exclude_columns": [],
             "history": [],
             "isflex": False,
@@ -616,8 +618,10 @@ class vDataFrame(vDFAnimatedPlot):
         elif not _empty:
             if isinstance(input_relation, str) and is_dql(input_relation):
                 # Cleaning the Query
-                sql = clean_query(input_relation)
-                sql = extract_subquery(sql)
+                sql = input_relation
+                if _clean_query:
+                    sql = clean_query(input_relation)
+                    sql = extract_subquery(sql)
 
                 # Filtering some columns
                 if usecols:
@@ -663,6 +667,7 @@ class vDataFrame(vDFAnimatedPlot):
             self._vars = {
                 **self._vars,
                 "allcols_ind": allcols_ind,
+                "clean_query": _clean_query,
                 "columns": columns,
                 "isflex": isflex,
                 "main_relation": main_relation,
@@ -754,7 +759,7 @@ class vDataFrame(vDFAnimatedPlot):
                 tb_final[col] = tb[col]
             tb = TableSample(tb_final)
 
-        self.__init__(input_relation=tb.to_sql())
+        self.__init__(input_relation=tb.to_sql(), _clean_query=False)
 
     def _from_pandas(
         self,
@@ -767,7 +772,7 @@ class vDataFrame(vDFAnimatedPlot):
         usecols = format_type(usecols, dtype=list)
         args = object_[usecols] if len(usecols) > 0 else object_
         vdf = read_pd(args)
-        self.__init__(input_relation=vdf._vars["main_relation"])
+        self.__init__(input_relation=vdf._vars["main_relation"], _clean_query=False)
 
 
 ##

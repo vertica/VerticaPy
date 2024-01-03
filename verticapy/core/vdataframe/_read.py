@@ -132,14 +132,19 @@ class vDFRead(vDFUtils):
         if 0 < self._vars["sql_magic_result"] < 3:
             self._vars["sql_magic_result"] += 1
             query = extract_subquery(self._genSQL())
-            query = clean_query(query)
+            if self._vars["clean_query"]:
+                query = clean_query(query)
             sql_on_init = conf.get_option("sql_on")
             limit = conf.get_option("max_rows")
             conf.set_option("sql_on", False)
             try:
-                res = TableSample().read_sql(f"{query} LIMIT {limit}")
+                res = TableSample().read_sql(
+                    f"{query} LIMIT {limit}", _clean_query=self._vars["clean_query"]
+                )
             except QueryError:
-                res = TableSample().read_sql(query)
+                res = TableSample().read_sql(
+                    query, _clean_query=self._vars["clean_query"]
+                )
             finally:
                 conf.set_option("sql_on", sql_on_init)
             if conf.get_option("count_on"):
@@ -436,6 +441,7 @@ class vDFRead(vDFUtils):
             "max_columns": self._vars["max_columns"],
             "sql_push_ext": self._vars["sql_push_ext"],
             "symbol": self._vars["symbol"],
+            "_clean_query": self._vars["clean_query"],
         }
         if self._vars["has_dpnames"]:
             kwargs[
@@ -1047,6 +1053,7 @@ class vDCRead:
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
+            _clean_query=self._vars["clean_query"],
         )
         tail.count = self._parent.shape()[0]
         tail.offset = offset
@@ -1139,6 +1146,7 @@ class vDCRead:
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
+            _clean_query=self._vars["clean_query"],
         )
 
     @save_verticapy_logs
@@ -1225,6 +1233,7 @@ class vDCRead:
             title=f"Reads {n} {self} smallest elements.",
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
+            _clean_query=self._vars["clean_query"],
         )
 
     def tail(self, limit: int = 5) -> TableSample:
