@@ -4,7 +4,7 @@ description: >-
 body:
   - type: textarea
     attributes:
-      label: What is the observed bug, the requested behavior-change, or the new feature?
-      description: A clear and concise description.
+      label: What is the requested change?
+      description: A clear and concise description of the observed bug or the requested new feature/behavior.
     validations:
       required: true
