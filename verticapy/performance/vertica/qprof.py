@@ -35,6 +35,7 @@ from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.plotting._utils import PlottingUtils
+from verticapy.sql.dtypes import get_data_types
 
 if TYPE_CHECKING and conf.get_import_success("graphviz"):
     from graphviz import Source
@@ -157,6 +158,9 @@ class QueryProfiler:
     requests: list
         ``list`` of ``str``:
         Transactions Queries.
+    request_labels: list
+        ``list`` of ``str``:
+        Queries Labels.
     qdurations: list
         ``list`` of ``int``:
         Queries Durations (seconds).
@@ -963,6 +967,20 @@ class QueryProfiler:
 
     # Tools
 
+    def _check_kind(self, kind: str, kind_list: list) -> str:
+        """
+        Checks if the parameter 'kind'
+        is correct and returns the
+        corrected version of it.
+        """
+        kind = str(kind).lower()
+        if kind not in kind_list:
+            raise ValueError(
+                "Parameter Error, 'kind' should be in "
+                f"[{' | '.join()}].\nFound {kind}."
+            )
+        return kind
+
     def _check_vdf_empty(self, vdf: vDataFrame) -> Literal[True]:
         """
         Checks if the vDataFrame is empty and
@@ -1114,6 +1132,8 @@ class QueryProfiler:
         will use them to do the
         profiling.
         """
+        self.v_tables_dtypes = []
+        self.tables_dtypes = []
         target_tables = {}
         v_temp_table_dict = self._v_table_dict()
         v_config_table_list = self._v_config_table_list()
@@ -1163,11 +1183,14 @@ class QueryProfiler:
                     sql += f" WHERE transaction_id={self.transaction_id} "
                     sql += f"AND statement_id={self.statement_id}"
                 target_tables[table] = new_table
+
+                # Getting the new DATATYPES
                 try:
-                    _executeSQL(
-                        f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
-                        title="Looking if the relation exists.",
-                    )
+                    self.tables_dtypes += [
+                        get_data_types(
+                            f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
+                        )
+                    ]
                 except:
                     if conf.get_option("print_info") and idx == 0:
                         print("Some tables seem to not exist...")
@@ -1178,6 +1201,13 @@ class QueryProfiler:
                         print("You can access the key by using the 'key_id' attribute.")
                     exists = False
                     idx += 1
+
+                # Getting the Performance tables DATATYPES
+                self.v_tables_dtypes += [
+                    get_data_types(
+                        f"SELECT * FROM {schema}.{table} LIMIT 0",
+                    )
+                ]
 
             if not (exists):
                 if conf.get_option("print_info"):
@@ -1243,13 +1273,41 @@ class QueryProfiler:
                     if not (res):
                         warning_message += f"({tr_id}, {st_id}) -> {sc}.{tb}\n"
         if len(warning_message) > 0:
-            warning_message = "Some transactions are missing:\n\n" + warning_message
+            warning_message = "\nSome transactions are missing:\n\n" + warning_message
+        missing_column = ""
+        inconsistent_dt = ""
+        table_name_list = list(self._v_table_dict())
+        n = len(self.tables_dtypes)
+        for i in range(n):
+            table_name = table_name_list[i]
+            table_1 = self.v_tables_dtypes[i]
+            table_2 = self.tables_dtypes[i]
+            for col_1, dt_1 in table_1:
+                is_in = False
+                for col_2, dt_2 in table_2:
+                    if col_2.lower() == col_1.lower():
+                        is_in = True
+                        if dt_1 != dt_2:
+                            inconsistent_dt += (
+                                f"{table_name} | {col_1}: {dt_1} -> {dt_2}\n"
+                            )
+                        break
+                if not (is_in):
+                    missing_column += f"{table_name} | {col_1}\n"
+        if missing_column:
+            warning_message += "\nSome columns are missing:\n\n" + missing_column + "\n"
+        if inconsistent_dt:
             warning_message += (
-                "\nThis could potentially lead to incorrect computations or "
+                "\nSome data types are inconsistent:\n\n" + inconsistent_dt + "\n"
+            )
+        if len(warning_message) > 0:
+            warning_message += (
+                "This could potentially lead to incorrect computations or "
                 "errors. Please review the various tables and investigate "
-                "why this data is missing. It may have been accidentally "
-                "deleted or automatically removed, especially if you are "
-                "directly working on the performance tables."
+                "why this data was modified or is missing. It may have "
+                "been wrongly imported, accidentally deleted or automatically "
+                "removed, especially if you are directly working on the "
+                "performance tables."
             )
             warnings.warn(warning_message, Warning)
 
@@ -1259,10 +1317,11 @@ class QueryProfiler:
         ``transaction_id`` requests.
         """
         self.requests = []
+        self.request_labels = []
         for tr_id, st_id in self.transactions:
             query = f"""
                 SELECT 
-                    request 
+                    request, label
                 FROM v_internal.dc_requests_issued 
                 WHERE transaction_id = {tr_id}
                   AND   statement_id = {st_id};"""
@@ -1271,9 +1330,10 @@ class QueryProfiler:
                 res = _executeSQL(
                     query,
                     title="Getting the corresponding query",
-                    method="fetchfirstelem",
+                    method="fetchrow",
                 )
-                self.requests += [res]
+                self.requests += [res[0]]
+                self.request_labels += [res[1]]
             except TypeError:
                 raise QueryError(
                     f"No transaction with transaction_id={tr_id} "
@@ -1469,13 +1529,6 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
-        labels = []
-        for query in self.requests:
-            lb = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
-            if len(lb) > 0:
-                labels += [lb[0][1:-1]]
-            else:
-                labels += [None]
         n = len(self.transactions)
         current_query = [
             (self.transaction_id, self.statement_id) == tr for tr in self.transactions
@@ -1487,10 +1540,11 @@ class QueryProfiler:
                 "is_current": current_query,
                 "transaction_id": [tr[0] for tr in self.transactions],
                 "statement_id": [tr[1] for tr in self.transactions],
-                "request_label": labels,
+                "request_label": copy.deepcopy(self.request_labels),
                 "request": copy.deepcopy(self.requests),
                 "qduration": [qd / 1000000 for qd in self.qdurations],
-            }
+            },
+            _clean_query=False,
         )
 
     def get_table(self, table_name: Optional[str] = None) -> Union[list, vDataFrame]:
@@ -1878,6 +1932,8 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh"])
         div = self._get_interval_str(unit)
         query = f"""
             SELECT
@@ -2343,6 +2399,8 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh", "pie"])
         div = self._get_interval_str(unit)
         where = ""
         if show:
@@ -2632,6 +2690,8 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh"])
         query = f"""
             SELECT 
                 node_name, 
@@ -2947,6 +3007,8 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh", "pie"])
         if metric == "all" and show:
             if conf.get_option("plotting_lib") != "plotly":
                 raise ExtensionError(

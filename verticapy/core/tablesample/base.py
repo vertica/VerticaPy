@@ -974,6 +974,7 @@ class TableSample:
         max_columns: int = -1,
         sql_push_ext: bool = False,
         symbol: str = "$",
+        _clean_query: bool = True,
     ) -> "TableSample":
         """
         Returns the result of a SQL query
@@ -1046,12 +1047,17 @@ class TableSample:
             | :py:class:`~vDataFrame` :
                 Main VerticaPy dataset object.
         """
-        query = clean_query(query)
+        if _clean_query:
+            query = clean_query(query)
         if conf.get_option("sql_on"):
             print_query(query, title)
         start_time = time.time()
         cursor = _executeSQL(
-            query, print_time_sql=False, sql_push_ext=sql_push_ext, symbol=symbol
+            query,
+            print_time_sql=False,
+            sql_push_ext=sql_push_ext,
+            symbol=symbol,
+            _clean_query=_clean_query,
         )
         description, dtype = cursor.description, {}
         for elem in description:
@@ -1661,4 +1667,4 @@ class TableSample:
                 Generates the SQL query associated
                 to the :py:class:`~verticapy.core.tablesample.base.TableSample`.
         """
-        return create_new_vdf(self.to_sql())
+        return create_new_vdf(self.to_sql(), _clean_query=False)

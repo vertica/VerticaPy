@@ -42,6 +42,7 @@ def _executeSQL(
     print_time_sql: bool = True,
     sql_push_ext: bool = False,
     symbol: str = "$",
+    _clean_query: bool = True,
 ) -> Any:
     """
     Executes and returns the
@@ -166,7 +167,9 @@ def _executeSQL(
         raise ValueError(f"Symbol '{symbol}' is not supported.")
 
     query = replace_external_queries(query)
-    query = clean_query(query)
+
+    if _clean_query:
+        query = clean_query(query)
 
     cursor = current_cursor()
     if conf.get_option("sql_on") and print_time_sql:
