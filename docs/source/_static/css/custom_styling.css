@@ -421,7 +421,7 @@ body {
 }
 
 p {
-  font-size: 85%; 
+  /* font-size: 85%; */
 }
 
 /* Add padding on top of article container */
@@ -478,7 +478,7 @@ p {
 
 /* Cards on Index Page */
 .custom-card-2 {
-  height: 360px; /* Adjust the desired height */
+  height: 270px; /* Adjust the desired height */
 }
 
 /* Cards on Machine Learning page */
@@ -498,12 +498,12 @@ p {
 
 /* Cards on Connectors page */
 .custom-card-5 {
-  height: 320px; /* Adjust the desired height */
+  height: 305px; /* Adjust the desired height */
 }
 
 /* Cards on chart gallery page */
 .custom-card-6 {
-  height: 420px; /* Adjust the desired height */
+  height: 390px; /* Adjust the desired height */
 }
 
 /* Cards on User Guide pages */
@@ -513,7 +513,7 @@ p {
 
 /* Cards on User Guide MAIN page */
 .custom-card-8 {
-  height: 270px; /* Adjust the desired height */
+  height: 210px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -528,12 +528,12 @@ p {
 
 /* Cards on Benchmarks pages */
 .custom-card-10 {
-  height: 190px; /* Adjust the desired height */
+  height: 130px; /* Adjust the desired height */
 }
 
 /* Cards on Performance pages */
 .custom-card-11 {
-  height: 190px; /* Adjust the desired height */
+  height: 135px; /* Adjust the desired height */
 }
 
 /* End cards */
@@ -890,7 +890,7 @@ article, article .align-default {
   }
 /* Cards on Index Page */
   .custom-card-2 {
-    height: 340px; /* Adjust the desired height */
+    height: 310px; /* Adjust the desired height */
     /* Add more styles as needed */
   }
   /* Cards on Vertica page */
