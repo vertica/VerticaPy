@@ -125,7 +125,7 @@ class SVMClassifierPlot(PlotlyBase):
                     "x_axis": x_axis,
                 }
             )
-            fig = px.strip(
+            strip_trace = px.strip(
                 df,
                 x="x_axis",
                 y=self.layout["columns"][0],
@@ -137,6 +137,8 @@ class SVMClassifierPlot(PlotlyBase):
                     "x_axis": False,
                 },
             )
+            for i in range(len(strip_trace.data)):
+                fig.add_trace(strip_trace.data[i])
             fig.add_hline(**self.hline_style)
             fig.update_layout(
                 **self._update_dict(self.init_layout_style_1d, style_kwargs)
