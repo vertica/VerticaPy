@@ -4366,6 +4366,9 @@ class vDCPlot(vDCScaler):
             | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.plot` : Line Plot.
 
         """
+        import matplotlib.pyplot as plt
+
+        theme = conf.get_option("theme")
         columns = [self._alias]
         check = True
         if len(args) > 0:
@@ -4386,4 +4389,22 @@ class vDCPlot(vDCScaler):
             kwargs["legend"] = True
         if "figsize" not in kwargs:
             kwargs["figsize"] = (14, 10)
-        return self._parent[columns].to_geopandas(self._alias).plot(*args, **kwargs)
+        ax = self._parent[columns].to_geopandas(self._alias).plot(*args, **kwargs)
+        if theme == "sphinx":
+            ax.get_figure().patch.set_alpha(0.0)
+            ax.set_facecolor("none")
+            plt.title("", color="#888888")
+            plt.xlabel("", color="#888888")
+            plt.ylabel("", color="#888888")
+            plt.xticks(color="#888888")
+            plt.yticks(color="#888888")
+        elif theme == "dark":
+            ax.set_facecolor("#11111A")
+            plt.title("", color="#AAAAAA")
+            plt.xlabel("", color="#AAAAAA")
+            plt.ylabel("", color="#AAAAAA")
+            plt.xticks(color="#AAAAAA")
+            plt.yticks(color="#AAAAAA")
+        elif theme == "light":
+            ...
+        return ax
