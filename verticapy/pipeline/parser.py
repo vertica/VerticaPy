@@ -26,7 +26,22 @@ from tqdm import tqdm
 
 # required packages
 import verticapy as vp
-from verticapy.datasets import *
+from verticapy.datasets import (
+    load_airline_passengers,
+    load_amazon,
+    load_cities,
+    load_commodities,
+    load_gapminder,
+    load_iris,
+    load_laliga,
+    load_market,
+    load_pop_growth,
+    load_smart_meters,
+    load_titanic,
+    load_winequality,
+    load_world,
+    load_africa_education,
+)
 from verticapy._utils._sql._sys import _executeSQL
 
 # local

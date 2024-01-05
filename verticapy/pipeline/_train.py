@@ -23,16 +23,50 @@ from typing import Tuple
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._typing import SQLColumns
 from verticapy.machine_learning.vertica.base import VerticaModel
-
-from verticapy.machine_learning.vertica import *
-from verticapy.machine_learning.vertica.linear_model import *
-from verticapy.machine_learning.vertica.svm import *
-from verticapy.machine_learning.vertica.tree import *
-from verticapy.machine_learning.vertica.neighbors import *
-from verticapy.machine_learning.vertica.naive_bayes import *
-from verticapy.machine_learning.vertica.tsa import *
-from verticapy.machine_learning.vertica.decomposition import *
-from verticapy.machine_learning.vertica.cluster import *
+from verticapy.machine_learning.vertica.cluster import (
+    BisectingKMeans,
+    DBSCAN,
+    KMeans,
+    KPrototypes,
+    NearestCentroid,
+)
+from verticapy.machine_learning.vertica.decomposition import MCA, PCA, SVD
+from verticapy.machine_learning.vertica.ensemble import (
+    IsolationForest,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    XGBClassifier,
+    XGBRegressor,
+)
+from verticapy.machine_learning.vertica.linear_model import (
+    ElasticNet,
+    Lasso,
+    LinearRegression,
+    LogisticRegression,
+    PoissonRegressor,
+    Ridge,
+)
+from verticapy.machine_learning.vertica.naive_bayes import (
+    BernoulliNB,
+    CategoricalNB,
+    GaussianNB,
+    MultinomialNB,
+    NaiveBayes,
+)
+from verticapy.machine_learning.vertica.neighbors import (
+    KNeighborsClassifier,
+    KernelDensity,
+    KNeighborsRegressor,
+    LocalOutlierFactor,
+)
+from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+from verticapy.machine_learning.vertica.tree import (
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
+    DummyTreeClassifier,
+    DummyTreeRegressor,
+)
+from verticapy.machine_learning.vertica.tsa import ARIMA, ARMA, AR, MA
 
 from ._helper import execute_and_add
 
