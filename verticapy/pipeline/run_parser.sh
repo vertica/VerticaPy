@@ -17,5 +17,5 @@ recipe_file="$(readlink -f "$2")"
 cd "$project_root"
 
 # Run the parser.py script with the provided arguments
-python3 -m verticapy.ml_pipeline.parser "$connection_file" "$recipe_file"
+python3 -m verticapy.pipeline.parser "$connection_file" "$recipe_file"
 
