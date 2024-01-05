@@ -137,8 +137,7 @@ class SVMClassifierPlot(PlotlyBase):
                     "x_axis": False,
                 },
             )
-            for i in range(len(strip_trace.data)):
-                fig.add_trace(strip_trace.data[i])
+            fig = self._get_fig(fig)
             fig.add_hline(**self.hline_style)
             fig.update_layout(
                 **self._update_dict(self.init_layout_style_1d, style_kwargs)
