@@ -151,5 +151,6 @@ class HeatMap(PlotlyBase):
         fig.update_traces(
             **trace_params,
         )
+        fig = self._get_fig(fig)
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig
