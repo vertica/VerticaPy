@@ -23,7 +23,10 @@ from typing import Tuple
 from verticapy import vDataFrame
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy._typing import SQLColumns
-from verticapy.machine_learning.metrics.regression import regression_report, FUNCTIONS_REGRESSION_SQL_DICTIONNARY
+from verticapy.machine_learning.metrics.regression import (
+    regression_report,
+    FUNCTIONS_REGRESSION_SQL_DICTIONNARY,
+)
 
 from ._helper import execute_and_add, remove_comments
 

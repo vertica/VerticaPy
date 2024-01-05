@@ -52,6 +52,23 @@ from . import _train
 from . import _test
 from . import _schedule
 
+SUPPORTED_DATASETS = [
+    load_airline_passengers,
+    load_amazon,
+    load_cities,
+    load_commodities,
+    load_gapminder,
+    load_iris,
+    load_laliga,
+    load_market,
+    load_pop_growth,
+    load_smart_meters,
+    load_titanic,
+    load_winequality,
+    load_world,
+    load_africa_education,
+]
+
 parser = argparse.ArgumentParser(
     description="""Vertica Pipelines is an open source platform for
     managing data scientists machine learning pipelines.
@@ -166,7 +183,7 @@ with open(file_name, "r", encoding="utf-8") as file:
         # SCHEDULE
         if "train" in steps and "schedule" in steps["train"]:
             schedule = steps["train"]["schedule"]
-            META_SQL += _schedule.schedule(
+            META_SQL += _schedule.scheduler(
                 schedule, MODEL_SQL, TABLE_SQL, pipeline_name
             )
 

@@ -22,6 +22,7 @@ from typing import Tuple
 
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._typing import SQLColumns
+from verticapy.errors import QueryError
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import (
     BisectingKMeans,
@@ -69,6 +70,47 @@ from verticapy.machine_learning.vertica.tree import (
 from verticapy.machine_learning.vertica.tsa import ARIMA, ARMA, AR, MA
 
 from ._helper import execute_and_add
+
+SUPPORTED_FUNCTIONS = [
+    BisectingKMeans,
+    DBSCAN,
+    KMeans,
+    KPrototypes,
+    NearestCentroid,
+    MCA,
+    PCA,
+    SVD,
+    IsolationForest,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    XGBClassifier,
+    XGBRegressor,
+    ElasticNet,
+    Lasso,
+    LinearRegression,
+    LogisticRegression,
+    PoissonRegressor,
+    Ridge,
+    BernoulliNB,
+    CategoricalNB,
+    GaussianNB,
+    MultinomialNB,
+    NaiveBayes,
+    KNeighborsClassifier,
+    KernelDensity,
+    KNeighborsRegressor,
+    LocalOutlierFactor,
+    LinearSVC,
+    LinearSVR,
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
+    DummyTreeClassifier,
+    DummyTreeRegressor,
+    ARIMA,
+    ARMA,
+    AR,
+    MA,
+]
 
 
 def training(
@@ -144,6 +186,7 @@ def training(
             else:
                 temp_str += f"{param} = {params[param]}, "
         temp_str = temp_str[:-2]
+        model = None
         eval(
             f"exec(\"model = {name}('{pipeline_name + '_MODEL'}', {temp_str})\")",
             globals(),
@@ -166,7 +209,7 @@ def training(
             model_sql = model.get_vertica_attributes("call_string")["call_string"][0]
             if model_sql.split(" ")[0] != "SELECT":
                 model_sql = "SELECT " + model_sql + ";"
-        except vertica_python.errors.QueryError:
+        except QueryError:
             # UNSUPERVISED
             model_sql = (
                 "SELECT "

@@ -22,7 +22,9 @@ This script runs the Vertica Machine Learning Pipeline Parser.
 from ._helper import execute_and_add, to_sql
 
 
-def schedule(schedule: dict, model_sql: str, table_sql: str, pipeline_name: str) -> str:
+def scheduler(
+    schedule: dict, model_sql: str, table_sql: str, pipeline_name: str
+) -> str:
     """
     Run the schedule step
     of the pipeline.
