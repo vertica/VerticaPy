@@ -12,7 +12,7 @@ Full Stack
 
     .. grid-item::
     
-      .. card:: DBLink Integration
+      .. card:: DBLink integration
           :link: notebooks/full_stack/dblink_integration/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -50,7 +50,7 @@ Full Stack
 
     .. grid-item::
 
-        .. card:: User-Defined Functions
+        .. card:: User-defined functions
           :link: notebooks/full_stack/udf/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -63,7 +63,7 @@ Full Stack
 
     .. grid-item::
 
-        .. card:: Linear Regression
+        .. card:: Linear regression
           :link: notebooks/full_stack/linear_regression/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -77,7 +77,7 @@ Full Stack
 
     .. grid-item::
 
-        .. card:: Magic Methods
+        .. card:: Magic methods
           :link: notebooks/full_stack/vdataframe_magic/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -104,7 +104,7 @@ Full Stack
 
     .. grid-item::
 
-        .. card:: Time Series Interpolation
+        .. card:: Time series interpolation
           :link: notebooks/ml/time_series/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -117,7 +117,7 @@ Full Stack
 
     .. grid-item::
 
-        .. card:: GeoPandas Integration
+        .. card:: GeoPandas integration
           :link: notebooks/full_stack/geopandas/index.html
           :text-align: center
           :class-card: custom-card-9

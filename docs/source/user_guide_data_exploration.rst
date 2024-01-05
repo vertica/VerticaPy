@@ -8,7 +8,7 @@ Data Exploration
 
     .. grid-item::
     
-      .. card:: Descriptive Statistics
+      .. card:: Descriptive statistics
           :link: notebooks/data_exploration/descriptive_statistics/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -33,14 +33,15 @@ Data Exploration
           ^^^^^^^
 
           Visualize your data with a variety of charts 
-          and graphs. From bar charts to scatter plots, 
-          discover the art of storytelling through visual 
+          and graphs. Ranging from bar charts to scatter 
+          plots, VerticaPy provides an array of visualizations
+          to uncover data insights through visual 
           representation. Transform raw data into meaningful 
-          insights at a glance.
+          discoveries.
 
     .. grid-item::
 
-        .. card:: Coorelation & Dependencies
+        .. card:: Coorelation & dependencies
           :link: notebooks/data_exploration/correlations/index.html
           :text-align: center
           :class-card: custom-card-9

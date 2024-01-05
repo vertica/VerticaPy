@@ -48,7 +48,7 @@ Data Preparation
 
     .. grid-item::
 
-        .. card:: Missing Values
+        .. card:: Missing values
           :link: notebooks/data_prep/missing_values/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -56,8 +56,8 @@ Data Preparation
           18 mins
           ^^^^^^^^
 
-          Address missing data effectively through 
-          imputation and enhance the completeness 
+          Address missing data through 
+          imputation and imporve the completeness 
           of your dataset.
 
     .. grid-item::
@@ -103,7 +103,7 @@ Data Preparation
 
     .. grid-item::
 
-        .. card:: Feature Engineering
+        .. card:: Feature engineering
           :link: notebooks/data_prep/featrues_engineering/index.html
           :text-align: center
           :class-card: custom-card-9

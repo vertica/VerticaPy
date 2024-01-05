@@ -37,8 +37,8 @@ User Guide
 
           20 mins
           ^^^^^^^^
-          Effortlessly bring your data into Vertica. 
-          Whether it's from databases, spreadsheets, or 
+          Effortlessly ingest your data into Vertica.
+          Whether the data is from databases, spreadsheets, or 
           external sources, streamline the ingestion process 
           for quick and easy access to your datasets.
           
@@ -54,10 +54,9 @@ User Guide
 
           34 mins
           ^^^^^^^^
-          Uncover insights and patterns within your data. 
-          Navigate through interactive visualizations, charts, 
-          and graphs to gain a comprehensive understanding of 
-          the information at your fingertips.
+          Use interactive visualizations, charts, and
+          graphs to uncover insights and patterns within
+          your data.
 
           :bdg-primary:`Graphs`
 
@@ -91,8 +90,8 @@ User Guide
           Harness the power of machine learning to 
           make predictive analyses. From model training 
           to evaluation, our platform guides you through 
-          the process, making complex algorithms accessible 
-          for everyone.
+          the process and makes complex algorithms accessible 
+          to everyone.
 
           :bdg-primary:`Machine Learning` :bdg-primary:`AI`
 
@@ -106,7 +105,7 @@ User Guide
 
           87 mins
           ^^^^^^^^
-          Experience the full spectrum of Vertica. 
+          Discover the full spectrum of Vertica. 
           Seamlessly integrate data processing, 
           analysis, and visualization to create an end-to-end 
           solution tailored to your analytical needs.

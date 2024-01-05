@@ -12,7 +12,7 @@ Introduction
 
     .. grid-item::
     
-      .. card:: Setting up the environment
+      .. card:: Connect to a Vertica database
           :link: notebooks/introduction/installation/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -20,10 +20,10 @@ Introduction
           4 mins
           ^^^^^^^
 
-          Configure your workspace effortlessly with 
-          our step-by-step guide on setting up the optimal 
-          environment for seamless analytical exploration. 
-          Ensure a smooth start to your data journey.
+          Configure your workspace using our
+          step-by-step setup guide, ensuring the optimal 
+          environment for seamless analytical exploration 
+          and a smooth start to your data journey.
 
     .. grid-item::
 
@@ -36,14 +36,13 @@ Introduction
           ^^^^^^^^
 
           Unlock the potential of the Virtual DataFrame (:py:class:`~vDataFrame`). 
-          Explore our core object, discovering its role in storing and 
-          manipulating data. Delve into its efficiency to optimize your 
-          data manipulation processes and elevate your analytical 
-          capabilities.
+          Explore its role in storing and manipulating data, 
+          optimizing your data manipulation processes, and 
+          elevating your analytical capabilities.
 
     .. grid-item::
 
-        .. card:: Best Practices
+        .. card:: Best practices
           :link: notebooks/introduction/best-practices/index.html
           :text-align: center
           :class-card: custom-card-9
@@ -51,7 +50,7 @@ Introduction
           20 mins
           ^^^^^^^^
 
-          Navigate through essential best practices and tips to 
+          Leverage best practices and tips to
           maximize the efficiency of your analytical workflow. 
           From data management to visualization, elevate your 
           skills and ensure optimal results.
