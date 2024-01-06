@@ -37,20 +37,20 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires=">=3.9",
     install_requires=[
+        "graphviz>=0.9.0",
         "matplotlib>=3.5.2",
         "numpy>=1.11.0",
         "pandas>=0.23.0",
-        "vertica-highcharts>=0.1.4",
+        "plotly>=5.10.0",
         "scipy>=1.0.0",
         "tqdm>=4.0.0",
+        "vertica-highcharts>=0.1.4",
         "vertica-python>=1.2.0",
-        "plotly>=5.10.0",
     ],
     extras_require={
         "all": [
             "descartes>=1.0.0",
             "geopandas>=0.8.0",
-            "graphviz>=0.9.0",
             "shapely>=1.6.0",
         ],
     },
