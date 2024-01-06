@@ -116,8 +116,6 @@ Official documentation is available at: <br>
 
 https://www.vertica.com/python/documentation/
 
-:heavy_exclamation_mark: But note the above is not currently updated as per VerticaPy 1.0.0-beta. It will be done soon.
-
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
 

@@ -1053,7 +1053,7 @@ class vDCRead:
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
-            _clean_query=self._vars["clean_query"],
+            _clean_query=self._parent._vars["clean_query"],
         )
         tail.count = self._parent.shape()[0]
         tail.offset = offset
@@ -1146,7 +1146,7 @@ class vDCRead:
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
-            _clean_query=self._vars["clean_query"],
+            _clean_query=self._parent._vars["clean_query"],
         )
 
     @save_verticapy_logs
@@ -1233,7 +1233,7 @@ class vDCRead:
             title=f"Reads {n} {self} smallest elements.",
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
-            _clean_query=self._vars["clean_query"],
+            _clean_query=self._parent._vars["clean_query"],
         )
 
     def tail(self, limit: int = 5) -> TableSample:

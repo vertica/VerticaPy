@@ -192,6 +192,12 @@ class QueryProfiler:
         Name of the tables used to store
         all the Vertica monitor and internal
         meta-tables.
+    v_tables_dtypes: list
+        Datatypes of all the performance
+        tables.
+    tables_dtypes: list
+        Datatypes of all the loaded
+        performance tables.
     overwrite: bool
         If set to ``True`` overwrites the
         existing performance tables.
@@ -1216,6 +1222,8 @@ class QueryProfiler:
                         f"SELECT * FROM {schema}.{table} LIMIT 0",
                     )
                 ]
+                if not (exists):
+                    self.tables_dtypes += [self.v_tables_dtypes[-1]]
 
             if not (exists):
                 if conf.get_option("print_info"):
