@@ -3,7 +3,7 @@
 ==============
 Memory Models
 ==============
-.. grid:: 3
+.. grid:: 1 2 2 3
 
     .. grid-item::
 

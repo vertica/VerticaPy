@@ -11,9 +11,23 @@ h1{
 h2{
   font-family: "Inter";
   font-weight: 350 ;
-  font-size: 2em ;
+  font-size: 2.5em ;
   letter-spacing: -.021em;
   color: var(--color-announcement-text);
+}
+
+h3{
+  font-size: 2em ;
+}
+
+/* Size of center content */
+p {
+  font-size: 140%; 
+} 
+
+/* Size of Tiles - title */
+.sd-card-title {
+  font-size: 1.5em;
 }
 
 /* HEADER + PAGE */
@@ -27,7 +41,7 @@ h2{
 
 /* Side nav bar */
 .current {
-  font-size: 0.7rem; 
+  font-size: 1rem; 
   font-weight: 400;
   letter-spacing: -.017em;
   font-family: "Inter";
@@ -48,8 +62,17 @@ h2{
 
 /* Main Tabs */
 .sidebar-tree .toctree-l1>.reference, .sidebar-tree .toctree-l1>label .icon {
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-family: "Inter" ;
+}
+
+/* Right Side - On This Page */
+.toc-tree .reference {
+  font-size: 1rem;
+}
+
+.toc-title {
+  font-size: 1rem;
 }
 
 /* Top search bar */
@@ -331,10 +354,6 @@ h2{
   border-radius: 10px;
 }
 
-.sd-card-title {
-  font-size: 1.2em;
-}
-
 /* End of Chart Gallery */
 
 
@@ -420,10 +439,6 @@ body {
   border-color: #CFCFCF;
 }
 
-p {
-  font-size: 85%; 
-}
-
 /* Add padding on top of article container */
 .page{
   /* margin-top: calc(var(--header-height) * 1.8+500px); */
@@ -483,14 +498,14 @@ p {
 
 /* Cards on Machine Learning page */
 .custom-card-3 {
-  height: 200px; /* Adjust the desired height */
+  height: 250px; /* Adjust the desired height */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 
 /* Cards on Vertica page */
 .custom-card-4 {
-  height: 200px; /* Adjust the desired height */
+  height: 280px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -513,7 +528,7 @@ p {
 
 /* Cards on User Guide MAIN page */
 .custom-card-8 {
-  height: 270px; /* Adjust the desired height */
+  height: 325px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
