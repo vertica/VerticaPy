@@ -213,7 +213,7 @@ A gallery of VerticaPy-generated charts is available at:<br>
 https://www.vertica.com/python/documentation/chart.html
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/ac62df51-5f26-4b67-839b-fbd962fbaaea" width="100%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/ac62df51-5f26-4b67-839b-fbd962fbaaea" width="70%">
 </p>
 
 [:arrow_up: Back to TOC](#table-of-contents)
