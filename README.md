@@ -40,6 +40,7 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
   - [Python and SQL Combo](#python-and-sql-combo)
   - [Charts](#charts)
   - [Complete ML pipeline](#complete-machine-learning-pipeline)
+  - [Themes - Dark | Light](#themes)
 - [Quickstart](#quickstart)
 - [Help and Support](#help-an-support)
   - [Contributing](#contributing)
@@ -416,6 +417,31 @@ iris_data = vp.vDataFrame(input_relation = "public.iris")
 ```
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
+
+### Themes
+
+VerticaPy, offers users the flexibility to customize their coding experience with two visually appealing themes: **Dark** and **Light**. 
+
+Dark mode, ideal for night-time coding sessions, features a sleek and stylish dark color scheme, providing a comfortable and eye-friendly environment. 
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/8ee0b717-a994-4535-826a-7ca4db3772b5" width="70%">
+</p>
+
+On the other hand, Light mode serves as the default theme, offering a clean and bright interface for users who prefer a traditional coding ambiance. 
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/24757bfd-4d0f-4e92-9aca-45476d704a33" width="70%">
+</p>
+
+Theme can be easily switched by:
+
+```python
+import verticapy as vp
+vp.set_option("theme","dark")
+```
+
+VerticaPy's theme-switching option ensures that users can tailor their experience to their preferences, making data exploration and analysis a more personalized and enjoyable journey.
 
 ## Quickstart
 
