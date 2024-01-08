@@ -432,7 +432,7 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
-        result = qprof.get_queries('dc_requests_issued')
+        result = qprof.get_queries()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
