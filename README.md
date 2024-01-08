@@ -295,8 +295,9 @@ iris_data.scatter(
     max_nb_points=30
 )
 ```
+
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/cb482992-58b3-4dcf-8fe7-f18f7c0f64d1" width="40%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b70bfbf4-22fa-40f9-9958-7fd19dbfc61b" width="40%">
 </p>
 
 The <b>Correlation Matrix</b> is also very fast and convenient to compute. Users can choose from a wide variety of correaltions, including cramer, spearman, pearson etc.
@@ -306,8 +307,9 @@ from verticapy.datasets import load_titanic
 titanic = load_titanic()
 titanic.corr(method="spearman")
 ```
+
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="75%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/fd34aac7-890a-484e-a3bc-9173bffa79d2" width="75%">
 </p>
 
 By turning on the SQL print option, users can see and copy SQL queries:
@@ -341,7 +343,7 @@ titanic.corr(method="spearman", focus="survived")
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="20%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/c46493b5-61e2-4eca-ae0e-e2a09fc8d304" width="20%">
 </p>
 
 - **Data Preparation**
@@ -354,8 +356,9 @@ import verticapy as vp
 data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [100]})
 data.outliers_plot(columns="Heights")
 ```
+
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="50%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/c71b106b-29d0-4e19-8267-04c5107aa365" width="50%">
 </p>
 
 
@@ -381,8 +384,9 @@ stepwise_result = stepwise(
     width=800,
 )
 ```
+
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/1550a25c-138c-4673-9940-44bf060a284b" width="50%">
 </p>
 
 [:arrow_up: Back to TOC](#table-of-contents)
