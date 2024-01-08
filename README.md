@@ -34,13 +34,13 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
 - [Documentation](#documentation)
 - [Use-cases](#use-cases)
 - [Highlighted Features](#highllighted-features)
+  - [Themes - Dark | Light](#themes)
   - [SQL Magic](#sql-magic)
   - [SQL Plots](#sql-plots)
   - [Diverse Database Connections](#multiple-database-connection-using-dblink)
   - [Python and SQL Combo](#python-and-sql-combo)
   - [Charts](#charts)
   - [Complete ML pipeline](#complete-machine-learning-pipeline)
-  - [Themes - Dark | Light](#themes)
 - [Quickstart](#quickstart)
 - [Help and Support](#help-an-support)
   - [Contributing](#contributing)
@@ -110,6 +110,7 @@ The easiest and most accurate way to find documentation for a particular functio
 
 ```python
 import verticapy as vp
+
 help(vp.vDataFrame)
 ```
 
@@ -130,6 +131,32 @@ https://www.vertica.com/python/examples/
 <br>
 
 ## Highlighted Features
+
+### Themes
+
+VerticaPy, offers users the flexibility to customize their coding experience with two visually appealing themes: **Dark** and **Light**. 
+
+Dark mode, ideal for night-time coding sessions, features a sleek and stylish dark color scheme, providing a comfortable and eye-friendly environment. 
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/8ee0b717-a994-4535-826a-7ca4db3772b5" width="70%">
+</p>
+
+On the other hand, Light mode serves as the default theme, offering a clean and bright interface for users who prefer a traditional coding ambiance. 
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/24757bfd-4d0f-4e92-9aca-45476d704a33" width="70%">
+</p>
+
+Theme can be easily switched by:
+
+```python
+import verticapy as vp
+
+vp.set_option("theme", "dark") # can be switched 'light'.
+```
+
+VerticaPy's theme-switching option ensures that users can tailor their experience to their preferences, making data exploration and analysis a more personalized and enjoyable journey.
 
 ### SQL Magic
 You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.jupyter.extensions.sql_magic.sql_magic.html#verticapy.jupyter.extensions.sql_magic.sql_magic'>SQL Magic</a>:
@@ -197,6 +224,7 @@ VerticaPy has a unique place in the market because it allows users to use Python
 #### Example
 ```python
 import verticapy as vp
+
 selected_titanic = vp.vDataFrame(
     "(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
 )
@@ -228,6 +256,7 @@ https://www.vertica.com/python/documentation/chart.html
 
   ```python
   import verticapy as vp
+
   read_file(
       "/home/laliga/2012.json",
       table_name="laliga",
@@ -249,6 +278,7 @@ We can even see the SQL underneath every VerticaPy command by turning on the gen
 
 ```python
   import verticapy as vp
+
   read_file("/home/laliga/2012.json", table_name="laliga", genSQL=True)
 ```
 ```sql
@@ -293,6 +323,7 @@ VerticaPy provides functions for importing other specific file types, such as [r
 
 ```python
 from verticapy.datasets import load_iris
+
 iris_data = load_iris()
 iris_data.scatter(
     ["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"], 
@@ -309,6 +340,7 @@ The <b>Correlation Matrix</b> is also very fast and convenient to compute. Users
 
 ```python
 from verticapy.datasets import load_titanic
+
 titanic = load_titanic()
 titanic.corr(method="spearman")
 ```
@@ -321,6 +353,7 @@ By turning on the SQL print option, users can see and copy SQL queries:
 
 ```python
 from verticapy import set_option
+
 set_option("sql_on", True)
 ```
 
@@ -358,6 +391,7 @@ titanic.corr(method="spearman", focus="survived")
 ```python
 import random
 import verticapy as vp
+
 data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [100]})
 data.outliers_plot(columns="Heights")
 ```
@@ -407,6 +441,7 @@ There are two ways to access the provided datasets:
 
 ```python
 from verticapy.datasets import load_iris
+
 iris_data = load_iris()
 ```
 
@@ -417,31 +452,6 @@ iris_data = vp.vDataFrame(input_relation = "public.iris")
 ```
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
-
-### Themes
-
-VerticaPy, offers users the flexibility to customize their coding experience with two visually appealing themes: **Dark** and **Light**. 
-
-Dark mode, ideal for night-time coding sessions, features a sleek and stylish dark color scheme, providing a comfortable and eye-friendly environment. 
-
-<p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/8ee0b717-a994-4535-826a-7ca4db3772b5" width="70%">
-</p>
-
-On the other hand, Light mode serves as the default theme, offering a clean and bright interface for users who prefer a traditional coding ambiance. 
-
-<p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/24757bfd-4d0f-4e92-9aca-45476d704a33" width="70%">
-</p>
-
-Theme can be easily switched by:
-
-```python
-import verticapy as vp
-vp.set_option("theme","dark")
-```
-
-VerticaPy's theme-switching option ensures that users can tailor their experience to their preferences, making data exploration and analysis a more personalized and enjoyable journey.
 
 ## Quickstart
 
@@ -454,6 +464,7 @@ root@ubuntu:~$ pip3 install verticapy[all]
 Create a new Vertica connection:
 ```python
 import verticapy as vp
+
 vp.new_connection({
     "host": "10.211.55.14", 
     "port": "5433", 
@@ -473,11 +484,13 @@ vp.create_verticapy_schema()
 Create a vDataFrame of your relation:
 ```python
 from verticapy import vDataFrame
+
 vdf = vDataFrame("my_relation")
 ```
 Load a sample dataset:
 ```python
 from verticapy.datasets import load_titanic
+
 vdf = load_titanic()
 ```
 Examine your data:
