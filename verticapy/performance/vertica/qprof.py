@@ -637,6 +637,7 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
+        vp.set_option("plotting_lib", "plotly")
         fig = qprof.get_qplan_profile(kind="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html")
 
