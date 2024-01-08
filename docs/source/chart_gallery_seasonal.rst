@@ -18,7 +18,7 @@ Seasonal Decompose Plot
     # We use seasonal decompose to get the time series component
     decomposition = vmlt.seasonal_decompose(
         input_relation = passengers, 
-        column = "passengers", 
+        columns = "passengers", 
         ts = "date",
         polynomial_order = 2,
         mult = True,
@@ -60,7 +60,7 @@ But before that let's impor the VerticaPy ML tests.
     # We use seasonal decompose to get the time series component
     decomposition = vms.seasonal_decompose(
         input_relation = passengers, 
-        column = "passengers", 
+        columns = "passengers", 
         ts = "date",
         polynomial_order = 2,
         mult = True,
