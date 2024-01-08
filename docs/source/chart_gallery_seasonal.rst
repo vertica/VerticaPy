@@ -18,10 +18,11 @@ Seasonal Decompose Plot
     # We use seasonal decompose to get the time series component
     decomposition = vmlt.seasonal_decompose(
         input_relation = passengers, 
-        column = "passengers", 
+        columns = "passengers", 
         ts = "date",
         polynomial_order = 2,
-        mult = True
+        mult = True,
+        use_row = False,
     )
 
 
@@ -59,10 +60,11 @@ But before that let's impor the VerticaPy ML tests.
     # We use seasonal decompose to get the time series component
     decomposition = vms.seasonal_decompose(
         input_relation = passengers, 
-        column = "passengers", 
+        columns = "passengers", 
         ts = "date",
         polynomial_order = 2,
-        mult = True
+        mult = True,
+        use_row = False,
     )
 
 To create a seasonal decomposition plot, we must visualize the primary time series along with all its individual components. This decomposition process extracts various time series components, and we can then proceed to visualize each of them separately.
@@ -162,11 +164,16 @@ To create a seasonal decomposition plot, we must visualize the primary time seri
             decomposition["passengers_epsilon"].plot(ts = "date",colors = "grey").data[0],
             row=3, col=2
         )
-        fig.update_layout(height = 500, width = 700)
+        fig.update_layout(
+            height = 500, 
+            width = 700,
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
         fig.write_html("figures/plotting_plotly_seasonal.html")
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/plotting_plotly_seasonal.html
+        :file: /project/data/VerticaPy/docs/figures/plotting_plotly_seasonal.html
 
 
             
