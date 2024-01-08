@@ -507,15 +507,17 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_qsteps(kind="pie")
+        qprof.get_qsteps(kind="bar")
 
     .. ipython:: python
         :suppress:
 
         import verticapy as vp
         vp.set_option("plotting_lib", "plotly")
-        fig = qprof.get_qsteps(kind="pie")
-        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html")
+        fig = qprof.get_qsteps(kind="bar")
+        html_text = fig.htmlcontent.replace("container", "performance_vertica_query_profiler_pie_plot")
+        with open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html", "w") as file:
+            file.write(html_text)
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
@@ -991,7 +993,7 @@ class QueryProfiler:
         if kind not in kind_list:
             raise ValueError(
                 "Parameter Error, 'kind' should be in "
-                f"[{' | '.join()}].\nFound {kind}."
+                f"[{' | '.join(kind_list)}].\nFound {kind}."
             )
         return kind
 
@@ -1938,7 +1940,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_qsteps(kind="pie")
+            qprof.get_qsteps(kind="bar")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
