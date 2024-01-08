@@ -161,8 +161,9 @@ To create plots, simply provide the type of plot along with the SQL command.
 %load_ext verticapy.jupyter.extensions.chart_magic
 %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
 ```
+
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/9e1bebad-2c35-40d1-831f-0d4416e3f3c7" width="50%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/7616ca04-87d4-4fd7-8cb9-015f48fe3c19" width="50%">
 </p>
 
 [:arrow_up: Back to TOC](#table-of-contents)
