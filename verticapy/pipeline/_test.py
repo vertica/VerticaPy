@@ -25,7 +25,7 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy._typing import SQLColumns
 from verticapy.machine_learning.metrics.regression import (
     regression_report,
-    FUNCTIONS_REGRESSION_SQL_DICTIONNARY,
+    FUNCTIONS_REGRESSION_SQL_DICTIONARY,
 )
 
 from ._helper import execute_and_add, remove_comments
@@ -46,7 +46,7 @@ def testing(
         The model trained in the training step.
     pipeline_name: str
         The prefix name of the intended pipeline to unify
-        the creatation of the objects.
+        the creation of the objects.
     cols: SQLColumns
         ``list`` of the columns used to deploy the model.
 
@@ -79,7 +79,7 @@ def testing(
     for nth_metric in test:
         metric = test[nth_metric]
         name = metric["name"]
-        if name in FUNCTIONS_REGRESSION_SQL_DICTIONNARY.keys():
+        if name in FUNCTIONS_REGRESSION_SQL_DICTIONARY.keys():
             print("ERROR")
 
         y_true = metric["y_true"]

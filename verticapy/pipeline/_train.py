@@ -128,7 +128,7 @@ def training(
         The model trained in the training step.
     pipeline_name: str
         The prefix name of the intended pipeline to unify
-        the creatation of the objects.
+        the creation of the objects.
     cols: SQLColumns
         ``list`` of the columns needed to deploy the model.
 
