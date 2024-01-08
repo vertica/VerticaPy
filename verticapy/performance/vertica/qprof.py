@@ -382,7 +382,7 @@ class QueryProfiler:
 
     .. ipython:: python
 
-        print(self.transactions)
+        print(qprof.transactions)
 
     To avoid recomputing a query, you
     can also directly use its statement
