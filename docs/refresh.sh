@@ -24,6 +24,9 @@ python3 fix_search.py
 # Fix logo for top nav bar
 python3 fix_logo.py
 
+# Create Manual TOC tree
+python3 create_toc_tree.py
+
 # Reverse replace_sphinx_dir.py script
 python3 reverse_replace_sphinx_dir.py
 
