@@ -513,7 +513,7 @@ class QueryProfiler:
         :suppress:
 
         import verticapy as vp
-        vp.set_option("plotting_lib", "plotly")
+        vp.set_option("plotting_lib", "highcharts")
         fig = qprof.get_qsteps(kind="bar")
         html_text = fig.htmlcontent.replace("container", "performance_vertica_query_profiler_pie_plot")
         with open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html", "w") as file:
