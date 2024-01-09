@@ -31,6 +31,167 @@ ______
 Plotting
 ---------
 
+
+There are three main plotting libraries available in VerticaPy:
+
+- Plotly
+- Highcharts
+- Matplotlib
+
+To access the bases classes of all the plotting libraries click 
+the dropdown button below.
+
+.. note:: 
+
+   The documentation for these classes is provided solely to enhance the 
+   user's understanding of the implementations. Users are not required to 
+   interact directly with these classes, and we do not recommend doing so.
+
+.. dropdown:: Plotting Base Classes
+
+   .. tab:: Plotly
+
+      .. currentmodule:: verticapy.plotting._plotly
+
+      .. autosummary:: 
+         :toctree: api/
+
+         ACFPlot
+         BarChart
+         BarChart2D
+         BoxPlot
+         CandleStick
+         ChampionChallengerPlot
+         ContourPlot
+         CutoffCurve
+         DensityPlot
+         ElbowCurve
+         HeatMap
+         Histogram
+         HorizontalBarChart
+         HorizontalBarChart2D
+         ImportanceBarChart
+         LiftChart
+         LinePlot
+         LogisticRegressionPlot
+         LOFPlot
+         MultiDensityPlot
+         MultiLinePlot
+         NestedPieChart
+         OutliersPlot
+         PCACirclePlot
+         PieChart
+         PlotlyBase
+         PRCCurve
+         RangeCurve
+         RegressionPlot
+         RegressionTreePlot
+         ROCCurve
+         ScatterPlot
+         SpiderChart
+         StepwisePlot
+         SVMClassifierPlot
+         TSPlot
+         VoronoiPlot
+
+   .. tab:: Highcharts
+
+      .. currentmodule:: verticapy.plotting._highcharts
+
+      .. autosummary:: 
+         :toctree: api/
+
+         ACFPlot
+         ACFPACFPlot
+         BarChart
+         BarChart2D
+         BoxPlot
+         CandleStick
+         ChampionChallengerPlot
+         ContourPlot
+         CutoffCurve
+         DensityPlot
+         ElbowCurve
+         HeatMap
+         Histogram
+         HighchartsBase
+         HorizontalBarChart
+         HorizontalBarChart2D
+         ImportanceBarChart
+         LiftChart
+         LinePlot
+         LogisticRegressionPlot
+         LOFPlot
+         MultiDensityPlot
+         MultiLinePlot
+         NestedPieChart
+         OutliersPlot
+         PCACirclePlot
+         PieChart
+         PRCCurve
+         RangeCurve
+         RegressionPlot
+         RegressionTreePlot
+         ROCCurve
+         ScatterPlot
+         SpiderChart
+         StepwisePlot
+         SVMClassifierPlot
+         TSPlot
+
+   .. tab:: Matplotlib
+
+      .. currentmodule:: verticapy.plotting._matplotlib
+
+      .. autosummary:: 
+         :toctree: api/
+
+         ACFPlot
+         ACFPACFPlot
+         AnimatedBarChart
+         AnimatedBase
+         AnimatedBubblePlot
+         AnimatedLinePlot
+         AnimatedPieChart
+         BarChart
+         BarChart2D
+         BoxPlot
+         CandleStick
+         ChampionChallengerPlot
+         ContourPlot
+         CutoffCurve
+         DensityPlot
+         DensityPlot2D
+         ElbowCurve
+         HeatMap
+         Histogram
+         HorizontalBarChart
+         HorizontalBarChart2D
+         ImportanceBarChart
+         LiftChart
+         LinePlot
+         LogisticRegressionPlot
+         LOFPlot
+         MatplotlibBase
+         MultiDensityPlot
+         MultiLinePlot
+         NestedPieChart
+         OutliersPlot
+         PCACirclePlot
+         PieChart
+         PRCCurve
+         RangeCurve
+         RegressionPlot
+         RegressionTreePlot
+         ROCCurve
+         ScatterMatrix
+         ScatterPlot
+         SpiderChart
+         StepwisePlot
+         SVMClassifierPlot
+         TSPlot
+         VoronoiPlot
+
 General
 ~~~~~~~~
 
@@ -217,7 +378,7 @@ General
       iv_woe
 
 Time-series
-~~~~~~~~~~
+~~~~~~~~~~~
 
 
 .. tab:: vDataFrame
