@@ -22,12 +22,45 @@ h3{
 
 /* Size of center content */
 p {
-  font-size: 140%; 
-} 
+  font-size: 130%; 
+}
 
 /* Size of Tiles - title */
 .sd-card-title {
   font-size: 1.5em;
+}
+
+/* Text on Next and Previous buttons at the bottom */
+.next-page{
+  font-size: medium;
+}
+.prev-page{
+  font-size: medium;
+}
+
+/* Class Parameters Text */
+dt.sig.sig-object.py {
+  font-size: medium !important;
+}
+
+/* Code boxes */
+div[class*=" highlight-"], div[class^=highlight-]{
+  font-size: medium;
+}
+
+/* Size of Parameters */
+.field-list dt, .option-list dt, dl.footnote dt, dl.glossary dt, dl.simple dt, dl:not([class]) dt{
+  font-size: medium;
+}
+
+
+/* Tabs Text */
+.tab-set > input:checked + label {
+  font-size: medium;
+}
+/* Tabs Text */
+.tab-set > label {
+  font-size: medium;
 }
 
 /* HEADER + PAGE */
@@ -65,6 +98,15 @@ p {
 .sidebar-tree .toctree-l1>.reference, .sidebar-tree .toctree-l1>label .icon {
   font-size: 1rem;
   font-family: "Inter" ;
+  line-height: 1.1;
+}
+
+.sidebar-tree li.has-children>.reference {
+  line-height: 1.1;
+}
+
+.sidebar-tree .toctree-l1 {
+  line-height: 1.5; /* Adjust the value as needed */
 }
 
 /* Right Side - On This Page */
@@ -495,7 +537,7 @@ body {
 
 /* Cards on Index Page */
 .custom-card-2 {
-  height: 360px; /* Adjust the desired height */
+  height: 370px; /* Adjust the desired height */
 }
 
 /* Cards on Machine Learning page */
@@ -507,7 +549,7 @@ body {
 
 /* Cards on Vertica page */
 .custom-card-4 {
-  height: 280px; /* Adjust the desired height */
+  height: 285px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -905,11 +947,7 @@ article, article .align-default {
   .sidebar-search-container_top{
     width: 150px;
   }
-/* Cards on Index Page */
-  .custom-card-2 {
-    height: 340px; /* Adjust the desired height */
-    /* Add more styles as needed */
-  }
+
   /* Cards on Vertica page */
   .custom-card-4 {
     height: 230px;
@@ -920,6 +958,40 @@ article, article .align-default {
   }
 }
 
+@media (max-width: 36em) {
+/* Cards on Index Page */
+.custom-card-2 {
+  height: 240px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+/* Cards on Machine Learning page */
+.custom-card-3 {
+  height: 150px; 
+}
+/* Cards on Vertica page */
+.custom-card-4 {
+  height: 140px;
+}
+/* Cards on Benchmarks pages */
+.custom-card-10 {
+  height: 100px; /* Adjust the desired height */
+}
+}
+
+@media (max-width: 62em) {
+/* Cards on Machine Learning page */
+.custom-card-3 {
+  height: 200px; 
+}
+/* Cards on Vertica page */
+.custom-card-4 {
+  height: 210px;
+}
+/* Cards on Benchmarks pages */
+.custom-card-10 {
+  height: 150px; /* Adjust the desired height */
+}
+}
 @media (max-width: 90em) {
   .right-content {
     /* display: none; */
