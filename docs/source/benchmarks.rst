@@ -4,7 +4,7 @@
 Benchmarks
 ==========
 
-.. grid:: 3
+.. grid:: 1 2 2 3
 
     .. grid-item::
 
@@ -87,9 +87,9 @@ Benchmarks
     :maxdepth: 1
     :titlesonly:
 
-    benchmarks_xgboost
     benchmarks_arima
-    benchmarks_logistic_reg
     benchmarks_linear_reg
+    benchmarks_logistic_reg
     benchmarks_naive
     benchmarks_random_forest
+    benchmarks_xgboost

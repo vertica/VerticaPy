@@ -1,8 +1,8 @@
 .. _api.performance.vertica:
 
-==============
-Performance
-==============
+=========
+Vertica
+=========
 
 
 Query Performance
@@ -32,7 +32,10 @@ Query Performance
    QueryProfiler.get_qplan_profile
    QueryProfiler.get_qsteps
    QueryProfiler.get_request
+   QueryProfiler.get_query_events
    QueryProfiler.get_rp_status
    QueryProfiler.get_table
    QueryProfiler.get_version
+   QueryProfiler.next
+   QueryProfiler.previous
    QueryProfiler.step

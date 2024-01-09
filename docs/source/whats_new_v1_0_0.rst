@@ -69,15 +69,15 @@ Bug fixes
 - Adjusted-R squared now works with "k" parameter.
 - Corrected calculation of Prevalence Threshold.
 - Fixed nested pie plots.
-- Improved :py:meth:`verticapy.vDataFrame.balance` method.
+- Improved ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.balance` method.
 - load_model accepts feature names with parentheses.
-- ``pandas_to_vertica`` method is renamed :py:func:`verticapy.pandas.read_pandas` and it can now work with ``pandas.DataFrames`` that have a column full of ``NaN`` values.
-- :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` replaces :py:class:`verticapy.machine_learning.vertica.CountVectorizer`.
+- ``pandas_to_vertica`` method is renamed :py:func:`~verticapy.pandas.read_pandas` and it can now work with ``pandas.DataFrames`` that have a column full of ``NaN`` values.
+- :py:class:`~verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer` replaces :py:class:`~verticapy.machine_learning.vertica.CountVectorizer`.
 - AutoML Error: An error prompt is now displayed when no model fits.
-- Cramer's V calculation is now fixed. See :py:meth:`verticapy.vDataFrame.corr`.
+- Cramer's V calculation is now fixed. See ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.corr`.
 - Colors can now be changed correctly for Matplotlib Candlestick plot 
-- :py:class:`verticapy.machine_learning.vertica.IsolationForest` Anomaly plot is now fixed.
-- Plotly :py:class:`verticapy.machine_learning.vertica.LocalOutlierFactor` 3D plot is fixed.
+- :py:class:`~verticapy.machine_learning.vertica.IsolationForest` Anomaly plot is now fixed.
+- Plotly :py:class:`~verticapy.machine_learning.vertica.LocalOutlierFactor` 3D plot is fixed.
 - Graphviz tree plot display is fixed.
 
 ____
@@ -86,16 +86,16 @@ Machine Learning Support
 -------------------------
 
 - New Vertica algorithms supported:
-  - :py:class:`verticapy.machine_learning.vertica.IsolationForest` .
-  - :py:class:`verticapy.machine_learning.vertica.KPrototypes` .
-  - :py:class:`verticapy.machine_learning.vertica.PoissonRegressor` .
-  - :py:class:`verticapy.machine_learning.vertica.AR` .
-  - :py:class:`verticapy.machine_learning.vertica.MA` .
-  - :py:class:`verticapy.machine_learning.vertica.ARMA` .
-  - :py:class:`verticapy.machine_learning.vertica.ARIMA` .
-  - :py:class:`verticapy.machine_learning.vertica.TfidfVectorizer` . It is still beta. 
+  - :py:class:`~verticapy.machine_learning.vertica.IsolationForest` .
+  - :py:class:`~verticapy.machine_learning.vertica.KPrototypes` .
+  - :py:class:`~verticapy.machine_learning.vertica.PoissonRegressor` .
+  - :py:class:`~verticapy.machine_learning.vertica.AR` .
+  - :py:class:`~verticapy.machine_learning.vertica.MA` .
+  - :py:class:`~verticapy.machine_learning.vertica.ARMA` .
+  - :py:class:`~verticapy.machine_learning.vertica.ARIMA` .
+  - :py:class:`~verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer` . It is still beta. 
 
-- New method :py:meth:`verticapy.machine_learning.vertica.XGBoostClassifier.features_importance`  for finding the feature importance for XGBoost models. 
+- New method :py:meth:`~verticapy.machine_learning.vertica.XGBoostClassifier.features_importance`  for finding the feature importance for XGBoost models. 
 - Classification metrics are now available for multiclass data/model using three methods: ``micro``, ``macro``, ``weighted``, ``score`` and ``none``.
   - ``average_precision_score`` is another new metric that is added to classification metrics.
   - ``roc_auc`` and ``prc_auc`` now work for multi-class classification using different averaging techniques stated above. 
@@ -114,7 +114,7 @@ _____
 SQL
 -----
 
-- ``vDataFramesSQL`` is deprecated. Now, :py:class:`verticapy.vDataFrame` can be used directly to create :py:class:`verticapy.vDataFrame` from SQL. For example:
+- ``vDataFramesSQL`` is deprecated. Now, :py:class:`~verticapy.vDataFrame` can be used directly to create :py:class:`~verticapy.vDataFrame` from SQL. For example:
 
 .. code-block:: python
 
@@ -123,7 +123,7 @@ SQL
     "(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
   )
 
-The new format supports other methods for creating :py:class:`verticapy.vDataFrame` .
+The new format supports other methods for creating :py:class:`~verticapy.vDataFrame` .
 
 .. code-block:: python
 
@@ -161,7 +161,7 @@ Plotting
       colors = ["black", "yellow"],
     )
 
-- Plotly :py:meth:`verticapy.vDataFrame.scatter` plot now has the option to plot Bubble plot.
+- Plotly ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.scatter` plot now has the option to plot Bubble plot.
 - Plotly Pie chart now has the option to change color and size.
 - Highcharts Histogram plot is now available.
 - Plotly Histogram plot now allows multiple plots.
@@ -173,7 +173,7 @@ Plotting
 
     set_option("plotting_lib","matplotlib")
     
-.. note:: The ``hchart`` method of :py:class:`verticapy.vDataFrame` is deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax by setting Highcharts as the default plotting library.
+.. note:: The ``hchart`` method of :py:class:`~verticapy.vDataFrame` is deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax by setting Highcharts as the default plotting library.
 
 - The parameters ``custom_height`` and ``custom_width`` have been added to all plots so that the sizes can be changed as needed.
 
@@ -186,7 +186,7 @@ Plotting
   %load_ext verticapy.jupyter.extensions.chart_magic
   %chart -c sql_command -f input_file -k 'auto' -o output_file
   
-The :py:func:`verticapy.jupyter.extensions.chart_magic.chart_magic` command is similar to the hchart command, accepting four arguments:
+The :py:func:`~verticapy.jupyter.extensions.chart_magic.chart_magic` command is similar to the hchart command, accepting four arguments:
 
   1. SQL command.
   2. Input file.
@@ -204,7 +204,7 @@ Classification Metrics
 
 Added support for many new classification and regression metrics.
 
-The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.classification_report` :
+The following metrics have been added to the :py:func:`~verticapy.machine_learning.metrics.classification_report` :
   - Akaike's Information Criterion (AIC).
   - Balanced Accuracy (BA).
   - False Discovery Rate (FDR).
@@ -216,7 +216,7 @@ The following metrics have been added to the :py:func:`verticapy.machine_learnin
 
 Most of the above metrics are new in this version and can be accessed directly.
 
-The following metrics have been added to the :py:func:`verticapy.machine_learning.metrics.regression_report` :
+The following metrics have been added to the :py:func:`~verticapy.machine_learning.metrics.regression_report` :
   - Mean Squared Log Error.
   - Quantile Error.
 
@@ -242,13 +242,13 @@ The new structure has the following parent folders:
   
   The folders with "_" subscript are internal
 
-For example, to use Vertica's :py:class:`verticapy.machine_learning.vertica.LinearRegression`, it should now be imported as follows:
+For example, to use Vertica's :py:class:`~verticapy.machine_learning.vertica.LinearRegression`, it should now be imported as follows:
 
 .. code-block:: python
 
   from verticapy.machine_learning.vertica import LinearRegression
   
-To import the statistical test :py:func:`verticapy.machine_learning.model_selection.statistical_tests.het_arch`:
+To import the statistical test :py:func:`~verticapy.machine_learning.model_selection.statistical_tests.het_arch`:
 
 .. code-block:: python
 
@@ -324,7 +324,7 @@ Others
 -------
 
 - Docstrings have been enriched to add examples and other details that will help in creating a more helpful doc.
-- A new dataset "Africa Education" (:py:func:`verticapy.datasets.load_africa_education`) has been added to the dataset library. It can be easily imported using:
+- A new dataset "Africa Education" (:py:func:`~verticapy.datasets.load_africa_education`) has been added to the dataset library. It can be easily imported using:
 
 .. code-block:: python
 
@@ -332,7 +332,7 @@ Others
 
 - Now we use the ``DISTRIBUTED_SEEDED_RANDOM`` function instead of ``SEEDED_RANDOM`` in Vertica versions higher than 23.
 - Some new functions that help in viewing and using nested data:
-  - :py:meth:`verticapy.vDataFrame.explode_array` is a :py:class:`verticapy.vDataFrame` function that allows users to expand the contents of a nested column.
+  - ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.explode_array` is a :py:class:`~verticapy.vDataFrame` function that allows users to expand the contents of a nested column.
 - Changes that do not affect the user experience include:
   - Code restructuring to improve readability and better collaboration using PEP8 standard.
   - Improved the code pylint score to 9+, which makes the code more professional and efficient.

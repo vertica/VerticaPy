@@ -132,14 +132,19 @@ class vDFRead(vDFUtils):
         if 0 < self._vars["sql_magic_result"] < 3:
             self._vars["sql_magic_result"] += 1
             query = extract_subquery(self._genSQL())
-            query = clean_query(query)
+            if self._vars["clean_query"]:
+                query = clean_query(query)
             sql_on_init = conf.get_option("sql_on")
             limit = conf.get_option("max_rows")
             conf.set_option("sql_on", False)
             try:
-                res = TableSample().read_sql(f"{query} LIMIT {limit}")
+                res = TableSample().read_sql(
+                    f"{query} LIMIT {limit}", _clean_query=self._vars["clean_query"]
+                )
             except QueryError:
-                res = TableSample().read_sql(query)
+                res = TableSample().read_sql(
+                    query, _clean_query=self._vars["clean_query"]
+                )
             finally:
                 conf.set_option("sql_on", sql_on_init)
             if conf.get_option("count_on"):
@@ -176,7 +181,7 @@ class vDFRead(vDFUtils):
         """
         This  method  displays  the interactive  table.
         It is used  when you don't want to activate
-        interactive tables for all :py:class:`vDataFrame`.
+        interactive tables for all :py:class:`~vDataFrame`.
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
@@ -216,7 +221,7 @@ class vDFRead(vDFUtils):
             without interfering with functions from other
             libraries.
 
-        Let us create a :py:class:`vDataFrame`
+        Let us create a :py:class:`~vDataFrame`
         with multiple columns:
 
         .. ipython:: python
@@ -255,10 +260,10 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.head` :
-                Get head of the :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataColumn.tail` :
-                Get tail of the :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.head` :
+                Get head of the :py:class:`~vDataFrame`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.tail` :
+                Get tail of the :py:class:`~vDataFrame`.
         """
         exclude_columns = format_type(exclude_columns, dtype=list)
         exclude_columns_ = [
@@ -331,10 +336,10 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.head` :
-                Get head of the :py:class:`vDataColumn`.
-            | :py:meth:`verticapy.vDataFrame.tail` :
-                Get tail of the :py:class:`vDataFrame`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.head` :
+                Get head of the :py:class:`~vDataColumn`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.tail` :
+                Get tail of the :py:class:`~vDataFrame`.
         """
         return self.iloc(limit=limit, offset=0)
 
@@ -342,7 +347,7 @@ class vDFRead(vDFUtils):
         self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None
     ) -> TableSample:
         """
-        Returns a part of the :py:class:`vDataFrame`
+        Returns a part of the :py:class:`~vDataFrame`
         (delimited by an ``offset`` and a ``limit``).
 
         Parameters
@@ -353,8 +358,8 @@ class vDFRead(vDFUtils):
             Number of elements to skip.
         columns: SQLColumns, optional
             A list containing the names of the
-            :py:class:`vDataColumn` to include in the
-            result.  If empty, all :py:class:`vDataColumn`
+            :py:class:`~vDataColumn` to include in the
+            result.  If empty, all :py:class:`~vDataColumn`
             are selected.
 
         Returns
@@ -416,8 +421,8 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.select` :
-                Select columns from the :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.select` :
+                Select columns from the :py:class:`~vDataFrame`.
         """
         columns = format_type(columns, dtype=list, na_out=self.get_columns())
         columns = self.format_colnames(columns)
@@ -436,6 +441,7 @@ class vDFRead(vDFUtils):
             "max_columns": self._vars["max_columns"],
             "sql_push_ext": self._vars["sql_push_ext"],
             "symbol": self._vars["symbol"],
+            "_clean_query": self._vars["clean_query"],
         }
         if self._vars["has_dpnames"]:
             kwargs[
@@ -485,12 +491,12 @@ class vDFRead(vDFUtils):
     def shape(self) -> tuple[int, int]:
         """
         Returns the number of rows and columns
-        of the :py:class:`vDataFrame`.
+        of the :py:class:`~vDataFrame`.
 
         Returns
         -------
         tuple
-            (number of lines, number of columns)
+            (number of rows, number of columns)
 
         Examples
         ---------
@@ -514,7 +520,7 @@ class vDFRead(vDFUtils):
             without interfering with functions from other
             libraries.
 
-        Let us create a :py:class:`vDataFrame`
+        Let us create a :py:class:`~vDataFrame`
         with multiple columns:
 
         .. ipython:: python
@@ -540,7 +546,7 @@ class vDFRead(vDFUtils):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_shape.html
 
         We can get the shape of the
-        :py:class:`vDataFrame` by:
+        :py:class:`~vDataFrame` by:
 
         .. ipython:: python
 
@@ -560,8 +566,8 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.iloc` :
-                Select rows from the :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.iloc` :
+                Select rows from the :py:class:`~vDataFrame`.
         """
         m = len(self.get_columns())
         pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
@@ -582,7 +588,7 @@ class vDFRead(vDFUtils):
 
     def tail(self, limit: int = 5) -> TableSample:
         """
-        Returns the tail of the :py:class:`vDataFrame`.
+        Returns the tail of the :py:class:`~vDataFrame`.
 
         Parameters
         ----------
@@ -645,23 +651,23 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.head` :
-                Get head of the :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataColumn.tail` :
-                Get tail of the :py:class:`vDataColumn`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.head` :
+                Get head of the :py:class:`~vDataFrame`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.tail` :
+                Get tail of the :py:class:`~vDataColumn`.
         """
         return self.iloc(limit=limit, offset=-1)
 
     @save_verticapy_logs
     def select(self, columns: SQLColumns) -> "vDataFrame":
         """
-        Returns a copy of the :py:class:`vDataFrame`
-        with only the selected :py:class:`vDataColumn`.
+        Returns a copy of the :py:class:`~vDataFrame`
+        with only the selected :py:class:`~vDataColumn`.
 
         Parameters
         ----------
         columns: SQLColumns
-            List of the :py:class:`vDataColumn` to
+            List of the :py:class:`~vDataColumn` to
             select. You can also provide customized
             expressions.
 
@@ -727,8 +733,8 @@ class vDFRead(vDFUtils):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.iloc` :
-                Get custom rows from a :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.iloc` :
+                Get custom rows from a :py:class:`~vDataFrame`.
         """
         columns = format_type(columns, dtype=list)
         for i in range(len(columns)):
@@ -881,7 +887,7 @@ class vDCRead:
 
     def head(self, limit: int = 5) -> TableSample:
         """
-        Returns the head of the :py:class:`vDataColumn`.
+        Returns the head of the :py:class:`~vDataColumn`.
 
         Parameters
         ----------
@@ -949,16 +955,16 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.head` :
-                Get head of the :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataColumn.tail` :
-                Get tail of the :py:class:`vDataColumn`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.head` :
+                Get head of the :py:class:`~vDataFrame`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.tail` :
+                Get tail of the :py:class:`~vDataColumn`.
         """
         return self.iloc(limit=limit)
 
     def iloc(self, limit: int = 5, offset: int = 0) -> TableSample:
         """
-        Returns a part of the :py:class:`vDataColumn`
+        Returns a part of the :py:class:`~vDataColumn`
         (delimited by an ``offset`` and a ``limit``).
 
         Parameters
@@ -1027,10 +1033,10 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.select` :
-                Select columns from the :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataFrame.iloc` :
-                Select rows from the :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.select` :
+                Select columns from the :py:class:`~vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.iloc` :
+                Select rows from the :py:class:`~vDataFrame`.
         """
         if offset < 0:
             offset = max(0, self._parent.shape()[0] - limit)
@@ -1047,6 +1053,7 @@ class vDCRead:
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
+            _clean_query=self._parent._vars["clean_query"],
         )
         tail.count = self._parent.shape()[0]
         tail.offset = offset
@@ -1056,7 +1063,7 @@ class vDCRead:
     @save_verticapy_logs
     def nlargest(self, n: int = 10) -> TableSample:
         """
-        Returns the ``n`` largest :py:class:`vDataColumn`
+        Returns the ``n`` largest :py:class:`~vDataColumn`
         elements.
 
         Parameters
@@ -1117,15 +1124,15 @@ class vDCRead:
         .. note::
 
             This function can be employed to explore the dataset,
-            and the output is a :py:class:`verticapy.core.tablesample.base.TableSample`—an in-memory
+            and the output is a :py:class:`~verticapy.core.tablesample.base.TableSample`—an in-memory
             object containing the result.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.select` :
-                Select columns from the :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataFrame.nsmallest` :
-                Select the smallest values of a column from the :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.select` :
+                Select columns from the :py:class:`~vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.nsmallest` :
+                Select the smallest values of a column from the :py:class:`~vDataFrame`.
         """
         query = f"""
             SELECT 
@@ -1139,13 +1146,14 @@ class vDCRead:
             title=title,
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
+            _clean_query=self._parent._vars["clean_query"],
         )
 
     @save_verticapy_logs
     def nsmallest(self, n: int = 10) -> TableSample:
         """
         Returns the ``n`` smallest elements in the
-        :py:class:`vDataColumn`.
+        :py:class:`~vDataColumn`.
 
         Parameters
         ----------
@@ -1205,15 +1213,15 @@ class vDCRead:
         .. note::
 
             This function can be employed to explore the dataset,
-            and the output is a :py:class:`verticapy.core.tablesample.base.TableSample`—an in-memory
+            and the output is a :py:class:`~verticapy.core.tablesample.base.TableSample`—an in-memory
             object containing the result.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.select` :
-                Select columns from the :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataFrame.nlargest` :
-                Select the largest values of a column from the :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.select` :
+                Select columns from the :py:class:`~vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.nlargest` :
+                Select the largest values of a column from the :py:class:`~vDataFrame`.
         """
         return TableSample.read_sql(
             f"""
@@ -1225,11 +1233,12 @@ class vDCRead:
             title=f"Reads {n} {self} smallest elements.",
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
+            _clean_query=self._parent._vars["clean_query"],
         )
 
     def tail(self, limit: int = 5) -> TableSample:
         """
-        Returns the tail of the :py:class:`vDataColumn`.
+        Returns the tail of the :py:class:`~vDataColumn`.
 
         Parameters
         ----------
@@ -1292,9 +1301,9 @@ class vDCRead:
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.head` :
-                Get head of the :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataFrame.tail` :
-                Get tail of the :py:class:`vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.head` :
+                Get head of the :py:class:`~vDataFrame`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.tail` :
+                Get tail of the :py:class:`~vDataFrame`.
         """
         return self.iloc(limit=limit, offset=-1)

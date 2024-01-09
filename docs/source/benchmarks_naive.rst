@@ -50,24 +50,11 @@ Dataset
   .. list-table:: 
       :header-rows: 1
 
-      * - # of Rows
+      * - No. of Rows
+        - No. of Columns
       * - 25 M
+        - 106
 
-
-  .. ipython:: python
-    :suppress:
-
-    import plotly.express as px
-    col_des = ['No. of Columns', 'No. of Feature Columns']
-    vals = [106, 105] 
-    df = pd.DataFrame({'des': col_des, 'vals': vals})
-    fig = px.bar(df, x='des', y='vals', 
-      color='des')
-    fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_naive_amazon_data_cols.html")
-
-  .. raw:: html
-    :file: SPHINX_DIRECTORY/figures/benchmark_naive_amazon_data_cols.html
 
   Datatypes of data: :bdg-primary-line:`Float`
 
@@ -91,17 +78,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 11.1.0-0
           - On-Premises VM
           - 1 node
-          - N/A
+          - 8
           - 20393864 kB
           - Enterprise
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
   .. tab:: Multi Node
 
@@ -117,17 +102,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 11.1.0-0
           - On-Premises VM
           - 4 nodes
-          - N/A
+          - 8
           - 20393864 kB 
           - Enterprise
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
 
 .. tab:: Spark
@@ -147,17 +130,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 3.2.1
           - On-Premises VM
           - 1 node
-          - N/A
+          - 8
           - 20393864 kB
           - NA
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
   .. tab:: Multi Node
 
@@ -173,17 +154,15 @@ Test Environment
           - OS
           - OS Version
           - Processor freq. (per node)
-          - Processor cores (per node) 
         * - 3.2.1
           - On-Premises VM
           - 4 nodes
-          - N/A
+          - 8
           - 20393864 kB 
           - NA
           - Red Hat Enterprise Linux
           - 7.6 (Maipo)
           - 2.3 GHz
-          - 8
 
 Comparison
 ^^^^^^^^^^^
@@ -233,11 +212,16 @@ Comparison
 
       import plotly.graph_objects as go
       data = {
-          'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
-          'Spark': [145.70, 1095.79, 150.55, 146.58],
-          'Vertica': [9.08, 207.56, 0.99, 2.19]
+          'Metric': ['Train model', 'Prediction'],
+          'Spark': [145.70, 1095.79],
+          'Vertica': [9.08, 207.56]
       }
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(
@@ -285,6 +269,11 @@ Comparison
           'Vertica': [0.85, 0.85]
       }
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(
@@ -365,11 +354,16 @@ Comparison
 
       import plotly.graph_objects as go
       data = {
-          'Metric': ['Train model', 'Prediction', 'Accuracy', 'AUC'],
-          'Spark': [69.16, 1134.03, 64.46, 63.70],
-          'Vertica': [4.83, 103.90, 0.74, 0.78]
+          'Metric': ['Train model', 'Prediction'],
+          'Spark': [69.16, 1134.03],
+          'Vertica': [4.83, 103.90]
       }
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(
@@ -417,6 +411,11 @@ Comparison
           'Vertica': [0.85, 0.85]
       }
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(

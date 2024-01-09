@@ -50,7 +50,7 @@ def read_shp(
     Returns
     -------
     vDataFrame
-        The :py:class:`vDataFrame`
+        The :py:class:`~vDataFrame`
         of the relation.
 
     Examples
@@ -75,7 +75,7 @@ def read_shp(
     The file will be parsed and
     store in the database.
     The output will be a
-    :py:class:`vDataFrame`.
+    :py:class:`~vDataFrame`.
 
     .. note::
 
@@ -86,14 +86,14 @@ def read_shp(
 
     .. seealso::
 
-        | :py:func:`verticapy.sql.geo.create_index` :
+        | :py:func:`~verticapy.sql.geo.create_index` :
             Creates the geo index.
-        | :py:func:`verticapy.sql.geo.describe_index` :
+        | :py:func:`~verticapy.sql.geo.describe_index` :
             Describes the geo index.
-        | :py:func:`verticapy.sql.geo.intersect` :
+        | :py:func:`~verticapy.sql.geo.intersect` :
             Spatially intersects a point
             or points with a set of polygons.
-        | :py:func:`verticapy.sql.geo.rename_index` :
+        | :py:func:`~verticapy.sql.geo.rename_index` :
             Renames the geo index.
     """
     if not (schema):

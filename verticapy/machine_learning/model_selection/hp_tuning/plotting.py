@@ -403,7 +403,7 @@ def validation_curve(
         })
 
     Let's proceed by creating a
-    :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier`
+    :py:class:`~verticapy.machine_learning.vertica.ensemble.RandomForestClassifier`
     model using the complete dataset.
 
     .. ipython:: python
@@ -472,7 +472,7 @@ def validation_curve(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.model_selection.learning_curve` :
+        | :py:func:`~verticapy.machine_learning.model_selection.learning_curve` :
             Draws the learning curve.
     """
     X = format_type(X, dtype=list)
@@ -645,7 +645,7 @@ def plot_acf_pacf(
         amazon = amazon[amazon["state"] == "ACRE"]
 
     We can have a look at the time-series plot
-    using the :py:meth:`vDataFrame.plot`:
+    using the ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.plot`:
 
     .. code-block::
 
@@ -697,8 +697,8 @@ def plot_acf_pacf(
 
     .. seealso::
 
-        | :py:func:`vDataFrame.acf` : ACF plot from a :py:class:`vDataFrame`.
-        | :py:func:`vDataFrame.pacf` : PACF plot from a :py:class:`vDataFrame`.
+        | :py:func:`~vDataFrame.acf` : ACF plot from a :py:class:`~vDataFrame`.
+        | :py:func:`~vDataFrame.pacf` : PACF plot from a :py:class:`~vDataFrame`.
     """
     by = format_type(by, dtype=list)
     by, column, ts = vdf.format_colnames(by, column, ts)

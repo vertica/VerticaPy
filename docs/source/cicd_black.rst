@@ -50,15 +50,16 @@ is perfected:
 
 .. code-block:: python
 
-    def calculate_total_price(quantity, price ):
-        total_price =0
+    def calculate_total_price(quantity, price):
+        total_price = 0
         for i in range(quantity):
             total_price += price
         return total_price
+
     def calculate_total_price_with_tax(quantity, price, tax_rate):
         total_price = 0
-        for i in range( quantity):
-            total_price += price + (price*tax_rate)
+        for i in range(quantity):
+            total_price += price + (price * tax_rate)
         return total_price
 
 All the unnecessary spaces and lines are removed.

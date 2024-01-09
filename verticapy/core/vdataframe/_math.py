@@ -157,10 +157,10 @@ class vDFMath(vDFFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.analytic` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.analytic` :
                 Advanced Analytical functions.
-            | :py:meth:`verticapy.vDataColumn.abs` :
-                Absolute values for :py:class:`vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.abs` :
+                Absolute values for :py:class:`~vDataColumn`.
         """
         columns = format_type(columns, dtype=list)
         columns = self.numcol() if not columns else self.format_colnames(columns)
@@ -377,10 +377,10 @@ class vDFMath(vDFFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.apply` : Applies each
-                function of the dictionary to the input :py:class:`vDataColumn`.
-            | :py:meth:`verticapy.vDataColumn.apply_fun` : Applies a
-                default function to the :py:class:`vDataColumn`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.apply` : Applies each
+                function of the dictionary to the input :py:class:`~vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.apply_fun` : Applies a
+                default function to the :py:class:`~vDataColumn`.
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         columns, by = self.format_colnames(columns, by)
@@ -757,17 +757,17 @@ class vDFMath(vDFFilter):
 
         .. note::
 
-            Applying a function will alter the :py:class:`vDataColumn`
+            Applying a function will alter the :py:class:`~vDataColumn`
             structure. It's advisable to check the current
-            relation of the :py:class:`vDataFrame` to ensure it
+            relation of the :py:class:`~vDataFrame` to ensure it
             aligns with the intended outcome. For more information
             on achieving that, check out the ``current_relation``
             documentation.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.analytic` : Advanced Analytical functions.
-            | :py:meth:`verticapy.vDataFrame.applymap` : Apply functions to all columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.analytic` : Advanced Analytical functions.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.applymap` : Apply functions to all columns.
         """
         func = self.format_colnames(func)
         for column in func:
@@ -870,17 +870,17 @@ class vDFMath(vDFFilter):
 
         .. note::
 
-            Applying a function will alter the :py:class:`vDataColumn`
+            Applying a function will alter the :py:class:`~vDataColumn`
             structure. It's advisable to check the current
-            relation of the :py:class:`vDataFrame` to ensure it
+            relation of the :py:class:`~vDataFrame` to ensure it
             aligns with the intended outcome. For more information
             on achieving that, check out the ``current_relation``
             documentation.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.analytic` : Advanced Analytical functions.
-            | :py:meth:`verticapy.vDataFrame.apply` : Apply functions using a dictionary.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.analytic` : Advanced Analytical functions.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.apply` : Apply functions using a dictionary.
         """
         function = {}
         columns = self.numcol() if numeric_only else self.get_columns()
@@ -976,9 +976,9 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.abs` :
-                Absolute function for entire :py:class:`vDataFrame`.
-            | :py:meth:`verticapy.vDataColumn.apply` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.abs` :
+                Absolute function for entire :py:class:`~vDataFrame`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.apply` :
                 Apply functions using SQL.
         """
         return self.apply(func="ABS({})")
@@ -1068,10 +1068,10 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.mul` :
-                Multiply the :py:class:`vDataColumn` by a value.
-            | :py:meth:`verticapy.vDataColumn.div` :
-                Divide the :py:class:`vDataColumn` by a value.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mul` :
+                Multiply the :py:class:`~vDataColumn` by a value.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.div` :
+                Divide the :py:class:`~vDataColumn` by a value.
         """
         if self.isdate():
             return self.apply(func=f"TIMESTAMPADD(SECOND, {x}, {{}})")
@@ -1196,19 +1196,19 @@ class vDCMath(vDCFilter):
 
         .. note::
 
-            Applying a function will alter the :py:class:`vDataColumn`
+            Applying a function will alter the :py:class:`~vDataColumn`
             structure. It's advisable to check the current
-            relation of the :py:class:`vDataFrame` to ensure it
+            relation of the :py:class:`~vDataFrame` to ensure it
             aligns with the intended outcome. For more information
             on achieving that, check out the ``current_relation``
             documentation.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.apply` : Applies each
-                function of the dictionary to the input :py:class:`vDataColumn`.
-            | :py:meth:`verticapy.vDataColumn.apply_fun` : Applies a
-                default function to the :py:class:`vDataColumn`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.apply` : Applies each
+                function of the dictionary to the input :py:class:`~vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.apply_fun` : Applies a
+                default function to the :py:class:`~vDataColumn`.
 
         """
         if isinstance(func, StringSQL):
@@ -1451,19 +1451,19 @@ class vDCMath(vDCFilter):
 
         .. note::
 
-            Applying a function will alter the :py:class:`vDataColumn`
+            Applying a function will alter the :py:class:`~vDataColumn`
             structure. It's advisable to check the current
-            relation of the :py:class:`vDataFrame` to ensure it
+            relation of the :py:class:`~vDataFrame` to ensure it
             aligns with the intended outcome. For more information
             on achieving that, check out the ``current_relation``
             documentation.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.applymap` :
-                Applies a function to all :py:class:`vDataColumn`s.
-            | :py:meth:`verticapy.vDataColumn.apply` :
-                Applies a function to the :py:class:`vDataColumn`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.applymap` :
+                Applies a function to all :py:class:`~vDataColumn`s.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.apply` :
+                Applies a function to the :py:class:`~vDataColumn`.
         """
         if func == "mean":
             func = "avg"
@@ -1608,8 +1608,8 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.slice` :
-                Slice the :py:class:`vDataColumn` by custom time-steps.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.slice` :
+                Slice the :py:class:`~vDataColumn` by custom time-steps.
         """
         return self.apply(func=f"DATE_PART('{field.upper()}', {{}})")
 
@@ -1697,17 +1697,17 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.mul` :
-                Multiply the :py:class:`vDataColumn` by a value.
-            | :py:meth:`verticapy.vDataColumn.add` :
-                Add a value to the :py:class:`vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mul` :
+                Multiply the :py:class:`~vDataColumn` by a value.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.add` :
+                Add a value to the :py:class:`~vDataColumn`.
         """
         assert x != 0, ValueError("Division by 0 is forbidden !")
         return self.apply(func=f"{{}} / ({x})")
 
     def get_len(self) -> "vDataColumn":
         """
-        Returns a new :py:class:`vDataColumn` that represents
+        Returns a new :py:class:`~vDataColumn` that represents
         the length of each element.
 
         Returns
@@ -1788,8 +1788,8 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.date_part` :
-                Extracts a specific TS field  from the :py:class:`vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.date_part` :
+                Extracts a specific TS field  from the :py:class:`~vDataColumn`.
         """
         cat = self.category()
         if cat == "vmap":
@@ -1894,10 +1894,10 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.abs` : Get the
-                absolute value of a :py:class:`vDataColumn`.
-            | :py:meth:`verticapy.vDataFrame.abs` : Get the
-                absolute value of mutiple :py:class:`vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.abs` : Get the
+                absolute value of a :py:class:`~vDataColumn`.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.abs` : Get the
+                absolute value of mutiple :py:class:`~vDataColumn`.
         """
         return self.apply(func=f"ROUND({{}}, {n})")
 
@@ -1985,10 +1985,10 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.add` :
-                Add a value to the entire :py:class:`vDataColumn`.
-            | :py:meth:`verticapy.vDataColumn.div` :
-                Divide the :py:class:`vDataColumn` by a value.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.add` :
+                Add a value to the entire :py:class:`~vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.div` :
+                Divide the :py:class:`~vDataColumn` by a value.
         """
         return self.apply(func=f"{{}} * ({x})")
 
@@ -2104,8 +2104,8 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.date_part` : Extracts
-                a specific TS field  from the :py:class:`vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.date_part` : Extracts
+                a specific TS field  from the :py:class:`~vDataColumn`.
 
         """
         start_or_end = "START" if (start) else "END"
@@ -2200,10 +2200,10 @@ class vDCMath(vDCFilter):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataColumn.mul` :
-                Multiply the :py:class:`vDataColumn` by a value.
-            | :py:meth:`verticapy.vDataColumn.add` :
-                Add a value to the entire :py:class:`vDataColumn`.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mul` :
+                Multiply the :py:class:`~vDataColumn` by a value.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.add` :
+                Add a value to the entire :py:class:`~vDataColumn`.
         """
         if self.isdate():
             return self.apply(func=f"TIMESTAMPADD(SECOND, -({x}), {{}})")

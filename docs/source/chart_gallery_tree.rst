@@ -144,7 +144,7 @@ Example
         model.plot_tree(
             pic_path = "figures/plotting_graphviz_tree_custom",
             node_style={"shape": "box", "style": "filled"},
-            arrow_style={"color": "blue"},
+            edge_style={"color": "blue"},
             leaf_style={"shape": "circle", "style": "filled"},
         )
 

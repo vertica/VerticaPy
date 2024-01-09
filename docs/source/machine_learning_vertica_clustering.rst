@@ -7,11 +7,10 @@ Clustering & Anomaly Detection
 ______
 
 Clustering
------------
-
+----------
 
 K-Means
-~~~~~~~~~~~~~~~~
+~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -60,7 +59,7 @@ K-Means
    KMeans.object_type
 
 K-Prototype
-~~~~~~~~~~~~~
+~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -101,8 +100,15 @@ K-Prototype
    KPrototypes.to_sql
    KPrototypes.to_tf
 
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   KPrototypes.object_type
+
 Bisecting K-Means
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -155,10 +161,8 @@ Bisecting K-Means
 
    BisectingKMeans.object_type
 
-
 DBSCAN (Beta)
-~~~~~~~~~~~~~~
-
+~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -196,6 +200,13 @@ DBSCAN (Beta)
    DBSCAN.to_python
    DBSCAN.to_sql
    DBSCAN.to_tf
+
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   DBSCAN.object_type
 
 _____________
 
@@ -284,11 +295,8 @@ Local Outlier Factor (Beta)
    LocalOutlierFactor.get_match_index
    LocalOutlierFactor.get_params
    LocalOutlierFactor.get_plotting_lib
-   LocalOutlierFactor.get_score
-   LocalOutlierFactor.get_tree
    LocalOutlierFactor.get_vertica_attributes
    LocalOutlierFactor.import_models
-   LocalOutlierFactor.plot_tree
    LocalOutlierFactor.predict
    LocalOutlierFactor.register
    LocalOutlierFactor.set_params
@@ -298,6 +306,10 @@ Local Outlier Factor (Beta)
    LocalOutlierFactor.to_python
    LocalOutlierFactor.to_sql
    LocalOutlierFactor.to_tf
-   
 
+**Attributes:**
 
+.. autosummary::
+   :toctree: api/
+
+   LocalOutlierFactor.object_type

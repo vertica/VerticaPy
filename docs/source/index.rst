@@ -20,26 +20,19 @@ Welcome to VerticaPy documentation
         Documentation 1.0.x
     </div>
 
-
 **Date**: |today| **Latest Version**: |version|
 
-
 **Previous versions**: Documentation of previous VerticaPy versions is available at
-`ww.vertica.com/python <https://www.vertica.com/python/documentation_last/>`__.
+`www.vertica.com/python/old <https://www.vertica.com/python/old/documentation_last/>`_.
 
 **Useful links**:
 
-`Source Repository <https://github.com/vertica/VerticaPy>`__ |
-`Issues & Ideas <https://github.com/vertica/VerticaPy/issues>`__ |
-`Q&A Support <https://github.com/vertica/VerticaPy/discussions>`__ |
-
+`Source Repository <https://github.com/vertica/VerticaPy>`_ |
+`Issues & Ideas <https://github.com/vertica/VerticaPy/issues>`_ |
+`Q&A Support <https://github.com/vertica/VerticaPy/discussions>`_ |
 
 :mod:`verticapy` is a Python library that provides an interface to interact with the 
-Vertica database using Python programming. Vertica is a high-performance analytical database designed 
-for big data analytics. VerticaPy aims to simplify data analysis and machine learning tasks by providing 
-a Pythonic way to work with data stored in Vertica.
-
-
+Vertica database using the Python programming language. Vertica is a high-performance analytical database designed for big data analytics. VerticaPy aims to simplify data analysis and machine learning tasks by providing a Pythonic way to work with data stored in Vertica.
 
 .. grid:: 3
 
@@ -47,7 +40,7 @@ a Pythonic way to work with data stored in Vertica.
 
         .. card:: Installation Guide
           :img-top: _static/installation_guide.svg
-          :link: installation
+          :link: getting_started
           :link-type: ref
           :text-align: center
           :class-card: custom-card-2
@@ -58,8 +51,6 @@ a Pythonic way to work with data stored in Vertica.
           +++
           Install VerticaPy
 
-
-
     .. grid-item::
 
         .. card:: User Guide
@@ -69,7 +60,6 @@ a Pythonic way to work with data stored in Vertica.
           :text-align: center
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
-
 
           The user guide offers deep insights into VerticaPy's core concepts with valuable context and explanations.
 
@@ -86,22 +76,20 @@ a Pythonic way to work with data stored in Vertica.
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
 
-
           The API reference provides concise information about VerticaPy's functions and methods with clear examples.
 
           +++
-          Refernce Guide
+          Reference Guide
 
 
     .. grid-item::
     
       .. card:: Examples
           :img-top: _static/examples.svg
-          :link: https://www.vertica.com/python/examples/
+          :link: ../../../examples/
           :text-align: center
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
-
 
           The Examples section showcases practical use cases of VerticaPy in real-world scenarios.
 
@@ -118,7 +106,6 @@ a Pythonic way to work with data stored in Vertica.
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
 
-
           The Contribution Guidelines outline the process for actively participating in the development of VerticaPy.
 
           +++
@@ -128,17 +115,15 @@ a Pythonic way to work with data stored in Vertica.
     
       .. card:: VerticaPy Website
           :img-top: _static/verticapy_website.svg
-          :link: http://localhost:1993/python/documentation
+          :link: ../../../
           :text-align: center
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
-
 
           The official VerticaPy website showcasing our success.
 
           +++
           Explore
-
 
 .. toctree::
     :hidden:

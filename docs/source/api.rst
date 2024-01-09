@@ -179,7 +179,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^^
-          Table Sample Object.
+          TableSample Object.
 
 
     .. grid-item::
@@ -197,6 +197,7 @@ methods.
 
 .. toctree::
   :maxdepth: 2
+  :hidden:
   
   connect
   datasets

@@ -117,7 +117,7 @@ class KNeighborsRegressor(Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
         method.
 
     Examples
@@ -127,7 +127,7 @@ class KNeighborsRegressor(Regressor):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -179,7 +179,7 @@ class KNeighborsRegressor(Regressor):
     You can easily divide your dataset
     into training and testing subsets
     using the
-    :py:meth:`vDataFrame.train_test_split`
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.train_test_split`
     method. This is a crucial step when
     preparing your data for machine learning,
     as it allows you to evaluate the
@@ -196,7 +196,7 @@ class KNeighborsRegressor(Regressor):
         of your data split. However, please be aware
         that this approach may lead to reduced
         performance. For a more efficient data split,
-        you can use the :py:meth:`vDataFrame.to_db`
+        you can use the ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db`
         method to save your results into ``tables``
         or ``temporary tables``. This will help
         enhance the overall performance of the
@@ -264,7 +264,7 @@ class KNeighborsRegressor(Regressor):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -372,11 +372,11 @@ class KNeighborsRegressor(Regressor):
         using the test set, in which case you
         don't need to specify the predictors.
         Alternatively, you can pass only the
-        :py:class:`vDataFrame` to the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        :py:class:`~vDataFrame` to the
+        :py:meth:`~verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the
+        the :py:class:`~vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -573,7 +573,7 @@ class KNeighborsRegressor(Regressor):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.KNeighborsRegressor`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.KNeighborsRegressor`
             for more information about the
             different methods and usages.
         """
@@ -745,7 +745,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
         method.
 
     Examples
@@ -755,7 +755,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -822,7 +822,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     You can easily divide your dataset
     into training and testing subsets
     using the
-    :py:meth:`vDataFrame.train_test_split`
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.train_test_split`
     method. This is a crucial step when
     preparing your data for machine learning,
     as it allows you to evaluate the
@@ -839,7 +839,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         of your data split. However, please be aware
         that this approach may lead to reduced
         performance. For a more efficient data split,
-        you can use the :py:meth:`vDataFrame.to_db`
+        you can use the ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db`
         method to save your results into ``tables``
         or ``temporary tables``. This will help
         enhance the overall performance of the
@@ -862,7 +862,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     In VerticaPy, balancing a dataset to
     address class imbalances is made
     straightforward through the
-    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`~verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing``
     module. This function enables users
     to rectify skewed class distributions
@@ -874,7 +874,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     Whether opting for over-sampling,
     under-sampling, or a combination
     of both, VerticaPy's
-    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`~verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process,
     empowering users to enhance the
     performance and fairness of their
@@ -982,7 +982,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -1105,11 +1105,11 @@ class KNeighborsClassifier(MulticlassClassifier):
         using the test set, in which case you
         don't need to specify the predictors.
         Alternatively, you can pass only the
-        :py:class:`vDataFrame` to the
-        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        :py:class:`~vDataFrame` to the
+        :py:meth:`~verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's
         essential that the column names of
-        the :py:class:`vDataFrame` match the
+        the :py:class:`~vDataFrame` match the
         predictors and response name in the
         model.
 
@@ -1153,7 +1153,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. note::
 
-        Probabilities are added to the :py:class:`vDataFrame`,
+        Probabilities are added to the :py:class:`~vDataFrame`,
         and VerticaPy uses the corresponding probability
         function in SQL behind the scenes. You can use
         the ``pos_label`` parameter to add only the
@@ -1307,7 +1307,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     It is not possible to export this type of
     model, but you can still examine the SQL
     code generated by using the
-    :py:meth:`verticapy.machine_learning.vertica.neighbors.KNeighborsClassifier.deploySQL`
+    :py:meth:`~verticapy.machine_learning.vertica.neighbors.KNeighborsClassifier.deploySQL`
     method.
     """
 
@@ -1507,7 +1507,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.KNeighborsClassifier`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.KNeighborsClassifier`
             for more information about the
             different methods and usages.
         """
@@ -1933,10 +1933,10 @@ class KernelDensity(Regressor, Tree):
     Several attributes are computed during
     the fitting phase, and in the case of
     kernel density estimation (KDE), a
-    :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
+    :py:class:`~verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
     is employed to approximate the k-nearest
     neighbors (KNN) computation. This reliance
-    on :py:class:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
+    on :py:class:`~verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
     enhances the efficiency and accuracy of
     the KDE algorithm.
 
@@ -1947,7 +1947,7 @@ class KernelDensity(Regressor, Tree):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -2042,7 +2042,7 @@ class KernelDensity(Regressor, Tree):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -2244,7 +2244,7 @@ class KernelDensity(Regressor, Tree):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.KernelDensity`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.KernelDensity`
             for more information about the
             different methods and usages.
         """
@@ -2430,7 +2430,7 @@ class KernelDensity(Regressor, Tree):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.KernelDensity`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.KernelDensity`
             for more information about the
             different methods and usages.
         """
@@ -2665,7 +2665,7 @@ class KernelDensity(Regressor, Tree):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.KernelDensity`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.KernelDensity`
             for more information about the
             different methods and usages.
         """
@@ -2767,7 +2767,7 @@ class LocalOutlierFactor(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
+        :py:meth:`~verticapy.machine_learning.vertica.base.VerticaModel.get_attributes`
         method.
 
     Examples
@@ -2777,7 +2777,7 @@ class LocalOutlierFactor(VerticaModel):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/examples/>`_
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -2872,7 +2872,7 @@ class LocalOutlierFactor(VerticaModel):
     .. important::
 
         To train a model, you can directly use the
-        :py:class:`vDataFrame` or the name of the
+        :py:class:`~vDataFrame` or the name of the
         relation stored in the database. The test
         set is optional and is only used to compute
         the test metrics. In :py:mod:`verticapy`, we
@@ -3079,7 +3079,7 @@ class LocalOutlierFactor(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
             for more information about the
             different methods and usages.
         """
@@ -3187,7 +3187,7 @@ class LocalOutlierFactor(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
             for more information about the
             different methods and usages.
         """
@@ -3347,13 +3347,13 @@ class LocalOutlierFactor(VerticaModel):
 
     def predict(self) -> vDataFrame:
         """
-        Creates a :py:class:`vDataFrame`
+        Creates a :py:class:`~vDataFrame`
         of the model.
 
         Returns
         -------
         vDataFrame
-            the :py:class:`vDataFrame`
+            the :py:class:`~vDataFrame`
             including the prediction.
 
         Examples
@@ -3425,7 +3425,7 @@ class LocalOutlierFactor(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
             for more information about the
             different methods and usages.
         """
@@ -3531,7 +3531,7 @@ class LocalOutlierFactor(VerticaModel):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
+            :py:class:`~verticapy.machine_learning.vertica.neighbors.LocalOutlierFactor`
             for more information about the
             different methods and usages.
         """

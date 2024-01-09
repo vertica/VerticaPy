@@ -326,9 +326,9 @@ class vDFTyping(vDFRead):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.datecol` : Returns all vDataColumns with date-type values.
-            | :py:meth:`verticapy.vDataFrame.numcol` : Returns all vDataColumns with numerical values.
-            | :py:meth:`verticapy.vDataFrame.get_columns` : Returns all vDataColumns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.datecol` : Returns all vDataColumns with date-type values.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.numcol` : Returns all vDataColumns with numerical values.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.get_columns` : Returns all vDataColumns.
         """
         columns = []
         for column in self.get_columns():
@@ -438,9 +438,9 @@ class vDFTyping(vDFRead):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.catcol` : Returns all vDataColumns with categorical values.
-            | :py:meth:`verticapy.vDataFrame.numcol` : Returns all vDataColumns with numerical values.
-            | :py:meth:`verticapy.vDataFrame.get_columns` : Returns all vDataColumns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.catcol` : Returns all vDataColumns with categorical values.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.numcol` : Returns all vDataColumns with numerical values.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.get_columns` : Returns all vDataColumns.
         """
         columns = []
         cols = self.get_columns()
@@ -614,9 +614,9 @@ class vDFTyping(vDFRead):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.catcol` : Returns all vDataColumns with categorical values.
-            | :py:meth:`verticapy.vDataFrame.datecol` : Returns all vDataColumns with date-type values.
-            | :py:meth:`verticapy.vDataFrame.get_columns` : Returns all vDataColumns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.catcol` : Returns all vDataColumns with categorical values.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.datecol` : Returns all vDataColumns with date-type values.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.get_columns` : Returns all vDataColumns.
         """
         columns, cols = [], self.get_columns(exclude_columns=exclude_columns)
         for column in cols:

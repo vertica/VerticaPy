@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional
+from typing import Optional, Union
 
 from scipy.stats import chi2, norm, f
 
@@ -30,8 +30,14 @@ from verticapy._typing import (
 )
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import format_type, schema_relation
+from verticapy._utils._sql._format import (
+    clean_query,
+    format_type,
+    quote_ident,
+    schema_relation,
+)
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -250,7 +256,7 @@ def adfuller(
 
         from verticapy.machine_learning.model_selection.statistical_tests import adfuller
 
-    And then simply applying it on the :py:class:`vDataFrame`:
+    And then simply applying it on the :py:class:`~vDataFrame`:
 
     .. ipython:: python
 
@@ -506,7 +512,7 @@ def mkt(
 
         from verticapy.machine_learning.model_selection.statistical_tests import mkt
 
-    And then simply applying it on the :py:class:`vDataFrame`:
+    And then simply applying it on the :py:class:`~vDataFrame`:
 
     .. ipython:: python
 
@@ -944,7 +950,7 @@ def durbin_watson(
 
         model.fit(vdf, X = "day", y = "y1")
 
-    We can create a column in the :py:class:`vDataFrame` that
+    We can create a column in the :py:class:`~vDataFrame` that
     has the predictions:
 
     .. code-block:: python
@@ -1463,82 +1469,123 @@ Time Series Seasonal Decomposition.
 @save_verticapy_logs
 def seasonal_decompose(
     input_relation: SQLRelation,
-    column: str,
+    columns: SQLColumns,
     ts: str,
     by: Optional[SQLColumns] = None,
-    period: int = -1,
-    polynomial_order: int = 1,
+    period: Union[int, tuple, list] = -1,
+    polynomial_order: Union[int, tuple, list] = 1,
     estimate_seasonality: bool = True,
     rule: Optional[TimeInterval] = None,
     mult: bool = False,
     two_sided: bool = False,
+    use_row: bool = True,
+    genSQL: bool = False,
 ) -> vDataFrame:
     """
-    Performs a seasonal time series decomposition.
-    Seasonal decomposition plots are graphical representations
-    of the decomposition of time series data into its various
-    components: trend, seasonality, and residual (error).
-    Seasonal decomposition is a technique used to break down a
-    time series into these underlying components to better
-    understand its patterns and behavior.
+    Performs a seasonal time series
+    decomposition. Seasonal decomposition
+    plots are graphical representations
+    of the decomposition of time series
+    data into its various components:
+    trend, seasonality, and residual
+    (error). Seasonal decomposition is
+    a technique used to break down a
+    time series into these underlying
+    components to better understand its
+    patterns and behavior.
 
-    Seasonal decomposition plots are useful for several purposes:
+    Seasonal decomposition plots are
+    useful for several purposes:
 
      - Trend Analysis:
-        Understanding the long-term direction or behavior of the
+        Understanding the long-term
+        direction or behavior of the
         time series.
      - Seasonal Patterns:
-        Identifying repeating patterns or cycles within the data.
+        Identifying repeating patterns
+        or cycles within the data.
      - Anomaly Detection:
-        Spotting unusual behavior or outliers in the residuals.
+        Spotting unusual behavior or
+        outliers in the residuals.
      - Modeling:
-        Informing the choice of appropriate models for forecasting
-        or analysis.
+        Informing the choice of
+        appropriate models for
+        forecasting or analysis.
 
     Parameters
     ----------
     input_relation: SQLRelation
         Input relation.
-    column: str
-        Input vDataColumn to decompose.
+    columns: SQLColumns
+        Input :py:class:`vDataColumn`
+        to decompose.
     ts: str
-        Time series vDataColumn used to order the data.
-        It can be of type date or a numerical
-        vDataColumn.
+        Time series :py:class:`vDataColumn`
+        used to order the data.
+        It can be of type date or a
+        numerical vDataColumn.
     by: SQLColumns, optional
-        vDataColumns used in the partition.
-    period: int, optional
-        Time series period. It is used to retrieve the
-        seasonality  component.  If  period <= 0,  the
-        seasonal component is estimated using ACF.
-        In this case, polynomial_order must be greater
-        than 0.
-    polynomial_order: int, optional
-        If greater than 0,  the trend is estimated
-        using a polynomial of degree 'polynomial_order'
-        and the parameter 'two_sided' is ignored.
-        If equal to 0, the trend is estimated using
-        Moving Averages.
+        :py:class:`vDataColumn` used
+        in the partition.
+    period: int | tuple | list, optional
+        Time series period. It is used
+        to retrieve the seasonality
+        component. If ``period <= 0``,
+        the seasonal component is
+        estimated using ACF.
+        In this case, ``polynomial_order``
+        must be greater than 0.
+
+        It can be an int or a list |
+        tuple of int, each one representing
+        the ``period`` of the i-th column.
+    polynomial_order: int | tuple | list, optional
+        If greater than 0, the trend is
+        estimated using a polynomial of
+        degree ``'polynomial_order'``
+        and the parameter ``two_sided``
+        is ignored. If equal to 0, the
+        trend is estimated using Moving
+        Averages.
+
+        It can be an int or a list |
+        tuple of int, each one representing
+        the ``polynomial_order`` of the
+        i-th column.
     estimate_seasonality: bool, optional
-        If set to True, the seasonality is estimated
-        using cosine and sine functions.
+        If set to ``True``, the seasonality
+        is estimated using cosine and sine
+        functions.
     rule: TimeInterval, optional
-        Interval  used to slice the time. For example,
-        '5 minutes'  creates  records  separated  by
-        '5 minutes' time interval.
+        Interval  used to slice the
+        time. For example, ``'5 minutes'``
+        creates records separated by
+        ``'5 minutes'`` time interval.
     mult: bool, optional
-        If  set  to  True, the decomposition type is
-        'multiplicative'. Otherwise,  'additive'.
+        If set to ``True``, the
+        decomposition type is
+        'multiplicative'. Otherwise,
+        'additive'.
     two_sided: bool, optional
-        If set to True, a centered moving average is
-        used for the trend isolation. Otherwise, only
+        If set to ``True``, a centered
+        moving average is used for the
+        trend isolation. Otherwise, only
         past values are used.
+    use_row: bool, optional
+        If set to ``True``, the ``ROW``
+        datatype is used to merge all
+        the different columns time
+        series components together.
+    genSQL: bool, optional
+        If set to ``True``, the SQL code
+        for creating the final relation
+        is generated but not executed.
 
     Returns
     -------
     vDataFrame
-        object containing
-        ts, column, TS seasonal part, TS trend, TS noise.
+        object containing the different
+        time series components.
 
     Examples
     --------
@@ -1568,7 +1615,7 @@ def seasonal_decompose(
         :suppress:
 
         import verticapy.datasets as vpd
-        vdf = vpd.load_airline_passengers()
+        data = vpd.load_airline_passengers()
 
     Data Visualization
     ^^^^^^^^^^^^^^^^^^^
@@ -1578,13 +1625,13 @@ def seasonal_decompose(
 
     .. code-block::
 
-        vdf["passengers"].plot(ts = "date")
+        data["passengers"].plot(ts = "date")
 
     .. ipython:: python
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = vdf["passengers"].plot(ts = "date", width = 550)
+        fig = data["passengers"].plot(ts = "date", width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_1.html")
 
     .. raw:: html
@@ -1609,11 +1656,12 @@ def seasonal_decompose(
         from verticapy.machine_learning.model_selection.statistical_tests import seasonal_decompose
 
         decomposition = seasonal_decompose(
-            vdf,
+            data,
             "passengers",
             "date",
             polynomial_order = 2,
             mult = True,
+            use_row = False,
         )
 
     .. ipython:: python
@@ -1690,112 +1738,204 @@ def seasonal_decompose(
         leveraging all the individual components, we are able to
         effectively recompose the time series.
     """
+
+    # Initialization
+    if use_row:
+        vertica_version(condition=[12, 0, 0])
     assert period > 0 or polynomial_order > 0, ValueError(
-        "Parameters 'polynomial_order' and 'period' can not be both null."
+        "Parameters 'polynomial_order' and " "'period' can not be both null."
     )
+    columns = format_type(columns, dtype=list)
+    by = format_type(by, dtype=list)
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    by = format_type(by, dtype=list)
-    ts, column, by = vdf.format_colnames(ts, column, by)
-    if rule:
-        vdf = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)
-    else:
-        vdf = vdf[[ts, column]]
-    trend_name = f"{column[1:-1]}_trend"
-    seasonal_name = f"{column[1:-1]}_seasonal"
-    epsilon_name = f"{column[1:-1]}_epsilon"
+    ts, columns, by = vdf.format_colnames(ts, columns, by)
     by_str = "" if not by else f"PARTITION BY {', '.join(by)} "
-    if polynomial_order <= 0:
+    if rule:
+        vdf = vdf.interpolate(
+            ts=ts, rule=rule, method={column: "linear" for column in columns}, by=by
+        )
+    else:
+        vdf = vdf[[ts] + columns]
+    n = len(columns)
+
+    # Periods
+    if isinstance(period, int):
+        periods = [period for i in range(n)]
+    elif not (isinstance(period, (tuple, list))):
+        raise TypeError(
+            "Wrong type for parameter 'period'. Expecting "
+            f"int | tuple | list.\nFound {type(period)}."
+        )
+    elif len(period) != n:
+        raise ValueError(f"Parameter 'period' size should be {n}.")
+    else:
+        periods = []
+        for pr in period:
+            if not (isinstance(pr, int)):
+                raise TypeError(
+                    "Each element inside 'period' should "
+                    f"be an int.\nFound {type(pr)}."
+                )
+            periods += [period]
+
+    # Polynomial Orders
+    if isinstance(polynomial_order, int):
+        polynomial_orders = [polynomial_order for i in range(n)]
+    elif not (isinstance(polynomial_order, (tuple, list))):
+        raise TypeError(
+            "Wrong type for parameter 'polynomial_order'. Expecting "
+            f"int | tuple | list.\nFound {type(polynomial_order)}."
+        )
+    elif len(polynomial_order) != n:
+        raise ValueError(f"Parameter 'polynomial_order' size should be {n}.")
+    else:
+        polynomial_orders = []
+        for pr in polynomial_order:
+            if not (isinstance(pr, int)):
+                raise TypeError(
+                    "Each element inside 'polynomial_order' should "
+                    f"be an int.\nFound {type(pr)}."
+                )
+            polynomial_orders += [polynomial_order]
+
+    # Main
+    rows, flat = [], []
+    for idx, column in enumerate(columns):
+        trend_name = f"{column[1:-1]}_trend"
+        seasonal_name = f"{column[1:-1]}_seasonal"
+        epsilon_name = f"{column[1:-1]}_epsilon"
+        row_number_name = f"{column[1:-1]}_row_id"
+
+        # INIT
         if two_sided:
-            if period == 1:
+            if periods[idx] == 1:
                 window = (-1, 1)
             else:
-                if period % 2 == 0:
-                    window = (-period / 2 + 1, period / 2)
+                if periods[idx] % 2 == 0:
+                    window = (-periods[idx] / 2 + 1, periods[idx] / 2)
                 else:
-                    window = (int(-period / 2), int(period / 2))
+                    window = (int(-periods[idx] / 2), int(periods[idx] / 2))
         else:
-            if period == 1:
+            if periods[idx] == 1:
                 window = (-2, 0)
             else:
-                window = (-period + 1, 0)
-        vdf.rolling("avg", window, column, by, ts, trend_name)
-    else:
-        vdf_poly = vdf.copy()
-        X = []
-        for i in range(1, polynomial_order + 1):
-            vdf_poly[
-                f"t_{i}"
-            ] = f"POWER(ROW_NUMBER() OVER ({by_str}ORDER BY {ts}), {i})"
-            X += [f"t_{i}"]
-        model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
-        model.fit(
-            vdf_poly,
-            X,
-            column,
-            return_report=True,
-        )
-        coefficients = [str(model.intercept_)] + [
-            f"{model.coef_[i-1]} * POWER(ROW_NUMBER() OVER({by_str}ORDER BY {ts}), {i})"
-            if i != 1
-            else f"{model.coef_[0]} * ROW_NUMBER() OVER({by_str}ORDER BY {ts})"
-            for i in range(1, polynomial_order + 1)
+                window = (-periods[idx] + 1, 0)
+
+        # TREND
+        if polynomial_orders[idx] <= 0:
+            vdf.rolling("avg", window, column, by, ts, trend_name)
+        else:
+            vdf_poly = vdf.copy()
+            X = []
+            for i in range(1, polynomial_orders[idx] + 1):
+                vdf_poly[
+                    f"t_{i}"
+                ] = f"POWER(ROW_NUMBER() OVER ({by_str}ORDER BY {ts}), {i})"
+                X += [f"t_{i}"]
+            model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
+            model.fit(
+                vdf_poly,
+                X,
+                column,
+                return_report=True,
+            )
+            coefficients = [str(model.intercept_)] + [
+                f"{model.coef_[i-1]} * POWER(ROW_NUMBER() OVER({by_str}ORDER BY {ts}), {i})"
+                if i != 1
+                else f"{model.coef_[0]} * ROW_NUMBER() OVER({by_str}ORDER BY {ts})"
+                for i in range(1, polynomial_orders[idx] + 1)
+            ]
+            vdf[trend_name] = " + ".join(coefficients)
+            model.drop()
+
+        # SEASONALITY
+        if mult:
+            vdf[seasonal_name] = f'{column} / NULLIFZERO("{trend_name}")'
+        else:
+            vdf[seasonal_name] = vdf[column] - vdf[trend_name]
+        if periods[idx] <= 0:
+            acf = vdf.acf(column=seasonal_name, ts=ts, p=23, kind="heatmap", show=False)
+            periods[idx] = int(acf["index"][1].split("_")[1])
+            if periods[idx] == 1:
+                periods[idx] = int(acf["index"][2].split("_")[1])
+        vdf[
+            row_number_name
+        ] = f"MOD(ROW_NUMBER() OVER ({by_str} ORDER BY {ts}), {periods[idx]})"
+        if mult:
+            vdf[
+                seasonal_name
+            ] = f"""
+                AVG({seasonal_name}) OVER (PARTITION BY {row_number_name}) 
+              / NULLIFZERO(AVG({seasonal_name}) OVER ())"""
+        else:
+            vdf[
+                seasonal_name
+            ] = f"""
+                AVG({seasonal_name}) OVER (PARTITION BY {row_number_name}) 
+              - AVG({seasonal_name}) OVER ()"""
+        if estimate_seasonality:
+            vdf_seasonality = vdf.copy()
+            vdf_seasonality[
+                "t_cos"
+            ] = f"COS(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {periods[idx]})"
+            vdf_seasonality[
+                "t_sin"
+            ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {periods[idx]})"
+            X = ["t_cos", "t_sin"]
+            model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
+            model.fit(
+                vdf_seasonality,
+                X,
+                seasonal_name,
+                return_report=True,
+            )
+            vdf[
+                seasonal_name
+            ] = f"""
+                {model.intercept_} + {model.coef_[0]} * 
+                COS(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {periods[idx]}) 
+              + {model.coef_[1]} 
+              * SIN(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {periods[idx]})"""
+            model.drop()
+
+        # EPSILON
+        if mult:
+            vdf[
+                epsilon_name
+            ] = f'{column} / NULLIFZERO("{trend_name}") / NULLIFZERO("{seasonal_name}")'
+        else:
+            vdf[epsilon_name] = vdf[column] - vdf[trend_name] - vdf[seasonal_name]
+
+        rows += [
+            f"""
+            ROW({column} AS "value", 
+                {trend_name} AS "trend", 
+                {seasonal_name} AS "seasonal", 
+                {epsilon_name} AS eps) AS {quote_ident(column)}"""
         ]
-        vdf[trend_name] = " + ".join(coefficients)
-        model.drop()
-    if mult:
-        vdf[seasonal_name] = f'{column} / NULLIFZERO("{trend_name}")'
+        flat += [
+            quote_ident(column),
+            quote_ident(trend_name),
+            quote_ident(seasonal_name),
+            quote_ident(epsilon_name),
+        ]
+
+    # OUTPUT
+    if use_row:
+        by_str = ""
+        if by:
+            by_str = ", ".join(by) + ", "
+        sql = f"""SELECT {ts}, {by_str} {', '.join(rows)} FROM {vdf}"""
+
     else:
-        vdf[seasonal_name] = vdf[column] - vdf[trend_name]
-    if period <= 0:
-        acf = vdf.acf(column=seasonal_name, ts=ts, p=23, kind="heatmap", show=False)
-        period = int(acf["index"][1].split("_")[1])
-        if period == 1:
-            period = int(acf["index"][2].split("_")[1])
-    vdf["row_number_id"] = f"MOD(ROW_NUMBER() OVER ({by_str} ORDER BY {ts}), {period})"
-    if mult:
-        vdf[
-            seasonal_name
-        ] = f"""
-            AVG({seasonal_name}) OVER (PARTITION BY row_number_id) 
-          / NULLIFZERO(AVG({seasonal_name}) OVER ())"""
-    else:
-        vdf[
-            seasonal_name
-        ] = f"""
-            AVG({seasonal_name}) OVER (PARTITION BY row_number_id) 
-          - AVG({seasonal_name}) OVER ()"""
-    if estimate_seasonality:
-        vdf_seasonality = vdf.copy()
-        vdf_seasonality[
-            "t_cos"
-        ] = f"COS(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {period})"
-        vdf_seasonality[
-            "t_sin"
-        ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {period})"
-        X = ["t_cos", "t_sin"]
-        model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
-        model.fit(
-            vdf_seasonality,
-            X,
-            seasonal_name,
-            return_report=True,
-        )
-        vdf[
-            seasonal_name
-        ] = f"""
-            {model.intercept_} + {model.coef_[0]} * 
-            COS(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {period}) 
-          + {model.coef_[1]} 
-          * SIN(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {period})"""
-        model.drop()
-    if mult:
-        vdf[
-            epsilon_name
-        ] = f'{column} / NULLIFZERO("{trend_name}") / NULLIFZERO("{seasonal_name}")'
-    else:
-        vdf[epsilon_name] = vdf[column] - vdf[trend_name] - vdf[seasonal_name]
-    vdf["row_number_id"].drop()
-    return vdf
+        sql = f"""SELECT {ts}, {by_str} {', '.join(flat)} FROM {vdf}"""
+
+    sql = clean_query(sql)
+
+    if genSQL:
+        return sql
+
+    return vDataFrame(sql)

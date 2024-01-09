@@ -226,7 +226,7 @@ class vDFEval(vDFInOut):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.analytic` : Advanced analytical function.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.analytic` : Advanced analytical function.
         """
         if isinstance(expr, StringSQL):
             expr = str(expr)

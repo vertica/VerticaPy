@@ -139,6 +139,11 @@ in speed for both the modes:
         heights = [4*60+23, 14*60+39]
         colors = ['red', 'green']
         fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
         for label, height, color in zip(labels, heights, colors):
             fig.add_trace(go.Bar(
                 x=[label],
@@ -193,6 +198,11 @@ in speed for both the modes:
         heights = [1076, 1187]
         colors = ['red', 'green']
         fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
         for label, height, color in zip(labels, heights, colors):
             fig.add_trace(go.Bar(
                 x=[label],
@@ -244,6 +254,16 @@ in speed for both the modes:
         heights = [76868, 82638]
         colors = ['red', 'green']
         fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
         for label, height, color in zip(labels, heights, colors):
             fig.add_trace(go.Bar(
                 x=[label],
@@ -358,6 +378,6 @@ Functions please refer to
 
 .. seealso::
 
-    | `Vertica Python SDK <https://www.vertica.com/docs/10.1.x/HTML/PythonSDK/sdk_documentation.html>`_
-    | :ref:`user_guide.full_stack`
-    | `Python SDK doc <https://docs.vertica.com/23.4.x/en/extending/developing-udxs/developing-with-sdk/python-sdk/>`_
+    | SDK Documentation: `Vertica Python SDK <https://www.vertica.com/docs/10.1.x/HTML/PythonSDK/sdk_documentation.html>`_
+    | Notebooks on UDFx: :ref:`user_guide.full_stack`
+    | Vertica Documentation on UDx: `Python SDK doc <https://docs.vertica.com/23.4.x/en/extending/developing-udxs/developing-with-sdk/python-sdk/>`_

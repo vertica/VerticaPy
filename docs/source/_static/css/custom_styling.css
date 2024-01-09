@@ -2,30 +2,54 @@
 
 /* Text Formatting to match OpenText style */
 h1{
-  font-family: "Inter" ;
+  font-family: "Inter";
   letter-spacing: -.022em;
   font-weight: 800 ;
   font-size: 3.2em ;
 }
 
 h2{
-  font-family: "Inter" ;
+  font-family: "Inter";
   font-weight: 350 ;
-  font-size: 2em ;
+  font-size: 2.5em ;
   letter-spacing: -.021em;
-  color: #3f4d62;
+  color: var(--color-announcement-text);
+}
+
+h3{
+  font-size: 2em ;
+}
+
+/* Size of center content */
+p {
+  font-size: 140%; 
+} 
+
+/* Size of Tiles - title */
+.sd-card-title {
+  font-size: 1.5em;
+}
+
+/* HEADER + PAGE */
+.content {
+  width:60em;
+}
+
+.sidebar-drawer {
+  width: calc(50% - 31em)
 }
 
 /* Side nav bar */
 .current {
-  font-size: 0.7rem; 
+  font-size: 1rem; 
   font-weight: 400;
   letter-spacing: -.017em;
-  font-family: "Inter" ;
+  font-family: "Inter";
 }
 
 .sidebar-tree .icon, .sidebar-tree .reference {
-  color: #3f4d62;
+  color: var(--color-announcement-text);
+  font-size: Medium;
 }
 
 .sidebar-brand-text {
@@ -39,25 +63,29 @@ h2{
 
 /* Main Tabs */
 .sidebar-tree .toctree-l1>.reference, .sidebar-tree .toctree-l1>label .icon {
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-family: "Inter" ;
+}
+
+/* Right Side - On This Page */
+.toc-tree .reference {
+  font-size: 1rem;
+}
+
+.toc-title {
+  font-size: 1rem;
 }
 
 /* Top search bar */
 .top_search{
   margin-left: 40px;
   padding-right: 10px;
-  /* margin-top: 20px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-  /* text-align: center; DEL TE/STIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 }
 
 /* Top Banner BUttons */
 .top-button-container {
-  display: flex; /*inline-block TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-  /* flex-wrap: wrap; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-  /* justify-content: center; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-  /* gap: 10px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-
+  font-size: Large;
+  display: flex;
 }
 
 .top-button {
@@ -70,13 +98,9 @@ h2{
   transition: color 0.5s ease-in-out;
   /* font-family: 'Inter', sans-serif;  */
   font-family: "Inter var","Helvetica Neue",Helvetica,Arial,sans-serif;  /* From Vertica Website */
-  /* font-weight: 400; */
+  font-weight: 400;
   /* font-size: 1em; */
-  
   color: #101c2f; /* From Vertica Website */
-
-  /* flex:1; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-
 }
 
 .top-button::before {
@@ -187,8 +211,6 @@ h2{
   /* padding: 2rem 0.75rem; */ /* From Vertica Website */
   /* align-items: center; */
   justify-content: center;
-  
-  /* flex-direction: column; TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 }
 
 /* Container at the top for all buttons and search etc */
@@ -228,6 +250,12 @@ h2{
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 650px) {
+    .top-bottom-container {
+       display: none;
+  }
 }
 
 .toc-drawer {
@@ -328,10 +356,6 @@ h2{
   border-radius: 10px;
 }
 
-.sd-card-title {
-  font-size: 1.2em;
-}
-
 /* End of Chart Gallery */
 
 
@@ -344,10 +368,9 @@ h2{
   background-position: right 1rem top .5rem
 }
 
-.form-group { /*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-  /* margin-top: 20px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-  text-align: center;/*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
-} /*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+.form-group {
+  text-align: center;
+}
 
 .form-group select {
   /* width: 100px; */
@@ -361,13 +384,12 @@ h2{
   font-size: 1rem;
   font-weight: 300;
   line-height: 1;
-  color: #3f4d62;
+  color: var(--color-announcement-text);
   background-color: #fff;
   background-clip: padding-box;
-  border: 0px solid #3f4d62;
+  border: 0px solid var(--color-announcement-text);
   border-radius: 3rem;
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-
   appearance: none;
   background: url('data:image/svg+xml;utf8,<svg fill="black" height="10px" width="10px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path id="XMLID_225_" d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393 c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393 s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z"></path> </g></svg>') no-repeat right 5px center;
   background-size: 15px;
@@ -396,16 +418,12 @@ h2{
 
 /* Changing color of class/functions */
 .sig-prename {
-  color: #00008b;
+  color: var(--color-link);
   font-weight: 400;
 }
 
 .sig-name {
-  color: #00008b;
-}
-
-.content {
-  /* padding: 3.5em 3em; */
+  color: var(--color-link);
 }
 
 .main{
@@ -419,12 +437,8 @@ body {
 }
 
 .sd-card:hover {
-  --sd-color-shadow: #000000;
+  --sd-color-shadow: #CFCFCF;
   border-color: #CFCFCF;
-}
-
-p {
-  font-size: 85%; 
 }
 
 /* Add padding on top of article container */
@@ -453,7 +467,8 @@ p {
 .custom-card-7, 
 .custom-card-8,
 .custom-card-9,
-.custom-card-10 {
+.custom-card-10,
+.custom-card-11 {
   /*overflow-y: scroll;*/
 }
 .custom-card:hover,
@@ -465,13 +480,14 @@ p {
 .custom-card-7:hover, 
 .custom-card-8:hover,
 .custom-card-9:hover,
-.custom-card-10:hover {
+.custom-card-10:hover,
+.custom-card-11:hover {
   box-shadow: 0px 12px 30px whitesmoke;
 }
 
 /* Cards on API page */
 .custom-card {
-  height: 100px; /* Adjust the desired height */
+  height: 130px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -479,19 +495,19 @@ p {
 
 /* Cards on Index Page */
 .custom-card-2 {
-  height: 295px; /* Adjust the desired height */
+  height: 360px; /* Adjust the desired height */
 }
 
 /* Cards on Machine Learning page */
 .custom-card-3 {
-  height: 200px; /* Adjust the desired height */
+  height: 250px; /* Adjust the desired height */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 
 /* Cards on Vertica page */
 .custom-card-4 {
-  height: 200px; /* Adjust the desired height */
+  height: 280px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -504,7 +520,7 @@ p {
 
 /* Cards on chart gallery page */
 .custom-card-6 {
-  height: 380px; /* Adjust the desired height */
+  height: 420px; /* Adjust the desired height */
 }
 
 /* Cards on User Guide pages */
@@ -514,21 +530,27 @@ p {
 
 /* Cards on User Guide MAIN page */
 .custom-card-8 {
-  height: 250px; /* Adjust the desired height */
+  height: 325px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 
-/* Cards on User Guide / Intoduction page */
+/* Cards on User Guide / Introduction page */
 .custom-card-9 {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
+  height: 160px;
 }
 
 /* Cards on Benchmarks pages */
 .custom-card-10 {
-  height: 145px; /* Adjust the desired height */
+  height: 190px; /* Adjust the desired height */
+}
+
+/* Cards on Performance pages */
+.custom-card-11 {
+  height: 190px; /* Adjust the desired height */
 }
 
 /* End cards */
@@ -611,7 +633,7 @@ p {
   padding: 15px 20px;
   text-decoration: none;
   display: block;
-  color: #3f4d62;
+  color: var(--color-announcement-text);
   font-size: x-large;
 }
 
@@ -837,7 +859,10 @@ article, article .align-default {
 .deprecated{
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
-  background-color: #f8f8f8;
+  background-color: var(--color-announcement-background);
+  border-right: 1px solid #DEDEDE;
+  border-top: 1px solid #DEDEDE;
+  border-bottom: 1px solid #DEDEDE;
   border-left: 0.2rem solid red;
   padding: 5px;
 }
@@ -845,8 +870,11 @@ article, article .align-default {
 .versionadded{
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
-  background-color: #f8f8f8;
+  background-color: var(--color-announcement-background);
   border-left: 0.2rem solid green;
+  border-right: 1px solid #DEDEDE;
+  border-top: 1px solid #DEDEDE;
+  border-bottom: 1px solid #DEDEDE;
   padding: 5px;
 }
 
@@ -983,6 +1011,30 @@ article, article .align-default {
 }
 
 /* Hiding the code block counter */
-.gp {
-  display: none;
+.gp, .gh {
+  font-size:0;
+}
+.gh::after {
+  font-size: 12px;
+  content: "Out: ";
+}
+
+/* Improving mobile header */
+@media (max-width: 50em) {
+  .top-bottom-container {
+    display: none;
+  }
+  .announcement {
+    height: 120px;
+    margin-bottom: -32px;
+  }
+  .top_search {
+    display: none;
+  }
+  .github-button svg {
+    display: none;
+  }
+}
+#Logo_Layer_2 {
+  margin-left: 20px;
 }

@@ -142,9 +142,9 @@ def export_models(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+        | :py:func:`~verticapy.machine_learning.vertica.model_management.import_models` :
             Imports machine learning models.
-        | :py:func:`verticapy.machine_learning.vertica.model_management.load_model` :
+        | :py:func:`~verticapy.machine_learning.vertica.model_management.load_model` :
             Loads a Vertica model and returns
             the associated object.
     """
@@ -258,9 +258,9 @@ def import_models(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+        | :py:func:`~verticapy.machine_learning.vertica.model_management.import_models` :
             Exports machine learning models.
-        | :py:func:`verticapy.machine_learning.vertica.model_management.load_model` :
+        | :py:func:`~verticapy.machine_learning.vertica.model_management.load_model` :
             Loads a Vertica model and returns
             the associated object.
     """
@@ -385,7 +385,7 @@ def load_model(
     Vertica Database. It is easily
     possible to re-import it later
     by using the
-    :py:func:`verticapy.machine_learning.vertica.model_management.load_model`
+    :py:func:`~verticapy.machine_learning.vertica.model_management.load_model`
     function.
 
     .. ipython:: python
@@ -409,9 +409,9 @@ def load_model(
 
     .. seealso::
 
-        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+        | :py:func:`~verticapy.machine_learning.vertica.model_management.import_models` :
             Exports machine learning models.
-        | :py:func:`verticapy.machine_learning.vertica.model_management.import_models` :
+        | :py:func:`~verticapy.machine_learning.vertica.model_management.import_models` :
             Imports machine learning models.
     """
     res = VerticaModel.does_model_exists(

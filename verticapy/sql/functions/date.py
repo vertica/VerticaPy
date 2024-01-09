@@ -93,7 +93,7 @@ def date(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DATE({expr})", "date")
@@ -174,7 +174,7 @@ def day(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DAY({expr})", "float")
@@ -256,7 +256,7 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DAYOFWEEK({expr})", "float")
@@ -338,7 +338,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DAYOFYEAR({expr})", "float")
@@ -422,7 +422,7 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DATE_PART('{field}', {expr})", "int")
@@ -490,7 +490,7 @@ def getdate() -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("GETDATE()", "date")
 
@@ -557,7 +557,7 @@ def getutcdate() -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("GETUTCDATE()", "date")
 
@@ -638,7 +638,7 @@ def hour(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"HOUR({expr})", "int")
@@ -710,7 +710,7 @@ def interval(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"({expr})::interval", "interval")
@@ -792,7 +792,7 @@ def minute(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MINUTE({expr})", "int")
@@ -874,7 +874,7 @@ def microsecond(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MICROSECOND({expr})", "int")
@@ -956,7 +956,7 @@ def month(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MONTH({expr})", "int")
@@ -1063,7 +1063,7 @@ def overlaps(
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = f"""
         ({format_magic(start0)},
@@ -1151,7 +1151,7 @@ def quarter(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"QUARTER({expr})", "int")
@@ -1267,7 +1267,7 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"ROUND({expr}, '{precision}')", "date")
@@ -1349,7 +1349,7 @@ def second(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"SECOND({expr})", "int")
@@ -1429,7 +1429,7 @@ def timestamp(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"({expr})::timestamp", "date")
@@ -1513,7 +1513,7 @@ def week(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"WEEK({expr})", "int")
@@ -1595,7 +1595,7 @@ def year(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"YEAR({expr})", "int")

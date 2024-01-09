@@ -85,7 +85,7 @@ def avg(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"AVG({expr})", "float")
@@ -160,7 +160,7 @@ def bool_and(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_AND({expr})", "int")
@@ -233,7 +233,7 @@ def bool_or(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_OR({expr})", "int")
@@ -306,7 +306,7 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_XOR({expr})", "int")
@@ -387,7 +387,7 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"CONDITIONAL_CHANGE_EVENT({expr})", "int")
@@ -467,7 +467,7 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"CONDITIONAL_TRUE_EVENT({expr})", "int")
@@ -538,7 +538,7 @@ def count(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"COUNT({expr})", "int")
@@ -619,7 +619,7 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LAG({expr}, {offset})")
@@ -701,7 +701,7 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LEAD({expr}, {offset})")
@@ -772,7 +772,7 @@ def max(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MAX({expr})", "float")
@@ -843,7 +843,7 @@ def median(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"APPROXIMATE_MEDIAN({expr})", "float")
@@ -914,7 +914,7 @@ def min(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MIN({expr})", "float")
@@ -995,7 +995,7 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"NTH_VALUE({expr}, {row_number})", "int")
@@ -1069,7 +1069,7 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(
@@ -1141,7 +1141,7 @@ def rank() -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("RANK()", "int")
 
@@ -1208,7 +1208,7 @@ def row_number() -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("ROW_NUMBER()", "int")
 
@@ -1278,7 +1278,7 @@ def std(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"STDDEV({expr})", "float")
@@ -1352,7 +1352,7 @@ def sum(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"SUM({expr})", "float")
@@ -1423,7 +1423,7 @@ def var(expr: SQLExpression) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"VARIANCE({expr})", "float")

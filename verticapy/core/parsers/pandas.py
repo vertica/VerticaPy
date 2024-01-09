@@ -65,7 +65,7 @@ def read_pandas(
         Schema of the new relation.
         If empty, a temporary schema
         is used. To modify the temporary
-        schema, use the :py:func:`set_option`
+        schema, use the :py:func:`~set_option`
         function.
     dtype: dict, optional
         Dictionary of input types.
@@ -108,7 +108,7 @@ def read_pandas(
     Returns
     -------
     vDataFrame
-        :py:class:`vDataFrame`
+        :py:class:`~vDataFrame`
         of the new relation.
 
     Examples
@@ -116,7 +116,7 @@ def read_pandas(
 
     In this example, we will first create
     a ``pandas.DataFrame`` using
-    :py:meth:`verticapy.vDataFrame.to_pandas`
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_pandas`
     and ingest it into Vertica database.
 
     We import :py:mod:`verticapy`:
@@ -169,7 +169,7 @@ def read_pandas(
 
         data = vpd.load_titanic()
 
-    Let's convert the :py:class:`vDataFrame`
+    Let's convert the :py:class:`~vDataFrame`
     to a ``pandas.DataFrame``.
 
     .. code-block:: python
@@ -299,13 +299,13 @@ def read_pandas(
 
     .. seealso::
 
-        | :py:func:`verticapy.read_avro` :
+        | :py:func:`~verticapy.read_avro` :
             Ingests a AVRO file into the Vertica DB.
-        | :py:func:`verticapy.read_csv` :
+        | :py:func:`~verticapy.read_csv` :
             Ingests a CSV file into the Vertica DB.
-        | :py:func:`verticapy.read_file` :
+        | :py:func:`~verticapy.read_file` :
             Ingests an input file into the Vertica DB.
-        | :py:func:`verticapy.read_json` :
+        | :py:func:`~verticapy.read_json` :
             Ingests a JSON file into the Vertica DB.
     """
     dtype = format_type(dtype, dtype=dict)

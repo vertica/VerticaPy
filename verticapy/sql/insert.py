@@ -156,8 +156,8 @@ def insert_into(
         Set ``copy`` to ``False`` for multiple inserts.
 
     .. seealso::
-        | :py:func:`read_csv` : Ingests a CSV file using flex tables.
-        | :py:func:`read_json` : Ingests a JSON file using flex tables.
+        | :py:func:`~read_csv` : Ingests a CSV file using flex tables.
+        | :py:func:`~read_json` : Ingests a JSON file using flex tables.
     """
     column_names = format_type(column_names, dtype=list)
     if not schema:

@@ -79,20 +79,11 @@ Datasets
     :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data.html
 
 
-  .. ipython:: python
-    :suppress:
+  .. list-table:: 
+      :header-rows: 1
 
-    import plotly.express as px
-    col_des = ['No. of Columns', 'No. of Feature Columns']
-    vals = [29, 28] 
-    df = pd.DataFrame({'des': col_des, 'vals': vals})
-    fig = px.bar(df, x='des', y='vals', 
-      color='des')
-    fig.update_layout(xaxis_title=None, yaxis_title=None,showlegend=False)
-    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data_cols.html")
-
-  .. raw:: html
-    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data_cols.html
+      * - No. of Columns
+      * - 29
 
 
   Datatypes of data: :bdg-primary-line:`Float`
@@ -120,21 +111,11 @@ Datasets
 
 
 
-  .. ipython:: python
-    :suppress:
+  .. list-table:: 
+      :header-rows: 1
 
-    import plotly.express as px
-    col_des = ['No. of Columns', 'No. of Feature Columns']
-    vals = [106, 105] 
-    df = pd.DataFrame({'des': col_des, 'vals': vals})
-    fig = px.bar(df, x='des', y='vals', 
-      color='des')
-    fig.update_layout(xaxis_title=None, yaxis_title=None, showlegend=False)
-    fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data_cols.html")
-
-  .. raw:: html
-    :file: SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data_cols.html
-
+      * - No. of Columns
+      * - 106
 
   Datatypes of data: :bdg-primary-line:`Float`
 
@@ -163,17 +144,15 @@ algorithm that was tested:
         - OS
         - OS Version
         - Processor freq. (per node)
-        - Processor cores (per node) 
       * - 23.4
         - On Premise VM
         - 4 node 
-        - N/A
+        - 36, 2 threads per core
         - 755 GB
         - Enterprise
         - Red Hat Enterprise Linux  
         - 8.7 (Ootpa)   
         - 2.3 GHz  
-        - 36, 2 threads per core
 
 
 .. tab:: Amazon Redshift
@@ -189,7 +168,7 @@ algorithm that was tested:
         - vCPU (per node)
         - Memory (per node)
         - Deploy Mode
-      * - ???
+      * - Jan 2023
         - ra3.16xlarge
         - 4 node
         - 48
@@ -209,7 +188,7 @@ algorithm that was tested:
         - vCPU (per node)
         - Memory (per node)
         - Deploy Mode
-      * - ???
+      * - Jan 2023
         - ml.m5.24xlarge
         - 1 node
         - 96
@@ -227,7 +206,7 @@ algorithm that was tested:
         - vCPU (per node)
         - Memory (per node)
         - Deploy Mode
-      * - ???
+      * - Jan 2023
         - ml.m5.24xlarge
         - 3 nodes
         - 96
@@ -272,16 +251,15 @@ algorithm that was tested:
         - Deploy mode
         - Executor Memory
         - Driver Memory
-        - Total Executor Cores
       * - 3.3.1
         - N/A
         - N/A
-        - N/A
+        - 36 ( Per Worker)
         - N/A
         - client
         - 70GB
         - 50GB
-        - 36 ( Per Worker)
+
 
 Parameters
 -----------
@@ -359,6 +337,11 @@ The comparison analysis on both datasets follows:
       heights = [107.45, 720, 0, 1085.84]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
           fig.add_trace(go.Bar(
               x=[label],
@@ -436,6 +419,11 @@ The comparison analysis on both datasets follows:
       heights = [13.76, 9.11, 5.69, 96.8]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -481,6 +469,11 @@ The comparison analysis on both datasets follows:
       heights = [6.1, 2.08, 0.47, 7.26]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -527,6 +520,11 @@ The comparison analysis on both datasets follows:
       heights = [1.27, 8, 3.84, 51.77]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -564,6 +562,11 @@ The comparison analysis on both datasets follows:
       heights = [24.95, 7, 4.33, 56.7]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -613,6 +616,11 @@ The comparison analysis on both datasets follows:
       heights = [6.105, 7, 9.78, 122.08]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -654,6 +662,11 @@ The comparison analysis on both datasets follows:
       heights = [40.53, 7, 9.83, 119.09]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -691,13 +704,16 @@ Dataset
 
 **Amazon**
 
-Size: 25 M
+.. list-table:: 
+    :header-rows: 1
 
-Number of columns : 106
+    * - No. of Rows
+      - No. of Columns
+    * - 25 M
+      - 106
 
-Datatypes of data: Float
+Datatypes of data: :bdg-primary-line:`Float`
 
-Number of feature columns: 105
 
 .. note::
 
@@ -722,21 +738,19 @@ Test Environment
         - Processor freq. (per node)
         - Processor cores (per node) 
         - Type
-        - CPU Memory
         - No. of nodes
         - Storage type
       * - 11.1.0-0
         - r4.8xlarge
         - 3 nodes
         - N/A
-        - N/A
+        - 244 GB
         - Eon
         - Red Hat Enterprise Linux 
         - 8.5 (Ootpa)
         - 2.4GHz
         - N/A
         - 32
-        - 244
         - 3
         - SSD
 
@@ -756,19 +770,17 @@ Test Environment
         - Processor freq. (per node)
         - Processor cores (per node) 
         - Type
-        - RAM
       * - 11.1.0-0
         - On Premise VM
         - 3 node cluster
         - N/A
-        - N/A
+        - 32727072 kB
         - Enterprise
         - Red Hat Enterprise Linux 
         - 8.5 (Ootpa)
         - 2.4GHz
         - 4
         - 32
-        - 32727072 kB
 
 
 Comparison
@@ -958,6 +970,11 @@ Comparison
 ..   predict_times = [128.86, 119.83, 19.1]
 ..   colors = ["#1A6AFF", 'green', 'purple']
 ..   fig = go.Figure()
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict({"color": "#888888"}),
+        )
 ..   bar_width = 0.3  # Set the width of each bar
 ..   gap_width = -0.1  # Set the gap width between bars
 ..   fig.add_trace(

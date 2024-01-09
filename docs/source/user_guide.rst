@@ -7,7 +7,7 @@ User Guide
 
 
 
-.. grid:: 2
+.. grid:: 1 1 2 2
 
     .. grid-item::
     
@@ -21,7 +21,7 @@ User Guide
           36 mins
           ^^^^^^^^
           Dive into the basics, understand the core features 
-          (such as :py:class:`vDataFrame`, :py:class:`vDataColumn` etc), and set 
+          (such as :py:class:`~vDataFrame`, :py:class:`~vDataColumn` etc), and set 
           the stage for a seamless analytical journey.
 
 

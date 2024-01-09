@@ -105,7 +105,7 @@ def case_when(*args) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     n = len(args)
     if n < 2:
@@ -217,7 +217,7 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
 
     .. seealso::
 
-        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
+        | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     n = len(args)
     if n < 2:

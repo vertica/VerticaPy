@@ -15,12 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+import re
 from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
+import uuid
 import warnings
 
 from tqdm.auto import tqdm
 
-from verticapy.errors import ExtensionError, QueryError
+from verticapy.errors import EmptyParameter, ExtensionError, QueryError
 
 from verticapy.core.vdataframe import vDataFrame
 
@@ -33,6 +35,7 @@ from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.plotting._utils import PlottingUtils
+from verticapy.sql.dtypes import get_data_types
 
 if TYPE_CHECKING and conf.get_import_success("graphviz"):
     from graphviz import Source
@@ -42,14 +45,30 @@ class QueryProfiler:
     """
     Base class to profile queries.
 
-    The :py:class:`QueryProfiler` is a valuable tool for
-    anyone seeking to comprehend the reasons behind
-    a query's lack of performance. It incorporates a
-    set of functions inspired by the original QPROF
-    project, while introducing an enhanced feature
-    set. This includes the capability to generate
-    graphics and dashboards, facilitating a
-    comprehensive exploration of the data.
+    .. important::
+
+        This class is currently under development
+        and remains in beta. Please note that the
+        parameters may undergo changes in the future.
+        We plan to introduce a stable version in
+        VerticaPy 1.0.3 or later.
+
+    .. important::
+
+        Most of the classes are not available in
+        Version 1.0.0. Please use Version 1.0.1
+        or higher. Alternatively, you can use the
+        ``help`` function to explore the functionalities
+        of your current documentation.
+
+    The :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+    is a valuable tool for anyone seeking to comprehend
+    the reasons behind a query's lack of performance.
+    It incorporates a set of functions inspired by the
+    original QPROF project, while introducing an
+    enhanced feature set. This includes the capability
+    to generate graphics and dashboards, facilitating
+    a comprehensive exploration of the data.
 
     Moreover, it offers greater convenience by
     allowing interaction with an object that
@@ -60,45 +79,46 @@ class QueryProfiler:
 
     Parameters
     ----------
-    .. important::
+    transactions: str | tuple | list, optional
+        Six options are possible for this parameter:
 
-        :py:class:`QueryProfiler` can only be instantiated with
-        either a query or a combination of a transaction
-        ID and a statement ID. These parameters cannot be
-        both defined and undefined simultaneously.
+        - An ``integer``:
+            It will represent the ``transaction_id``,
+            the ``statement_id`` will be set to 1.
+        - A ``tuple``:
+            ``(transaction_id, statement_id)``.
+        - A ``list`` of ``tuples``:
+            ``(transaction_id, statement_id)``.
+        - A ``list`` of ``integers``:
+            the ``transaction_id``; the ``statement_id``
+            will automatically be set to 1.
+        - A ``str``:
+            The query to execute.
+        - A ``list`` of ``str``:
+            The ``list`` of queries to execute. Each
+            query will be execute iteratively.
 
-    request: str, optional
-        Query to run.
-        The option to run a query is available when
-        targeting a query that has not been previously
-        executed in the database.
+            .. warning::
 
-        .. warning::
+                It's important to exercise caution; if the
+                query is time-consuming, it will require a
+                significant amount of time to execute before
+                proceeding to the next steps.
 
-            It's important to exercise caution; if the
-            query is time-consuming, it will require a
-            significant amount of time to execute before
-            proceeding to the next steps.
+        .. note::
+
+            A combination of the three first options can
+            also be used in a ``list``.
+    key_id: int, optional
+        This parameter is utilized to load information
+        from another ``target_schema``. It is considered
+        a good practice to save the queries you intend
+        to profile.
     resource_pool: str, optional
         Specify the name of the resource pool to utilize
         when executing the query. Refer to the Vertica
         documentation for a comprehensive list of available
         options.
-
-        .. note::
-
-            This parameter is used only when ``request`` is
-            defined.
-    transaction_id: int, optional
-        ID of the transaction. It refers to a unique
-        identifier assigned to a specific transaction
-        within the system.
-    statement_id: int, optional
-        ID of the statement.
-    add_profile: bool, optional
-        If set to true and the request does not include a
-        profile, this option adds the profile keywords at
-        the beginning of the query before executing it.
 
         .. note::
 
@@ -112,45 +132,58 @@ class QueryProfiler:
         used to map all the Vertica DC tables.
         If the tables do not exist, VerticaPy
         will try to create them automatically.
-        You can ensure this operation by setting
-        ``create_copy=True``.
-    create_copy: bool, optional
-        If set to ``True``, tables or local temporary
-        tables will be created by using the schema
-        definition of ``target_schema`` parameter
-        to store all the Vertica monitor and internal
-        meta-tables.
-
-        .. note::
-
-            This parameter is used only when
-            ``create_local_temporary_copy=False``.
-    create_local_temporary_copy: bool, optional
-        If set to ``True``, local temporary tables
-        will be created to store all the Vertica
-        monitor and internal meta-tables.
-
-        .. note::
-
-            This parameter is used only when
-            ``create_copy=False``.
-    overwrite: bool
+    overwrite: bool, optional
         If set to ``True`` overwrites the
         existing performance tables.
+    add_profile: bool, optional
+        If set to ``True`` and the request does not include
+        a profile, this option adds the profile keywords at
+        the beginning of the query before executing it.
 
         .. note::
 
-            This parameter is used only when
-            ``create_local_temporary_copy=True``.
+            This parameter is used only when ``request`` is
+            defined.
+    check_tables: bool, optional
+        If set to ``True`` all the transactions of
+        the different Performance tables will be
+        checked and a warning will be raised in
+        case of incomplete data.
+
+        .. warning::
+
+            This parameter will aggregate on many
+            tables using many parameters. It will
+            make the process much more expensive.
 
     Attributes
     ----------
+    transactions: list
+        ``list`` of ``tuples``:
+        ``(transaction_id, statement_id)``.
+        It includes all the transactions
+        of the current schema.
+    requests: list
+        ``list`` of ``str``:
+        Transactions Queries.
+    request_labels: list
+        ``list`` of ``str``:
+        Queries Labels.
+    qdurations: list
+        ``list`` of ``int``:
+        Queries Durations (seconds).
+    key_id: int
+        Unique ID used to build up the
+        different Performance tables
+        savings.
     request: str
-        Query.
+        Current Query.
+    qduration: int
+        Current Query Duration (seconds).
     transaction_id: int
-        Transaction ID.
+        Current Transaction ID.
     statement_id: int
-        Statement ID.
+        Current Statement ID.
     target_schema: dict
         Name of the schema used to store
         all the Vertica monitor and internal
@@ -159,6 +192,12 @@ class QueryProfiler:
         Name of the tables used to store
         all the Vertica monitor and internal
         meta-tables.
+    v_tables_dtypes: list
+        Datatypes of all the performance
+        tables.
+    tables_dtypes: list
+        Datatypes of all the loaded
+        performance tables.
     overwrite: bool
         If set to ``True`` overwrites the
         existing performance tables.
@@ -170,7 +209,7 @@ class QueryProfiler:
     ^^^^^^^^^^^^^^^
 
     First, let's import the
-    :py:class:`QueryProfiler`
+    :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
     object.
 
     .. ipython:: python
@@ -178,7 +217,7 @@ class QueryProfiler:
         from verticapy.performance.vertica import QueryProfiler
 
     There are multiple ways how we can use the
-    :py:class:`QueryProfiler`.
+    :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
 
     - From ``transaction_id`` and ``statement_id``
     - From SQL generated from verticapy functions
@@ -234,10 +273,7 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof = QueryProfiler(
-            transaction_id=45035996273800581,
-            statement_id=48,
-        )
+        qprof = QueryProfiler((45035996273800581, 48))
 
     .. important::
 
@@ -247,18 +283,49 @@ class QueryProfiler:
         being the targetted schema. To overwrite
         the tables, use: ``overwrite=True``.
         Finally, if you just need local temporary
-        table, use: ``create_local_temporary_copy=True``.
+        table, use the ``v_temp_schema`` schema.
 
         Example:
 
         .. code-block:: python
 
             qprof = QueryProfiler(
-                transaction_id=45035996273800581,
-                statement_id=48,
-                target_schema='MYSCHEMA',
+                (45035996273800581, 48),
+                target_schema='v_temp_schema',
                 overwrite=True,
             )
+
+    **Multiple Transactions ID and Statements ID**
+
+    You can also construct an object based on multiple
+    transactions and statement IDs by using a list of
+    transactions and statements.
+
+    .. code-block:: python
+
+        qprof = QueryProfiler(
+            [(tr1, st2), (tr2, st2), (tr3, st3)],
+            target_schema='MYSCHEMA',
+            overwrite=True,
+        )
+
+    A ``key_id`` will be generated, which you can
+    then use to reload the object.
+
+    .. code-block:: python
+
+        qprof = QueryProfiler(
+            key_id='MYKEY',
+            target_schema='MYSCHEMA',
+        )
+
+    You can access all the transactions
+    of a specific schema by utilizing
+    the 'transactions' attribute.
+
+    .. code-block:: python
+
+        qprof.transactions
 
     **SQL generated from VerticaPy functions**
 
@@ -284,7 +351,8 @@ class QueryProfiler:
     .. code-block:: python
 
         qprof = QueryProfiler(
-            "SELECT * FROM " + titanic["age","fare"].fillna().current_relation())
+            "SELECT * FROM " + titanic["age","fare"].fillna().current_relation()
+        )
 
     **Directly From SQL Query**
 
@@ -310,16 +378,19 @@ class QueryProfiler:
         sid = qprof.statement_id
         print(f"tid={tid};sid={sid}")
 
-    To avoid recomputing a query, you
-    can also directly use a statement
-    ID and a transaction ID.
+    Or simply:
 
     .. ipython:: python
 
-        qprof = QueryProfiler(
-            transaction_id = tid,
-            statement_id = sid,
-        )
+        print(qprof.transactions)
+
+    To avoid recomputing a query, you
+    can also directly use its statement
+    ID and its transaction ID.
+
+    .. ipython:: python
+
+        qprof = QueryProfiler((tid, sid))
 
     Accessing the different Performance Tables
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -341,6 +412,33 @@ class QueryProfiler:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html
+
+    .. note::
+
+        You can use the method without parameters
+        to obtain a list of all available tables.
+
+        .. ipython:: python
+
+            qprof.get_table()
+
+    We can also look at all the
+    object queries information:
+
+    .. code-block:: python
+
+        qprof.get_queries()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_queries()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html
 
     Executing a QPROF step
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -373,7 +471,7 @@ class QueryProfiler:
 
         By changing the ``idx`` value above, you
         can check out all the steps of the
-        :py:class:`QueryProfiler`.
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
 
     **SQL Query**
 
@@ -409,15 +507,17 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_qsteps(kind="pie")
+        qprof.get_qsteps(kind="bar")
 
     .. ipython:: python
         :suppress:
 
         import verticapy as vp
-        vp.set_option("plotting_lib", "plotly")
-        fig = qprof.get_qsteps(kind="pie")
-        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html")
+        vp.set_option("plotting_lib", "highcharts")
+        fig = qprof.get_qsteps(kind="bar")
+        html_text = fig.htmlcontent.replace("container", "performance_vertica_query_profiler_pie_plot")
+        with open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html", "w") as file:
+            file.write(html_text)
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
@@ -502,7 +602,7 @@ class QueryProfiler:
 
         qprof.get_qplan_tree(
             path_id=1,
-            path_id_info=[5, 6],
+            path_id_info=[1, 3],
             metric='cost',
             shape='square',
             color_low='#0000FF',
@@ -514,7 +614,7 @@ class QueryProfiler:
 
         res = qprof.get_qplan_tree(
             path_id=1,
-            path_id_info=[5, 6],
+            path_id_info=[1, 3],
             metric='cost',
             shape='square',
             color_low='#0000FF',
@@ -537,6 +637,7 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
+        vp.set_option("plotting_lib", "plotly")
         fig = qprof.get_qplan_profile(kind="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html")
 
@@ -733,101 +834,133 @@ class QueryProfiler:
     @save_verticapy_logs
     def __init__(
         self,
-        request: Optional[str] = None,
+        transactions: Union[None, str, list[int], list[tuple[int, int]]] = None,
+        key_id: Optional[str] = None,
         resource_pool: Optional[str] = None,
-        transaction_id: Optional[int] = None,
-        statement_id: Optional[int] = None,
-        add_profile: bool = True,
         target_schema: Union[None, str, dict] = None,
-        create_copy: bool = False,
-        create_local_temporary_copy: bool = False,
         overwrite: bool = False,
+        add_profile: bool = True,
+        check_tables: bool = True,
     ) -> None:
-        if create_local_temporary_copy and create_copy:
-            raise ValueError(
-                "'create_copy' and 'create_local_temporary_copy'"
-                " can not be both set to True."
-            )
-        if create_copy and isinstance(target_schema, NoneType):
-            warning_message = (
-                "'create_copy' is set to True but 'target_schema' "
-                " is empty. The parameters will be both ignored."
-            )
-            warnings.warn(warning_message, Warning)
-        if create_local_temporary_copy and not (isinstance(target_schema, NoneType)):
-            warning_message = (
-                "'create_local_temporary_copy' is set to True but "
-                "'target_schema' is not empty.\nThe parameter "
-                "'target_schema' will be ignored."
-            )
-            warnings.warn(warning_message, Warning)
-        if not (isinstance(request, NoneType)) and (
-            not (isinstance(transaction_id, NoneType))
-            or not (isinstance(statement_id, NoneType))
+        # TRANSACTIONS ARE STORED AS A LIST OF (tr_id, st_id) AND
+        # AN INDEX USED TO NAVIGATE THROUGH THE DIFFERENT tuples.
+        self.transactions = []
+        self.transactions_idx = 0
+
+        # List of queries to execute.
+        requests = []
+
+        # CASE WHEN TUPLE OF TWO ELEMENTS: (tr_id, st_id)
+        if isinstance(transactions, tuple) and len(transactions) == 2:
+            self.transactions = [transactions]
+
+        # CASE WHEN LIST OF tr_id OR LIST OF (tr_id, st_id) OR queries
+        # IT CAN ALSO BE A COMBINATION OF THE THREE TYPES.
+        elif isinstance(transactions, list):
+            for tr in transactions:
+                if isinstance(tr, int):
+                    self.transactions += [(tr, 1)]
+                elif isinstance(tr, tuple):
+                    if (
+                        len(tr) == 2
+                        and isinstance(tr[0], int)
+                        and isinstance(tr[1], int)
+                    ):
+                        self.transactions += [tr]
+                elif isinstance(tr, str):
+                    requests += [tr]
+                else:
+                    raise TypeError(
+                        f"Wrong type inside {transactions}. Expecting: "
+                        f"int, tuple or str.\nFound {type(tr)}."
+                    )
+
+        # CASE WHEN integer
+        elif isinstance(transactions, int):
+            self.transactions = [(transactions, 1)]  # DEFAULT STATEMENT: 1
+
+        # CASE WHEN str
+        elif isinstance(transactions, str):
+            requests += [transactions]
+
+        elif isinstance(transactions, NoneType) and (
+            isinstance(key_id, NoneType) or isinstance(target_schema, NoneType)
         ):
             raise ValueError(
-                "If the parameter 'request' is defined, you cannot "
-                "simultaneously define 'transaction_id' or "
-                "'statement_id'."
+                "When 'transactions' is not defined, a 'key_id' and a "
+                "'target_schema' "
+                "must be defined to retrieve all the "
+                "transactions."
             )
-        elif isinstance(request, NoneType) and (
-            isinstance(transaction_id, NoneType) or isinstance(statement_id, NoneType)
-        ):
-            raise ValueError(
-                "Both 'transaction_id' and 'statement_id' must "
-                "be defined, or alternatively, the 'request' parameter "
-                "must be defined."
+
+        elif isinstance(transactions, NoneType):
+            ...
+
+        else:
+            raise TypeError(
+                "Wrong type for parameter 'transactions'. Expecting "
+                "one of the following types: tuple[int, int] | "
+                "list of tuple[int, int] | integer | list of integer "
+                f"| string | list of strings.\nFound {type(transactions)}."
             )
-        if not (isinstance(request, NoneType)):
-            if not (isinstance(resource_pool, NoneType)):
+
+        # CHECKING key_id; CREATING ONE IF IT DOES NOT EXIST.
+        if isinstance(key_id, NoneType):
+            self.key_id = str(uuid.uuid1()).replace("-", "")
+        else:
+            if isinstance(key_id, int):
+                self.key_id = str(key_id)
+            elif isinstance(key_id, str):
+                self.key_id = key_id
+            else:
+                raise TypeError(
+                    "Wrong type for parameter 'key_id'. Expecting "
+                    f"an integer or a string. Found {type(key_id)}."
+                )
+
+        # LOOKING AT A POSSIBLE QUERY TO EXECUTE.
+        if len(requests) > 0:
+            for request in requests:
+                if not (isinstance(resource_pool, NoneType)):
+                    _executeSQL(
+                        f"SET SESSION RESOURCE POOL {resource_pool} ;",
+                        title="Setting the resource pool.",
+                        method="cursor",
+                    )
+                if add_profile:
+                    fword = clean_query(request).strip().split()[0].lower()
+                    if fword != "profile":
+                        request = "PROFILE " + request
                 _executeSQL(
-                    f"SET SESSION RESOURCE POOL {resource_pool} ;",
-                    title="Setting the resource pool.",
+                    request,
+                    title="Executing the query.",
                     method="cursor",
                 )
-            if add_profile:
-                fword = clean_query(request).strip().split()[0].lower()
-                if fword != "profile":
-                    request = "profile " + request
-            _executeSQL(
-                request,
-                title="Executing the query.",
-                method="cursor",
-            )
-            query = """
-                SELECT
-                    transaction_id,
-                    statement_id
-                FROM QUERY_REQUESTS 
-                WHERE session_id = (SELECT current_session())
-                  AND is_executing='f'
-                ORDER BY start_timestamp DESC LIMIT 1;"""
-            transaction_id, statement_id = _executeSQL(
-                query,
-                title="Getting transaction_id, statement_id.",
-                method="fetchrow",
-            )
-            self.request = request
+                query = """
+                    SELECT
+                        transaction_id,
+                        statement_id
+                    FROM QUERY_REQUESTS 
+                    WHERE session_id = (SELECT current_session())
+                      AND is_executing='f'
+                    ORDER BY start_timestamp DESC LIMIT 1;"""
+                transaction_id, statement_id = _executeSQL(
+                    query,
+                    title="Getting transaction_id, statement_id.",
+                    method="fetchrow",
+                )
+                self.transactions += [(transaction_id, statement_id)]
 
-        if not (isinstance(transaction_id, int)):
-            raise ValueError(
-                "Wrong type for Parameter transaction_id.\n"
-                f"Expected integer, found {type(transaction_id)}."
-            )
-        else:
-            self.transaction_id = transaction_id
-        if not (isinstance(statement_id, int)):
-            raise ValueError(
-                "Wrong type for Parameter transaction_id.\n"
-                f"Expected integer, found {type(statement_id)}."
-            )
-        else:
-            self.statement_id = statement_id
+        if len(self.transactions) == 0 and isinstance(key_id, NoneType):
+            raise ValueError("No transactions found.")
 
-        # Building the target_schema
-        if create_local_temporary_copy:
+        elif len(self.transactions) != 0:
+            self.transaction_id = self.transactions[0][0]
+            self.statement_id = self.transactions[0][1]
+
+        # BUILDING THE target_schema.
+        if target_schema == "v_temp_schema":
             self.target_schema = self._v_temp_schema_dict()
-            create_table = True
         else:
             if isinstance(target_schema, str):
                 self.target_schema = {}
@@ -835,36 +968,70 @@ class QueryProfiler:
                     self.target_schema[schema] = target_schema
             else:
                 self.target_schema = copy.deepcopy(target_schema)
-            create_table = create_copy
 
         self.overwrite = overwrite
-        self._create_copy_v_table(create_table=create_table)
+        self._create_copy_v_table()
 
-        # Getting the request
-        if not (hasattr(self, "request")):
-            query = f"""
-                SELECT 
-                    request 
-                FROM v_internal.dc_requests_issued 
-                WHERE transaction_id = {transaction_id}
-                  AND   statement_id = {statement_id};"""
-            query = self._replace_schema_in_query(query)
-            try:
-                self.request = _executeSQL(
-                    query,
-                    title="Getting the corresponding query",
-                    method="fetchfirstelem",
-                )
-            except TypeError:
-                raise QueryError(
-                    f"No transaction with transaction_id={transaction_id} "
-                    f"and statement_id={statement_id} was found in the "
-                    "v_internal.dc_requests_issued table."
-                )
+        # SETTING THE requests.
+        self._set_request()
+
+        # SETTING THE queries durations.
+        self._set_qduration()
+
+        # WARNING MESSAGES.
+        if check_tables:
+            self._check_v_table()
 
     # Tools
 
+    def _check_kind(self, kind: str, kind_list: list) -> str:
+        """
+        Checks if the parameter 'kind'
+        is correct and returns the
+        corrected version of it.
+        """
+        kind = str(kind).lower()
+        if kind not in kind_list:
+            raise ValueError(
+                "Parameter Error, 'kind' should be in "
+                f"[{' | '.join(kind_list)}].\nFound {kind}."
+            )
+        return kind
+
+    def _check_vdf_empty(self, vdf: vDataFrame) -> Literal[True]:
+        """
+        Checks if the vDataFrame is empty and
+        raises the appropriate error message.
+        """
+        n, m = vdf.shape()
+        if m == 0:
+            raise EmptyParameter(
+                "Failed to generate the final chart. Please check for any "
+                "errors or issues with the data, and ensure that all required "
+                "parameters are correctly set.\n"
+                "Something abnormal happened. The vDataFrame seems to have "
+                "no columns. This can occur if there was an error in the "
+                "data ingestion or if the tables were modified after being "
+                "ingested."
+            )
+        elif n == 0:
+            raise EmptyParameter(
+                "Failed to generate the final chart. Please check for any "
+                "errors or issues with the data, and ensure that all required "
+                "parameters are correctly set.\n"
+                "The performance data needed to execute the operation is "
+                "empty. This suggests that the information related to the "
+                "specific transaction may not have been stored properly or "
+                "might have been erased. We recommend saving this information "
+                "in a different schema and multiple times to avoid any loss."
+            )
+        return True
+
     def _get_interval_str(self, unit: Literal["s", "m", "h"]) -> str:
+        """
+        Converts the input str to the
+        corresponding interval.
+        """
         unit = str(unit).lower()
         if unit.startswith("s"):
             div = "00:00:01"
@@ -877,6 +1044,10 @@ class QueryProfiler:
         return div
 
     def _get_interval(self, unit: Literal["s", "m", "h"]) -> int:
+        """
+        Converts the input str to the
+        corresponding integer.
+        """
         unit = str(unit).lower()
         if unit.startswith("s"):
             div = 1000000
@@ -897,6 +1068,12 @@ class QueryProfiler:
             "pie",
         ],
     ) -> Callable:
+        """
+        Returns the input object
+        chart method: The one to
+        use to draw the final
+        graphic.
+        """
         kind = str(kind).lower()
         if kind == "pie":
             return v_object.pie
@@ -908,6 +1085,10 @@ class QueryProfiler:
             ValueError("Incorrect parameter 'kind'.")
 
     def _replace_schema_in_query(self, query: SQLExpression) -> SQLExpression:
+        """
+        Map all the relations in the
+        query to the current ones.
+        """
         if not (hasattr(self, "target_schema")) or isinstance(
             self.target_schema, NoneType
         ):
@@ -921,6 +1102,11 @@ class QueryProfiler:
 
     @staticmethod
     def _v_temp_schema_dict() -> dict:
+        """
+        Tables used by the ``QueryProfiler``
+        object to link the main relation to
+        the temporary schema.
+        """
         return {
             "v_internal": "v_temp_schema",
             "v_monitor": "v_temp_schema",
@@ -936,9 +1122,9 @@ class QueryProfiler:
             "dc_requests_issued": "v_internal",
             "dc_query_executions": "v_internal",
             "dc_explain_plans": "v_internal",
+            "execution_engine_profiles": "v_monitor",
             "query_plan_profiles": "v_monitor",
             "query_profiles": "v_monitor",
-            "execution_engine_profiles": "v_monitor",
             "resource_pool_status": "v_monitor",
             "host_resources": "v_monitor",
         }
@@ -955,7 +1141,7 @@ class QueryProfiler:
             "host_resources",
         ]
 
-    def _create_copy_v_table(self, create_table: bool = True) -> None:
+    def _create_copy_v_table(self) -> None:
         """
         Functions to create a copy
         of the performance tables.
@@ -963,14 +1149,17 @@ class QueryProfiler:
         will use them to do the
         profiling.
         """
+        self.v_tables_dtypes = []
+        self.tables_dtypes = []
         target_tables = {}
         v_temp_table_dict = self._v_table_dict()
         v_config_table_list = self._v_config_table_list()
         loop = v_temp_table_dict.items()
-        if conf.get_option("print_info") and create_table:
-            print("Creating a copy of the performance tables...")
+        if conf.get_option("print_info"):
+            print("Searching the performance tables...")
         if conf.get_option("tqdm"):
             loop = tqdm(loop, total=len(loop))
+        idx = 0
         for table, schema in loop:
             sql = "CREATE "
             exists = True
@@ -979,7 +1168,29 @@ class QueryProfiler:
                 and schema in self.target_schema
             ):
                 new_schema = self.target_schema[schema]
-                new_table = f"{table}_{self.statement_id}_{self.transaction_id}"
+                new_table = f"qprof_{table}_{self.key_id}"
+                if table == "dc_requests_issued" and len(self.transactions) == 0:
+                    self.transactions = _executeSQL(
+                        f"""SELECT 
+                                transaction_id, 
+                                statement_id 
+                            FROM {new_schema}.{new_table}
+                            ORDER BY 
+                            time DESC,
+                            transaction_id DESC,
+                            statement_id DESC;""",
+                        title="Getting the transactions and statement ids.",
+                        method="fetchall",
+                    )
+                    self.transactions = [tuple(tr) for tr in self.transactions]
+                    if len(self.transactions) == 0:
+                        raise ValueError("No transactions found.")
+                    self.transaction_id = self.transactions[0][0]
+                    self.statement_id = self.transactions[0][1]
+                    if isinstance(self.transaction_id, NoneType):
+                        self.transaction_id = self.transactions[0][0]
+                    if isinstance(self.statement_id, NoneType):
+                        self.statement_id = self.transactions[0][1]
                 if new_schema == "v_temp_schema":
                     sql += f"LOCAL TEMPORARY TABLE {new_table} ON COMMIT PRESERVE ROWS "
                 else:
@@ -989,15 +1200,35 @@ class QueryProfiler:
                     sql += f" WHERE transaction_id={self.transaction_id} "
                     sql += f"AND statement_id={self.statement_id}"
                 target_tables[table] = new_table
-                if not (create_table):
-                    try:
-                        _executeSQL(
+
+                # Getting the new DATATYPES
+                try:
+                    self.tables_dtypes += [
+                        get_data_types(
                             f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
-                            title="Looking if the relation exists.",
                         )
-                    except:
-                        exists = False
-            if create_table or not (exists):
+                    ]
+                except:
+                    if conf.get_option("print_info") and idx == 0:
+                        print("Some tables seem to not exist...")
+                        print("Creating a copy of the performance tables...\n")
+                        print(
+                            f"The key used to build up the tables is: {self.key_id}\n"
+                        )
+                        print("You can access the key by using the 'key_id' attribute.")
+                    exists = False
+                    idx += 1
+
+                # Getting the Performance tables DATATYPES
+                self.v_tables_dtypes += [
+                    get_data_types(
+                        f"SELECT * FROM {schema}.{table} LIMIT 0",
+                    )
+                ]
+                if not (exists):
+                    self.tables_dtypes += [self.v_tables_dtypes[-1]]
+
+            if not (exists):
                 if conf.get_option("print_info"):
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
@@ -1023,6 +1254,218 @@ class QueryProfiler:
                     )
                     warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
+
+    def _check_v_table(self) -> None:
+        """
+        Checks if all the transactions
+        exist in all the different tables.
+        """
+        tables = list(self._v_table_dict().keys())
+        tables_schema = self._v_table_dict()
+        warning_message = ""
+        for tr_id, st_id in self.transactions:
+            for table_name in tables:
+                if (
+                    "resource_pool_status" not in table_name
+                    and "host_resources" not in table_name
+                ):
+                    if len(self.target_tables) == 0:
+                        sc, tb = tables_schema[table_name], table_name
+                    else:
+                        tb = self.target_tables[table_name]
+                        schema = tables_schema[table_name]
+                        sc = self.target_schema[schema]
+                    query = f"""
+                        SELECT
+                            transaction_id,
+                            statement_id
+                        FROM {sc}.{tb}
+                        WHERE
+                            transaction_id = {tr_id}
+                        AND statement_id = {st_id}
+                        LIMIT 1"""
+                    res = _executeSQL(
+                        query,
+                        title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
+                        method="fetchall",
+                    )
+                    if not (res):
+                        warning_message += f"({tr_id}, {st_id}) -> {sc}.{tb}\n"
+        if len(warning_message) > 0:
+            warning_message = "\nSome transactions are missing:\n\n" + warning_message
+        missing_column = ""
+        inconsistent_dt = ""
+        table_name_list = list(self._v_table_dict())
+        n = len(self.tables_dtypes)
+        for i in range(n):
+            table_name = table_name_list[i]
+            table_1 = self.v_tables_dtypes[i]
+            table_2 = self.tables_dtypes[i]
+            for col_1, dt_1 in table_1:
+                is_in = False
+                for col_2, dt_2 in table_2:
+                    if col_2.lower() == col_1.lower():
+                        is_in = True
+                        if dt_1 != dt_2:
+                            inconsistent_dt += (
+                                f"{table_name} | {col_1}: {dt_1} -> {dt_2}\n"
+                            )
+                        break
+                if not (is_in):
+                    missing_column += f"{table_name} | {col_1}\n"
+        if missing_column:
+            warning_message += "\nSome columns are missing:\n\n" + missing_column + "\n"
+        if inconsistent_dt:
+            warning_message += (
+                "\nSome data types are inconsistent:\n\n" + inconsistent_dt + "\n"
+            )
+        if len(warning_message) > 0:
+            warning_message += (
+                "This could potentially lead to incorrect computations or "
+                "errors. Please review the various tables and investigate "
+                "why this data was modified or is missing. It may have "
+                "been wrongly imported, accidentally deleted or automatically "
+                "removed, especially if you are directly working on the "
+                "performance tables."
+            )
+            warnings.warn(warning_message, Warning)
+
+    def _set_request(self):
+        """
+        Computes and sets the current
+        ``transaction_id`` requests.
+        """
+        self.requests = []
+        self.request_labels = []
+        for tr_id, st_id in self.transactions:
+            query = f"""
+                SELECT 
+                    request, label
+                FROM v_internal.dc_requests_issued 
+                WHERE transaction_id = {tr_id}
+                  AND   statement_id = {st_id};"""
+            query = self._replace_schema_in_query(query)
+            try:
+                res = _executeSQL(
+                    query,
+                    title="Getting the corresponding query",
+                    method="fetchrow",
+                )
+                self.requests += [res[0]]
+                self.request_labels += [res[1]]
+            except TypeError:
+                raise QueryError(
+                    f"No transaction with transaction_id={tr_id} "
+                    f"and statement_id={st_id} was found in the "
+                    "v_internal.dc_requests_issued table."
+                )
+        self.request = self.requests[self.transactions_idx]
+
+    def _set_qduration(self):
+        """
+        Computes and sets the current
+        ``transaction_id`` request.
+        """
+        self.qdurations = []
+        for tr_id, st_id in self.transactions:
+            query = f"""
+                SELECT
+                    query_duration_us 
+                FROM 
+                    v_monitor.query_profiles 
+                WHERE 
+                    transaction_id={tr_id} AND 
+                    statement_id={st_id};"""
+            query = self._replace_schema_in_query(query)
+            try:
+                res = _executeSQL(
+                    query,
+                    title="Getting the corresponding query duration.",
+                    method="fetchfirstelem",
+                )
+                self.qdurations += [res]
+            except TypeError:
+                raise QueryError(
+                    f"No transaction with transaction_id={tr_id} "
+                    f"and statement_id={st_id} was found in the "
+                    "v_internal.dc_requests_issued table."
+                )
+        self.qduration = self.qdurations[self.transactions_idx]
+
+    # Navigation
+
+    def set_position(self, idx: Union[int, tuple]) -> None:
+        """
+        A utility function to utilize
+        a specific transaction from
+        the ``QueryProfiler`` stack.
+        """
+        n = len(self.transactions)
+        if isinstance(idx, int) and not (0 <= idx < n):
+            raise ValueError(f"Incorrect index, it should be between 0 and {n - 1}")
+        else:
+            if isinstance(idx, tuple):
+                if len(idx) != 2 or (
+                    not (isinstance(idx[0], int)) or not (isinstance(idx[1], int))
+                ):
+                    raise ValueError(
+                        "When 'idx' is a tuple, it should be made of two integers."
+                    )
+                found = False
+                for j, tr in enumerate(self.transactions):
+                    if tr == idx:
+                        idx = j
+                        found = True
+                        break
+                if not (found):
+                    raise ValueError(f"Transaction not found: {idx}.")
+            if isinstance(idx, int):
+                self.transactions_idx = idx
+                self.transaction_id = self.transactions[idx][0]
+                self.statement_id = self.transactions[idx][1]
+                self.request = self.requests[idx]
+                self.qduration = self.qdurations[idx]
+            else:
+                raise TypeError(
+                    "Wrong type for parameter 'idx'. Expecting: int or tuple."
+                    f"\nFound: {type(idx)}."
+                )
+
+    def next(self) -> None:
+        """
+        A utility function to utilize
+        the next transaction from
+        the ``QueryProfiler`` stack.
+        """
+        idx = self.transactions_idx
+        n = len(self.transactions)
+        if idx + 1 == n:
+            idx = 0
+        else:
+            idx = idx + 1
+        self.transactions_idx = idx
+        self.transaction_id = self.transactions[idx][0]
+        self.statement_id = self.transactions[idx][1]
+        self.request = self.requests[idx]
+        self.qduration = self.qdurations[idx]
+
+    def previous(self) -> None:
+        """
+        A utility function to utilize
+        the previous transaction from
+        the ``QueryProfiler`` stack.
+        """
+        idx = self.transactions_idx
+        n = len(self.transactions)
+        if idx - 1 == -1:
+            idx = n - 1
+        else:
+            idx = idx - 1
+        self.transactions_idx = idx
+        self.transaction_id = self.transactions[idx][0]
+        self.statement_id = self.transactions[idx][1]
+        self.request = self.requests[idx]
+        self.qduration = self.qdurations[idx]
 
     # Main Method
 
@@ -1057,7 +1500,71 @@ class QueryProfiler:
         }
         return steps_id[idx](*args, **kwargs)
 
-    # Tables
+    # Perf/Query Tables
+
+    def get_queries(self) -> vDataFrame:
+        """
+        Returns all the queries
+        and their respective information,
+        of a ``QueryProfiler`` object.
+
+        Returns
+        -------
+        vDataFrame
+            queries information.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily look at all
+        the transactions:
+
+        .. code-block:: python
+
+            qprof.get_queries()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        n = len(self.transactions)
+        current_query = [
+            (self.transaction_id, self.statement_id) == tr for tr in self.transactions
+        ]
+
+        return vDataFrame(
+            {
+                "index": [i for i in range(n)],
+                "is_current": current_query,
+                "transaction_id": [tr[0] for tr in self.transactions],
+                "statement_id": [tr[1] for tr in self.transactions],
+                "request_label": copy.deepcopy(self.request_labels),
+                "request": copy.deepcopy(self.requests),
+                "qduration": [qd / 1000000 for qd in self.qdurations],
+            },
+            _clean_query=False,
+        )
 
     def get_table(self, table_name: Optional[str] = None) -> Union[list, vDataFrame]:
         """
@@ -1093,7 +1600,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1123,7 +1630,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         tables = list(self._v_table_dict().keys())
         if isinstance(table_name, NoneType):
@@ -1160,7 +1667,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. ipython:: python
@@ -1193,7 +1700,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         return vertica_version()
 
@@ -1226,7 +1733,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1253,7 +1760,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         res = format_query(
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
@@ -1292,7 +1799,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1318,23 +1825,9 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
-        query = f"""
-            SELECT
-                query_duration_us 
-            FROM 
-                v_monitor.query_profiles 
-            WHERE 
-                transaction_id={self.transaction_id} AND 
-                statement_id={self.statement_id};"""
-        query = self._replace_schema_in_query(query)
-        qd = _executeSQL(
-            query,
-            title="Getting the corresponding query",
-            method="fetchfirstelem",
-        )
-        return float(qd / self._get_interval(unit))
+        return float(self.qduration / self._get_interval(unit))
 
     # Step 3: Query execution steps
     def get_qsteps(
@@ -1343,15 +1836,24 @@ class QueryProfiler:
         kind: Literal[
             "bar",
             "barh",
-            "pie",
-        ] = "pie",
+        ] = "bar",
         categoryorder: Literal[
             "trace",
             "category ascending",
             "category descending",
             "total ascending",
             "total descending",
-        ] = "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "sum descending",
         show: bool = True,
         **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
@@ -1381,9 +1883,6 @@ class QueryProfiler:
             - barh:
                 Horizontal Bar Chart.
 
-            - pie:
-                Pie Chart.
-
         categoryorder: str, optional
             How to sort the bars.
             One of the following options:
@@ -1393,6 +1892,16 @@ class QueryProfiler:
             - category descending
             - total ascending
             - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
 
         show: bool, optional
             If set to True, the Plotting object
@@ -1409,7 +1918,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1432,7 +1941,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_qsteps(kind="pie")
+            qprof.get_qsteps(kind="bar")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
@@ -1440,12 +1949,17 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh"])
         div = self._get_interval_str(unit)
         query = f"""
             SELECT
-                execution_step, 
+                REPLACE(COALESCE(REGEXP_SUBSTR(
+                    execution_step, '(.+):'), execution_step), ':', '') AS step,
+                REPLACE(COALESCE(REGEXP_SUBSTR(
+                    execution_step, ':(.+)'), execution_step), ':', '') AS substep,
                 (completion_time - time) / '{div}'::interval AS elapsed
             FROM 
                 v_internal.dc_query_executions 
@@ -1456,12 +1970,15 @@ class QueryProfiler:
         query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query)
         if show:
-            fun = self._get_chart_method(vdf["execution_step"], kind)
+            self._check_vdf_empty(vdf)
+            fun = self._get_chart_method(vdf, kind)
             return fun(
+                columns=["step", "substep"],
                 method="max",
                 of="elapsed",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
+                kind="drilldown",
                 **style_kwargs,
             )
         return vdf
@@ -1492,7 +2009,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1519,7 +2036,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1555,7 +2072,21 @@ class QueryProfiler:
         path_id: Optional[int] = None,
         path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
-        metric: Literal[None, "cost", "rows"] = "rows",
+        metric: Literal[
+            None,
+            "cost",
+            "rows",
+            "exec_time_ms",
+            "est_rows",
+            "proc_rows",
+            "prod_rows",
+            "rle_prod_rows",
+            "clock_time_us",
+            "cstall_us",
+            "pstall_us",
+            "mem_res_mb",
+            "mem_all_mb",
+        ] = "rows",
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
         **tree_style,
@@ -1577,14 +2108,27 @@ class QueryProfiler:
             If set to ``True`` the
             ancestors of ``path_id``
             are also displayed.
-        metric: str, optional
+        metric: str | tuple | list, optional
             The metric used to color
             the tree nodes. One of
             the following:
 
+            - None (no specific color)
             - cost
             - rows
-            - None (no specific color)
+            - exec_time_ms
+            - est_rows
+            - proc_rows
+            - prod_rows
+            - rle_prod_rows
+            - clock_time_us
+            - cstall_us
+            - pstall_us
+            - mem_res_mb
+            - mem_all_mb
+
+            It can also be a ``list`` or
+            a ``tuple`` of two metrics.
 
         pic_path: str, optional
             Absolute path to save
@@ -1597,6 +2141,11 @@ class QueryProfiler:
             ``dictionary`` used to
             customize the tree.
 
+            - two_legend:
+                If set to ``True``
+                and two metrics are
+                used, two legends will
+                be drawn.
             - color_low:
                 Color used as the lower
                 bound of the gradient.
@@ -1607,15 +2156,21 @@ class QueryProfiler:
                 Default: '#FF0000' (red)
             - fontcolor:
                 Font color.
-                Default: #000000 (black)
+                Default (light-m): #000000 (black)
+                Default (dark-m): #FFFFFF (white)
+            - fontsize:
+                Font size.
+                Default: 22
             - fillcolor:
                 Color used to fill the
                 nodes in case no gradient
                 is computed: ``metric=None``.
-                Default: #ADD8E6 (lightblue)
+                Default (light-m): #FFFFFF (white)
+                Default (dark-m): #000000 (black)
             - edge_color:
                 Edge color.
-                Default: #000000 (black)
+                Default (light-m): #000000 (black)
+                Default (dark-m): #FFFFFF (white)
             - edge_style:
                 Edge Style.
                 Default: 'solid'.
@@ -1639,10 +2194,37 @@ class QueryProfiler:
                 Maximum size of a line
                 in the information box.
                 Default: 30
-            - info_fontsize
+            - info_fontsize:
                 Information box font
                 size.
                 Default: 8
+            - network_edge:
+                If set to ``True`` the
+                network edges will all
+                have their own style:
+                dotted for BROADCAST,
+                dashed for RESEGMENT
+                else solid.
+            - display_operator:
+                If set to ``True`` the
+                PATH ID operator of each
+                node will be displayed.
+            - display_operator_edge:
+                If set to ``True`` the
+                operator edge of each
+                node will be displayed.
+            - display_proj:
+                If set to ``True`` the
+                projection of each STORAGE
+                ACCESS PATH ID will be
+                partially displayed.
+            - display_etc:
+                If set to ``True`` and
+                ``path_is is not None``
+                the symbol "..." is used
+                to represent the ancestors
+                children when they have more
+                than 1.
 
         Returns
         -------
@@ -1652,7 +2234,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1694,15 +2276,42 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         rows = self.get_qplan(print_plan=False)
+        if len(rows) == "":
+            raise ValueError("The Query Plan is empty. Its data might have been lost.")
+        metric_value = {}
+        if isinstance(metric, (str, NoneType)):
+            metric = [metric]
+        for me in metric:
+            if me not in [None, "rows", "cost"]:
+                vdf = self.get_qexecution_report()
+                query = f"""
+                    SELECT
+                        path_id,
+                        SUM({me})
+                    FROM {vdf}
+                    GROUP BY 1
+                    ORDER BY 1"""
+                res = _executeSQL(
+                    query,
+                    title="Getting the corresponding query",
+                    method="fetchall",
+                )
+                metric_value[me] = {}
+                for path_id_val, metric_val in res:
+                    if not isinstance(metric_val, NoneType):
+                        metric_value[me][path_id_val] = float(metric_val)
+                    else:
+                        metric_value[me][path_id_val] = 0
         obj = PerformanceTree(
             rows,
             show_ancestors=show_ancestors,
             path_id_info=path_id_info,
             path_id=path_id,
             metric=metric,
+            metric_value=metric_value,
             style=tree_style,
         )
         if return_graphviz:
@@ -1778,7 +2387,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1807,8 +2416,10 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh", "pie"])
         div = self._get_interval_str(unit)
         where = ""
         if show:
@@ -1833,6 +2444,7 @@ class QueryProfiler:
         query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         if show:
+            self._check_vdf_empty(vdf)
             fun = self._get_chart_method(vdf["path_line"], kind)
             return fun(
                 method="sum",
@@ -1933,7 +2545,7 @@ class QueryProfiler:
         Examples
         --------
         First, let's import the
-        :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -1962,7 +2574,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -2066,7 +2678,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2095,8 +2707,10 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh"])
         query = f"""
             SELECT 
                 node_name, 
@@ -2105,7 +2719,7 @@ class QueryProfiler:
             FROM 
                 v_monitor.execution_engine_profiles 
             WHERE 
-                counter_name = 'execution time (us)' AND 
+                TRIM(counter_name) = 'execution time (us)' AND 
                 transaction_id={self.transaction_id} AND 
                 statement_id={self.statement_id}"""
         query = self._replace_schema_in_query(query)
@@ -2114,6 +2728,7 @@ class QueryProfiler:
         if reverse:
             columns.reverse()
         if show:
+            self._check_vdf_empty(vdf)
             fun = self._get_chart_method(vdf, kind)
             return fun(
                 columns=columns,
@@ -2138,7 +2753,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2167,30 +2782,32 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = f"""
             SELECT
                 node_name,
                 operator_name,
                 path_id,
-                ROUND(SUM(CASE counter_name WHEN 'execution time (us)' THEN
+                ROUND(SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
                     counter_value ELSE NULL END) / 1000, 3.0) AS exec_time_ms,
-                SUM(CASE counter_name WHEN 'estimated rows produced' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'estimated rows produced' THEN
                     counter_value ELSE NULL END) AS est_rows,
-                SUM(CASE counter_name WHEN 'rows processed' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'rows processed' THEN
                     counter_value ELSE NULL END) AS proc_rows,
-                SUM(CASE counter_name WHEN 'rows produced' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'rows produced' THEN
                     counter_value ELSE NULL END) AS prod_rows,
-                SUM(CASE counter_name WHEN 'rle rows produced' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'rle rows produced' THEN
                     counter_value ELSE NULL END) AS rle_prod_rows,
-                SUM(CASE counter_name WHEN 'consumer stall (us)' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'consumer stall (us)' THEN
                     counter_value ELSE NULL END) AS cstall_us,
-                SUM(CASE counter_name WHEN 'producer stall (us)' THEN
+                SUM(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
                     counter_value ELSE NULL END) AS pstall_us,
-                ROUND(SUM(CASE counter_name WHEN 'memory reserved (bytes)' THEN
-                    counter_value ELSE NULL END)/1000000, 1.0) AS mem_res_mb,
-                ROUND(SUM(CASE counter_name WHEN 'memory allocated (bytes)' THEN 
+                SUM(CASE TRIM(counter_name) WHEN 'clock time (us)' THEN
+                    counter_value ELSE NULL END) AS clock_time_us,
+                ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
+                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_res_mb,
+                ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
                     counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb
             FROM
                 v_monitor.execution_engine_profiles
@@ -2201,7 +2818,7 @@ class QueryProfiler:
             GROUP BY
                 1, 2, 3
             ORDER BY
-                CASE WHEN SUM(CASE counter_name WHEN 'execution time (us)' THEN
+                CASE WHEN SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
                     counter_value ELSE NULL END) IS NULL THEN 1 ELSE 0 END ASC,
                 5 DESC;"""
         query = self._replace_schema_in_query(query)
@@ -2218,6 +2835,7 @@ class QueryProfiler:
             "proc_rows",
             "prod_rows",
             "rle_prod_rows",
+            "clock_time_us",
             "cstall_us",
             "pstall_us",
             "mem_res_mb",
@@ -2265,16 +2883,17 @@ class QueryProfiler:
             used.
         metric: str, optional
             Metric to use. One of the following:
-             - all (all metrics are used).
-             - exec_time_ms (default)
-             - est_rows
-             - proc_rows
-             - prod_rows
-             - rle_prod_rows
-             - cstall_us
-             - pstall_us
-             - mem_res_mb
-             - mem_all_mb
+            - all (all metrics are used).
+            - exec_time_ms (default)
+            - est_rows
+            - proc_rows
+            - prod_rows
+            - rle_prod_rows
+            - clock_time_us
+            - cstall_us
+            - pstall_us
+            - mem_res_mb
+            - mem_all_mb
         path_id: str
             Path ID.
         kind: str, optional
@@ -2337,7 +2956,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2405,8 +3024,10 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if show:
+            kind = self._check_kind(kind, ["bar", "barh", "pie"])
         if metric == "all" and show:
             if conf.get_option("plotting_lib") != "plotly":
                 raise ExtensionError(
@@ -2419,6 +3040,7 @@ class QueryProfiler:
                 "proc_rows",
                 "prod_rows",
                 "rle_prod_rows",
+                "clock_time_us",
                 "cstall_us",
                 "pstall_us",
                 "mem_res_mb",
@@ -2458,6 +3080,7 @@ class QueryProfiler:
             cond += f"path_id = {path_id}"
         vdf = self.get_qexecution_report().search(cond)
         if show:
+            self._check_vdf_empty(vdf)
             if multi:
                 vdf["path_id"].apply("'path_id=' || {}::VARCHAR")
                 fun = self._get_chart_method(vdf, kind)
@@ -2492,7 +3115,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2522,7 +3145,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.resource_pool_status;"""
         query = self._replace_schema_in_query(query)
@@ -2542,7 +3165,7 @@ class QueryProfiler:
         --------
 
         First, let's import the
-        :py:class:`QueryProfiler`
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
         object.
 
         .. code-block:: python
@@ -2572,7 +3195,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :py:class:`verticapy.performance.vertica.qprof.QueryProfiler`.
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.host_resources;"""
         query = self._replace_schema_in_query(query)

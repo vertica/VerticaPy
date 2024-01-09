@@ -334,10 +334,10 @@ class TestDummyTreeRegressor:
             percent=True,
             vertical=False,
             node_style={"shape": "box", "style": "filled"},
-            arrow_style={"color": "blue"},
+            edge_style={"color": "blue"},
             leaf_style={"shape": "circle", "style": "filled"},
         )
-        assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
+        assert "digraph Tree {" in gvz_tree_0
         assert "0 -> 1" in gvz_tree_0
 
     def test_get_tree(self, model):

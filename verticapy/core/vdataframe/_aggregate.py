@@ -229,11 +229,11 @@ class vDFAgg(vDFEval):
             ones, and the results are combined at the end.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` :
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` :
               Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataColumn.describe` :
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.describe` :
               Summarizes the information within the column.
-            | :py:meth:`verticapy.vDataFrame.describe` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.describe` :
               Summarizes the information for specific columns.
         """
         columns, func = format_type(columns, func, dtype=list)
@@ -761,7 +761,7 @@ class vDFAgg(vDFEval):
         .. note::
 
             This function can offer faster performance compared to the
-            :py:meth:`verticapy.vDataFrame.aggregate` method, as it
+            ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` method, as it
             leverages specialized and optimized backend functions.
 
         Parameters
@@ -945,9 +945,9 @@ class vDFAgg(vDFEval):
         .. note:: All the calculations are pushed to the database.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
-            | :py:meth:`verticapy.vDataColumn.describe` :
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.describe` :
               Summarizes the information within the column.
         """
         if method == "auto":
@@ -1445,8 +1445,8 @@ class vDFAgg(vDFEval):
         .. hint:: For additional aggregation options, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         columns, expr = format_type(columns, expr, dtype=list)
         assert not isinstance(rollup, list) or len(rollup) == len(columns), ValueError(
@@ -1635,9 +1635,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aad` :
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aad` :
               Average Absolute Deviation for a specific column.
-            | :py:meth:`verticapy.vDataFrame.std` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.std` :
               Standard Deviation for particular columns.
         """
         return self.aggregate(func=["aad"], columns=columns, **agg_kwargs)
@@ -1721,7 +1721,7 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.any` : Boolean OR Aggregation.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.any` : Boolean OR Aggregation.
         """
         return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs)
 
@@ -1802,7 +1802,7 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.all` : Boolean AND Aggregation.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.all` : Boolean AND Aggregation.
         """
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs)
 
@@ -1883,9 +1883,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.avg` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.avg` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.max` : Maximum for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(func=["avg"], columns=columns, **agg_kwargs)
 
@@ -1967,8 +1967,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.count` : Count for a specific column.
-            | :py:meth:`verticapy.vDataFrame.count_percent` : Count Percent for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.count` : Count for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.count_percent` : Count Percent for particular columns.
         """
         return self.aggregate(func=["count"], columns=columns, **agg_kwargs)
 
@@ -2059,9 +2059,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwargs)
 
@@ -2160,8 +2160,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.std` : Mean Absolute Deviation for particular columns.
-            | :py:meth:`verticapy.vDataColumn.mad` : Standard Deviation for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.std` : Mean Absolute Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mad` : Standard Deviation for a specific column.
         """
         return self.aggregate(func=["mad"], columns=columns, **agg_kwargs)
 
@@ -2241,8 +2241,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
-            | :py:meth:`verticapy.vDataColumn.max` : Maximum for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.min` : Minimum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.max` : Maximum for a specific column.
         """
         return self.aggregate(func=["max"], columns=columns, **agg_kwargs)
 
@@ -2335,9 +2335,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:meth:`verticapy.vDataFrame.min` : Maximum for particular columns.
-            | :py:meth:`verticapy.vDataColumn.mean` : Mean for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.max` : Maximum for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.min` : Maximum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mean` : Mean for a specific column.
         """
         return self.quantile(
             0.5,
@@ -2422,8 +2422,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.min` : Minimum for a specific column.
-            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.min` : Minimum for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.max` : Maximum for particular columns.
         """
         return self.aggregate(func=["min"], columns=columns, **agg_kwargs)
 
@@ -2522,8 +2522,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
-            | :py:meth:`verticapy.vDataFrame.quantile` : Quantile Aggregates for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.quantile` : Quantile Aggregates for particular columns.
         """
         return self.aggregate(func=["prod"], columns=columns, **agg_kwargs)
 
@@ -2639,8 +2639,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         if isinstance(q, (int, float)):
             q = [q]
@@ -2747,8 +2747,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.sem` : Standard Error of Mean for a specific column.
-            | :py:meth:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.sem` : Standard Error of Mean for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
         """
         return self.aggregate(func=["sem"], columns=columns, **agg_kwargs)
 
@@ -2839,9 +2839,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:meth:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
-            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.skewness` : Skewness for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["skewness"], columns=columns, **agg_kwargs)
 
@@ -2925,9 +2925,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:meth:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.std` : Standard Deviation for a specific column.
         """
         return self.aggregate(func=["stddev"], columns=columns, **agg_kwargs)
 
@@ -3008,8 +3008,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.sum` : Sum for a specific column.
-            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.sum` : Sum for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.max` : Maximum for particular columns.
         """
         return self.aggregate(func=["sum"], columns=columns, **agg_kwargs)
 
@@ -3091,9 +3091,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:meth:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
-            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.skewness` : Skewness for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["variance"], columns=columns, **agg_kwargs)
 
@@ -3190,8 +3190,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.count` : Count for a specific column.
-            | :py:meth:`verticapy.vDataFrame.count` : Count for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.count` : Count for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.count` : Count for particular columns.
         """
         result = self.aggregate(
             func=["count", "percent"],
@@ -3301,8 +3301,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.duplicated` : Duplicate Values for particular columns.
-            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinaility for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.duplicated` : Duplicate Values for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.nunique` : Cardinaility for a specific column.
         """
         func = ["approx_unique"] if approx else ["unique"]
         return self.aggregate(func=func, columns=columns, **agg_kwargs)
@@ -3400,8 +3400,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:meth:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.nunique` : Cardinality for particular columns.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) == 0:
@@ -3602,10 +3602,10 @@ class vDCAgg(vDCEval):
         .. note:: All the calculations are pushed to the database.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
-            | :py:meth:`verticapy.vDataColumn.describe` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.describe` :
               Summarizes the information within the column.
-            | :py:meth:`verticapy.vDataFrame.describe` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.describe` :
               Summarizes the information for specific columns.
         """
         return self._parent.aggregate(func=func, columns=[self._alias]).transpose()
@@ -3773,9 +3773,9 @@ class vDCAgg(vDCEval):
         .. note:: All the calculations are pushed to the database.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
-            | :py:meth:`verticapy.vDataFrame.describe` :
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.describe` :
               Summarizes information within the columns.
         """
         assert (method != "cat_stats") or (numcol), ValueError(
@@ -3970,9 +3970,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aad` :
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aad` :
               Standard Deviation for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aad` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aad` :
               Average Absolute Deviation for particular columns.
         """
         return self.aggregate(["aad"]).values[self._alias][0]
@@ -4014,9 +4014,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.avg` : Aggregations for particular columns.
-            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.avg` : Aggregations for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.max` : Maximum for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(["avg"]).values[self._alias][0]
 
@@ -4058,8 +4058,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.count` : Count for particular columns.
-            | :py:meth:`verticapy.vDataFrame.count_percent` :
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.count` : Count for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.count_percent` :
             Percentage count for particular columns.
         """
         return self.aggregate(["count"]).values[self._alias][0]
@@ -4112,8 +4112,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
-            | :py:meth:`verticapy.vDataFrame.kurtosis` : Kurtosis for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.kurtosis` : Kurtosis for particular columns.
         """
         return self.aggregate(["kurtosis"]).values[self._alias][0]
 
@@ -4172,8 +4172,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
-            | :py:meth:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
         """
         return self.aggregate(["mad"]).values[self._alias][0]
 
@@ -4214,8 +4214,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:meth:`verticapy.vDataColumn.min` : Minimum for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.max` : Maximum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.min` : Minimum for a specific column.
         """
         return self.aggregate(["max"]).values[self._alias][0]
 
@@ -4273,8 +4273,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.mean` : Mean for a specific column.
-            | :py:meth:`verticapy.vDataFrame.median` : Median for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mean` : Mean for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.median` : Median for particular columns.
         """
         return self.quantile(0.5, approx=approx)
 
@@ -4315,8 +4315,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.max` : Maximum for a specific column.
-            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.max` : Maximum for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(["min"]).values[self._alias][0]
 
@@ -4375,8 +4375,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataColumn.quantile` : Quantile Aggregates for a specific column.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.quantile` : Quantile Aggregates for a specific column.
         """
         return self.aggregate(func=["prod"]).values[self._alias][0]
 
@@ -4453,8 +4453,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         prefix = "approx_" if approx else ""
         return self.aggregate(func=[f"{prefix}{q * 100}%"]).values[self._alias][0]
@@ -4514,8 +4514,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.mad` : Mean Absolute Deviation for a specific column.
-            | :py:meth:`verticapy.vDataFrame.sem` : Standard Error of Mean for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mad` : Mean Absolute Deviation for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.sem` : Standard Error of Mean for particular columns.
         """
         return self.aggregate(["sem"]).values[self._alias][0]
 
@@ -4566,9 +4566,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(["skewness"]).values[self._alias][0]
 
@@ -4612,9 +4612,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(["stddev"]).values[self._alias][0]
 
@@ -4655,8 +4655,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.sum` : Sum for particular columns.
-            | :py:meth:`verticapy.vDataColumn.max` : Maximum for a specific colum.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.sum` : Sum for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.max` : Maximum for a specific colum.
         """
         return self.aggregate(["sum"]).values[self._alias][0]
 
@@ -4698,8 +4698,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         return self.aggregate(["variance"]).values[self._alias][0]
 
@@ -4768,8 +4768,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.mean` : Mean for a specific column.
-            | :py:meth:`verticapy.vDataFrame.median` : Median for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.mean` : Mean for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.median` : Median for particular columns.
         """
         if n == 1:
             pre_comp = self._parent._get_catalog_value(self._alias, "top")
@@ -4871,8 +4871,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:meth:`verticapy.vDataFrame.duplicated` : Duplicated values for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.duplicated` : Duplicated values for particular columns.
         """
         return self.describe(method="categorical", max_cardinality=k)
 
@@ -4945,8 +4945,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:meth:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.nunique` : Cardinality for particular columns.
         """
         limit, where, topk_cat = "", "", ""
         if k >= 1:
@@ -5016,8 +5016,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         alias_sql_repr = to_varchar(self.category(), self._alias)
         if "agg" not in kwargs:
@@ -5110,8 +5110,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the `aggregate` method.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         if approx:
             return self.aggregate(func=["approx_unique"]).values[self._alias][0]

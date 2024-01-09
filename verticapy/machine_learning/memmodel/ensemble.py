@@ -36,7 +36,7 @@ if TYPE_CHECKING and conf.get_import_success("graphviz"):
 
 class Ensemble(InMemoryModel):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ensemble
     algorithms.
 
@@ -171,7 +171,7 @@ class Ensemble(InMemoryModel):
 
 class RandomForestRegressor(Ensemble):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the random
     forest regressor algorithm.
 
@@ -196,7 +196,7 @@ class RandomForestRegressor(Ensemble):
     is an ensemble of multiple binary
     tree regressor models. In this
     example, we will create three
-    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:class:`~verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models:
 
     .. ipython:: python
@@ -226,7 +226,7 @@ class RandomForestRegressor(Ensemble):
         )
 
     Now we will use above models to create
-    :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+    :py:class:`~verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
     model.
 
     .. ipython:: python
@@ -244,7 +244,7 @@ class RandomForestRegressor(Ensemble):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -260,7 +260,7 @@ class RandomForestRegressor(Ensemble):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -280,7 +280,7 @@ class RandomForestRegressor(Ensemble):
     **Drawing Trees**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.plot_tree`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -298,7 +298,7 @@ class RandomForestRegressor(Ensemble):
 
     .. important::
 
-        :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.plot_tree`
+        :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.plot_tree`
         requires the
         `Graphviz <https://graphviz.org/download/>`_
         module.
@@ -400,7 +400,7 @@ class RandomForestRegressor(Ensemble):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
             for more information about the
             different methods and usages.
         """
@@ -480,7 +480,7 @@ class RandomForestRegressor(Ensemble):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
             for more information about the
             different methods and usages.
         """
@@ -490,7 +490,7 @@ class RandomForestRegressor(Ensemble):
 
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     random forest classifier
     algorithm.
@@ -518,7 +518,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     is an ensemble of multiple binary
     tree classifier models. In this
     example, we will create three
-    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:class:`~verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
     .. ipython:: python
@@ -551,7 +551,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+    :py:class:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
     model.
 
     .. ipython:: python
@@ -572,7 +572,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -580,7 +580,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         model_rfc.predict(data)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba`
     method to compute the
     predicted probabilities
     for each class.
@@ -598,7 +598,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_sql`
     method to get the SQL
     code needed to deploy
     the model using its
@@ -609,7 +609,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         model_rfc.predict_sql(cnames)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba_sql`
     method to get the SQL code
     needed to deploy the model
     probabilities using its
@@ -630,7 +630,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     **Drawing Trees**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.plot_tree`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -648,7 +648,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     .. important::
 
-        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
+        :py:meth:`~verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
         requires the
         `Graphviz <https://graphviz.org/download/>`_
         module.
@@ -764,7 +764,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
             for more information about the
             different methods and usages.
         """
@@ -857,7 +857,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
             for more information about the
             different methods and usages.
         """
@@ -891,7 +891,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
 class XGBRegressor(Ensemble):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``XGBoost`` regressor
     algorithm.
@@ -921,7 +921,7 @@ class XGBRegressor(Ensemble):
     A  model is an ensemble of
     multiple binary tree regressors.
     In this example, we will create three
-    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:class:`~verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models.
 
     .. ipython:: python
@@ -952,7 +952,7 @@ class XGBRegressor(Ensemble):
 
     Now we will use above
     models to create
-    :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+    :py:class:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
     model.
 
     .. ipython:: python
@@ -982,7 +982,7 @@ class XGBRegressor(Ensemble):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -998,7 +998,7 @@ class XGBRegressor(Ensemble):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -1018,7 +1018,7 @@ class XGBRegressor(Ensemble):
     **Drawing Trees**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.plot_tree`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -1036,7 +1036,7 @@ class XGBRegressor(Ensemble):
 
     .. important::
 
-        :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.plot_tree`
+        :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor.plot_tree`
         requires the
         `Graphviz <https://graphviz.org/download/>`_
         module.
@@ -1078,7 +1078,7 @@ class XGBRegressor(Ensemble):
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
         Predicts using the
-        :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+        :py:class:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
         model.
 
         Parameters
@@ -1150,7 +1150,7 @@ class XGBRegressor(Ensemble):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
             for more information about the
             different methods and usages.
         """
@@ -1233,7 +1233,7 @@ class XGBRegressor(Ensemble):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
             for more information about the
             different methods and usages.
         """
@@ -1243,7 +1243,7 @@ class XGBRegressor(Ensemble):
 
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     ``XGBoost`` classifier
     algorithm.
@@ -1276,7 +1276,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     an ensemble of multiple binary
     tree classifier models. In this
     example, we will create three
-    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:class:`~verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
     .. ipython:: python
@@ -1327,7 +1327,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+    :py:class:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
     model.
 
     .. ipython:: python
@@ -1359,7 +1359,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -1367,7 +1367,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         model_xgbc.predict(data)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba`
     method to compute the predicted
     probabilities for each class.
 
@@ -1384,7 +1384,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -1394,7 +1394,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         model_xgbc.predict_sql(cnames)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba_sql`
     method to get the SQL code
     needed to deploy the model
     probabilities using its
@@ -1415,7 +1415,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     **Drawing Trees**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.plot_tree`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -1433,7 +1433,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     .. important::
 
-        :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.plot_tree`
+        :py:meth:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier.plot_tree`
         requires the
         `Graphviz <https://graphviz.org/download/>`_
         module.
@@ -1574,7 +1574,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
             for more information about the
             different methods and usages.
         """
@@ -1685,7 +1685,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
             for more information about the
             different methods and usages.
         """
@@ -1704,7 +1704,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
 class IsolationForest(Ensemble):
     """
-    :py:class:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:class:`~verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the
     isolation forest algorithm.
 
@@ -1729,7 +1729,7 @@ class IsolationForest(Ensemble):
     an ensemble of multiple binary
     tree anomaly models. In this
     example, we will create three
-    :py:class:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
+    :py:class:`~verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     models:
 
     .. ipython:: python
@@ -1762,7 +1762,7 @@ class IsolationForest(Ensemble):
         )
 
     Now we will use above models to create
-    :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+    :py:class:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest`
     model.
 
     .. ipython:: python
@@ -1780,7 +1780,7 @@ class IsolationForest(Ensemble):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -1796,7 +1796,7 @@ class IsolationForest(Ensemble):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict_sql`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict_sql`
     method to get the SQL code
     needed to deploy the model
     using its attributes.
@@ -1816,7 +1816,7 @@ class IsolationForest(Ensemble):
     **Drawing Trees**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.plot_tree`
+    :py:meth:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -1834,7 +1834,7 @@ class IsolationForest(Ensemble):
 
     .. important::
 
-        :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.plot_tree`
+        :py:meth:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest.plot_tree`
         requires the
         `Graphviz <https://graphviz.org/download/>`_
         module.
@@ -1869,7 +1869,7 @@ class IsolationForest(Ensemble):
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
         Predicts using the
-        :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+        :py:class:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest`
         model.
 
         Parameters
@@ -1940,7 +1940,7 @@ class IsolationForest(Ensemble):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest`
             for more information about the
             different methods and usages.
         """
@@ -2023,7 +2023,7 @@ class IsolationForest(Ensemble):
         .. note::
 
             Refer to
-            :py:class:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+            :py:class:`~verticapy.machine_learning.memmodel.ensemble.IsolationForest`
             for more information about the
             different methods and usages.
         """
