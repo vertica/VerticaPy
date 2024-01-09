@@ -49,6 +49,7 @@ p {
 
 .sidebar-tree .icon, .sidebar-tree .reference {
   color: var(--color-announcement-text);
+  font-size: Medium;
 }
 
 .sidebar-brand-text {
@@ -83,6 +84,7 @@ p {
 
 /* Top Banner BUttons */
 .top-button-container {
+  font-size: Large;
   display: flex;
 }
 
