@@ -10,6 +10,8 @@
 
 :warning: The following README is for VerticaPy 1.0.x and onwards, and so some of the elements may not be present in the previous versions.
 
+:scroll: Some basic syntax can be found in [the cheat sheet](assets/cheat_sheet/).
+
 # VerticaPy
 
 [![PyPI version](https://badge.fury.io/py/verticapy.svg)](https://badge.fury.io/py/verticapy)
@@ -157,6 +159,9 @@ vp.set_option("theme", "dark") # can be switched 'light'.
 ```
 
 VerticaPy's theme-switching option ensures that users can tailor their experience to their preferences, making data exploration and analysis a more personalized and enjoyable journey.
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ### SQL Magic
 You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.jupyter.extensions.sql_magic.sql_magic.html#verticapy.jupyter.extensions.sql_magic.sql_magic'>SQL Magic</a>:
