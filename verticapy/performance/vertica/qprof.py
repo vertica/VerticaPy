@@ -382,7 +382,7 @@ class QueryProfiler:
 
     .. ipython:: python
 
-        print(self.transactions)
+        print(qprof.transactions)
 
     To avoid recomputing a query, you
     can also directly use its statement
@@ -432,7 +432,7 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
-        result = qprof.get_queries('dc_requests_issued')
+        result = qprof.get_queries()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -507,15 +507,17 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_qsteps(kind="pie")
+        qprof.get_qsteps(kind="bar")
 
     .. ipython:: python
         :suppress:
 
         import verticapy as vp
-        vp.set_option("plotting_lib", "plotly")
-        fig = qprof.get_qsteps(kind="pie")
-        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html")
+        vp.set_option("plotting_lib", "highcharts")
+        fig = qprof.get_qsteps(kind="bar")
+        html_text = fig.htmlcontent.replace("container", "performance_vertica_query_profiler_pie_plot")
+        with open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html", "w") as file:
+            file.write(html_text)
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
@@ -635,6 +637,7 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
+        vp.set_option("plotting_lib", "plotly")
         fig = qprof.get_qplan_profile(kind="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html")
 
@@ -991,7 +994,7 @@ class QueryProfiler:
         if kind not in kind_list:
             raise ValueError(
                 "Parameter Error, 'kind' should be in "
-                f"[{' | '.join()}].\nFound {kind}."
+                f"[{' | '.join(kind_list)}].\nFound {kind}."
             )
         return kind
 
@@ -1938,7 +1941,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_qsteps(kind="pie")
+            qprof.get_qsteps(kind="bar")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
