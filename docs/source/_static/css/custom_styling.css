@@ -53,6 +53,10 @@ div[class*=" highlight-"], div[class^=highlight-]{
   font-size: medium;
 }
 
+/* VerticaPy Documentation Text */
+.brand{
+  font-size: medium;
+}
 
 /* Tabs Text */
 .tab-set > input:checked + label {
@@ -122,6 +126,7 @@ div[class*=" highlight-"], div[class^=highlight-]{
 .top_search{
   margin-left: 40px;
   padding-right: 10px;
+  font-size: medium;
 }
 
 /* Top Banner BUttons */
@@ -367,6 +372,7 @@ div[class*=" highlight-"], div[class^=highlight-]{
   color: white;
   border: none;
   border-radius: 50px;
+  font-size: medium;
 }
 
 .button-text {
@@ -423,7 +429,7 @@ div[class*=" highlight-"], div[class^=highlight-]{
   /* width: 100%; */
   height: calc(1em + 1.375rem + 2px);
   padding: 0rem 0.9375rem;
-  font-size: 1rem;
+  font-size: large;
   font-weight: 300;
   line-height: 1;
   color: var(--color-announcement-text);
