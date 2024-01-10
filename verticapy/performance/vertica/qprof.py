@@ -1123,10 +1123,25 @@ class QueryProfiler:
             "dc_query_executions": "v_internal",
             "dc_explain_plans": "v_internal",
             "execution_engine_profiles": "v_monitor",
+            "query_events": "v_monitor",
             "query_plan_profiles": "v_monitor",
             "query_profiles": "v_monitor",
             "resource_pool_status": "v_monitor",
             "host_resources": "v_monitor",
+            # New Tables - still not used.
+            "dc_plan_activities": "v_internal",
+            "dc_lock_attempts": "v_internal",
+            "dc_plan_resources": "v_internal",
+            "configuration_parameters": "v_monitor",
+            "projection_storage": "v_monitor",
+            "projection_usage": "v_monitor",
+            "query_consumption": "v_monitor",
+            "query_events": "v_monitor",
+            "resource_acquisitions": "v_monitor",
+            "storage_containers": "v_monitor",
+            "projections": "v_catalog",
+            "projection_columns": "v_catalog",
+            "resource_pools": "v_catalog",
         }
 
     @staticmethod
@@ -1137,8 +1152,15 @@ class QueryProfiler:
         ``statement_is``.
         """
         return [
+            "dc_lock_attempts",
+            "configuration_parameters",
+            "projections",
+            "projection_columns",
+            "projection_storage",
+            "resource_pools",
             "resource_pool_status",
             "host_resources",
+            "storage_containers",
         ]
 
     def _create_copy_v_table(self) -> None:
@@ -1196,9 +1218,15 @@ class QueryProfiler:
                 else:
                     sql += f"TABLE {new_schema}.{new_table}"
                 sql += f" AS SELECT * FROM {schema}.{table}"
-                if table not in self._v_config_table_list():
-                    sql += f" WHERE transaction_id={self.transaction_id} "
-                    sql += f"AND statement_id={self.statement_id}"
+                if table not in v_config_table_list:
+                    sql += " WHERE "
+                    jdx = 0
+                    for tr, st in self.transactions:
+                        if jdx > 0:
+                            sql += " OR "
+                        sql += f"(transaction_id={tr} AND statement_id={st})"
+                        jdx += 1
+                    sql += " ORDER BY transaction_id, statement_id"
                 target_tables[table] = new_table
 
                 # Getting the new DATATYPES
@@ -1262,13 +1290,11 @@ class QueryProfiler:
         """
         tables = list(self._v_table_dict().keys())
         tables_schema = self._v_table_dict()
+        config_table = self._v_config_table_list()
         warning_message = ""
         for tr_id, st_id in self.transactions:
             for table_name in tables:
-                if (
-                    "resource_pool_status" not in table_name
-                    and "host_resources" not in table_name
-                ):
+                if table_name not in config_table:
                     if len(self.target_tables) == 0:
                         sc, tb = tables_schema[table_name], table_name
                     else:
