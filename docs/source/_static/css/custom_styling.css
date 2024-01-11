@@ -634,7 +634,8 @@ body {
 
 /* Chart Gallery Page */
 .custom-class-img-top-7 {
-  height: 200px
+  height: 200px;
+  padding: 8px;
 }
 /* END Connector Page Img Cards */
 
