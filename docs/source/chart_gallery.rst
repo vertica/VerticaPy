@@ -324,7 +324,7 @@ Machine Learning
     .. grid-item::
 
         .. card:: Champion Challenger
-          :img-top: _static/gif_champion_challenger.gif
+          :img-top: _static/pic_champion_challenger.png
           :link: chart_gallery.champion_challenger
           :link-type: ref
           :text-align: center
@@ -539,7 +539,7 @@ Machine Learning
     .. grid-item::
 
         .. card:: Tree
-          :img-top: _static/gif_tree.gif
+          :img-top: _static/pic_tree.png
           :link: chart_gallery.tree
           :link-type: ref
           :text-align: center
@@ -559,7 +559,7 @@ Machine Learning
     .. grid-item::
 
         .. card:: Time-series
-          :img-top: _static/pic_time_series.png
+          :img-top: _static/gif_time_series.gif
           :link: chart_gallery.tsa
           :link-type: ref
           :text-align: center
