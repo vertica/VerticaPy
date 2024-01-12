@@ -1,5 +1,8 @@
 # VerticaPy Newsletter
 
+![Vertica-OT](https://github.com/vertica/VerticaPy/assets/46414488/dff1de8e-a2e3-4948-97c1-ff9e413bb9a9)
+
+
 With the release of VerticaPy versions 1.0.0 and 1.0.1, we are thrilled to announce many new features and additions to VerticaPy! The below sections highlight what's new in each of these versions. For more information about these new features, including examples, check out the new and improved [VerticaPy documentation](https://www.vertica.com/python/documentation/1.0.x/html/index.html).
 
 ## VerticaPy 1.0.0
