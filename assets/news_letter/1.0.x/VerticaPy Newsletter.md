@@ -25,6 +25,16 @@ Various bug fixes, including adjustments to R squared, Prevalence Threshold, and
 ### Other
 - A new dataset, "Africa Education", has been added to ``verticapy.datasets``.
 - ``vDataFrame.SQL`` has been deprecated. Now, ``verticapy.vDataFrame`` can be used to directly create a vDataFrame from SQL queries.
+
+For example:
+
+```
+import verticapy as vp
+vp.vDataFrame(
+"(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
+)
+```
+
 - Import structures have been updated. The code was completely restructured for better readability and collaboration.
 
 ## VerticaPy 1.0.1
@@ -36,6 +46,25 @@ The ``verticapy.set_option()`` function now allows you to set the following opti
 - ``max_cellwidth``: Maximum width of VerticaPy table cells.
 - ``max_tableheight``: Maximum height of VerticaPy tables.
 - ``theme``: Set the display theme for VerticaPy objects to 'light' or 'dark'. 'dark' is recommended for night use, and 'light' is the default.
+
+The default theme is "Light". It is recommended for daily use:
+
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/assets/img/light_theme.png' width="180px">
+</p>
+
+On the other hand, the "Dark" theme is suited for night-time use:
+
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/assets/img/dark_theme.png' width="180px">
+</p>
+
+For switching the themes, following syntax can be used:
+
+```
+import verticapy as vp
+vp.set_option("theme","dark")
+```
 
 ### Diagnostics
 The ``verticapy.performance.vertica.qprof.QueryProfiler`` class offers an extended set of functionalities, enabling the creation of complex trees with multiple metrics. This can help in finding ways to improve the performance of slow-running queries.
