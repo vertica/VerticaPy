@@ -50,13 +50,13 @@ The ``verticapy.set_option()`` function now allows you to set the following opti
 The default theme is "Light". It is recommended for daily use:
 
 <p align="center">
-<img src='https://raw.githubusercontent.com/vertica/VerticaPy/newsletter_1_0_x/assets/img/light_theme.png' width="70%">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/assets/img/light_theme.png' width="70%">
 </p>
 
 On the other hand, the "Dark" theme is suited for night-time use:
 
 <p align="center">
-<img src='https://raw.githubusercontent.com/vertica/VerticaPy/newsletter_1_0_x/assets/img/dark_theme.png' width="70%">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/assets/img/dark_theme.png' width="70%">
 </p>
 
 For switching the themes, following syntax can be used:
