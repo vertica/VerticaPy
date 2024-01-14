@@ -220,11 +220,7 @@ Comparison
           'Vertica': [650.27, 150.09, 1.24, 1.11]
       }
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(
@@ -233,7 +229,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "black",
+          marker_color= "#B8B7B6",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -272,11 +268,7 @@ Comparison
           'Vertica': [0.90, 0.94]
       }
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(
@@ -285,7 +277,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "black",
+          marker_color= "#B8B7B6",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -361,11 +353,7 @@ Comparison
           'Vertica': [249.64, 69.25, 1.26, 0.43]
       }
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(
@@ -374,7 +362,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "black",
+          marker_color= "#B8B7B6",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -413,11 +401,7 @@ Comparison
           'Vertica': [0.90, 0.95]
       }
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
       bar_width = 0.22  # Set the width of each bar
       gap_width = 0.00  # Set the gap width between bars
       fig.add_trace(go.Bar(
@@ -426,7 +410,7 @@ Comparison
           width=bar_width,
           text=data['Spark'],
           textposition='outside',
-          marker_color= "black",
+          marker_color= "#B8B7B6",
           name='Spark'
       ))
       fig.add_trace(go.Bar(
@@ -479,9 +463,10 @@ Dataset
     data = {'Data': ['Training', 'Testing'], 'Count': [training_data_count, testing_data_count]}
     df = pd.DataFrame(data)
     fig = px.pie(df, values='Count', names='Data', title='Training and Testing Data Distribution', 
-      labels={'Count': 'Data Count'}, color_discrete_sequence=['green', 'red'])
+      labels={'Count': 'Data Count'}, color_discrete_sequence=['blue', 'black'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_rf_amazon_data.html")
 
   .. raw:: html
