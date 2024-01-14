@@ -710,7 +710,7 @@ class KMeans(Clustering):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 
@@ -1401,7 +1401,7 @@ class KPrototypes(KMeans):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 
@@ -2040,7 +2040,7 @@ class BisectingKMeans(KMeans, Tree):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 

@@ -2093,7 +2093,7 @@ class ARIMA(TimeSeriesModelBase):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 
@@ -2826,7 +2826,7 @@ class ARMA(TimeSeriesModelBase):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 
@@ -3546,7 +3546,7 @@ class AR(TimeSeriesModelBase):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 
@@ -4231,7 +4231,7 @@ class MA(TimeSeriesModelBase):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 
@@ -4468,7 +4468,7 @@ class MA(TimeSeriesModelBase):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
     for more details on model
     tracking and versioning.
 
