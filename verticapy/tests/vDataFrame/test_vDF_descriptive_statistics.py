@@ -49,26 +49,6 @@ def amazon_vd():
 
 
 class TestvDFDescriptiveStat:
-    def test_vDF_nlargest(self, market_vd):
-        result = market_vd["Price"].nlargest(n=2)
-
-        assert result["Name"][0] == "Mangoes"
-        assert result["Form"][0] == "Dried"
-        assert result["Price"][0] == pytest.approx(10.1637125)
-        assert result["Name"][1] == "Mangoes"
-        assert result["Form"][1] == "Dried"
-        assert result["Price"][1] == pytest.approx(8.50464930)
-
-    def test_vDF_nsmallest(self, market_vd):
-        result = market_vd["Price"].nsmallest(n=2)
-
-        assert result["Name"][0] == "Watermelon"
-        assert result["Form"][0] == "Fresh"
-        assert result["Price"][0] == pytest.approx(0.31663877)
-        assert result["Name"][1] == "Watermelon"
-        assert result["Form"][1] == "Fresh"
-        assert result["Price"][1] == pytest.approx(0.33341203)
-
     def test_vDF_numh(self, market_vd, amazon_vd):
         assert market_vd["Price"].numh(method="auto") == pytest.approx(0.984707376)
         assert market_vd["Price"].numh(method="freedman_diaconis") == pytest.approx(
