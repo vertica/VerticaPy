@@ -213,6 +213,7 @@ class QueryProfiler:
     object.
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.performance.vertica import QueryProfiler
 
@@ -389,6 +390,7 @@ class QueryProfiler:
     ID and its transaction ID.
 
     .. ipython:: python
+        :okwarning:
 
         qprof = QueryProfiler((tid, sid))
 
@@ -404,6 +406,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_table('dc_requests_issued')
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html", "w")
@@ -431,6 +434,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_queries()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html", "w")
@@ -450,6 +454,7 @@ class QueryProfiler:
     ``get_version``.
 
     .. ipython:: python
+        :okwarning:
 
         qprof.get_version()
 
@@ -464,6 +469,7 @@ class QueryProfiler:
     step by using the ``step`` method.
 
     .. ipython:: python
+        :okwarning:
 
         qprof.step(idx = 0)
 
@@ -490,6 +496,7 @@ class QueryProfiler:
     To get the execution time of the entire query:
 
     .. ipython:: python
+        :okwarning:
 
         qprof.get_qduration(unit="s")
 
@@ -511,6 +518,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         import verticapy as vp
         vp.set_option("plotting_lib", "highcharts")
@@ -582,6 +590,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         res = qprof.get_qplan_tree(
             metric='cost',
@@ -611,6 +620,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         res = qprof.get_qplan_tree(
             path_id=1,
@@ -661,6 +671,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_query_events()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_query_events.html", "w")
@@ -697,6 +708,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_cpu_time(show=False)
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cpu_time_table.html", "w")
@@ -793,6 +805,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_cluster_config()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table.html", "w")
@@ -811,6 +824,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_rp_status()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table_2.html", "w")
