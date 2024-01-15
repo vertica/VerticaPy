@@ -618,7 +618,7 @@ body {
 .custom-card-13 {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  height: 190px;
+  height: 200px;
 }
 
 
@@ -1013,13 +1013,17 @@ article, article .align-default {
 .custom-card-4 {
   height: 140px;
 }
-/* Cards on Benchmarks pages */
-.custom-card-10 {
-  height: 100px; /* Adjust the desired height */
+/* Cards on User Guide MAIN page */
+.custom-card-8 {
+  height: 260px; /* Adjust the desired height */
 }
 /* Cards on User Guide / Introduction page */
 .custom-card-9 {
-  height: 220px;
+  height: 230px;
+}
+/* Cards on Benchmarks pages */
+.custom-card-10 {
+  height: 100px; /* Adjust the desired height */
 }
 /* Cards on User Guide/Data Exploration page */
 .custom-card-12 {
@@ -1027,6 +1031,10 @@ article, article .align-default {
 }
 /* Cards on User Guide/Data Prep page */
 .custom-card-13 {
+  height: 190px;
+}
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
   height: 190px;
 }
 }
@@ -1047,6 +1055,10 @@ article, article .align-default {
 /* Cards on User Guide / Introduction page */
 .custom-card-9 {
   height: 200px;
+}
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
+  height: 230px;
 }
 /* Cards on User Guide/Full Stack page */
 .custom-card-15 {
