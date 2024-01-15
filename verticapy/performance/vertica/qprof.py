@@ -1231,11 +1231,12 @@ class QueryProfiler:
 
                 # Getting the new DATATYPES
                 try:
-                    self.tables_dtypes += [
-                        get_data_types(
-                            f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
-                        )
-                    ]
+                    if not (self.overwrite):
+                        self.tables_dtypes += [
+                            get_data_types(
+                                f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
+                            )
+                        ]
                 except:
                     if conf.get_option("print_info") and idx == 0:
                         print("Some tables seem to not exist...")
@@ -1253,10 +1254,10 @@ class QueryProfiler:
                         f"SELECT * FROM {schema}.{table} LIMIT 0",
                     )
                 ]
-                if not (exists):
+                if not (exists) or (self.overwrite):
                     self.tables_dtypes += [self.v_tables_dtypes[-1]]
 
-            if not (exists):
+            if not (exists) or (self.overwrite):
                 if conf.get_option("print_info"):
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
