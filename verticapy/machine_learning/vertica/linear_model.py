@@ -1062,7 +1062,7 @@ class ElasticNet(LinearModel, Regressor):
         model.register("model_v1")
 
     Please refer to
-    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -1597,7 +1597,7 @@ class Lasso(LinearModel, Regressor):
         model.register("model_v1")
 
     Please refer to
-    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -2144,7 +2144,7 @@ class LinearRegression(LinearModel, Regressor):
         model.register("model_v1")
 
     Please refer to
-    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -2656,7 +2656,7 @@ class PoissonRegressor(LinearModel, Regressor):
         model.register("model_v1")
 
     Please refer to
-    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -3209,7 +3209,7 @@ class Ridge(LinearModel, Regressor):
         model.register("model_v1")
 
     Please refer to
-    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -3988,7 +3988,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         model.register("model_v1")
 
     Please refer to
-    :ref:`/notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
