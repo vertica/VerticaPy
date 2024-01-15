@@ -10,7 +10,7 @@ h1{
 
 h2{
   font-family: "Inter";
-  font-weight: 350 ;
+  /* font-weight: 350 ; */
   font-size: 2.5em ;
   letter-spacing: -.021em;
   color: var(--color-announcement-text);
@@ -516,7 +516,10 @@ body {
 .custom-card-8,
 .custom-card-9,
 .custom-card-10,
-.custom-card-11 {
+.custom-card-11,
+.custom-card-12,
+.custom-card-13,
+.custom-card-14 {
   /*overflow-y: scroll;*/
 }
 .custom-card:hover,
@@ -529,7 +532,10 @@ body {
 .custom-card-8:hover,
 .custom-card-9:hover,
 .custom-card-10:hover,
-.custom-card-11:hover {
+.custom-card-11:hover,
+.custom-card-12:hover,
+.custom-card-13:hover,
+.custom-card-13:hover {
   box-shadow: 0px 12px 30px whitesmoke;
 }
 
@@ -601,6 +607,34 @@ body {
   height: 190px; /* Adjust the desired height */
 }
 
+/* Cards on User Guide/Data Exploration page */
+.custom-card-12 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 200px;
+}
+
+/* Cards on User Guide/Data Prep page */
+.custom-card-13 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 200px;
+}
+
+
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 210px;
+}
+
+/* Cards on User Guide/Full Stack page */
+.custom-card-15 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 220px;
+}
 /* End cards */
 
 .custom-class-img-top{
@@ -979,9 +1013,29 @@ article, article .align-default {
 .custom-card-4 {
   height: 140px;
 }
+/* Cards on User Guide MAIN page */
+.custom-card-8 {
+  height: 260px; /* Adjust the desired height */
+}
+/* Cards on User Guide / Introduction page */
+.custom-card-9 {
+  height: 230px;
+}
 /* Cards on Benchmarks pages */
 .custom-card-10 {
   height: 100px; /* Adjust the desired height */
+}
+/* Cards on User Guide/Data Exploration page */
+.custom-card-12 {
+  height: 230px;
+}
+/* Cards on User Guide/Data Prep page */
+.custom-card-13 {
+  height: 190px;
+}
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
+  height: 190px;
 }
 }
 
@@ -997,6 +1051,18 @@ article, article .align-default {
 /* Cards on Benchmarks pages */
 .custom-card-10 {
   height: 150px; /* Adjust the desired height */
+}
+/* Cards on User Guide / Introduction page */
+.custom-card-9 {
+  height: 200px;
+}
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
+  height: 230px;
+}
+/* Cards on User Guide/Full Stack page */
+.custom-card-15 {
+  height: 240px;
 }
 }
 @media (max-width: 90em) {

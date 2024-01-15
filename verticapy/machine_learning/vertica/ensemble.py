@@ -941,7 +941,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -1626,7 +1626,7 @@ class XGBRegressor(Regressor, XGBoost):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -2565,7 +2565,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -3509,7 +3509,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 
@@ -4101,7 +4101,7 @@ class IsolationForest(Clustering, Tree):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
 

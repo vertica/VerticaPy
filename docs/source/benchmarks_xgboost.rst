@@ -73,6 +73,8 @@ Datasets
       labels={'Count': 'Data Count'}, color_discrete_sequence=['blue', 'black'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_higgs_data.html")
 
   .. raw:: html
@@ -104,6 +106,7 @@ Datasets
       labels={'Count': 'Data Count'}, color_discrete_sequence=['blue', 'black'])
     fig.update_traces(textinfo='value')
     fig.update_layout(width = 550)
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_amazon_data.html")
 
   .. raw:: html
@@ -337,20 +340,20 @@ The comparison analysis on both datasets follows:
       heights = [107.45, 720, 0, 1085.84]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(
+          paper_bgcolor="rgba(0,0,0,0)",
+          plot_bgcolor="rgba(0,0,0,0)",
+          font=dict({"color": "#888888"}),
+      )
       for label, height, color in zip(labels, heights, colors):
-          fig.add_trace(go.Bar(
-              x=[label],
-              y=[height],
-              marker_color=color,
-              text=[height],
-              textposition='outside',
-              name=label,
-          ))
+        fig.add_trace(go.Bar(
+            x=[label],
+            y=[height],
+            marker_color=color,
+            text=[height],
+            textposition='outside',
+            name=label,
+        ))
       fig.update_layout(
           title='Data Size: 10.5M',
           yaxis=dict(title='Execution Time (minutes)'),
@@ -419,11 +422,11 @@ The comparison analysis on both datasets follows:
       heights = [13.76, 9.11, 5.69, 96.8]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(
+          paper_bgcolor="rgba(0,0,0,0)",
+          plot_bgcolor="rgba(0,0,0,0)",
+          font=dict({"color": "#888888"}),
+      )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -469,11 +472,11 @@ The comparison analysis on both datasets follows:
       heights = [6.1, 2.08, 0.47, 7.26]
       colors = ["#1A6AFF", "#ee145b", "#f0d917", 'black']
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(
+          paper_bgcolor="rgba(0,0,0,0)",
+          plot_bgcolor="rgba(0,0,0,0)",
+          font=dict({"color": "#888888"}),
+      )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -520,11 +523,11 @@ The comparison analysis on both datasets follows:
       heights = [1.27, 8, 3.84, 51.77]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(
+          paper_bgcolor="rgba(0,0,0,0)",
+          plot_bgcolor="rgba(0,0,0,0)",
+          font=dict({"color": "#888888"}),
+      )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -562,11 +565,11 @@ The comparison analysis on both datasets follows:
       heights = [24.95, 7, 4.33, 56.7]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(
+          paper_bgcolor="rgba(0,0,0,0)",
+          plot_bgcolor="rgba(0,0,0,0)",
+          font=dict({"color": "#888888"}),
+      )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -616,11 +619,11 @@ The comparison analysis on both datasets follows:
       heights = [6.105, 7, 9.78, 122.08]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(
+          paper_bgcolor="rgba(0,0,0,0)",
+          plot_bgcolor="rgba(0,0,0,0)",
+          font=dict({"color": "#888888"}),
+      )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -662,11 +665,11 @@ The comparison analysis on both datasets follows:
       heights = [40.53, 7, 9.83, 119.09]
       colors = ["#1A6AFF", 'green', "#f0d917", 'black']
       fig = go.Figure()
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict({"color": "#888888"}),
-        )
+      fig.update_layout(
+          paper_bgcolor="rgba(0,0,0,0)",
+          plot_bgcolor="rgba(0,0,0,0)",
+          font=dict({"color": "#888888"}),
+      )
       for label, height, color in zip(labels, heights, colors):
         fig.add_trace(go.Bar(
           x=[label],
@@ -813,6 +816,7 @@ Comparison
       color='ML Tool',
       color_discrete_map={'EON': "#1A6AFF", 'Enterprise': "#ee145b"})
     fig.update_layout(xaxis_title=None)
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_train.html")
 
   .. raw:: html
@@ -833,6 +837,7 @@ Comparison
       color='ML Tool',
       color_discrete_map={'EON': "#1A6AFF", 'Enterprise': "#ee145b"})
     fig.update_layout(xaxis_title=None)
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",font=dict({"color": "#888888"}),)
     fig.write_html("SPHINX_DIRECTORY/figures/benchmark_xgboost_eon_vs_enterprise_prediction.html")
 
   .. raw:: html

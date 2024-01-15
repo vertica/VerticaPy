@@ -27,6 +27,9 @@ python3 fix_logo.py
 # Create Manual TOC tree
 python3 create_toc_tree.py
 
+# Modify the header links of User Guide to work for Home/User_guide/Api/
+python3 notebook_correction.py
+
 # Reverse replace_sphinx_dir.py script
 python3 reverse_replace_sphinx_dir.py
 
