@@ -73,11 +73,11 @@ For switching the themes, following syntax can be used:
 
 ```
 import verticapy as vp
-vp.set_option("theme","dark")
+vp.set_option("theme", "dark")
 ```
 
 ### Diagnostics
 The ``verticapy.performance.vertica.qprof.QueryProfiler`` class offers an extended set of functionalities, enabling the creation of complex trees with multiple metrics. This can help in finding ways to improve the performance of slow-running queries.
 
 ### Other
-The docstrings throughout the documenation have been enriched with examples and further details, providing an improved doc expierience.
+The docstrings throughout the documentation have been enriched with examples and further details, providing an improved doc experience.
