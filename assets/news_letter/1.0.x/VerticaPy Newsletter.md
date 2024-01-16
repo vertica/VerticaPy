@@ -13,17 +13,25 @@ With the release of VerticaPy versions 1.0.0 and 1.0.1, we are thrilled to annou
 - Several modules have been deprecated. It is recommended to transition to the updated syntax. For more information, see the [documentation](https://www.vertica.com/python/documentation/1.0.x/html/whats_new_v1_0_0.html#upcoming-changes-deprecated-modules).
 
 ### Machine Learning Support
-- We've added support for many Vertica algorithms, including Isolation Forest, KPrototypes, PoissonRegressor, AR, MA, ARMA, ARIMA, and TfidfVectorizer. 
-- With the newly supported ``XGBoostClassifier.features_importance()`` method, you can find the feature importance for XGBoost models.
-- New classification metrics, which use various averaging techniques, are now available for multiclass data/models.
-- We have integrated model versioning and model tracking into VerticaPy, allowing users to register and work with models inside the database.
-- For better consistency, ``verticapy.machine_learning.model_selection.statistical_tests.seasonal_decompose`` now handles multiple variables using the ROW data type.
+- We've added support for many Vertica algorithms, including
+  - [Isolation Forest](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.ensemble.IsolationForest.html)
+  - [KPrototypes](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.cluster.KPrototypes.html)
+  - [PoissonRegressor](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.linear_model.PoissonRegressor.html)
+  - [AR](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.tsa.AR.html)
+  - [MA](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.tsa.MA.html)
+  - [ARMA](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.tsa.ARMA.html)
+  - [ARIMA](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.tsa.ARIMA.html)
+  - [TfidfVectorizer](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.feature_extraction.text.TfidfVectorizer.html)
+- With the newly supported ``XGBClassifier.features_importance()`` method, you can find the feature importance for XGBoost models. [Link](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.vertica.ensemble.XGBClassifier.features_importance.html)
+- New [classification metrics](https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_metrics.html#classification), which use various averaging techniques, are now available for multiclass data/models.
+- We have integrated model versioning and model tracking into VerticaPy, allowing users to register and work with models inside the database. [Click here](https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_ml_ops.html) for more information. 
+- For better consistency, ``verticapy.machine_learning.model_selection.statistical_tests.seasonal_decompose`` now handles multiple variables using the ROW data type. [Link](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.machine_learning.model_selection.statistical_tests.tsa.seasonal_decompose.html)
 
 ### Bug Fixes
 Various bug fixes, including adjustments to R squared, Prevalence Threshold, and improvements to several methods—such as ``vDataFrame.balance()``.
 
 ### Other
-- A new dataset, "Africa Education", has been added to ``verticapy.datasets``.
+- A new dataset, "Africa Education", has been added to ``verticapy.datasets``. [Link](https://www.vertica.com/python/documentation/1.0.x/html/datasets.html)
 - ``vDataFrame.SQL`` has been deprecated. Now, ``verticapy.vDataFrame`` can be used to directly create a vDataFrame from SQL queries.
 
 For example:
@@ -34,6 +42,8 @@ vp.vDataFrame(
 "(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
 )
 ```
+
+[Click here](https://www.vertica.com/python/documentation/1.0.x/html/datasets.html) for more information.
 
 - Import structures have been updated. The code was completely restructured for better readability and collaboration.
 
