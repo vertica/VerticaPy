@@ -12,7 +12,7 @@
 
 :scroll: Some basic syntax can be found in [the cheat sheet](assets/cheat_sheet/).
 
-📰 Check out the latest newsletter [here](assets/news_letter/1.0.x/VerticaPy_Newsletter.pdf)
+📰 Check out the latest newsletter [here](assets/news_letter/1.0.x/VerticaPy_Newsletter.pdf).
 
 # VerticaPy
 
