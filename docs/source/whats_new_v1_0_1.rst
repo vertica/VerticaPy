@@ -35,3 +35,5 @@ Internal
 - Hints have been added to most functions to make sure the correct inputs are passed to all the functions.
 
 - Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and the contributing folder.
+
+- Some old unit tests have been deleted which are covered in the new unit tests inside the ``tests_new`` folder.
