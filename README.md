@@ -11,6 +11,7 @@
 :warning: The following README is for VerticaPy 1.0.x and onwards, and so some of the elements may not be present in the previous versions.
 
 :scroll: Some basic syntax can be found in [the cheat sheet](assets/cheat_sheet/).
+📰 Check out the latest newsletter [here](assets/news_letter/1.0.x/VerticaPy_Newsletter.pdf)
 
 # VerticaPy
 
