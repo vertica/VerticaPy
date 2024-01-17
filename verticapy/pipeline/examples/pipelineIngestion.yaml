@@ -1,9 +1,9 @@
 schema: "public"
-recipe: "recipeIngestion"
+pipeline: "pipelineIngestion"
 table: public.example_table
 steps:
   ingest:
-      from: '/scratch_b/znowak/repos/server/udx/supported/MachineLearning/SQLTest/data/bucket/*'
+      from: '/home/dbadmin/old_faithful/faithful.csv'
       delimiter: ','
       retry_limit: 'NONE'
       retention_interval: "'15 days'"

@@ -1,13 +1,7 @@
 schema: "public"      # Required
-recipe: "recipe1"     # Required
+pipeline: "pipeline1" # Required
 table: public.titanic # Required
 steps:
-  ingest:
-      from: '/scratch_b/znowak/repos/server/udx/supported/MachineLearning/SQLTest/data/bucket/*'
-      delimiter: ','
-      retry_limit: 'NONE'
-      retention_interval: "'15 days'"
-      schedule: "* * * * *"
   transform:
     family_size:
         sql: parch+sibsp+1
@@ -33,7 +27,7 @@ steps:
     train_test_split:
         test_size: 0.34
     method:
-        name: RandomForestClassifier
+        name: RandomForestRegressor
         target: survived
         params:
             n_estimators: 4
@@ -41,11 +35,11 @@ steps:
     schedule: "* * * * *"
   test:
     metric1: 
-        name: accuracy_score
+        name: r2
         y_true: survived
         y_score: prediction
     metric2: 
-        name: r2_score
+        name: median_absolute_error
         y_true: survived
         y_score: prediction
     metric3: 

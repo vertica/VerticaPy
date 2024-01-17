@@ -28,7 +28,7 @@ from verticapy.machine_learning.metrics.regression import (
     FUNCTIONS_REGRESSION_SQL_DICTIONARY,
 )
 
-from ._helper import execute_and_add, remove_comments
+from ._helper import execute_and_return, remove_comments
 
 
 def testing(
@@ -63,7 +63,7 @@ def testing(
     )
 
     # CREATE A PREDICT VIEW
-    meta_sql += execute_and_add(
+    meta_sql += execute_and_return(
         f"CREATE OR REPLACE VIEW {pipeline_name + '_PREDICT_VIEW'} AS SELECT * FROM "
         + dummy.current_relation()
         + ";"
@@ -72,7 +72,7 @@ def testing(
     # FOR multiple metrics
     table_sql = ""
     table_sql += f"DROP TABLE IF EXISTS {pipeline_name + '_METRIC_TABLE'};"
-    table_sql += execute_and_add(
+    table_sql += execute_and_return(
         f"CREATE TABLE {pipeline_name + '_METRIC_TABLE'}(metric_name Varchar(100), metric FLOAT);"
     )
 
@@ -84,28 +84,29 @@ def testing(
 
         y_true = metric["y_true"]
         y_score = metric["y_score"]
+
         temp = eval(
-            f"""regression_report('{y_true}', '{y_score}', {name}
-            '{pipeline_name + '_PREDICT_VIEW'}')""",
+            f"""regression_report('{y_true}', '{y_score}',
+            '{pipeline_name + '_PREDICT_VIEW'}', '{name}', return_query=True)""",
             globals(),
         )
         sub = remove_comments(temp[:-1])
 
         col_name = vDataFrame(input_relation=temp).get_columns()[0]
         if col_name is None:
-            table_sql += execute_and_add(
+            table_sql += execute_and_return(
                 f"INSERT INTO {pipeline_name + '_METRIC_TABLE'} SELECT '{name}', "
                 + temp.split("*/")[1]
             )
         else:
-            table_sql += execute_and_add(
+            table_sql += execute_and_return(
                 f"""INSERT INTO {pipeline_name + '_METRIC_TABLE'} 
                 SELECT '{name}', subquery.{col_name} FROM ("""
                 + sub
                 + ") as subquery;"
             )
 
-    table_sql += execute_and_add(
+    table_sql += execute_and_return(
         "COMMIT;"
     )  # This is one transaction: Otherwise, Vertica discards all changes.
     meta_sql += table_sql

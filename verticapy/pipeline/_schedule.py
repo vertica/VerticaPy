@@ -19,7 +19,7 @@ You may obtain a copy of the License at:
 This script runs the Vertica Machine Learning Pipeline Parser.
 """
 
-from ._helper import execute_and_add, to_sql
+from ._helper import execute_and_return, to_sql
 
 
 def scheduler(
@@ -39,7 +39,7 @@ def scheduler(
         The SQL required to replicate the metric table.
     pipeline_name: str
         The prefix name of the intended pipeline to unify
-        the creatation of the objects.
+        the creation of the objects.
 
     Returns
     -------
@@ -50,22 +50,22 @@ def scheduler(
     model_string = to_sql(model_sql)
     table_string = to_sql(table_sql)
 
-    meta_sql += execute_and_add(
+    meta_sql += execute_and_return(
         f"CREATE SCHEDULE {pipeline_name + '_ML_SCHEDULE'} USING CRON '{schedule}';"
     )
     if table_sql != "":
-        meta_sql += execute_and_add(
+        meta_sql += execute_and_return(
             f"""CREATE OR REPLACE PROCEDURE {pipeline_name + '_ML_RUNNER'}() AS
             $$ BEGIN EXECUTE 'DROP MODEL IF EXISTS {pipeline_name + '_MODEL'};
             {model_string} EXECUTE ' {table_string} END; $$;\n"""
         )
     else:
-        meta_sql += execute_and_add(
+        meta_sql += execute_and_return(
             f"""CREATE OR REPLACE PROCEDURE {pipeline_name + '_ML_RUNNER'}() AS 
             $$ BEGIN EXECUTE 'DROP MODEL IF EXISTS {pipeline_name + '_MODEL'};
             {model_string} END; $$;\n"""
         )
-    meta_sql += execute_and_add(
+    meta_sql += execute_and_return(
         f"""CREATE TRIGGER {pipeline_name + '_TRAIN'} ON SCHEDULE
         {pipeline_name + '_ML_SCHEDULE'} EXECUTE PROCEDURE {pipeline_name + '_ML_RUNNER'}()
         AS DEFINER;"""

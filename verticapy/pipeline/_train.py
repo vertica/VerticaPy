@@ -69,7 +69,7 @@ from verticapy.machine_learning.vertica.tree import (
 )
 from verticapy.machine_learning.vertica.tsa import ARIMA, ARMA, AR, MA
 
-from ._helper import execute_and_add
+from ._helper import execute_and_return
 
 SUPPORTED_FUNCTIONS = [
     BisectingKMeans,
@@ -147,24 +147,24 @@ def training(
         info = train["train_test_split"]
         test_size = 0.33 if "test_size" not in info else info["test_size"]
         train_set, test_set = vdf.train_test_split(test_size)
-        meta_sql += execute_and_add(
+        meta_sql += execute_and_return(
             f"CREATE OR REPLACE VIEW {pipeline_name + '_TRAIN_VIEW'} AS SELECT * FROM "
             + train_set.current_relation()
             + ";"
         )
-        meta_sql += execute_and_add(
+        meta_sql += execute_and_return(
             f"CREATE OR REPLACE VIEW {pipeline_name + '_TEST_VIEW'} AS SELECT * FROM "
             + test_set.current_relation()
             + ";"
         )
 
     else:
-        meta_sql += execute_and_add(
+        meta_sql += execute_and_return(
             f"CREATE OR REPLACE VIEW {pipeline_name + '_TRAIN_VIEW'} AS SELECT * FROM "
             + vdf.current_relation()
             + ";"
         )
-        meta_sql += execute_and_add(
+        meta_sql += execute_and_return(
             f"CREATE OR REPLACE VIEW {pipeline_name + '_TEST_VIEW'} AS SELECT * FROM "
             + vdf.current_relation()
             + ";"
@@ -186,9 +186,8 @@ def training(
             else:
                 temp_str += f"{param} = {params[param]}, "
         temp_str = temp_str[:-2]
-        model = None
-        eval(
-            f"exec(\"model = {name}('{pipeline_name + '_MODEL'}', {temp_str})\")",
+        model = eval(
+            f"{name}('{pipeline_name + '_MODEL'}', {temp_str})",
             globals(),
         )
         predictors = cols  # ['"col1"', '"col2"', '"col3"', '"col4"']

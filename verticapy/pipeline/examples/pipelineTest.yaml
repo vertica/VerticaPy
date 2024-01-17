@@ -1,5 +1,5 @@
 schema: "public"
-recipe: "recipeTest"
+pipeline: "pipelineTest"
 table: public.winequality
 steps:
   transform:
@@ -13,14 +13,10 @@ steps:
         target: quality
   test:
     metric1: 
-        name: accuracy_score
+        name: r2
         y_true: quality
         y_score: prediction
     metric2: 
-        name: r2_score
-        y_true: quality
-        y_score: prediction
-    metric3: 
         name: max_error
         y_true: quality
         y_score: prediction

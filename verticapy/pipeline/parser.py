@@ -45,7 +45,7 @@ from verticapy.datasets import (
 from verticapy._utils._sql._sys import _executeSQL
 
 # local
-from ._helper import required_keywords, execute_and_add, setup
+from ._helper import required_keywords, execute_and_return, setup
 from . import _ingest
 from . import _transform
 from . import _train
@@ -109,15 +109,15 @@ with open(config_name, "r", encoding="utf-8") as file:
 with open(file_name, "r", encoding="utf-8") as file:
     pipeline = yaml.safe_load(file)
     schema_name = pipeline["schema"]
-    recipe = pipeline["recipe"]
-    pipeline_name = schema_name + "." + recipe
+    name = pipeline["pipeline"]
+    pipeline_name = schema_name + "." + name
     table = pipeline["table"]
     META_SQL = ""
 
     setup()
 
     # DROP OLD PIPELINE
-    META_SQL += execute_and_add(f"CALL drop_pipeline('{schema_name}', '{recipe}');")
+    META_SQL += execute_and_return(f"CALL drop_pipeline('{schema_name}', '{name}');")
 
     # PUBLIC LOAD OF A TABLE
     table_split = table.split(".")
@@ -143,7 +143,7 @@ with open(file_name, "r", encoding="utf-8") as file:
             transform = steps["transform"]
             VDF = _transform.transformation(transform, table)
             if "train" not in steps:
-                META_SQL += execute_and_add(
+                META_SQL += execute_and_return(
                     f"CREATE OR REPLACE VIEW {pipeline_name + '_VIEW'} AS SELECT * FROM "
                     + VDF.current_relation()
                     + ";"

@@ -19,7 +19,13 @@ You may obtain a copy of the License at:
 This script runs the Vertica Machine Learning Pipeline Ingestion
 """
 
-from ._helper import required_keywords, execute_and_add
+from ._helper import required_keywords, execute_and_return
+from verticapy._utils._sql._sys import _executeSQL
+
+
+def is_valid_delimiter(delimiter: str) -> bool:
+    delimiter_ascii = ord(delimiter)
+    return 0 <= delimiter_ascii <= 127
 
 
 def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
@@ -33,7 +39,7 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
         YAML object which outlines the steps of the operation.
     pipeline_name: str
         The prefix name of the intended pipeline to unify
-        the creatation of the objects.
+        the creation of the objects.
     table: str
         The name of the table the pipeline is ingesting to.
 
@@ -48,33 +54,43 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
         retry_limit = (
             "DEFAULT" if "retry_limit" not in ingest else ingest["retry_limit"]
         )
+        if retry_limit != "DEFAULT" and retry_limit != 'NONE':
+            # Type Check
+            _executeSQL(f"SELECT INT {retry_limit};")
+
         retention_interval = (
             "'14 days'"
             if "retention_interval" not in ingest
             else ingest["retention_interval"]
         )
+        # Type Check
+        _executeSQL(f"SELECT INTERVAL {retention_interval}")
         data_loader_sql += f"""CREATE DATA LOADER {pipeline_name + '_DATALOADER'}
         RETRY LIMIT {retry_limit} RETENTION INTERVAL {retention_interval} """
 
         data_loader_sql += f"AS COPY {table} FROM '{ingest['from']}' "
         if "delimiter" in ingest:
             data_loader_sql += f"DELIMITER '{ingest['delimiter']}' "
+            # Type Check
+            if not is_valid_delimiter(ingest['delimiter']):
+                raise TypeError("Delimiter must have an ASCII value in the range E'\\000' to E'\\177' inclusive")
         data_loader_sql += "DIRECT;"
-        meta_sql += execute_and_add(data_loader_sql)
-        meta_sql += execute_and_add(
+        print(data_loader_sql)
+        meta_sql += execute_and_return(data_loader_sql)
+        meta_sql += execute_and_return(
             f"EXECUTE DATA LOADER {pipeline_name + '_DATALOADER'};"
         )
 
         if "schedule" in ingest:
-            meta_sql += execute_and_add(
+            meta_sql += execute_and_return(
                 f"""CREATE SCHEDULE {pipeline_name + '_DL_SCHEDULE'}
                 USING CRON '{ingest['schedule']}';"""
             )
-            meta_sql += execute_and_add(
+            meta_sql += execute_and_return(
                 f"""CREATE PROCEDURE {pipeline_name + '_DL_RUNNER'}() AS 
                 $$ BEGIN EXECUTE 'EXECUTE DATA LOADER {pipeline_name + '_DATALOADER'}'; END; $$;"""
             )
-            meta_sql += execute_and_add(
+            meta_sql += execute_and_return(
                 f"""CREATE TRIGGER {pipeline_name + '_LOAD'} ON SCHEDULE 
                 {pipeline_name + '_DL_SCHEDULE'} EXECUTE PROCEDURE {pipeline_name + '_DL_RUNNER'}() 
                 AS DEFINER;"""
