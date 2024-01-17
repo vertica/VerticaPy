@@ -594,7 +594,7 @@ body {
 .custom-card-9 {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  height: 160px;
+  height: 190px;
 }
 
 /* Cards on Benchmarks pages */
@@ -1002,7 +1002,7 @@ article, article .align-default {
 @media (max-width: 36em) {
 /* Cards on Index Page */
 .custom-card-2 {
-  height: 240px; /* Adjust the desired height */
+  height: 265px; /* Adjust the desired height */
   /* Add more styles as needed */
 }
 /* Cards on Machine Learning page */
@@ -1019,7 +1019,7 @@ article, article .align-default {
 }
 /* Cards on User Guide / Introduction page */
 .custom-card-9 {
-  height: 230px;
+  height: 240px;
 }
 /* Cards on Benchmarks pages */
 .custom-card-10 {
@@ -1042,7 +1042,7 @@ article, article .align-default {
 @media (max-width: 62em) {
 /* Cards on Machine Learning page */
 .custom-card-3 {
-  height: 200px; 
+  height: 230px; 
 }
 /* Cards on Vertica page */
 .custom-card-4 {
