@@ -1085,6 +1085,7 @@ def regression_report(
     input_relation: SQLRelation,
     metrics: Union[None, str, list[str]] = None,
     k: int = 1,
+    genSQL: bool = False,
 ) -> Union[float, TableSample]:
     """
     Computes a regression report
@@ -1192,7 +1193,11 @@ def regression_report(
 
     k: int, optional
         Number  of predictors. Used  to compute the adjusted
-        R2.
+        R2
+
+    genSQL: bool, optional
+        If true return the sql that is used to generate the metrics.
+        If false return the report.
 
     Returns
     -------
@@ -1314,6 +1319,8 @@ def regression_report(
         FROM {relation} 
         WHERE {y_true} IS NOT NULL 
           AND {y_score} IS NOT NULL;"""
+    if genSQL:
+        return query
     result = _executeSQL(
         query, title="Computing the Regression Report.", method="fetchrow"
     )

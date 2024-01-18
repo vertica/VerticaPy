@@ -87,7 +87,7 @@ def testing(
 
         temp = eval(
             f"""regression_report('{y_true}', '{y_score}',
-            '{pipeline_name + '_PREDICT_VIEW'}', '{name}', return_query=True)""",
+            '{pipeline_name + '_PREDICT_VIEW'}', '{name}', genSQL=True)""",
             globals(),
         )
         sub = remove_comments(temp[:-1])

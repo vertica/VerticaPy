@@ -54,7 +54,7 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
         retry_limit = (
             "DEFAULT" if "retry_limit" not in ingest else ingest["retry_limit"]
         )
-        if retry_limit != "DEFAULT" and retry_limit != 'NONE':
+        if retry_limit != "DEFAULT" and retry_limit != "NONE":
             # Type Check
             _executeSQL(f"SELECT INT {retry_limit};")
 
@@ -72,8 +72,10 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
         if "delimiter" in ingest:
             data_loader_sql += f"DELIMITER '{ingest['delimiter']}' "
             # Type Check
-            if not is_valid_delimiter(ingest['delimiter']):
-                raise TypeError("Delimiter must have an ASCII value in the range E'\\000' to E'\\177' inclusive")
+            if not is_valid_delimiter(ingest["delimiter"]):
+                raise TypeError(
+                    "Delimiter must have an ASCII value in the range E'\\000' to E'\\177' inclusive"
+                )
         data_loader_sql += "DIRECT;"
         print(data_loader_sql)
         meta_sql += execute_and_return(data_loader_sql)
