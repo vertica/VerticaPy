@@ -173,28 +173,27 @@ def training(
     methods = list(train.keys())
     methods = [method for method in methods if "method" in method]
     for method in methods:
-        tf = train[method]
-        temp_str = ""
-        name = tf["name"]
-        target = tf["target"] if "target" in tf else ""
-        params = tf["params"] if "params" in tf else []
-        temp_str = ""
+        tm = train[method]
+        name = tm["name"]
+        target = tm["target"] if "target" in tm else ""
+        params = tm["params"] if "params" in tm else []
+        param_str = ""
         for param in params:
             temp = params[param]
             if isinstance(temp, str):
-                temp_str += f"{param} = '{params[param]}', "
+                param_str += f"{param} = '{params[param]}', "
             else:
-                temp_str += f"{param} = {params[param]}, "
-        temp_str = temp_str[:-2]
+                param_str += f"{param} = {params[param]}, "
+        param_str = param_str[:-2]
         model = eval(
-            f"{name}('{pipeline_name + '_MODEL'}', {temp_str})",
+            f"{name}('{pipeline_name + '_MODEL'}', {param_str})",
             globals(),
         )
         predictors = cols  # ['"col1"', '"col2"', '"col3"', '"col4"']
-        if "include" in tf:
-            predictors = tf["include"]
-        if "exclude" in tf:
-            predictors = list(set(predictors) - set(tf["exclude"]))
+        if "include" in tm:
+            predictors = tm["include"]
+        if "exclude" in tm:
+            predictors = list(set(predictors) - set(tm["exclude"]))
         if target == "":
             # UNSUPERVISED
             model.fit(pipeline_name + "_TRAIN_VIEW", predictors)
@@ -203,12 +202,13 @@ def training(
             model.fit(pipeline_name + "_TRAIN_VIEW", predictors, target)
         meta_sql += "\n"
 
-        try:
+        ts = model.get_vertica_attributes()  # TableSample
+        if "call_string" in ts["attr_name"]:
             # SUPERVISED
             model_sql = model.get_vertica_attributes("call_string")["call_string"][0]
             if model_sql.split(" ")[0] != "SELECT":
                 model_sql = "SELECT " + model_sql + ";"
-        except QueryError:
+        else:
             # UNSUPERVISED
             model_sql = (
                 "SELECT "

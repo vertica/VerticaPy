@@ -79,30 +79,30 @@ def testing(
     for nth_metric in test:
         metric = test[nth_metric]
         name = metric["name"]
-        if name in FUNCTIONS_REGRESSION_SQL_DICTIONARY.keys():
-            print("ERROR")
+        if name not in FUNCTIONS_REGRESSION_SQL_DICTIONARY.keys():
+            raise KeyError(f"{name} is not in the set of allowed metrics.")
 
         y_true = metric["y_true"]
         y_score = metric["y_score"]
 
-        temp = eval(
+        metric_sql = eval(
             f"""regression_report('{y_true}', '{y_score}',
             '{pipeline_name + '_PREDICT_VIEW'}', '{name}', genSQL=True)""",
             globals(),
         )
-        sub = remove_comments(temp[:-1])
+        pure_metric_sql = remove_comments(metric_sql[:-1])
 
-        col_name = vDataFrame(input_relation=temp).get_columns()[0]
+        col_name = vDataFrame(input_relation=metric_sql).get_columns()[0]
         if col_name is None:
             table_sql += execute_and_return(
                 f"INSERT INTO {pipeline_name + '_METRIC_TABLE'} SELECT '{name}', "
-                + temp.split("*/")[1]
+                + metric_sql.split("*/")[1]
             )
         else:
             table_sql += execute_and_return(
                 f"""INSERT INTO {pipeline_name + '_METRIC_TABLE'} 
                 SELECT '{name}', subquery.{col_name} FROM ("""
-                + sub
+                + pure_metric_sql
                 + ") as subquery;"
             )
 

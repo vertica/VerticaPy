@@ -23,6 +23,7 @@ This script runs the Vertica Machine Learning Pipeline Parser.
 import yaml
 import argparse
 from tqdm import tqdm
+import re
 
 # required packages
 import verticapy as vp
@@ -121,11 +122,15 @@ with open(file_name, "r", encoding="utf-8") as file:
 
     # PUBLIC LOAD OF A TABLE
     table_split = table.split(".")
-    if len(table_split) == 2 and table_split[0] == "public":
-        try:
-            eval(f'exec("load_{table_split[1]}()")', globals())
-        except:
-            pass
+    supported_table_names = list(
+        map(lambda x: re.search(r"load\S*", str(x)).group(), SUPPORTED_DATASETS)
+    )
+    if (
+        len(table_split) == 2
+        and table_split[0] == "public"
+        and table_split[1] in supported_table_names
+    ):
+        eval(f'exec("load_{table_split[1]}()")', globals())
 
     # EXECUTE PIPELINE BLUEPRINT
     if "steps" in pipeline:
