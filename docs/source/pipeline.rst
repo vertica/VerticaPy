@@ -105,8 +105,21 @@ Transform
 | `transform functions documentation <https://www.vertica.com/python/documentation/1.0.x/html/vdataframe.html#features-engineering>`__
 
 | ``public.winequality``
-.. image:: _static/winequal_table.png
-   :height: 100px
+
+
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_winequality
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html", "w")
+        html_file.write(load_winequality()["density", "pH", "color", "fixed_acidity"]._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: ../SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+        
+ 
 
 **Example**
 
@@ -232,8 +245,27 @@ Test
            y_true: quality
            y_score: prediction
 
-.. image:: _static/metric_table.png
-   :height: 100px
+
+
+| ``public.example_METRIC_TABLE``
+
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+	vdf = vp.vDataFrame(
+		{
+			"metric_name": ['accuracy_score', 'r2_score', 'max_error'],
+			"metric": [0.0, 0.188352265031045, 3.49495733261932],
+		},
+	)
+        html_file = open("SPHINX_DIRECTORY/figures/pipeline_metric_table.html", "w")
+        html_file.write(vdf._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: ../SPHINX_DIRECTORY/figures/pipeline_metric_table.html
 
 Scheduler
 ~~~~~~~~~
@@ -264,7 +296,3 @@ Scheduler
          from: '/scratch_b/znowak/repos/server/udx/supported/MachineLearning/SQLTest/data/bucket/*'
          delimiter: ','
          schedule: "* * * * *"
-
-| ``public.winequality``
-.. image:: _static/winequal_table.png
-   :height: 100px
