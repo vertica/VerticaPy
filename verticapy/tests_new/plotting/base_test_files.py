@@ -20,17 +20,17 @@ import pytest
 import numpy as np
 
 # Vertica
-from verticapy.learn.model_selection import elbow
-from verticapy.learn.ensemble import RandomForestClassifier
-from verticapy.learn.neighbors import LocalOutlierFactor
-from verticapy.learn.linear_model import LogisticRegression
-from verticapy.learn.model_selection import lift_chart, prc_curve
-from verticapy.learn.decomposition import PCA
-from verticapy.learn.tree import DecisionTreeRegressor
-from verticapy.learn.linear_model import LinearRegression
-from verticapy.learn.model_selection import stepwise
-from verticapy.learn.svm import LinearSVC
-from verticapy.learn.cluster import KMeans
+from verticapy.machine_learning.model_selection import elbow
+from verticapy.machine_learning.vertica.ensemble import RandomForestClassifier
+from verticapy.machine_learning.vertica.neighbors import LocalOutlierFactor
+from verticapy.machine_learning.vertica.linear_model import LogisticRegression
+from verticapy.machine_learning.metrics import lift_chart, prc_curve
+from verticapy.machine_learning.vertica.decomposition import PCA
+from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+from verticapy.machine_learning.model_selection import stepwise
+from verticapy.machine_learning.vertica.svm import LinearSVC
+from verticapy.machine_learning.vertica.cluster import KMeans
 from vertica_highcharts.highcharts.highcharts import Highchart
 
 # Standard Python Modules
