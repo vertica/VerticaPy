@@ -95,9 +95,9 @@ class ScatterPlot(PlotlyBase):
             data=data,
             columns=columns,
         )
+        df[column_names[0]] = df[column_names[0]].astype(float)
+        df[column_names[1]] = df[column_names[1]].astype(float)
         if self.data.get("s") is not None:
-            df[column_names[0]] = df[column_names[0]].astype(float)
-            df[column_names[1]] = df[column_names[1]].astype(float)
             df[self.layout["size"]] = df[self.layout["size"]].astype(float)
             min_value = df[self.layout["size"]].min()
             max_value = df[self.layout["size"]].max()
@@ -125,6 +125,7 @@ class ScatterPlot(PlotlyBase):
             )
             fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         elif self.data["X"].shape[1] == 3:
+            df[column_names[2]] = df[column_names[2]].astype(float)
             fig = px.scatter_3d(
                 df,
                 x=column_names[0],
