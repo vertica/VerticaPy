@@ -39,3 +39,13 @@ class TestQueryProfilerSimple:
         with pytest.raises(ProfileImportError, 
                            match=f"Missing [0-9]+ tables in schema {schema_loader}"):
             pi.check_schema()
+
+    def test_no_such_schema(self):
+        pi = ProfileImport(target_schema='no_such_schema',
+                           key='no_such_key',
+                           filename='no_such_file.tar',
+                           skip_create_table=True)
+        
+        with pytest.raises(ProfileImportError, 
+                           match=f"Schema no_such_schema does not exist"):
+            pi.check_schema()

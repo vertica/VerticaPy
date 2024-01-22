@@ -23,10 +23,12 @@ from verticapy.performance.vertica.collection.collection_tables import Collectio
 
 
 class CollectionValidator:
+    """Confirms that a schema contains a collection of tables that can be used by the `QueryProfiler`."""
 
     def __init__(self, target_schema:str, key:str) -> None:
         """
-        `target_schema`: the schema where we will search for tables 
+        `target_schema`: the schema where we will search for tables
+
         """
         self.target_schema = target_schema
         self.key = key
@@ -89,12 +91,14 @@ class CollectionValidator:
                             method="fetchall")
         print(f"Row count for all tables is: {row_count_table}")
         for r in row_count_table:
+            table_name = r[0]
+            row_count = r[1]
             print(f"Table name : {r[0]} rows {r[1]}")
                 
         if len(empty_tables) > 0:
             raise ValueError(f"Expected 0 empty tables, but found {len(empty_tables)} : {','.join(empty_tables)}")
             
-
+    
 
 
 
