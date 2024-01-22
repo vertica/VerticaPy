@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 
 from enum import Enum
+from typing import Mapping
 
 class CollectionTable:
     def __init__(self, table_name:str, tables_schema:str, key:str) -> None:
@@ -54,3 +55,13 @@ class AllTableNames(Enum):
     QUERY_PLAN_PROFILES = "query_plan_profiles"
     QUERY_PROFILES = "query_profiles"
     RESOURCE_POOL_STATUS = "resource_pool_status"
+
+
+def getAllCollectionTables(target_schema:str, key:str) -> Mapping[str,CollectionTable]:
+    result = {}
+    for name in AllTableNames:
+        name_str = name.value
+        c = CollectionTable(name_str, target_schema, key)
+        result[name.name] = c
+
+    return result
