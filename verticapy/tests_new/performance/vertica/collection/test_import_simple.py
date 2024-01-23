@@ -58,7 +58,8 @@ class TestProfileImport:
         # creates tables if they don't exist
         pi.check_schema()
         
-        should_be_created = ["qprof_collection_events_aaa"]
+        should_be_created = ["qprof_collection_events_aaa",
+                             "qprof_collection_info_aaa"]
         created_tables = self._get_set_of_tables_in_schema(schema_loader, test_key)
 
         missing_tables = []

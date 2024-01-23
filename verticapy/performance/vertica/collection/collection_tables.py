@@ -82,6 +82,8 @@ def getAllCollectionTables(target_schema:str, key:str) -> Mapping[str,Collection
 def collectionTableFactory(table_name:str, target_schema:str, key:str) -> CollectionTable:
     if table_name == AllTableNames.COLLECTION_EVENTS.value:
         return CollectionEventsTable(target_schema, key)
+    if table_name == AllTableNames.COLLECTION_INFO.value:
+        return CollectionInfoTable(target_schema, key)
 
     # TODO: eventually, this will probably be     
     return CollectionTable(table_name, target_schema, key)
@@ -126,4 +128,58 @@ class CollectionEventsTable(CollectionTable):
                 {import_name}.statement_id
         SEGMENTED BY hash({import_name}.transaction_id, {import_name}.statement_id) ALL NODES;
         """
-    
+class CollectionInfoTable(CollectionTable):
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__("collection_info", table_schema, key)
+
+    def get_create_table_sql(self) -> str:
+        return f"""
+        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
+        (
+            transaction_id int,
+            statement_id int,
+            user_query_label varchar(256),
+            user_query_comment varchar(512),
+            project_name varchar(128),
+            customer_name varchar(128),
+            -- Note that this should have 
+            -- DEFAULT version() during collection
+            version varchar(512)
+        );
+        """
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name} 
+        /*+basename({import_name}),createtype(L)*/
+        (
+            transaction_id encoding rle,
+            statement_id encoding rle,
+            user_query_label encoding rle,
+            user_query_comment encoding rle,
+            project_name encoding rle,
+            customer_name encoding rle,
+            version encoding rle
+        )
+        AS
+        SELECT {import_name}.transaction_id,
+                {import_name}.statement_id,
+                {import_name}.user_query_label,
+                {import_name}.user_query_comment,
+                {import_name}.project_name,
+                {import_name}.customer_name,
+                {import_name}.version
+        FROM {import_name_fq}
+        ORDER BY {import_name}.transaction_id,
+                {import_name}.statement_id,
+                {import_name}.user_query_label,
+                {import_name}.user_query_comment,
+                {import_name}.project_name,
+                {import_name}.customer_name
+        SEGMENTED BY hash({import_name}.transaction_id, 
+                        {import_name}.statement_id, 
+                        {import_name}.user_query_label) 
+        ALL NODES;
+        """

@@ -111,9 +111,8 @@ class ProfileImport:
         for ctable in all_tables.values():
             # TODO: for now, only try to create tables we have defined
             # Later we will make all tables
-            table_sql = None
-            proj_sql = None
-            if ctable.name == AllTableNames.COLLECTION_EVENTS.value:
+            if (ctable.name == AllTableNames.COLLECTION_EVENTS.value
+                or ctable.name == AllTableNames.COLLECTION_INFO.value):
                 table_sql = ctable.get_create_table_sql()
                 proj_sql = ctable.get_create_projection_sql()
                 _executeSQL(table_sql, 
