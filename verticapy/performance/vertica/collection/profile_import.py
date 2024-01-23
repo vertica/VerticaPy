@@ -20,7 +20,7 @@ from typing import Set
 
 from verticapy._utils._sql._sys import _executeSQL
 
-from .collection_tables import getAllCollectionTables
+from .collection_tables import getAllCollectionTables, AllTableNames
 
 class ProfileImportError(Exception):
     pass
@@ -82,9 +82,9 @@ class ProfileImport:
                 missing_tables.append(search_name)
         if len(missing_tables) == 0:
             return
+        
         # At least one table is missing
         # Throw an execption
-
         raise ProfileImportError(f"Missing {len(missing_tables)} tables"
                                  f" in schema {self.target_schema}."
                                  f" Missing: [ {','.join(missing_tables)} ]")
@@ -102,7 +102,22 @@ class ProfileImport:
         return existing_tables 
         
     def _create_schema_if_not_exists(self) -> None:
-        return
+        _executeSQL(f"""CREATE SCHEMA IF NOT EXISTS {self.target_schema};
+                    """)
     
     def _create_tables_if_not_exists(self) -> None:
-        return
+        all_tables = getAllCollectionTables(target_schema=self.target_schema,
+                                            key=self.key)
+        for ctable in all_tables.values():
+            # TODO: for now, only try to create tables we have defined
+            # Later we will make all tables
+            table_sql = None
+            proj_sql = None
+            if ctable.name == AllTableNames.COLLECTION_EVENTS.value:
+                table_sql = ctable.get_create_table_sql()
+                proj_sql = ctable.get_create_projection_sql()
+                _executeSQL(table_sql, 
+                            method="fetchall")
+                _executeSQL(proj_sql,
+                            method='fetchall')
+            self.logger.info(f"Skipped creating table {ctable.name}")
