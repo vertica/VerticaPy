@@ -115,7 +115,8 @@ class ProfileImport:
             if (ctable.name == AllTableNames.COLLECTION_EVENTS.value
                 or ctable.name == AllTableNames.COLLECTION_INFO.value
                 or ctable.name == AllTableNames.DC_EXPLAIN_PLANS.value
-                or ctable.name == AllTableNames.DC_QUERY_EXECUTIONS.value):
+                or ctable.name == AllTableNames.DC_QUERY_EXECUTIONS.value
+                or ctable.name == AllTableNames.DC_REQUESTS_ISSUED.value):
                 table_sql = ctable.get_create_table_sql()
                 proj_sql = ctable.get_create_projection_sql()
                 _executeSQL(table_sql, 

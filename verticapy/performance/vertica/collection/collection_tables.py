@@ -90,6 +90,9 @@ def collectionTableFactory(table_name:str, target_schema:str, key:str) -> Collec
         return DCExplainPlansTable(target_schema, key)
     if table_name == AllTableNames.DC_QUERY_EXECUTIONS.value:
         return DCQueryExecutionsTable(target_schema, key)
+    if table_name == AllTableNames.DC_REQUESTS_ISSUED.value:
+        return DCRequestsIssuedTable(target_schema, key)
+    
 
     # TODO: eventually this will be an error    
     return CollectionTable(table_name, target_schema, key)
@@ -271,6 +274,7 @@ class DCExplainPlansTable(CollectionTable):
                 {import_name}.node_name) 
         ALL NODES;
         """
+################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__("dc_query_executions", table_schema, key)
@@ -345,3 +349,93 @@ class DCQueryExecutionsTable(CollectionTable):
             {import_name}.session_id)
         ALL NODES;
         """
+################ dc_requests_issued ###################
+class DCRequestsIssuedTable(CollectionTable):
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__("dc_requests_issued", table_schema, key)
+
+    def get_create_table_sql(self) -> str:
+        return f"""
+        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
+        (
+            "time" timestamptz,
+            node_name varchar(128),
+            session_id varchar(128),
+            user_id int,
+            user_name varchar(128),
+            transaction_id int,
+            statement_id int,
+            request_id int,
+            request_type varchar(128),
+            label varchar(128),
+            client_label varchar(64000),
+            search_path varchar(64000),
+            query_start_epoch int,
+            request varchar(64000),
+            is_retry boolean,
+            digest int,
+            query_name varchar(128)
+        );
+        """
+    
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name}
+        /*+basename({import_name}),createtype(A)*/
+        (
+            "time",
+            node_name,
+            session_id,
+            user_id,
+            user_name,
+            transaction_id,
+            statement_id,
+            request_id,
+            request_type,
+            label,
+            client_label,
+            search_path,
+            query_start_epoch,
+            request,
+            is_retry,
+            digest,
+            query_name
+        )
+        AS
+        SELECT {import_name}."time",
+            {import_name}.node_name,
+            {import_name}.session_id,
+            {import_name}.user_id,
+            {import_name}.user_name,
+            {import_name}.transaction_id,
+            {import_name}.statement_id,
+            {import_name}.request_id,
+            {import_name}.request_type,
+            {import_name}.label,
+            {import_name}.client_label,
+            {import_name}.search_path,
+            {import_name}.query_start_epoch,
+            {import_name}.request,
+            {import_name}.is_retry,
+            {import_name}.digest,
+            {import_name}.query_name
+        FROM {import_name_fq}
+        ORDER BY {import_name}.transaction_id,
+            {import_name}.statement_id,
+            {import_name}.node_name,
+            {import_name}.label,
+            {import_name}.request_id
+        SEGMENTED BY hash({import_name}."time", 
+            {import_name}.user_id, 
+            {import_name}.transaction_id, 
+            {import_name}.statement_id, 
+            {import_name}.request_id, 
+            {import_name}.query_start_epoch, 
+            {import_name}.is_retry, 
+            {import_name}.digest) 
+        ALL NODES;
+        """
+

@@ -60,7 +60,9 @@ class TestProfileImport:
         
         should_be_created = ["qprof_collection_events_aaa",
                              "qprof_collection_info_aaa",
-                             "qprof_dc_explain_plans_aaa"]
+                             "qprof_dc_explain_plans_aaa",
+                             "qprof_dc_query_executions_aaa",
+                             "qprof_dc_requests_issued_aaa"]
         created_tables = self._get_set_of_tables_in_schema(schema_loader, test_key)
 
         missing_tables = []
