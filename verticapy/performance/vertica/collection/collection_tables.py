@@ -88,6 +88,8 @@ def collectionTableFactory(table_name:str, target_schema:str, key:str) -> Collec
         return CollectionInfoTable(target_schema, key)
     if table_name == AllTableNames.DC_EXPLAIN_PLANS.value:
         return DCExplainPlansTable(target_schema, key)
+    if table_name == AllTableNames.DC_QUERY_EXECUTIONS.value:
+        return DCQueryExecutionsTable(target_schema, key)
 
     # TODO: eventually this will be an error    
     return CollectionTable(table_name, target_schema, key)
@@ -266,5 +268,80 @@ class DCExplainPlansTable(CollectionTable):
                 {import_name}.request_id,
                 {import_name}.path_id,
                 {import_name}.path_line_index, 
-                {import_name}.node_name) ALL NODES;
+                {import_name}.node_name) 
+        ALL NODES;
+        """
+class DCQueryExecutionsTable(CollectionTable):
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__("dc_query_executions", table_schema, key)
+
+    def get_create_table_sql(self) -> str:
+        return f"""
+        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
+        (
+            "time" timestamptz,
+            node_name varchar(128),
+            session_id varchar(128),
+            user_id int,
+            user_name varchar(128),
+            transaction_id int,
+            statement_id int,
+            request_id int,
+            execution_step varchar(128),
+            completion_time timestamptz,
+            query_name varchar(128)
+        );
+
+        """
+    
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name}
+        /*+basename({import_name}),createtype(A)*/
+        (
+            "time",
+            node_name,
+            session_id,
+            user_id,
+            user_name,
+            transaction_id,
+            statement_id,
+            request_id,
+            execution_step,
+            completion_time,
+            query_name
+        )
+        AS
+        SELECT {import_name}."time",
+            {import_name}.node_name,
+            {import_name}.session_id,
+            {import_name}.user_id,
+            {import_name}.user_name,
+            {import_name}.transaction_id,
+            {import_name}.statement_id,
+            {import_name}.request_id,
+            {import_name}.execution_step,
+            {import_name}.completion_time,
+            {import_name}.query_name
+        FROM {import_name_fq}
+        ORDER BY {import_name}.transaction_id,
+            {import_name}.statement_id,
+            {import_name}.node_name,
+            {import_name}."time",
+            {import_name}.request_id,
+            {import_name}.session_id,
+            {import_name}.user_id,
+            {import_name}.user_name
+        SEGMENTED BY hash({import_name}."time",
+            {import_name}.user_id,
+            {import_name}.transaction_id,
+            {import_name}.statement_id, 
+            {import_name}.request_id,
+            {import_name}.completion_time, 
+            {import_name}.node_name,
+            {import_name}.session_id)
+        ALL NODES;
         """
