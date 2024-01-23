@@ -47,11 +47,13 @@ class CollectionTable:
     # Recall: abstract methods won't raise by default
     @abstractmethod
     def get_create_table_sql(self) -> str:
-        raise NotImplementedError("get_create_table_sql is not implemented in the base class CollectionTable")
+        raise NotImplementedError(f"get_create_table_sql is not implemented in the base class CollectionTable."
+                                  f" Current table name = {self.name} schema {self.schema}")
 
     @abstractmethod
     def get_create_projection_sql(self) -> str:
-        raise NotImplementedError("get_create_projection_sql is not implemented in the base class CollectionTable")
+        raise NotImplementedError(f"get_create_projection_sql is not implemented in the base class CollectionTable"
+                                  f" Current table name = {self.name} schema {self.schema}")
 
 
     
@@ -84,10 +86,14 @@ def collectionTableFactory(table_name:str, target_schema:str, key:str) -> Collec
         return CollectionEventsTable(target_schema, key)
     if table_name == AllTableNames.COLLECTION_INFO.value:
         return CollectionInfoTable(target_schema, key)
+    if table_name == AllTableNames.DC_EXPLAIN_PLANS.value:
+        return DCExplainPlansTable(target_schema, key)
 
-    # TODO: eventually, this will probably be     
+    # TODO: eventually this will be an error    
     return CollectionTable(table_name, target_schema, key)
 
+
+############## collection_events ######################
 class CollectionEventsTable(CollectionTable):
     def __init__(self, table_schema:str, key:str) -> None:
         super().__init__("collection_events", table_schema, key)
@@ -128,6 +134,8 @@ class CollectionEventsTable(CollectionTable):
                 {import_name}.statement_id
         SEGMENTED BY hash({import_name}.transaction_id, {import_name}.statement_id) ALL NODES;
         """
+    
+############## collection_info ######################
 class CollectionInfoTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__("collection_info", table_schema, key)
@@ -182,4 +190,81 @@ class CollectionInfoTable(CollectionTable):
                         {import_name}.statement_id, 
                         {import_name}.user_query_label) 
         ALL NODES;
+        """
+
+########### dc_explain_plans ######################
+class DCExplainPlansTable(CollectionTable):
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__("dc_explain_plans", table_schema, key)
+
+    def get_create_table_sql(self) -> str:
+        return f"""
+        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
+        (
+            "time" timestamptz,
+            node_name varchar(128),
+            session_id varchar(128),
+            user_id int,
+            user_name varchar(128),
+            transaction_id int,
+            statement_id int,
+            request_id int,
+            path_id int,
+            path_line_index int,
+            path_line varchar(64000),
+            query_name varchar(128)
+        );
+        """
+    
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name} 
+        /*+basename({import_name}),createtype(A)*/
+        (
+            "time",
+            node_name,
+            session_id,
+            user_id,
+            user_name,
+            transaction_id,
+            statement_id,
+            request_id,
+            path_id,
+            path_line_index,
+            path_line,
+            query_name
+        )
+        AS
+        SELECT {import_name}."time",
+                {import_name}.node_name,
+                {import_name}.session_id,
+                {import_name}.user_id,
+                {import_name}.user_name,
+                {import_name}.transaction_id,
+                {import_name}.statement_id,
+                {import_name}.request_id,
+                {import_name}.path_id,
+                {import_name}.path_line_index,
+                {import_name}.path_line,
+                {import_name}.query_name
+        FROM {import_name_fq}
+        ORDER BY {import_name}.transaction_id,
+                {import_name}.statement_id,
+                {import_name}.node_name,
+                {import_name}."time",
+                {import_name}.session_id,
+                {import_name}.user_id,
+                {import_name}.user_name,
+                {import_name}.request_id
+        SEGMENTED BY hash({import_name}."time", 
+                {import_name}.user_id,
+                {import_name}.transaction_id,
+                {import_name}.statement_id,
+                {import_name}.request_id,
+                {import_name}.path_id,
+                {import_name}.path_line_index, 
+                {import_name}.node_name) ALL NODES;
         """
