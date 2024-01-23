@@ -92,6 +92,8 @@ def collectionTableFactory(table_name:str, target_schema:str, key:str) -> Collec
         return DCQueryExecutionsTable(target_schema, key)
     if table_name == AllTableNames.DC_REQUESTS_ISSUED.value:
         return DCRequestsIssuedTable(target_schema, key)
+    if table_name == AllTableNames.EXECUTION_ENGINE_PROFILES.value:
+        return DCExecutionEngineProfilesTable(target_schema, key)
     
 
     # TODO: eventually this will be an error    
@@ -438,4 +440,99 @@ class DCRequestsIssuedTable(CollectionTable):
             {import_name}.digest) 
         ALL NODES;
         """
+################ execution_engine_profiles ###################
+class DCExecutionEngineProfilesTable(CollectionTable):
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__("execution_engine_profiles", table_schema, key)
 
+    def get_create_table_sql(self) -> str:
+        return f"""
+        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
+        (
+            node_name varchar(128),
+            user_id int,
+            user_name varchar(128),
+            session_id varchar(128),
+            transaction_id int,
+            statement_id int,
+            plan_id int,
+            operator_name varchar(128),
+            operator_id int,
+            baseplan_id int,
+            path_id int,
+            localplan_id int,
+            activity_id int,
+            resource_id int,
+            counter_name varchar(128),
+            counter_tag varchar(128),
+            counter_value int,
+            is_executing boolean,
+            query_name varchar(128)
+        );
+        """
+    
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name}
+        /*+basename({import_name}),createtype(A)*/
+        (
+            node_name,
+            user_id,
+            user_name,
+            session_id,
+            transaction_id,
+            statement_id,
+            plan_id,
+            operator_name,
+            operator_id,
+            baseplan_id,
+            path_id,
+            localplan_id,
+            activity_id,
+            resource_id,
+            counter_name,
+            counter_tag,
+            counter_value,
+            is_executing,
+            query_name
+        )
+        AS
+        SELECT {import_name}.node_name,
+            {import_name}.user_id,
+            {import_name}.user_name,
+            {import_name}.session_id,
+            {import_name}.transaction_id,
+            {import_name}.statement_id,
+            {import_name}.plan_id,
+            {import_name}.operator_name,
+            {import_name}.operator_id,
+            {import_name}.baseplan_id,
+            {import_name}.path_id,
+            {import_name}.localplan_id,
+            {import_name}.activity_id,
+            {import_name}.resource_id,
+            {import_name}.counter_name,
+            {import_name}.counter_tag,
+            {import_name}.counter_value,
+            {import_name}.is_executing,
+            {import_name}.query_name
+        FROM {import_name_fq}
+        ORDER BY {import_name}.transaction_id,
+          {import_name}.statement_id,
+          {import_name}.node_name,
+          {import_name}.plan_id,
+          {import_name}.path_id,
+          {import_name}.operator_id
+        SEGMENTED BY hash({import_name}.user_id,
+            {import_name}.transaction_id,
+            {import_name}.statement_id, 
+            {import_name}.plan_id, 
+            {import_name}.operator_id, 
+            {import_name}.baseplan_id, 
+            {import_name}.path_id, 
+            {import_name}.localplan_id) 
+        ALL NODES;
+        """
