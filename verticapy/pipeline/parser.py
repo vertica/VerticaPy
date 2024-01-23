@@ -50,7 +50,7 @@ from ._helper import required_keywords, execute_and_return, setup
 from . import _ingest
 from . import _transform
 from . import _train
-from . import _test
+from . import _validate
 from . import _schedule
 
 SUPPORTED_DATASETS = [
@@ -176,7 +176,7 @@ with open(file_name, "r", encoding="utf-8") as file:
         TABLE_SQL = ""
         if "test" in steps:
             test = steps["test"]
-            TEST_SQL, TABLE_SQL = _test.testing(test, MODEL, pipeline_name, COLS)
+            TEST_SQL, TABLE_SQL = _validate.testing(test, MODEL, pipeline_name, COLS)
             META_SQL += TEST_SQL
             pbar.update()
             print(
