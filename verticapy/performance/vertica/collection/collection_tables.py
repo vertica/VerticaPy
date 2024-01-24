@@ -19,6 +19,13 @@ from enum import Enum
 from typing import Mapping
 
 class CollectionTable:
+    """
+    Parent class for tables created by query profile export. 
+
+    Child classes are expected to implement abstract methods
+        - get_create_table_sql()
+        - get_create_projection_sql()
+    """
     def __init__(self, table_name:str, table_schema:str, key:str) -> None:
         self.name = table_name
         self.schema = table_schema
@@ -43,6 +50,11 @@ class CollectionTable:
     
     def get_staging_name(self) -> str:
         return f"{self.schema}.{self.import_prefix}{self.name}{self.staging_suffix}{self.import_suffix}"
+    
+    def get_drop_table_sql(self) -> str:
+        # Drop table can be in the base class because it is 
+        # DROP TABLE IF EXISTS {self.get_import_name_fq}
+        raise NotImplementedError(f"Drop table not implemented yet")
 
     # Recall: abstract methods won't raise by default
     @abstractmethod
@@ -54,7 +66,17 @@ class CollectionTable:
     def get_create_projection_sql(self) -> str:
         raise NotImplementedError(f"get_create_projection_sql is not implemented in the base class CollectionTable"
                                   f" Current table name = {self.name} schema {self.schema}")
-
+    
+    @abstractmethod
+    def has_copy_staging(self) -> str:
+        raise NotImplementedError(f"get_create_projection_sql is not implemented in the base class CollectionTable"
+                                  f" Current table name = {self.name} schema {self.schema}")
+    
+    @abstractmethod
+    def copy_from_local_file(self, filename:str) -> str:
+        # This method will generate and run the copy statement
+        # It will copy to a staging table when necessary
+        raise NotImplementedError(f"")
 
     
 class AllTableNames(Enum):

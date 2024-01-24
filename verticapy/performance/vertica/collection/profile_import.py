@@ -36,6 +36,16 @@ class ProfileImport:
                  key:str, 
                  filename:str, 
                  skip_create_table: bool = False) -> None:
+        """
+        Load a query performance profile in `filename` into tables
+        in schema `target_schema` with suffix `key`.
+
+        `target_schema`: the schema to load the profile into
+        `key` 
+        """
+        # TODO: at this time, we don't run any checks automatically
+        # during __init__. Instead, we run the chceks manually. Running
+        # the checks manually facilitates early testing.
         
         self.target_schema = target_schema
         self.key = key
@@ -44,10 +54,11 @@ class ProfileImport:
         self.skip_create_table = skip_create_table
         self.logger = logging.getLogger("ProfileImport")
 
-        # TODO: run checks automatically at creation
-        # For now, let's make the checks manual so we can test them.
 
     def check_file(self) -> None:
+        """
+        Checks to see that the file exists and that we can open it
+        """
         if not os.path.exists(self.filename):
             raise FileNotFoundError(f"File {self.filename} does not exist")
         
@@ -56,6 +67,10 @@ class ProfileImport:
         self.input_file_obj = open(self.filename, 'r')
 
     def check_schema(self) -> None:
+        """
+        Checks to see that the schema and expected tables exist.
+        Optionally creates the schema and expected tables.
+        """
         if self.skip_create_table:
             self._schema_exists_or_raise()
             self._tables_exist_or_raise()
@@ -111,7 +126,7 @@ class ProfileImport:
         for ctable in all_tables.values():
             # TODO: for now, only try to create tables we have defined
             # Later we will make all tables
-            print(f"Table is {ctable.name}")
+            # print(f"Table is {ctable.name}")
             if (ctable.name == AllTableNames.COLLECTION_EVENTS.value
                 or ctable.name == AllTableNames.COLLECTION_INFO.value
                 or ctable.name == AllTableNames.DC_EXPLAIN_PLANS.value

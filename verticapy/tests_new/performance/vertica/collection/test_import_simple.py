@@ -19,19 +19,18 @@ from typing import Set
 
 import pytest
 
-import verticapy as vp
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.performance.vertica.collection.profile_import import ProfileImport, ProfileImportError
-from verticapy.datasets import load_amazon
-from verticapy.core.vdataframe import vDataFrame
-
 
 class TestProfileImport:
     """
-    Test Base Class.
+    Collection of tests for ProfileImport class
     """
 
     def test_empty_schema(self, schema_loader):
+        """Confirm that the profile import fails when schema is present but
+        tables are missing, and the user specifies not to create the tables
+        """
         pi = ProfileImport(target_schema=schema_loader,
                            key='no_such_key',
                            filename='no_such_file.tar',
@@ -41,6 +40,10 @@ class TestProfileImport:
             pi.check_schema()
 
     def test_no_such_schema(self):
+        """
+        Confirm that profile import fails when schema is absent and
+        the user specifies not to create the schema.
+        """
         pi = ProfileImport(target_schema='no_such_schema',
                            key='no_such_key',
                            filename='no_such_file.tar',
@@ -51,6 +54,10 @@ class TestProfileImport:
             pi.check_schema()
 
     def test_create_tables(self, schema_loader):
+        """
+        Confirm that all of the expected tables are created in an 
+        existing schema.
+        """
         test_key = 'aaa'
         pi = ProfileImport(target_schema=schema_loader,
                            key=test_key,
@@ -75,6 +82,9 @@ class TestProfileImport:
 
     @staticmethod
     def _get_set_of_tables_in_schema(target_schema:str, key:str) -> Set[str]:
+        """
+        Test utility method: get all the qprof tables in a schema 
+        """
         print("Looking for tables in schema: {target_schema}")
         result = _executeSQL(f"""SELECT table_name FROM v_catalog.tables 
                     WHERE 
