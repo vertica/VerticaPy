@@ -34,7 +34,7 @@ Welcome to VerticaPy documentation
 :mod:`verticapy` is a Python library that provides an interface to interact with the 
 Vertica database using the Python programming language. Vertica is a high-performance analytical database designed for big data analytics. VerticaPy aims to simplify data analysis and machine learning tasks by providing a Pythonic way to work with data stored in Vertica.
 
-.. grid:: 3
+.. grid:: 1 2 2 3
 
     .. grid-item::
 

@@ -11,7 +11,7 @@ Data Exploration
       .. card:: Descriptive Statistics
           :link: notebooks/data_exploration/descriptive_statistics/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-12
 
           4 mins
           ^^^^^^^
@@ -27,7 +27,7 @@ Data Exploration
       .. card:: Charts
           :link: notebooks/data_exploration/charts/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-12
 
           15 mins
           ^^^^^^^
@@ -43,7 +43,7 @@ Data Exploration
         .. card:: Coorelation & Dependencies
           :link: notebooks/data_exploration/correlations/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-12
 
           15 mins
           ^^^^^^^^

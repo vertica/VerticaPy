@@ -10,7 +10,7 @@ h1{
 
 h2{
   font-family: "Inter";
-  font-weight: 350 ;
+  /* font-weight: 350 ; */
   font-size: 2.5em ;
   letter-spacing: -.021em;
   color: var(--color-announcement-text);
@@ -22,12 +22,49 @@ h3{
 
 /* Size of center content */
 p {
-  font-size: 140%; 
-} 
+  font-size: 130%; 
+}
 
 /* Size of Tiles - title */
 .sd-card-title {
   font-size: 1.5em;
+}
+
+/* Text on Next and Previous buttons at the bottom */
+.next-page{
+  font-size: medium;
+}
+.prev-page{
+  font-size: medium;
+}
+
+/* Class Parameters Text */
+dt.sig.sig-object.py {
+  font-size: medium !important;
+}
+
+/* Code boxes */
+div[class*=" highlight-"], div[class^=highlight-]{
+  font-size: medium;
+}
+
+/* Size of Parameters */
+.field-list dt, .option-list dt, dl.footnote dt, dl.glossary dt, dl.simple dt, dl:not([class]) dt{
+  font-size: medium;
+}
+
+/* VerticaPy Documentation Text */
+.brand{
+  font-size: medium;
+}
+
+/* Tabs Text */
+.tab-set > input:checked + label {
+  font-size: medium;
+}
+/* Tabs Text */
+.tab-set > label {
+  font-size: medium;
 }
 
 /* HEADER + PAGE */
@@ -65,6 +102,15 @@ p {
 .sidebar-tree .toctree-l1>.reference, .sidebar-tree .toctree-l1>label .icon {
   font-size: 1rem;
   font-family: "Inter" ;
+  line-height: 1.1;
+}
+
+.sidebar-tree li.has-children>.reference {
+  line-height: 1.1;
+}
+
+.sidebar-tree .toctree-l1 {
+  line-height: 1.5; /* Adjust the value as needed */
 }
 
 /* Right Side - On This Page */
@@ -80,6 +126,7 @@ p {
 .top_search{
   margin-left: 40px;
   padding-right: 10px;
+  font-size: medium;
 }
 
 /* Top Banner BUttons */
@@ -325,6 +372,7 @@ p {
   color: white;
   border: none;
   border-radius: 50px;
+  font-size: medium;
 }
 
 .button-text {
@@ -381,7 +429,7 @@ p {
   /* width: 100%; */
   height: calc(1em + 1.375rem + 2px);
   padding: 0rem 0.9375rem;
-  font-size: 1rem;
+  font-size: large;
   font-weight: 300;
   line-height: 1;
   color: var(--color-announcement-text);
@@ -468,7 +516,10 @@ body {
 .custom-card-8,
 .custom-card-9,
 .custom-card-10,
-.custom-card-11 {
+.custom-card-11,
+.custom-card-12,
+.custom-card-13,
+.custom-card-14 {
   /*overflow-y: scroll;*/
 }
 .custom-card:hover,
@@ -481,7 +532,10 @@ body {
 .custom-card-8:hover,
 .custom-card-9:hover,
 .custom-card-10:hover,
-.custom-card-11:hover {
+.custom-card-11:hover,
+.custom-card-12:hover,
+.custom-card-13:hover,
+.custom-card-13:hover {
   box-shadow: 0px 12px 30px whitesmoke;
 }
 
@@ -495,7 +549,7 @@ body {
 
 /* Cards on Index Page */
 .custom-card-2 {
-  height: 360px; /* Adjust the desired height */
+  height: 370px; /* Adjust the desired height */
 }
 
 /* Cards on Machine Learning page */
@@ -507,7 +561,7 @@ body {
 
 /* Cards on Vertica page */
 .custom-card-4 {
-  height: 280px; /* Adjust the desired height */
+  height: 285px; /* Adjust the desired height */
   /* Add more styles as needed */
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -540,7 +594,7 @@ body {
 .custom-card-9 {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  height: 160px;
+  height: 190px;
 }
 
 /* Cards on Benchmarks pages */
@@ -553,6 +607,34 @@ body {
   height: 190px; /* Adjust the desired height */
 }
 
+/* Cards on User Guide/Data Exploration page */
+.custom-card-12 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 200px;
+}
+
+/* Cards on User Guide/Data Prep page */
+.custom-card-13 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 200px;
+}
+
+
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 210px;
+}
+
+/* Cards on User Guide/Full Stack page */
+.custom-card-15 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  height: 220px;
+}
 /* End cards */
 
 .custom-class-img-top{
@@ -586,7 +668,8 @@ body {
 
 /* Chart Gallery Page */
 .custom-class-img-top-7 {
-  height: 200px
+  height: 200px;
+  padding: 8px;
 }
 /* END Connector Page Img Cards */
 
@@ -905,11 +988,7 @@ article, article .align-default {
   .sidebar-search-container_top{
     width: 150px;
   }
-/* Cards on Index Page */
-  .custom-card-2 {
-    height: 340px; /* Adjust the desired height */
-    /* Add more styles as needed */
-  }
+
   /* Cards on Vertica page */
   .custom-card-4 {
     height: 230px;
@@ -920,6 +999,72 @@ article, article .align-default {
   }
 }
 
+@media (max-width: 36em) {
+/* Cards on Index Page */
+.custom-card-2 {
+  height: 265px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+/* Cards on Machine Learning page */
+.custom-card-3 {
+  height: 150px; 
+}
+/* Cards on Vertica page */
+.custom-card-4 {
+  height: 140px;
+}
+/* Cards on User Guide MAIN page */
+.custom-card-8 {
+  height: 260px; /* Adjust the desired height */
+}
+/* Cards on User Guide / Introduction page */
+.custom-card-9 {
+  height: 240px;
+}
+/* Cards on Benchmarks pages */
+.custom-card-10 {
+  height: 100px; /* Adjust the desired height */
+}
+/* Cards on User Guide/Data Exploration page */
+.custom-card-12 {
+  height: 230px;
+}
+/* Cards on User Guide/Data Prep page */
+.custom-card-13 {
+  height: 190px;
+}
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
+  height: 190px;
+}
+}
+
+@media (max-width: 62em) {
+/* Cards on Machine Learning page */
+.custom-card-3 {
+  height: 230px; 
+}
+/* Cards on Vertica page */
+.custom-card-4 {
+  height: 210px;
+}
+/* Cards on Benchmarks pages */
+.custom-card-10 {
+  height: 150px; /* Adjust the desired height */
+}
+/* Cards on User Guide / Introduction page */
+.custom-card-9 {
+  height: 200px;
+}
+/* Cards on User Guide/Machine Learning page */
+.custom-card-14 {
+  height: 230px;
+}
+/* Cards on User Guide/Full Stack page */
+.custom-card-15 {
+  height: 240px;
+}
+}
 @media (max-width: 90em) {
   .right-content {
     /* display: none; */

@@ -101,7 +101,7 @@ Machine Learning Support
   - ``roc_auc`` and ``prc_auc`` now work for multi-class classification using different averaging techniques stated above. 
 - Model names are now optional
 - Model Tracking and Versioning now supported.
-  Check out :ref:`notebooks/ml/model_tracking_versioning/index.ipynb` for more details.
+  Check out :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb` for more details.
 - Model Export and Import:
   Now models can be exported to ``pmml``, ``tensorflow``, and ``binary``. They can now be exported to another User Defined Location.
 

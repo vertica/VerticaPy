@@ -5,14 +5,14 @@
 Machine Learning
 =================
 
-.. grid:: 2
+.. grid:: 1 2 2 2
 
     .. grid-item::
     
       .. card:: Introduction
           :link: notebooks/ml/introduction/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -26,7 +26,7 @@ Machine Learning
       .. card:: Regression
           :link: notebooks/ml/regression/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -39,7 +39,7 @@ Machine Learning
         .. card:: Classification
           :link: notebooks/ml/classification/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -52,7 +52,7 @@ Machine Learning
         .. card:: Clustering
           :link: notebooks/ml/clustering/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -65,7 +65,7 @@ Machine Learning
         .. card:: Time Series
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -78,7 +78,7 @@ Machine Learning
         .. card:: Model Management
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           13 mins
           ^^^^^^^

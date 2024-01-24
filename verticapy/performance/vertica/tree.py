@@ -1184,8 +1184,8 @@ class PerformanceTree:
         relationships = self._gen_relationships()
         nb_children = self._get_nb_children(relationships)
         links = self._find_descendants(self.path_id, relationships) + [self.path_id]
+        ancestors = self._find_ancestors(self.path_id, relationships)
         if self.show_ancestors:
-            ancestors = self._find_ancestors(self.path_id, relationships)
             links += ancestors
         for i in range(n):
             tooltip_metrics = "\n"
@@ -1269,8 +1269,8 @@ class PerformanceTree:
         nb_children = self._get_nb_children(relationships)
         links = self._find_descendants(self.path_id, relationships)
         info_color = self.style["info_color"]
+        ancestors = self._find_ancestors(self.path_id, relationships)
         if self.show_ancestors:
-            ancestors = self._find_ancestors(self.path_id, relationships)
             links += ancestors
         for i in range(n):
             row = self._format_row(self.rows[i].replace('"', "'"))
