@@ -65,7 +65,8 @@ def transformation(transform: dict, table: str) -> vDataFrame:
         col, is_dep = column_queue.get()
         if is_dep:
             raise RuntimeError(
-                "Error: All remaining columns have dependencies\n" + error_string
+                "Error: All remaining columns either have an error or cyclic dependencies:\n"
+                + error_string
             )
 
         column_info = transform[col]

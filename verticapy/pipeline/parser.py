@@ -81,7 +81,7 @@ parser.add_argument(
     "-o",
     "--outfile",
     nargs="?",
-    help="[Optional] Path to the output sql file. If unspecified input_file.sql will be used.",
+    help="[Optional] Path to the output sql file. If unspecified pipeline_name.sql will be used.",
     default=None,
     required=False,
 )
@@ -148,8 +148,11 @@ with open(file_name, "r", encoding="utf-8") as file:
             transform = steps["transform"]
             VDF = _transform.transformation(transform, table)
             if "train" not in steps:
+                # This is necessary because the view creation usually takes place
+                # in _train.training(). If a user wants to 'keep' their transformation
+                # this will be added to the sql as a backup record.
                 META_SQL += execute_and_return(
-                    f"CREATE OR REPLACE VIEW {pipeline_name + '_VIEW'} AS SELECT * FROM "
+                    f"CREATE OR REPLACE VIEW {pipeline_name + '_PREDICT_VIEW'} AS SELECT * FROM "
                     + VDF.current_relation()
                     + ";"
                 )
@@ -166,6 +169,7 @@ with open(file_name, "r", encoding="utf-8") as file:
                 COLS = VDF.get_columns()
             else:
                 COLS = list(transform.keys())
+
             train_sql, MODEL, MODEL_SQL = _train.training(
                 train, VDF, pipeline_name, COLS
             )
@@ -175,6 +179,10 @@ with open(file_name, "r", encoding="utf-8") as file:
         # TEST
         TABLE_SQL = ""
         if "test" in steps:
+            if MODEL == None:
+                raise KeyError(
+                    "There is no model to test. Please create a model with the 'train' step"
+                )
             test = steps["test"]
             TEST_SQL, TABLE_SQL = _validate.testing(test, MODEL, pipeline_name, COLS)
             META_SQL += TEST_SQL

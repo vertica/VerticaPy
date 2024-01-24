@@ -184,6 +184,7 @@ def training(
                 param_str += f"{param} = '{params[param]}', "
             else:
                 param_str += f"{param} = {params[param]}, "
+
         param_str = param_str[:-2]
         model = eval(
             f"{name}('{pipeline_name + '_MODEL'}', {param_str})",
@@ -192,8 +193,10 @@ def training(
         predictors = cols  # ['"col1"', '"col2"', '"col3"', '"col4"']
         if "include" in tm:
             predictors = tm["include"]
+
         if "exclude" in tm:
             predictors = list(set(predictors) - set(tm["exclude"]))
+
         if target == "":
             # UNSUPERVISED
             model.fit(pipeline_name + "_TRAIN_VIEW", predictors)
