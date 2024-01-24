@@ -18,15 +18,17 @@ from abc import abstractmethod
 from enum import Enum
 from typing import Mapping
 
+
 class CollectionTable:
     """
-    Parent class for tables created by query profile export. 
+    Parent class for tables created by query profile export.
 
     Child classes are expected to implement abstract methods
         - get_create_table_sql()
         - get_create_projection_sql()
     """
-    def __init__(self, table_name:str, table_schema:str, key:str) -> None:
+
+    def __init__(self, table_name: str, table_schema: str, key: str) -> None:
         self.name = table_name
         self.schema = table_schema
         self.key = key
@@ -36,49 +38,57 @@ class CollectionTable:
 
     def get_import_name_fq(self) -> str:
         return self._get_import_name(fully_qualified=True)
-    
+
     def get_import_name(self) -> str:
         return self._get_import_name(fully_qualified=False)
-    
+
     def get_super_proj_name_fq(self) -> str:
         return f"{self._get_import_name(fully_qualified=True)}_super"
-    
+
     def _get_import_name(self, fully_qualified) -> str:
-        return (f"{self.schema}.{self.import_prefix}{self.name}{self.import_suffix}"
-                if fully_qualified else
-                f"{self.import_prefix}{self.name}{self.import_suffix}")
-    
+        return (
+            f"{self.schema}.{self.import_prefix}{self.name}{self.import_suffix}"
+            if fully_qualified
+            else f"{self.import_prefix}{self.name}{self.import_suffix}"
+        )
+
     def get_staging_name(self) -> str:
         return f"{self.schema}.{self.import_prefix}{self.name}{self.staging_suffix}{self.import_suffix}"
-    
+
     def get_drop_table_sql(self) -> str:
-        # Drop table can be in the base class because it is 
+        # Drop table can be in the base class because it is
         # DROP TABLE IF EXISTS {self.get_import_name_fq}
         raise NotImplementedError(f"Drop table not implemented yet")
 
     # Recall: abstract methods won't raise by default
     @abstractmethod
     def get_create_table_sql(self) -> str:
-        raise NotImplementedError(f"get_create_table_sql is not implemented in the base class CollectionTable."
-                                  f" Current table name = {self.name} schema {self.schema}")
+        raise NotImplementedError(
+            f"get_create_table_sql is not implemented in the base class CollectionTable."
+            f" Current table name = {self.name} schema {self.schema}"
+        )
 
     @abstractmethod
     def get_create_projection_sql(self) -> str:
-        raise NotImplementedError(f"get_create_projection_sql is not implemented in the base class CollectionTable"
-                                  f" Current table name = {self.name} schema {self.schema}")
-    
+        raise NotImplementedError(
+            f"get_create_projection_sql is not implemented in the base class CollectionTable"
+            f" Current table name = {self.name} schema {self.schema}"
+        )
+
     @abstractmethod
     def has_copy_staging(self) -> str:
-        raise NotImplementedError(f"get_create_projection_sql is not implemented in the base class CollectionTable"
-                                  f" Current table name = {self.name} schema {self.schema}")
-    
+        raise NotImplementedError(
+            f"get_create_projection_sql is not implemented in the base class CollectionTable"
+            f" Current table name = {self.name} schema {self.schema}"
+        )
+
     @abstractmethod
-    def copy_from_local_file(self, filename:str) -> str:
+    def copy_from_local_file(self, filename: str) -> str:
         # This method will generate and run the copy statement
         # It will copy to a staging table when necessary
         raise NotImplementedError(f"")
 
-    
+
 class AllTableNames(Enum):
     COLLECTION_EVENTS = "collection_events"
     COLLECTION_INFO = "collection_info"
@@ -94,7 +104,9 @@ class AllTableNames(Enum):
     RESOURCE_POOL_STATUS = "resource_pool_status"
 
 
-def getAllCollectionTables(target_schema:str, key:str) -> Mapping[str,CollectionTable]:
+def getAllCollectionTables(
+    target_schema: str, key: str
+) -> Mapping[str, CollectionTable]:
     result = {}
     for name in AllTableNames:
         name_str = name.value
@@ -103,7 +115,10 @@ def getAllCollectionTables(target_schema:str, key:str) -> Mapping[str,Collection
 
     return result
 
-def collectionTableFactory(table_name:str, target_schema:str, key:str) -> CollectionTable:
+
+def collectionTableFactory(
+    table_name: str, target_schema: str, key: str
+) -> CollectionTable:
     if table_name == AllTableNames.COLLECTION_EVENTS.value:
         return CollectionEventsTable(target_schema, key)
     if table_name == AllTableNames.COLLECTION_INFO.value:
@@ -116,15 +131,14 @@ def collectionTableFactory(table_name:str, target_schema:str, key:str) -> Collec
         return DCRequestsIssuedTable(target_schema, key)
     if table_name == AllTableNames.EXECUTION_ENGINE_PROFILES.value:
         return DCExecutionEngineProfilesTable(target_schema, key)
-    
 
-    # TODO: eventually this will be an error    
+    # TODO: eventually this will be an error
     return CollectionTable(table_name, target_schema, key)
 
 
 ############## collection_events ######################
 class CollectionEventsTable(CollectionTable):
-    def __init__(self, table_schema:str, key:str) -> None:
+    def __init__(self, table_schema: str, key: str) -> None:
         super().__init__("collection_events", table_schema, key)
 
     def get_create_table_sql(self) -> str:
@@ -138,6 +152,7 @@ class CollectionEventsTable(CollectionTable):
             row_count int
         );
         """
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -163,7 +178,8 @@ class CollectionEventsTable(CollectionTable):
                 {import_name}.statement_id
         SEGMENTED BY hash({import_name}.transaction_id, {import_name}.statement_id) ALL NODES;
         """
-    
+
+
 ############## collection_info ######################
 class CollectionInfoTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -184,6 +200,7 @@ class CollectionInfoTable(CollectionTable):
             version varchar(512)
         );
         """
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -221,6 +238,7 @@ class CollectionInfoTable(CollectionTable):
         ALL NODES;
         """
 
+
 ########### dc_explain_plans ######################
 class DCExplainPlansTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -244,7 +262,7 @@ class DCExplainPlansTable(CollectionTable):
             query_name varchar(128)
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -298,6 +316,8 @@ class DCExplainPlansTable(CollectionTable):
                 {import_name}.node_name) 
         ALL NODES;
         """
+
+
 ################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -321,7 +341,7 @@ class DCQueryExecutionsTable(CollectionTable):
         );
 
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -373,6 +393,8 @@ class DCQueryExecutionsTable(CollectionTable):
             {import_name}.session_id)
         ALL NODES;
         """
+
+
 ################ dc_requests_issued ###################
 class DCRequestsIssuedTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -401,7 +423,7 @@ class DCRequestsIssuedTable(CollectionTable):
             query_name varchar(128)
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -462,6 +484,8 @@ class DCRequestsIssuedTable(CollectionTable):
             {import_name}.digest) 
         ALL NODES;
         """
+
+
 ################ execution_engine_profiles ###################
 class DCExecutionEngineProfilesTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -492,7 +516,7 @@ class DCExecutionEngineProfilesTable(CollectionTable):
             query_name varchar(128)
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
