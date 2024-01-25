@@ -17,19 +17,20 @@ permissions and limitations under the License.
 
 from abc import abstractmethod
 import pytest
+import numpy as np
 
 # Vertica
-from verticapy.learn.model_selection import elbow
-from verticapy.learn.ensemble import RandomForestClassifier
-from verticapy.learn.neighbors import LocalOutlierFactor
-from verticapy.learn.linear_model import LogisticRegression
-from verticapy.learn.model_selection import lift_chart, prc_curve
-from verticapy.learn.decomposition import PCA
-from verticapy.learn.tree import DecisionTreeRegressor
-from verticapy.learn.linear_model import LinearRegression
-from verticapy.learn.model_selection import stepwise
-from verticapy.learn.svm import LinearSVC
-from verticapy.learn.cluster import KMeans
+from verticapy.machine_learning.model_selection import elbow
+from verticapy.machine_learning.vertica.ensemble import RandomForestClassifier
+from verticapy.machine_learning.vertica.neighbors import LocalOutlierFactor
+from verticapy.machine_learning.vertica.linear_model import LogisticRegression
+from verticapy.machine_learning.metrics import lift_chart, prc_curve
+from verticapy.machine_learning.vertica.decomposition import PCA
+from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+from verticapy.machine_learning.model_selection import stepwise
+from verticapy.machine_learning.vertica.svm import LinearSVC
+from verticapy.machine_learning.vertica.cluster import KMeans
 from vertica_highcharts.highcharts.highcharts import Highchart
 
 # Standard Python Modules
@@ -73,6 +74,51 @@ def get_zaxis_label(obj):
         return obj.layout["scene"]["zaxis"]["title"]["text"]
     if isinstance(obj, Highchart):
         return obj.options["zAxis"].title.text
+    return None
+
+
+def get_xaxis_data_type(obj):
+    """
+    Get x-axis data type for given plotting object
+    """
+    if isinstance(obj, plt.Axes):
+        # Need to figure out how to get the data type for Matplotlib
+        return None
+    if isinstance(obj, go.Figure):
+        return obj.data[0]["x"].dtype
+    if isinstance(obj, Highchart):
+        # Need to figure out how to get the data type for Highcharts
+        return None
+    return None
+
+
+def get_yaxis_data_type(obj):
+    """
+    Get y-axis data type for given plotting object
+    """
+    if isinstance(obj, plt.Axes):
+        # Need to figure out how to get the data type for Matplotlib
+        return None
+    if isinstance(obj, go.Figure):
+        return obj.data[0]["y"].dtype
+    if isinstance(obj, Highchart):
+        # Need to figure out how to get the data type for Highcharts
+        return None
+    return None
+
+
+def get_zaxis_data_type(obj):
+    """
+    Get y-axis data type for given plotting object
+    """
+    if isinstance(obj, plt.Axes):
+        # Need to figure out how to get the data type for Matplotlib
+        return None
+    if isinstance(obj, go.Figure):
+        return obj.data[0]["z"].dtype
+    if isinstance(obj, Highchart):
+        # Need to figure out how to get the data type for Highcharts
+        return None
     return None
 
 
@@ -1387,6 +1433,28 @@ class ScatterVDF2DPlot(BasicPlotTests):
             {"columns": [self.COL_NAME_1, self.COL_NAME_2]},
         )
 
+    def test_data_type_for_x_axis(self):
+        """
+        Test if data type for X axis is float
+        """
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert np.issubdtype(
+            get_xaxis_data_type(self.result), float
+        ), "Wrong data type for X axis"
+
+    def test_data_type_for_y_axis(self):
+        """
+        Test if data type for Y axis is float
+        """
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert np.issubdtype(
+            get_yaxis_data_type(self.result), float
+        ), "Wrong data type for Y axis"
+
     @pytest.mark.parametrize("attributes", [["Z", 50, 2], [None, 1000, 4]])
     def test_properties_output_type_for_all_options(
         self,
@@ -1446,6 +1514,17 @@ class ScatterVDF3DPlot(BasicPlotTests):
                 "by": self.COL_NAME_4,
             },
         )
+
+    def test_data_type_for_z_axis(self):
+        """
+        Test if data type for Y axis is float
+        """
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert np.issubdtype(
+            get_yaxis_data_type(self.result), float
+        ), "Wrong data type for Y axis"
 
 
 class VDCSpiderPlot:

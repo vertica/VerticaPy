@@ -545,8 +545,13 @@ class TestClassificationMetrics:
         skl_res = get_python_metrics()
 
         print(f"{metric_name} - vertica: {vpy_res}, sklearn: {skl_res}")
-        assert (
-            vpy_res == skl_res
-            if isinstance(vpy_res, dict)
-            else vpy_res == pytest.approx(skl_res, rel=rel_tolerance)
-        ), f"vertica: {vpy_res}, sklearn: {skl_res}"
+
+        if isinstance(vpy_res, dict):
+            for v, s in zip(vpy_res.values(), skl_res.values()):
+                assert v == pytest.approx(
+                    s, rel=rel_tolerance
+                ), f"vertica: {vpy_res}, sklearn: {skl_res}"
+        else:
+            assert vpy_res == pytest.approx(
+                skl_res, rel=rel_tolerance
+            ), f"vertica: {vpy_res}, sklearn: {skl_res}"
