@@ -106,7 +106,8 @@ class CollectionTable:
     def copy_from_local_file(self, filename: str) -> str:
         # This method will generate and run the copy statement
         # It will copy to a staging table when necessary
-        raise NotImplementedError(f"")
+        raise NotImplementedError(f"copy_from_local_file is not implemented in base class CollectionTable"
+                                  f"Current table name = {self.name} and schema {self.schema}")
 
 def getAllCollectionTables(
     target_schema: str, key: str
