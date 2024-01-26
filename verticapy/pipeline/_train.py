@@ -207,12 +207,10 @@ def training(
 
         ts = model.get_vertica_attributes()  # TableSample
         if "call_string" in ts["attr_name"]:
-            # SUPERVISED
             model_sql = model.get_vertica_attributes("call_string")["call_string"][0]
             if model_sql.split(" ")[0] != "SELECT":
                 model_sql = "SELECT " + model_sql + ";"
         else:
-            # UNSUPERVISED
             model_sql = (
                 "SELECT "
                 + model.get_vertica_attributes("metrics")["metrics"][0]

@@ -15,7 +15,7 @@ You may obtain a copy of the License at:
     See the  License for the specific  language governing
     permissions and limitations under the License.
 """
-"""This script runs has helpful functions for the pipeline. """
+"""This script has helpful functions for the pipeline. """
 
 # required packages
 import re
