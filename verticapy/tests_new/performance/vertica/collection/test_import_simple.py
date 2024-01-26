@@ -99,7 +99,7 @@ class TestProfileImport:
         """
         Test utility method: get all the qprof tables in a schema
         """
-        print("Looking for tables in schema: {target_schema}")
+        logging.info(f"Looking for tables in schema: {target_schema}")
         result = _executeSQL(
             f"""SELECT table_name FROM v_catalog.tables 
                     WHERE 
@@ -110,6 +110,6 @@ class TestProfileImport:
         )
         existing_tables = set()
         for row in result:
-            print(f"created table {row[0]}")
+            logging.info(f"created table {row[0]}")
             existing_tables.add(row[0])
         return existing_tables

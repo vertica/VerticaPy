@@ -18,6 +18,25 @@ from abc import abstractmethod
 from enum import Enum
 from typing import Mapping
 
+class AllTableTypes(Enum):
+    """
+    Enumeration of all table types understood by profile collection.
+    
+    It is best to match table schema (col types) by comparing to this enumeration.
+    Tables can have the same schema and different names.
+    """
+    COLLECTION_EVENTS = "collection_events"
+    COLLECTION_INFO = "collection_info"
+    DC_EXPLAIN_PLANS = "dc_explain_plans"
+    DC_QUERY_EXECUTIONS = "dc_query_executions"
+    DC_REQUESTS_ISSUED = "dc_requests_issued"
+    EXECUTION_ENGINE_PROFILES = "execution_engine_profiles"
+    EXPORT_EVENTS = "export_events"
+    HOST_RESOURCES = "host_resources"
+    QUERY_CONSUMPTION = "query_consumption"
+    QUERY_PLAN_PROFILES = "query_plan_profiles"
+    QUERY_PROFILES = "query_profiles"
+    RESOURCE_POOL_STATUS = "resource_pool_status"
 
 class CollectionTable:
     """
@@ -28,8 +47,9 @@ class CollectionTable:
         - get_create_projection_sql()
     """
 
-    def __init__(self, table_name: str, table_schema: str, key: str) -> None:
-        self.name = table_name
+    def __init__(self, table_type: AllTableTypes, table_schema: str, key: str) -> None:
+        self.table_type = table_type
+        self.name = self.table_type.value
         self.schema = table_schema
         self.key = key
         self.import_prefix = "qprof_"
@@ -88,49 +108,32 @@ class CollectionTable:
         # It will copy to a staging table when necessary
         raise NotImplementedError(f"")
 
-
-class AllTableNames(Enum):
-    COLLECTION_EVENTS = "collection_events"
-    COLLECTION_INFO = "collection_info"
-    DC_EXPLAIN_PLANS = "dc_explain_plans"
-    DC_QUERY_EXECUTIONS = "dc_query_executions"
-    DC_REQUESTS_ISSUED = "dc_requests_issued"
-    EXECUTION_ENGINE_PROFILES = "execution_engine_profiles"
-    EXPORT_EVENTS = "export_events"
-    HOST_RESOURCES = "host_resources"
-    QUERY_CONSUMPTION = "query_consumption"
-    QUERY_PLAN_PROFILES = "query_plan_profiles"
-    QUERY_PROFILES = "query_profiles"
-    RESOURCE_POOL_STATUS = "resource_pool_status"
-
-
 def getAllCollectionTables(
     target_schema: str, key: str
 ) -> Mapping[str, CollectionTable]:
     result = {}
-    for name in AllTableNames:
-        name_str = name.value
-        c = collectionTableFactory(name_str, target_schema, key)
+    for name in AllTableTypes:
+        c = collectionTableFactory(name, target_schema, key)
         result[name.name] = c
 
     return result
 
 
 def collectionTableFactory(
-    table_name: str, target_schema: str, key: str
+    table_name: AllTableTypes, target_schema: str, key: str
 ) -> CollectionTable:
-    if table_name == AllTableNames.COLLECTION_EVENTS.value:
+    if table_name == AllTableTypes.COLLECTION_EVENTS:
         return CollectionEventsTable(target_schema, key)
-    if table_name == AllTableNames.COLLECTION_INFO.value:
+    if table_name == AllTableTypes.COLLECTION_INFO:
         return CollectionInfoTable(target_schema, key)
-    if table_name == AllTableNames.DC_EXPLAIN_PLANS.value:
+    if table_name == AllTableTypes.DC_EXPLAIN_PLANS:
         return DCExplainPlansTable(target_schema, key)
-    if table_name == AllTableNames.DC_QUERY_EXECUTIONS.value:
+    if table_name == AllTableTypes.DC_QUERY_EXECUTIONS:
         return DCQueryExecutionsTable(target_schema, key)
-    if table_name == AllTableNames.DC_REQUESTS_ISSUED.value:
+    if table_name == AllTableTypes.DC_REQUESTS_ISSUED:
         return DCRequestsIssuedTable(target_schema, key)
-    if table_name == AllTableNames.EXECUTION_ENGINE_PROFILES.value:
-        return DCExecutionEngineProfilesTable(target_schema, key)
+    if table_name == AllTableTypes.EXECUTION_ENGINE_PROFILES:
+        return ExecutionEngineProfilesTable(target_schema, key)
 
     # TODO: eventually this will be an error
     return CollectionTable(table_name, target_schema, key)
@@ -139,7 +142,9 @@ def collectionTableFactory(
 ############## collection_events ######################
 class CollectionEventsTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__("collection_events", table_schema, key)
+        super().__init__(AllTableTypes.COLLECTION_EVENTS, 
+                         table_schema, 
+                         key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -183,7 +188,9 @@ class CollectionEventsTable(CollectionTable):
 ############## collection_info ######################
 class CollectionInfoTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__("collection_info", table_schema, key)
+        super().__init__(AllTableTypes.COLLECTION_INFO, 
+                         table_schema, 
+                         key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -242,7 +249,9 @@ class CollectionInfoTable(CollectionTable):
 ########### dc_explain_plans ######################
 class DCExplainPlansTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__("dc_explain_plans", table_schema, key)
+        super().__init__(AllTableTypes.DC_EXPLAIN_PLANS, 
+                         table_schema, 
+                         key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -321,7 +330,9 @@ class DCExplainPlansTable(CollectionTable):
 ################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__("dc_query_executions", table_schema, key)
+        super().__init__(AllTableTypes.DC_QUERY_EXECUTIONS, 
+                         table_schema, 
+                         key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -398,7 +409,9 @@ class DCQueryExecutionsTable(CollectionTable):
 ################ dc_requests_issued ###################
 class DCRequestsIssuedTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__("dc_requests_issued", table_schema, key)
+        super().__init__(AllTableTypes.DC_REQUESTS_ISSUED, 
+                         table_schema, 
+                         key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -487,9 +500,11 @@ class DCRequestsIssuedTable(CollectionTable):
 
 
 ################ execution_engine_profiles ###################
-class DCExecutionEngineProfilesTable(CollectionTable):
+class ExecutionEngineProfilesTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__("execution_engine_profiles", table_schema, key)
+        super().__init__(AllTableTypes.EXECUTION_ENGINE_PROFILES, 
+                         table_schema, 
+                         key)
 
     def get_create_table_sql(self) -> str:
         return f"""
