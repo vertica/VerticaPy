@@ -101,7 +101,7 @@ class CollectionTable:
     @abstractmethod
     def has_copy_staging(self) -> str:
         raise NotImplementedError(
-            f"get_create_projection_sql is not implemented in the base class CollectionTable"
+            f"has_copy_staging is not implemented in the base class CollectionTable"
             f" Current table name = {self.name} schema {self.schema}"
         )
 
