@@ -18,13 +18,15 @@ from abc import abstractmethod
 from enum import Enum
 from typing import Mapping
 
+
 class AllTableTypes(Enum):
     """
     Enumeration of all table types understood by profile collection.
-    
+
     It is best to match table schema (col types) by comparing to this enumeration.
     Tables can have the same schema and different names.
     """
+
     COLLECTION_EVENTS = "collection_events"
     COLLECTION_INFO = "collection_info"
     DC_EXPLAIN_PLANS = "dc_explain_plans"
@@ -37,6 +39,7 @@ class AllTableTypes(Enum):
     QUERY_PLAN_PROFILES = "query_plan_profiles"
     QUERY_PROFILES = "query_profiles"
     RESOURCE_POOL_STATUS = "resource_pool_status"
+
 
 class CollectionTable:
     """
@@ -106,8 +109,11 @@ class CollectionTable:
     def copy_from_local_file(self, filename: str) -> str:
         # This method will generate and run the copy statement
         # It will copy to a staging table when necessary
-        raise NotImplementedError(f"copy_from_local_file is not implemented in base class CollectionTable"
-                                  f"Current table name = {self.name} and schema {self.schema}")
+        raise NotImplementedError(
+            f"copy_from_local_file is not implemented in base class CollectionTable"
+            f"Current table name = {self.name} and schema {self.schema}"
+        )
+
 
 def getAllCollectionTables(
     target_schema: str, key: str
@@ -143,9 +149,7 @@ def collectionTableFactory(
 ############## collection_events ######################
 class CollectionEventsTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__(AllTableTypes.COLLECTION_EVENTS, 
-                         table_schema, 
-                         key)
+        super().__init__(AllTableTypes.COLLECTION_EVENTS, table_schema, key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -189,9 +193,7 @@ class CollectionEventsTable(CollectionTable):
 ############## collection_info ######################
 class CollectionInfoTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__(AllTableTypes.COLLECTION_INFO, 
-                         table_schema, 
-                         key)
+        super().__init__(AllTableTypes.COLLECTION_INFO, table_schema, key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -250,9 +252,7 @@ class CollectionInfoTable(CollectionTable):
 ########### dc_explain_plans ######################
 class DCExplainPlansTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__(AllTableTypes.DC_EXPLAIN_PLANS, 
-                         table_schema, 
-                         key)
+        super().__init__(AllTableTypes.DC_EXPLAIN_PLANS, table_schema, key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -331,9 +331,7 @@ class DCExplainPlansTable(CollectionTable):
 ################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__(AllTableTypes.DC_QUERY_EXECUTIONS, 
-                         table_schema, 
-                         key)
+        super().__init__(AllTableTypes.DC_QUERY_EXECUTIONS, table_schema, key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -410,9 +408,7 @@ class DCQueryExecutionsTable(CollectionTable):
 ################ dc_requests_issued ###################
 class DCRequestsIssuedTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__(AllTableTypes.DC_REQUESTS_ISSUED, 
-                         table_schema, 
-                         key)
+        super().__init__(AllTableTypes.DC_REQUESTS_ISSUED, table_schema, key)
 
     def get_create_table_sql(self) -> str:
         return f"""
@@ -503,9 +499,7 @@ class DCRequestsIssuedTable(CollectionTable):
 ################ execution_engine_profiles ###################
 class ExecutionEngineProfilesTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__(AllTableTypes.EXECUTION_ENGINE_PROFILES, 
-                         table_schema, 
-                         key)
+        super().__init__(AllTableTypes.EXECUTION_ENGINE_PROFILES, table_schema, key)
 
     def get_create_table_sql(self) -> str:
         return f"""

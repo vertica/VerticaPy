@@ -148,11 +148,11 @@ class ProfileImport:
                 or ctable.table_type == AllTableTypes.DC_REQUESTS_ISSUED
                 or ctable.table_type == AllTableTypes.EXECUTION_ENGINE_PROFILES
             ):
-                #print(f"Running create statements for {ctable.name}")
+                # print(f"Running create statements for {ctable.name}")
                 table_sql = ctable.get_create_table_sql()
                 proj_sql = ctable.get_create_projection_sql()
                 _executeSQL(table_sql, method="fetchall")
                 _executeSQL(proj_sql, method="fetchall")
                 continue
-            #print(f"Skipped creating table {ctable.name}")
+            # print(f"Skipped creating table {ctable.name}")
             self.logger.info(f"Skipped creating table {ctable.name}")
