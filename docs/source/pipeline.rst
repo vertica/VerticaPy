@@ -53,7 +53,7 @@ Create Your First YAML files
 
 Run the Parser
 ~~~~~~~~~~~~~~
-
+| 
 | The parser will follow the general format:
 | ``$python -m verticapy.pipeline.parser [connection_file] [input_file] -o [output file]``
 
@@ -64,21 +64,25 @@ Run the Parser
 
 Dropping the Pipeline
 ~~~~~~~~~~~~~~~~~~~~~
-
+| 
 | If you are done with the pipeline and want to drop all ingestions,
   views, models, or stored procedures associated with it, you can do
   either of the following:
-| **In a VSQL terminal:**
+| 
+| **In VSQL terminal:**
 | ``verticadb21455=> CALL drop_pipeline([schema name], [pipeline name]);``
-| **In VerticaPy cell**
+| 
+| **In VerticaPy cell:**
 
 .. code:: sql
 
    %%sql
    CALL drop_pipeline([schema name], [pipeline name]);
 
+|  
 | for the example above running the sql would drop the pipeline:
 | ``CALL drop_pipeline('public', 'gettingStarted');``
+|
 
 Now you should be ready to quickly build new pipelines!
 
@@ -89,7 +93,7 @@ Documentation
 Ingestion
 ~~~~~~~~~
 
-| For more information on how to customize this step: `DataLoader <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`__ and `COPY <https://docs.vertica.com/23.4.x/en/sql-reference/statements/copy/>`__
+| For more information on how to customize this step: `DataLoader Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`__ and `Copy Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/copy/>`__.
 
 .. code:: yaml
 
@@ -102,11 +106,9 @@ Ingestion
 Transform
 ~~~~~~~~~
 
-| `transform functions documentation <https://www.vertica.com/python/documentation/1.0.x/html/vdataframe.html#features-engineering>`__
+| For more information on how to customize this step: `Transform Functions <https://www.vertica.com/python/documentation/1.0.x/html/vdataframe.html#features-engineering>`__.
 
 | ``public.winequality``
-
-
 
     .. ipython:: python
         :suppress:
@@ -177,14 +179,11 @@ Transform
 Train
 ~~~~~
 
-| `train functions
-  documentation <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_vertica.html#api-machine-learning-vertica>`__
-| If you want to train a model the default setting is use all the
-  previously created **cols** as predictors to your method. If you wish
-  to exclude some columns use ``exclude:`` to subtract the specified
-  columns from the default or use ``include:`` to strictly choose the
-  subset. The previous transform example is the basis for this train
-  example:
+| For more information on how to customize this step: `Models <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_vertica.html#api-machine-learning-vertica>`__.
+| If you want to train a model, the default setting is to use all the previously created **cols** as predictors.
+| To subtract the specified columns from the default columns use **exclude**.
+| To strictly choose subset to overide the default columns use **include**.
+| The previous transform example is the basis for this train example:
 
 **Example 1**
 
@@ -220,12 +219,9 @@ Train
 
 Test
 ~~~~
-
-| You may want to compute metrics for your newly created model. To see a
-  list click
-  `here <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_metrics.html#api-machine-learning-metrics>`__.
-  The results are stored in
-| **``[schema].[pipeline_name]_METRIC_TABLE``**
+| For more information on how to customize this step: `Metric Functions <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_metrics.html#api-machine-learning-metrics>`__.
+| You may want to compute metrics for your newly created model. The results are stored in:
+| **[schema].[pipeline_name]_METRIC_TABLE**
 
 **Example 1**
 
@@ -246,9 +242,7 @@ Test
            y_score: prediction
 
 
-
 | ``public.example_METRIC_TABLE``
-
 
     .. ipython:: python
         :suppress:
@@ -270,10 +264,9 @@ Test
 Scheduler
 ~~~~~~~~~
 
-| If you would like the **ingestion** or **train** to contiously update on a set
-| schedule use the ``schedule`` key. The schedule follows the **cron**
-| format, for more information see:
-| `wiki <https://en.wikipedia.org/wiki/Cron>`__, and `Vertica documentation <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-schedule/>`__.
+| For more information to on how to customize this step: `Cron Wiki <https://en.wikipedia.org/wiki/Cron>`__ and `Vertica Schedulers <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-schedule/>`__.
+| If you would like the **ingestion** or **train** steps to continously update on a set
+| schedule use the **schedule** key. The schedule follows the cron format.
 
 **Example 1**
 
@@ -293,6 +286,6 @@ Scheduler
 .. code:: yaml
 
      ingest:
-         from: '/scratch_b/znowak/repos/server/udx/supported/MachineLearning/SQLTest/data/bucket/*'
+         from: '/bucket/*'
          delimiter: ','
          schedule: "* * * * *"
