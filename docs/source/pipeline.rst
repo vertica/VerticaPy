@@ -12,21 +12,25 @@ Setting Up Your First Pipeline
 
 Requirements
 ~~~~~~~~~~~~
-| To begin, you must:
-| - Have access to a machine that has Vertica installed
-| - Install Python on your machine
-| - Install Verticapy
+To begin, you must:
+ 
+* Have access to a machine that has Vertica installed
+* Install Python on your machine
+* Install Verticapy
 
 Create Your First YAML files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   | **THE BASIC RULES OF ANY YAML FILE:**
-   | - YAML is case sensitive 
-   | - The files should have **.yaml** as the extension 
-   | - YAML does not allow the use of tabs while creating YAML files
 
-| The information in connection.yaml will be the same you use in Verticapy.
-| ``$ vim connection.yaml``
+.. important::
+   
+   **THE BASIC RULES OF ANY YAML FILE:** YAML is case sensitive, the files should have **.yaml** as the extension, YAML does not allow the use of tabs while creating YAML files
+
+The information in connection.yaml will be the same you use in Verticapy.
+
+.. code:: bash
+
+   vim connection.yaml
 
 .. code:: yaml
 
@@ -37,8 +41,11 @@ Create Your First YAML files
    password: ""
    user: "dbadmin"
 
-| The information in your pipeline yaml file will outline the flow of data.
-| ``$ vim gettingStarted.yaml``
+The information in your pipeline yaml file will outline the flow of data.
+
+.. code:: bash
+
+   vim gettingStarted.yaml
 
 .. code:: yaml
 
@@ -53,36 +60,47 @@ Create Your First YAML files
 
 Run the Parser
 ~~~~~~~~~~~~~~
-| 
-| The parser will follow the general format:
-| ``$python -m verticapy.pipeline.parser [connection_file] [input_file] -o [output file]``
+ 
+The parser will follow the general format:
 
-| Both of the following will generate a sql file:
-  **gettingStarted.sql**
-| ``$python -m verticapy.pipeline.parser connection.yaml gettingStarted.yaml``
-| ``$python -m verticapy.pipeline.parser connection.yaml gettingStarted.yaml -o gettingStarted.sql``
+.. code:: bash
+
+    python -m verticapy.pipeline.parser [connection_file] [input_file] -o [output file]
+
+Both of the following will generate a sql file: **gettingStarted.sql**
+
+.. code:: bash
+
+   python -m verticapy.pipeline.parser connection.yaml gettingStarted.yaml
+
+.. code:: bash
+
+   python -m verticapy.pipeline.parser connection.yaml gettingStarted.yaml -o gettingStarted.sql
 
 Dropping the Pipeline
 ~~~~~~~~~~~~~~~~~~~~~
-| 
-| If you are done with the pipeline and want to drop all ingestions,
-  views, models, or stored procedures associated with it, you can do
-  either of the following:
-| 
-| **In VSQL terminal:**
-| ``verticadb21455=> CALL drop_pipeline([schema name], [pipeline name]);``
-| 
-| **In VerticaPy cell:**
+ 
+If you are done with the pipeline and want to drop all ingestions, views, models, or stored procedures associated with it, you can do either of the following:
+
+**In VSQL terminal:**
+
+.. code:: bash
+
+   CALL drop_pipeline([schema name], [pipeline name]);
+ 
+**In VerticaPy cell:**
 
 .. code:: sql
 
    %%sql
    CALL drop_pipeline([schema name], [pipeline name]);
 
-|  
-| for the example above running the sql would drop the pipeline:
-| ``CALL drop_pipeline('public', 'gettingStarted');``
-|
+  
+For the example above running the sql would drop the pipeline:
+
+.. code:: bash
+
+    CALL drop_pipeline('public', 'gettingStarted');
 
 Now you should be ready to quickly build new pipelines!
 
@@ -93,7 +111,7 @@ Documentation
 Ingestion
 ~~~~~~~~~
 
-| For more information on how to customize this step: `DataLoader Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`__ and `Copy Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/copy/>`__.
+For more information on how to customize this step: `DataLoader Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`__ and `Copy Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/copy/>`__.
 
 .. code:: yaml
 
@@ -106,9 +124,9 @@ Ingestion
 Transform
 ~~~~~~~~~
 
-| For more information on how to customize this step: `Transform Functions <https://www.vertica.com/python/documentation/1.0.x/html/vdataframe.html#features-engineering>`__.
+For more information on how to customize this step: `Transform Functions <https://www.vertica.com/python/documentation/1.0.x/html/vdataframe.html#features-engineering>`__.
 
-| ``public.winequality``
+``public.winequality``
 
     .. ipython:: python
         :suppress:
@@ -119,7 +137,7 @@ Transform
         html_file.close()
 
     .. raw:: html
-        :file: ../SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
         
  
 
@@ -179,11 +197,11 @@ Transform
 Train
 ~~~~~
 
-| For more information on how to customize this step: `Models <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_vertica.html#api-machine-learning-vertica>`__.
-| If you want to train a model, the default setting is to use all the previously created **cols** as predictors.
-| To subtract the specified columns from the default columns use **exclude**.
-| To strictly choose subset to overide the default columns use **include**.
-| The previous transform example is the basis for this train example:
+For more information on how to customize this step: `Models <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_vertica.html#api-machine-learning-vertica>`__.
+If you want to train a model, the default setting is to use all the previously created ``cols`` as predictors.
+To subtract the specified columns from the default columns use ``exclude``.
+To strictly choose subset to overide the default columns use ``include``.
+The previous transform example is the basis for this train example:
 
 **Example 1**
 
@@ -219,9 +237,10 @@ Train
 
 Test
 ~~~~
-| For more information on how to customize this step: `Metric Functions <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_metrics.html#api-machine-learning-metrics>`__.
-| You may want to compute metrics for your newly created model. The results are stored in:
-| **[schema].[pipeline_name]_METRIC_TABLE**
+For more information on how to customize this step: `Metric Functions <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_metrics.html#api-machine-learning-metrics>`__.
+You may want to compute metrics for your newly created model. The results are stored in:
+
+``[schema].[pipeline_name]_METRIC_TABLE``
 
 **Example 1**
 
@@ -242,7 +261,7 @@ Test
            y_score: prediction
 
 
-| ``public.example_METRIC_TABLE``
+``public.example_METRIC_TABLE``
 
     .. ipython:: python
         :suppress:
@@ -259,14 +278,14 @@ Test
         html_file.close()
 
     .. raw:: html
-        :file: ../SPHINX_DIRECTORY/figures/pipeline_metric_table.html
+        :file: SPHINX_DIRECTORY/figures/pipeline_metric_table.html
 
 Scheduler
 ~~~~~~~~~
 
-| For more information to on how to customize this step: `Cron Wiki <https://en.wikipedia.org/wiki/Cron>`__ and `Vertica Schedulers <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-schedule/>`__.
-| If you would like the **ingestion** or **train** steps to continously update on a set
-| schedule use the **schedule** key. The schedule follows the cron format.
+For more information to on how to customize this step: `Cron Wiki <https://en.wikipedia.org/wiki/Cron>`__ and `Vertica Schedulers <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-schedule/>`__.
+If you would like the ``ingestion`` or ``train`` steps to continously update on a set
+schedule use the ``schedule`` key. The schedule follows the cron format.
 
 **Example 1**
 
