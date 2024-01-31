@@ -45,7 +45,7 @@ Machine Learning
           ^^^^^^^
           Categorize data into distinct classes, 
           enabling the identification of patterns 
-          and making informed decisions.
+          and informed decision making.
 
     .. grid-item::
 
@@ -56,13 +56,13 @@ Machine Learning
 
           5 mins
           ^^^^^^^
-          Group similar data points together using clustering 
+          Group similar data points using clustering 
           algorithms, revealing inherent patterns within your 
           dataset.
 
     .. grid-item::
 
-        .. card:: Time Series
+        .. card:: Time series
           :link: notebooks/ml/time_series/index.html
           :text-align: center
           :class-card: custom-card-14
@@ -75,7 +75,7 @@ Machine Learning
 
     .. grid-item::
 
-        .. card:: Model Management
+        .. card:: Model management
           :link: notebooks/ml/time_series/index.html
           :text-align: center
           :class-card: custom-card-14
