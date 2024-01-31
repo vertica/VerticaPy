@@ -12,12 +12,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import pandas as pd
-import pytest
+from verticapy.tests_new.performance.vertica import QPROF_SQL2
 from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.performance.vertica import QueryProfiler
-from verticapy.connection import current_cursor
-from verticapy.core.vdataframe import vDataFrame
 
 
 class TestTree:
@@ -29,9 +26,7 @@ class TestTree:
         """
         test function for plot_tree
         """
-        qprof = QueryProfiler(
-            "select transaction_id, statement_id, request, request_duration from query_requests where start_timestamp > now() - interval'1 hour' order by request_duration desc limit 10;"
-        )
+        qprof = QueryProfiler(QPROF_SQL2)
         tree = PerformanceTree(qprof.get_qplan())
         res = tree.to_graphviz()
 
@@ -41,9 +36,7 @@ class TestTree:
         """
         test function for plot_tree
         """
-        qprof = QueryProfiler(
-            "select transaction_id, statement_id, request, request_duration from query_requests where start_timestamp > now() - interval'1 hour' order by request_duration desc limit 10;"
-        )
+        qprof = QueryProfiler(QPROF_SQL2)
         tree = PerformanceTree(qprof.get_qplan())
         res = tree.plot_tree()
 
