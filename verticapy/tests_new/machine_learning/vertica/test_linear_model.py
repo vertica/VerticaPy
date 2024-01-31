@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from collections import namedtuple
 import pytest
+import pandas as pd
 import sklearn.metrics as skl_metrics
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
     rel_tolerance_map,
@@ -50,6 +51,9 @@ class TestLinearModel:
     """
     test class - TestLinearModel
     """
+
+    abs_error_report_lr = {}
+    model_class_set_lr = set()
 
     @pytest.mark.parametrize(
         "fit_attr, ts_fit_attr, py_ts_fit_attr",
@@ -275,6 +279,7 @@ class TestLinearModel:
         py_metric_name,
         _rel_tolerance,
         model_params,
+        request,
     ):
         """
         test function - test_score
@@ -289,9 +294,32 @@ class TestLinearModel:
             _rel_tolerance,
             model_params,
         )
+        self.abs_error_report_lr[(model_class, py_metric_name)] = {
+            "Model_class": model_class,
+            "Metric_name": py_metric_name.title()
+            if "_" in py_metric_name
+            else py_metric_name.upper(),
+            "Vertica": vpy_score,
+            "Sklearn": py_score,
+            "Absolute_percentage_difference": (
+                (vpy_score - py_score) / (py_score if py_score else 1e-15)
+            )
+            * 100,
+        }
+        print(self.abs_error_report_lr[(model_class, py_metric_name)])
 
-        print(
-            f"Metric Name: {py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
+        self.model_class_set_lr.add(model_class)
+        tc_count = (len(request.node.keywords["pytestmark"][0].args[1])) * len(
+            self.model_class_set_lr
         )
+        print(len(self.abs_error_report_lr.keys()), tc_count)
+
+        if len(self.abs_error_report_lr.keys()) == tc_count:
+            abs_error_report_lr_pdf = (
+                pd.DataFrame(self.abs_error_report_lr.values())
+                .sort_values(by=["Model_class", "Metric_name"])
+                .reset_index(drop=True)
+            )
+            abs_error_report_lr_pdf.to_csv("abs_error_report_lr.csv", index=False)
 
         assert vpy_score == pytest.approx(py_score, rel=_rel_tolerance[model_class])

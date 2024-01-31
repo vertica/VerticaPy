@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os
+import pandas as pd
 import pytest
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
     rel_tolerance_map,
@@ -133,6 +134,9 @@ class TestRegressionTreeModel:
     """
     test class - test class for tree regression model
     """
+
+    abs_error_report_reg_tree = {}
+    model_class_set_reg_tree = set()
 
     @pytest.mark.skip(reason="Getting different value at each run. Need to check")
     @pytest.mark.parametrize(
@@ -295,6 +299,7 @@ class TestRegressionTreeModel:
         py_metric_name,
         _rel_tolerance,
         model_params,
+        request,
     ):
         """
         test function - test_score
@@ -310,9 +315,34 @@ class TestRegressionTreeModel:
             model_params,
         )
 
-        print(
-            f"Metric Name: {py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
+        self.abs_error_report_reg_tree[(model_class, py_metric_name)] = {
+            "Model_class": model_class,
+            "Metric_name": py_metric_name.title()
+            if "_" in py_metric_name
+            else py_metric_name.upper(),
+            "Vertica": vpy_score,
+            "Sklearn": py_score,
+            "Absolute_percentage_difference": (
+                (vpy_score - py_score) / (py_score if py_score else 1e-15)
+            )
+            * 100,
+        }
+        print(self.abs_error_report_reg_tree[(model_class, py_metric_name)])
+
+        self.model_class_set_reg_tree.add(model_class)
+        tc_count = (len(request.node.keywords["pytestmark"][0].args[1])) * len(
+            self.model_class_set_reg_tree
         )
+
+        if len(self.abs_error_report_reg_tree.keys()) == tc_count:
+            abs_error_report_reg_tree_pdf = (
+                pd.DataFrame(self.abs_error_report_reg_tree.values())
+                .sort_values(by=["Model_class", "Metric_name"])
+                .reset_index(drop=True)
+            )
+            abs_error_report_reg_tree_pdf.to_csv(
+                "abs_error_report_reg_tree.csv", index=False
+            )
 
         assert vpy_score == pytest.approx(py_score, rel=_rel_tolerance[model_class])
 
@@ -331,6 +361,9 @@ class TestClassificationTreeModel:
     test class - test class for classification model
     """
 
+    abs_error_report_cls_tree = {}
+    model_class_set_cls_tree = set()
+
     @pytest.mark.parametrize(*classification_metrics_args)
     def test_score(
         self,
@@ -342,6 +375,7 @@ class TestClassificationTreeModel:
         py_metric_name,
         _rel_tolerance,
         model_params,
+        request,
     ):
         """
         test function - test_score
@@ -357,9 +391,34 @@ class TestClassificationTreeModel:
             model_params,
         )
 
-        print(
-            f"Metric Name: {py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
+        self.model_class_set_cls_tree.add(model_class)
+        tc_count = (len(request.node.keywords["pytestmark"][0].args[1])) * len(
+            self.model_class_set_cls_tree
         )
+
+        self.abs_error_report_cls_tree[(model_class, py_metric_name)] = {
+            "Model_class": model_class,
+            "Metric_name": py_metric_name.title()
+            if "_" in py_metric_name
+            else py_metric_name.upper(),
+            "Vertica": vpy_score,
+            "Sklearn": py_score,
+            "Absolute_percentage_difference": (
+                (vpy_score - py_score) / (py_score if py_score else 1e-15)
+            )
+            * 100,
+        }
+        print(self.abs_error_report_cls_tree[(model_class, py_metric_name)])
+
+        if len(self.abs_error_report_cls_tree.keys()) == tc_count:
+            abs_error_report_cls_tree_pdf = (
+                pd.DataFrame(self.abs_error_report_cls_tree.values())
+                .sort_values(by=["Model_class", "Metric_name"])
+                .reset_index(drop=True)
+            )
+            abs_error_report_cls_tree_pdf.to_csv(
+                "abs_error_report_cls_tree.csv", index=False
+            )
 
         assert vpy_score == pytest.approx(py_score, rel=_rel_tolerance[model_class])
 

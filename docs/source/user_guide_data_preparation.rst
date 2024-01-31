@@ -5,14 +5,14 @@
 Data Preparation
 =================
 
-.. grid:: 2
+.. grid:: 1 2 2 2
 
     .. grid-item::
     
       .. card:: Joins
           :link: notebooks/data_prep/joins/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
           
           6 mins
           ^^^^^^^
@@ -25,7 +25,7 @@ Data Preparation
       .. card:: Duplicates
           :link: notebooks/data_prep/duplicates/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
 
           2 mins
           ^^^^^^^
@@ -38,7 +38,7 @@ Data Preparation
         .. card:: Outliers
           :link: notebooks/data_prep/outliers/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
 
           5 mins
           ^^^^^^^
@@ -48,16 +48,16 @@ Data Preparation
 
     .. grid-item::
 
-        .. card:: Missing Values
+        .. card:: Missing values
           :link: notebooks/data_prep/missing_values/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
 
           18 mins
           ^^^^^^^^
 
-          Address missing data effectively through 
-          imputation and enhance the completeness 
+          Address missing data through 
+          imputation and imporve the completeness 
           of your dataset.
 
     .. grid-item::
@@ -65,7 +65,7 @@ Data Preparation
         .. card:: Encoding
           :link: notebooks/data_prep/encoding/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
 
           5 mins
           ^^^^^^^
@@ -78,7 +78,7 @@ Data Preparation
         .. card:: Normalization
           :link: notebooks/data_prep/normalization/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
 
           5 mins
           ^^^^^^^
@@ -92,7 +92,7 @@ Data Preparation
         .. card:: Decomposition
           :link: notebooks/data_prep/decomposition/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
 
           4 mins
           ^^^^^^^
@@ -103,10 +103,10 @@ Data Preparation
 
     .. grid-item::
 
-        .. card:: Feature Engineering
+        .. card:: Feature engineering
           :link: notebooks/data_prep/featrues_engineering/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-13
 
           7 mins
           ^^^^^^^

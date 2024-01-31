@@ -5,14 +5,14 @@
 Machine Learning
 =================
 
-.. grid:: 2
+.. grid:: 1 2 2 2
 
     .. grid-item::
     
       .. card:: Introduction
           :link: notebooks/ml/introduction/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -26,7 +26,7 @@ Machine Learning
       .. card:: Regression
           :link: notebooks/ml/regression/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -39,33 +39,33 @@ Machine Learning
         .. card:: Classification
           :link: notebooks/ml/classification/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
           Categorize data into distinct classes, 
           enabling the identification of patterns 
-          and making informed decisions.
+          and informed decision making.
 
     .. grid-item::
 
         .. card:: Clustering
           :link: notebooks/ml/clustering/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
-          Group similar data points together using clustering 
+          Group similar data points using clustering 
           algorithms, revealing inherent patterns within your 
           dataset.
 
     .. grid-item::
 
-        .. card:: Time Series
+        .. card:: Time series
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           5 mins
           ^^^^^^^
@@ -75,10 +75,10 @@ Machine Learning
 
     .. grid-item::
 
-        .. card:: Model Management
+        .. card:: Model management
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-9
+          :class-card: custom-card-14
 
           13 mins
           ^^^^^^^

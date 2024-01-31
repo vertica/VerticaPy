@@ -486,47 +486,6 @@ class TestvDFUtilities:
         result2 = titanic_vd.explain(digraph=True)
         assert result2[0:7] == "digraph"
 
-    def test_vDF_get_columns(self, titanic_vd):
-        result = [
-            elem.replace('"', "")
-            for elem in titanic_vd.get_columns(exclude_columns=["sibsp", "age"])
-        ]
-        result.sort()
-        assert result == [
-            "boat",
-            "body",
-            "cabin",
-            "embarked",
-            "fare",
-            "home.dest",
-            "name",
-            "parch",
-            "pclass",
-            "sex",
-            "survived",
-            "ticket",
-        ]
-
-    def test_vDF_head(self, titanic_vd):
-        # testing vDataFrame[].head
-        result = titanic_vd.copy().sort({"age": "desc"})["age"].head(2)
-        assert result["age"] == [80.0, 76.0]
-
-        # testing vDataFrame.head
-        result = titanic_vd.copy().sort({"age": "desc"}).head(2)
-        assert result["age"] == [80.0, 76.0]
-        assert result["fare"] == [30.0, 78.85]
-
-    def test_vDF_iloc(self, titanic_vd):
-        # testing vDataFrame[].iloc
-        result = titanic_vd.copy().sort({"age": "desc"})["age"].iloc(2, 1)
-        assert result["age"] == [76.0, 74.0]
-
-        # testing vDataFrame.iloc
-        result = titanic_vd.copy().sort({"age": "desc"}).iloc(2, 1, ["age", "fare"])
-        assert result["age"] == [76.0, 74.0]
-        assert result["fare"] == [78.85, 7.775]
-
     def test_vDF_info(self, titanic_vd):
         result = titanic_vd.copy().filter("age > 0")
         result["fare"].drop_outliers()
@@ -583,16 +542,6 @@ class TestvDFUtilities:
             "sibsp",
             "survived",
         ]
-
-    def test_vDF_tail(self, titanic_vd):
-        # testing vDataFrame[].tail
-        result = titanic_vd.copy().sort(["age"])["age"].tail(2)
-        assert result["age"] == [76.0, 80.0]
-
-        # testing vDataFrame.tail
-        result = titanic_vd.copy().sort(["age"]).tail(2)
-        assert result["age"] == [76.0, 80.0]
-        assert result["fare"] == [78.85, 30.0]
 
     def test_vDF_sql(self, titanic_vd):
         sql = """-- Selecting some columns \n

@@ -406,7 +406,7 @@ class KNeighborsRegressor(Regressor):
         model.register("model_v1")
 
     Please refer to
-    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
     for more details on model
     tracking and versioning.
     """

@@ -213,6 +213,7 @@ class QueryProfiler:
     object.
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.performance.vertica import QueryProfiler
 
@@ -382,13 +383,14 @@ class QueryProfiler:
 
     .. ipython:: python
 
-        print(self.transactions)
+        print(qprof.transactions)
 
     To avoid recomputing a query, you
     can also directly use its statement
     ID and its transaction ID.
 
     .. ipython:: python
+        :okwarning:
 
         qprof = QueryProfiler((tid, sid))
 
@@ -404,6 +406,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_table('dc_requests_issued')
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_table_1.html", "w")
@@ -431,8 +434,9 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
-        result = qprof.get_queries('dc_requests_issued')
+        result = qprof.get_queries()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -450,6 +454,7 @@ class QueryProfiler:
     ``get_version``.
 
     .. ipython:: python
+        :okwarning:
 
         qprof.get_version()
 
@@ -464,6 +469,7 @@ class QueryProfiler:
     step by using the ``step`` method.
 
     .. ipython:: python
+        :okwarning:
 
         qprof.step(idx = 0)
 
@@ -490,6 +496,7 @@ class QueryProfiler:
     To get the execution time of the entire query:
 
     .. ipython:: python
+        :okwarning:
 
         qprof.get_qduration(unit="s")
 
@@ -507,15 +514,18 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof.get_qsteps(kind="pie")
+        qprof.get_qsteps(kind="bar")
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         import verticapy as vp
-        vp.set_option("plotting_lib", "plotly")
-        fig = qprof.get_qsteps(kind="pie")
-        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html")
+        vp.set_option("plotting_lib", "highcharts")
+        fig = qprof.get_qsteps(kind="bar")
+        html_text = fig.htmlcontent.replace("container", "performance_vertica_query_profiler_pie_plot")
+        with open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html", "w") as file:
+            file.write(html_text)
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
@@ -580,6 +590,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         res = qprof.get_qplan_tree(
             metric='cost',
@@ -609,6 +620,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         res = qprof.get_qplan_tree(
             path_id=1,
@@ -635,6 +647,7 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
+        vp.set_option("plotting_lib", "plotly")
         fig = qprof.get_qplan_profile(kind="pie")
         fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html")
 
@@ -658,6 +671,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_query_events()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_query_events.html", "w")
@@ -694,6 +708,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_cpu_time(show=False)
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cpu_time_table.html", "w")
@@ -790,6 +805,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_cluster_config()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table.html", "w")
@@ -808,6 +824,7 @@ class QueryProfiler:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = qprof.get_rp_status()
         html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table_2.html", "w")
@@ -991,7 +1008,7 @@ class QueryProfiler:
         if kind not in kind_list:
             raise ValueError(
                 "Parameter Error, 'kind' should be in "
-                f"[{' | '.join()}].\nFound {kind}."
+                f"[{' | '.join(kind_list)}].\nFound {kind}."
             )
         return kind
 
@@ -1120,10 +1137,25 @@ class QueryProfiler:
             "dc_query_executions": "v_internal",
             "dc_explain_plans": "v_internal",
             "execution_engine_profiles": "v_monitor",
+            "query_events": "v_monitor",
             "query_plan_profiles": "v_monitor",
             "query_profiles": "v_monitor",
             "resource_pool_status": "v_monitor",
             "host_resources": "v_monitor",
+            # New Tables - still not used.
+            "dc_plan_activities": "v_internal",
+            "dc_lock_attempts": "v_internal",
+            "dc_plan_resources": "v_internal",
+            "configuration_parameters": "v_monitor",
+            "projection_storage": "v_monitor",
+            "projection_usage": "v_monitor",
+            "query_consumption": "v_monitor",
+            "query_events": "v_monitor",
+            "resource_acquisitions": "v_monitor",
+            "storage_containers": "v_monitor",
+            "projections": "v_catalog",
+            "projection_columns": "v_catalog",
+            "resource_pools": "v_catalog",
         }
 
     @staticmethod
@@ -1134,8 +1166,15 @@ class QueryProfiler:
         ``statement_is``.
         """
         return [
+            "dc_lock_attempts",
+            "configuration_parameters",
+            "projections",
+            "projection_columns",
+            "projection_storage",
+            "resource_pools",
             "resource_pool_status",
             "host_resources",
+            "storage_containers",
         ]
 
     def _create_copy_v_table(self) -> None:
@@ -1193,18 +1232,25 @@ class QueryProfiler:
                 else:
                     sql += f"TABLE {new_schema}.{new_table}"
                 sql += f" AS SELECT * FROM {schema}.{table}"
-                if table not in self._v_config_table_list():
-                    sql += f" WHERE transaction_id={self.transaction_id} "
-                    sql += f"AND statement_id={self.statement_id}"
+                if table not in v_config_table_list:
+                    sql += " WHERE "
+                    jdx = 0
+                    for tr, st in self.transactions:
+                        if jdx > 0:
+                            sql += " OR "
+                        sql += f"(transaction_id={tr} AND statement_id={st})"
+                        jdx += 1
+                    sql += " ORDER BY transaction_id, statement_id"
                 target_tables[table] = new_table
 
                 # Getting the new DATATYPES
                 try:
-                    self.tables_dtypes += [
-                        get_data_types(
-                            f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
-                        )
-                    ]
+                    if not (self.overwrite):
+                        self.tables_dtypes += [
+                            get_data_types(
+                                f"SELECT * FROM {new_schema}.{new_table} LIMIT 0",
+                            )
+                        ]
                 except:
                     if conf.get_option("print_info") and idx == 0:
                         print("Some tables seem to not exist...")
@@ -1222,10 +1268,10 @@ class QueryProfiler:
                         f"SELECT * FROM {schema}.{table} LIMIT 0",
                     )
                 ]
-                if not (exists):
+                if not (exists) or (self.overwrite):
                     self.tables_dtypes += [self.v_tables_dtypes[-1]]
 
-            if not (exists):
+            if not (exists) or (self.overwrite):
                 if conf.get_option("print_info"):
                     print(
                         f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
@@ -1259,13 +1305,11 @@ class QueryProfiler:
         """
         tables = list(self._v_table_dict().keys())
         tables_schema = self._v_table_dict()
+        config_table = self._v_config_table_list()
         warning_message = ""
         for tr_id, st_id in self.transactions:
             for table_name in tables:
-                if (
-                    "resource_pool_status" not in table_name
-                    and "host_resources" not in table_name
-                ):
+                if table_name not in config_table:
                     if len(self.target_tables) == 0:
                         sc, tb = tables_schema[table_name], table_name
                     else:
@@ -1938,7 +1982,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            qprof.get_qsteps(kind="pie")
+            qprof.get_qsteps(kind="bar")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
