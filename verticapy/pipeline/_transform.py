@@ -39,8 +39,8 @@ def reset_queue(column_queue: Queue) -> Queue:
 
 def transformation(transform: dict, table: str) -> vDataFrame:
     """
-    Run the transformation step
-    of the pipeline.
+    This function takes a set of transforms, each containing a column name and instructions, and attempts to create the columns
+    in the given table, according to the given instructions while handling exceptions and cyclic dependencies.
 
     Parameters
     ----------
@@ -52,7 +52,17 @@ def transformation(transform: dict, table: str) -> vDataFrame:
     Returns
     -------
     vDataFrame
-        The transformed vDataFrame.
+        The transformed vDataFrame
+
+    Description
+    -----------
+    - The function processes the columns in a queue-based approach, allowing for columns to be created in any order.
+    - It tries to execute the instructions for each column to create the respective column.
+    - If an exception occurs during column creation, it logs the error message in the 'error_string', moves the
+      column to the back of the queue, and marks it as flagged.
+    - When a column is successfully created, the error_string is reset, and all column flags are cleared in the queue.
+    - If the next column in the queue has been flagged, it indicates that either errors persist or cyclic dependencies exist,
+      in which case the error_string contains relevant error information.
     """
     vdf = vp.vDataFrame(table)
 
@@ -100,7 +110,6 @@ def transformation(transform: dict, table: str) -> vDataFrame:
                 if not is_created:
                     eval(f"vdf.{name}(" + temp_str + f", name='{col}')")
                 else:
-                    # print(getattr(vdf,'regexp'))
                     eval(f"vdf['{col}'].{name}({temp_str})", locals())
             except Exception as e:
                 error_string += f"Error creating {col} in methods: {e}\n"

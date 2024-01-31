@@ -24,7 +24,11 @@ Create Your First YAML files
 
 .. important::
    
-   **THE BASIC RULES OF ANY YAML FILE:** YAML is case sensitive, the files should have **.yaml** as the extension, YAML does not allow the use of tabs while creating YAML files
+   **THE BASIC RULES OF ANY YAML FILE:**
+   
+   - YAML is case sensitive
+   - the files should have **.yaml** as the extension, 
+   - YAML does not allow the use of tabs while creating YAML files
 
 The information in connection.yaml will be the same you use in Verticapy.
 
