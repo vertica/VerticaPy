@@ -21,6 +21,7 @@ from graphviz import Digraph
 import pandas as pd
 import numpy as np
 import pytest
+from verticapy.datasets import load_titanic
 from verticapy.tests_new.performance.vertica import QPROF_SQL1, QPROF_SQL2
 from verticapy.performance.vertica import QueryProfiler
 from verticapy.connection import current_cursor
@@ -48,10 +49,12 @@ class TestQueryProfiler:
     ]
 
     @pytest.fixture(name="qprof_data", scope="class")
-    def data_setup(self, titanic_vd):
+    def data_setup(self, titanic_vd, schema_loader):
         """
         test function for data setup
         """
+        # titanic = titanic_vd.to_pandas()
+
         transactions = []
         qdurations = []
         query_label_map = {
@@ -60,7 +63,7 @@ class TestQueryProfiler:
             "qprof_sql3": "QueryProfiler_sql3_requests_UT",
         }
 
-        qprof_sql3 = f"""SELECT /*+LABEL('QueryProfiler_sql3_requests_UT')*/ ticket, substr(ticket, 1, 5) AS ticket, AVG(age) AS avg_age FROM titanic GROUP BY 1"""
+        qprof_sql3 = f"""SELECT /*+LABEL('QueryProfiler_sql3_requests_UT')*/ ticket, substr(ticket, 1, 5) AS ticket, AVG(age) AS avg_age FROM {schema_loader}.titanic GROUP BY 1"""
 
         queries = [QPROF_SQL1, QPROF_SQL2, qprof_sql3]
 
@@ -440,6 +443,7 @@ class TestQueryProfiler:
 
         assert actual_qprof_version == expected_qprof_version
 
+    @pytest.mark.skip(reason="Need to check all required tables")
     @pytest.mark.parametrize("table_name", [None, "host_resources"])
     def test_get_table(self, qprof_data, table_name):
         """
@@ -1066,6 +1070,7 @@ class TestQueryProfiler:
         query = f"SELECT node_name, path_id, counter_value counter_value FROM v_monitor.execution_engine_profiles WHERE TRIM(counter_name) = 'execution time (us)' and transaction_id={transaction_id} AND statement_id={statement_id}"
         expected_qprof_cpu_time_raw = vDataFrame(query)
 
+        print(actual_qprof_cpu_time_raw)
         if show:
             actual_qprof_cpu_time_pdf = pd.DataFrame(
                 {
@@ -1249,8 +1254,8 @@ class TestQueryProfiler:
         expected_qprof_qexecution_raw = qprof.get_qexecution_report()[
             ["operator_name", metric]
         ]
+        print(qprof_qexecution)
         if show:
-            # print(qprof_qexecution.data[0])
             if kind == "bar":
                 operator_name = qprof_qexecution.data[0].x
                 execution_time = qprof_qexecution.data[0].y

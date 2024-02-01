@@ -33,6 +33,8 @@ jobs:
             sleep 3; \
           done;
           echo "Vertica is up"
+          echo "Installing graphviz package"
+          docker exec -u dbadmin vertica_docker -c "sudo apt-get update && sudo apt-get install graphviz"
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "\l"
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "select version();"
       - name: Install dependencies
