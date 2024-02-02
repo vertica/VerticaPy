@@ -185,12 +185,16 @@ class QueryProfilerInterface(QueryProfiler):
         if self.pathid_dropdown.get_child_attr('disabled'):
             path_id = None
         if self.use_javascript == False:
-            display(super().get_qplan_tree(
+            graph = super().get_qplan_tree(
                 metric=metric, 
                 path_id=path_id,
                 color_low=self.tree_style['color_low'],
                 color_high=self.tree_style['color_high'],
-            )) # type: ignore
+            ) # type: ignore
+            html_widget = widgets.HTML(value=graph.pipe(format='svg').decode('utf-8'))
+            box = widgets.HBox([html_widget])
+            box.layout.justify_content = 'center'
+            display(box)
         else:
             raw = super().get_qplan_tree(
                 metric=metric, 
@@ -458,13 +462,4 @@ class QueryProfilerInterface(QueryProfiler):
             20: self.get_rp_status,
             21: self.get_cluster_config,
         }
-        
-    
-        
-        
-        
-    
-        
-        
-        
-        
+
