@@ -602,6 +602,7 @@ class ExecutionEngineProfilesTable(CollectionTable):
         ALL NODES;
         """
 
+
 ################ export_events ###################
 class ExportEventsTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -616,7 +617,7 @@ class ExportEventsTable(CollectionTable):
             row_count int
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -642,7 +643,8 @@ class ExportEventsTable(CollectionTable):
                 {import_name}.table_name) 
         ALL NODES;
         """
-    
+
+
 ################ host_resources ###################
 class HostResourcesTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -678,7 +680,7 @@ class HostResourcesTable(CollectionTable):
             query_name varchar(128)
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -751,6 +753,8 @@ class HostResourcesTable(CollectionTable):
                 {import_name}.opened_nonfile_nonsocket_count) 
         ALL NODES;
         """
+
+
 ################ query_consumption ###################
 class QueryConsumptionTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -788,7 +792,7 @@ class QueryConsumptionTable(CollectionTable):
             query_name varchar(128)
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -867,6 +871,8 @@ class QueryConsumptionTable(CollectionTable):
                 {import_name}.network_bytes_sent)
         ALL NODES;
         """
+
+
 ################ query_plan_profiles ###################
 class QueryPlanProfilesTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -896,7 +902,7 @@ class QueryPlanProfilesTable(CollectionTable):
             query_name varchar(128)
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
@@ -954,7 +960,8 @@ class QueryPlanProfilesTable(CollectionTable):
                 {import_name}.running_time) 
         ALL NODES;
         """
-    
+
+
 ################ query_profiles ###################
 class QueryProfilesTable(CollectionTable):
     def __init__(self, table_schema: str, key: str) -> None:
@@ -985,7 +992,7 @@ class QueryProfilesTable(CollectionTable):
             query_name varchar(128)
         );
         """
-    
+
     def get_create_projection_sql(self) -> str:
         import_name = self.get_import_name()
         fq_proj_name = self.get_super_proj_name_fq()
