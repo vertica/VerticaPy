@@ -147,8 +147,9 @@ class ProfileImport:
                 or ctable.table_type == AllTableTypes.DC_QUERY_EXECUTIONS
                 or ctable.table_type == AllTableTypes.DC_REQUESTS_ISSUED
                 or ctable.table_type == AllTableTypes.EXECUTION_ENGINE_PROFILES
+                or ctable.table_type == AllTableTypes.EXPORT_EVENTS
             ):
-                # print(f"Running create statements for {ctable.name}")
+                print(f"Running create statements for {ctable.name}")
                 table_sql = ctable.get_create_table_sql()
                 proj_sql = ctable.get_create_projection_sql()
                 _executeSQL(table_sql, method="fetchall")

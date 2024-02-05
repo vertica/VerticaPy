@@ -141,7 +141,8 @@ def collectionTableFactory(
         return DCRequestsIssuedTable(target_schema, key)
     if table_name == AllTableTypes.EXECUTION_ENGINE_PROFILES:
         return ExecutionEngineProfilesTable(target_schema, key)
-
+    if table_name == AllTableTypes.EXPORT_EVENTS:
+        return ExportEventsTable(target_schema, key)
     # TODO: eventually this will be an error
     return CollectionTable(table_name, target_schema, key)
 
@@ -590,5 +591,46 @@ class ExecutionEngineProfilesTable(CollectionTable):
             {import_name}.baseplan_id, 
             {import_name}.path_id, 
             {import_name}.localplan_id) 
+        ALL NODES;
+        """
+
+################ export_events ###################
+class ExportEventsTable(CollectionTable):
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__(AllTableTypes.EXPORT_EVENTS, table_schema, key)
+
+    def get_create_table_sql(self) -> str:
+        return f"""
+        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
+        (
+            table_name varchar(256),
+            operation varchar(128),
+            row_count int
+        );
+        """
+    
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name} 
+        /*+basename({import_name}),createtype(L)*/
+        (
+            table_name,
+            operation,
+            row_count
+        )
+        AS
+        SELECT {import_name}.table_name,
+                {import_name}.operation,
+                {import_name}.row_count
+        FROM {import_name_fq}
+        ORDER BY {import_name}.table_name,
+                {import_name}.operation,
+                {import_name}.row_count
+        SEGMENTED BY hash({import_name}.row_count, 
+                {import_name}.operation, 
+                {import_name}.table_name) 
         ALL NODES;
         """
