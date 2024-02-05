@@ -148,6 +148,10 @@ class ProfileImport:
                 or ctable.table_type == AllTableTypes.DC_REQUESTS_ISSUED
                 or ctable.table_type == AllTableTypes.EXECUTION_ENGINE_PROFILES
                 or ctable.table_type == AllTableTypes.EXPORT_EVENTS
+                or ctable.table_type == AllTableTypes.HOST_RESOURCES
+                or ctable.table_type == AllTableTypes.QUERY_CONSUMPTION
+                or ctable.table_type == AllTableTypes.QUERY_PLAN_PROFILES
+                or ctable.table_type == AllTableTypes.QUERY_PROFILES
             ):
                 print(f"Running create statements for {ctable.name}")
                 table_sql = ctable.get_create_table_sql()

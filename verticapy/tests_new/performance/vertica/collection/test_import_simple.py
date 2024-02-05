@@ -82,7 +82,11 @@ class TestProfileImport:
             "qprof_dc_query_executions_aaa",
             "qprof_dc_requests_issued_aaa",
             "qprof_execution_engine_profiles_aaa",
-            "qprof_export_events_aaa"
+            "qprof_export_events_aaa",
+            "qprof_host_resources_aaa",
+            "qprof_query_consumption_aaa",
+            "qprof_query_plan_profiles_aaa",
+            "qprof_query_profiles_aaa"
         ]
         created_tables = self._get_set_of_tables_in_schema(schema_loader, test_key)
 
