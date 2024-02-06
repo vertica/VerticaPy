@@ -137,9 +137,9 @@ class TestNaiveBayes:
             == "(0.010555023401917874 * EXP(- POWER(age - 27.6928120412844, 2) / 2857.14134787876) * POWER(0.878216123499142, pclass) * (CASE WHEN survived THEN 0.878216123499142 ELSE 0.12178387650085798 END) * DECODE(sex, 'female', 0.406666666666667, 'male', 0.593333333333333) * 0.1) / (0.004675073323276673 * EXP(- POWER(age - 63.9878308300395, 2) / 14563.75196754392) * POWER(0.771666666666667, pclass) * (CASE WHEN survived THEN 0.771666666666667 ELSE 0.22833333333333306 END) * DECODE(sex, 'female', 0.407843137254902, 'male', 0.592156862745098) * 0.8 + 0.027423612860412977 * EXP(- POWER(age - 13.0217386792453, 2) / 423.253724660408) * POWER(0.910714285714286, pclass) * (CASE WHEN survived THEN 0.910714285714286 ELSE 0.08928571428571397 END) * DECODE(sex, 'female', 0.416666666666667, 'male', 0.583333333333333) * 0.1 + 0.010555023401917874 * EXP(- POWER(age - 27.6928120412844, 2) / 2857.14134787876) * POWER(0.878216123499142, pclass) * (CASE WHEN survived THEN 0.878216123499142 ELSE 0.12178387650085798 END) * DECODE(sex, 'female', 0.406666666666667, 'male', 0.593333333333333) * 0.1)"
         )
 
-    def test_get_attributes(Self, memmodel_nb):
+    def test_get_attributes(self, memmodel_nb):
         """
-        test function - get_attributres
+        test function - get_attributes
         """
         attributes = memmodel_nb.get_attributes()
         assert attributes["prior"][0] == 0.8

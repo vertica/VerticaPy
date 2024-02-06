@@ -109,7 +109,7 @@ class TestLinearModel:
 
     def test_get_attributes(self, memmodel_lm):
         """
-        test function - get_attributres
+        test function - get_attributes
         """
         attributes = memmodel_lm.get_attributes()
         assert attributes["coef"][0] == 0.5
@@ -195,7 +195,7 @@ class TestLinearModelClassifier:
 
     def test_get_attributes(self, memmodel_lmc):
         """
-        test function - get_attributres
+        test function - get_attributes
         """
         attributes = memmodel_lmc.get_attributes()
         assert attributes["coef"][0] == 0.5
