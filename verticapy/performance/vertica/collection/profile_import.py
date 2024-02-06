@@ -137,7 +137,7 @@ class ProfileImport:
             target_schema=self.target_schema, key=self.key
         )
         for ctable in all_tables.values():
-            print(f"Running create statements for {ctable.name}")
+            self.logger.info(f"Running create statements for {ctable.name}")
             table_sql = ctable.get_create_table_sql()
             proj_sql = ctable.get_create_projection_sql()
             _executeSQL(table_sql, method="fetchall")
