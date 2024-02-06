@@ -69,7 +69,7 @@ from verticapy.machine_learning.vertica.tree import (
 )
 from verticapy.machine_learning.vertica.tsa import ARIMA, ARMA, AR, MA
 
-from ._helper import execute_and_return
+from verticapy.pipeline._helper import execute_and_return
 
 SUPPORTED_FUNCTIONS = [
     BisectingKMeans,

@@ -19,7 +19,7 @@ You may obtain a copy of the License at:
 This script runs the Vertica Machine Learning Pipeline Parser.
 """
 
-from ._helper import execute_and_return, to_sql
+from verticapy.pipeline._helper import execute_and_return, to_sql
 
 
 def scheduler(

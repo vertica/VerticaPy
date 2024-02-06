@@ -22,7 +22,6 @@ This script runs the Vertica Machine Learning Pipeline Transforming.
 
 from queue import Queue
 
-import verticapy as vp
 from verticapy.core.vdataframe.base import vDataFrame
 
 
@@ -64,7 +63,7 @@ def transformation(transform: dict, table: str) -> vDataFrame:
     - If the next column in the queue has been flagged, it indicates that either errors persist or cyclic dependencies exist,
       in which case the error_string contains relevant error information.
     """
-    vdf = vp.vDataFrame(table)
+    vdf = vDataFrame(table)
 
     column_queue = Queue()
     for col in sorted(list(transform.keys())):

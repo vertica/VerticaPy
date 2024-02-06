@@ -17,19 +17,11 @@ You may obtain a copy of the License at:
 """
 """This script has helpful functions for the pipeline. """
 
-# required packages
 import re
+
 from verticapy._utils._sql._sys import _executeSQL
 
-
-def required_keywords(yaml: dict, keywords: list) -> bool:
-    """
-    Returns if all the expected keywords are in the yaml level.
-    """
-    for keyword in keywords:
-        if keyword not in yaml.keys():
-            raise KeyError(f"Missing keyword(s): '{keyword}'")
-    return True
+# Parsing Functions
 
 
 def execute_and_return(sql: str) -> str:
@@ -66,6 +58,27 @@ def to_sql(sql: str) -> str:
             string += c
     string = string[:-1] + "';"
     return string
+
+
+# Initialization Functions
+
+
+def is_valid_delimiter(delimiter: str) -> bool:
+    """
+    Returns True if the delimiter char is allowed.
+    """
+    delimiter_ascii = ord(delimiter)
+    return 0 <= delimiter_ascii <= 127
+
+
+def required_keywords(yaml: dict, keywords: list) -> bool:
+    """
+    Returns if all the expected keywords are in the yaml level.
+    """
+    for keyword in keywords:
+        if keyword not in yaml.keys():
+            raise KeyError(f"Missing keyword(s): '{keyword}'")
+    return True
 
 
 def setup():

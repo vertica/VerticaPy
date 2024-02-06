@@ -46,12 +46,12 @@ from verticapy.datasets import (
 from verticapy._utils._sql._sys import _executeSQL
 
 # local
-from ._helper import required_keywords, execute_and_return, setup
-from . import _ingest
-from . import _transform
-from . import _train
-from . import _validate
-from . import _schedule
+from verticapy.pipeline._helper import required_keywords, execute_and_return, setup
+from verticapy.pipeline import _ingest
+from verticapy.pipeline import _transform
+from verticapy.pipeline import _train
+from verticapy.pipeline import _validate
+from verticapy.pipeline import _schedule
 
 SUPPORTED_DATASETS = [
     load_airline_passengers,
@@ -125,10 +125,11 @@ with open(file_name, "r", encoding="utf-8") as file:
     supported_table_names = list(
         map(lambda x: re.search(r"load\S*", str(x)).group(), SUPPORTED_DATASETS)
     )
+    print(supported_table_names)
     if (
         len(table_split) == 2
         and table_split[0] == "public"
-        and table_split[1] in supported_table_names
+        and "load_" + table_split[1] in supported_table_names
     ):
         eval(f'exec("load_{table_split[1]}()")', globals())
 

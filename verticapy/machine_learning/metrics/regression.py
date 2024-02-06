@@ -1196,8 +1196,8 @@ def regression_report(
         R2
 
     genSQL: bool, optional
-        If true return the sql that is used to generate the metrics.
-        If false return the report.
+        If set to ``True``, returns the sql that
+        is used to generate the metrics.
 
     Returns
     -------

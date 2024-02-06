@@ -19,13 +19,12 @@ You may obtain a copy of the License at:
 This script runs the Vertica Machine Learning Pipeline Ingestion
 """
 
-from ._helper import required_keywords, execute_and_return
+from verticapy.pipeline._helper import (
+    required_keywords,
+    execute_and_return,
+    is_valid_delimiter,
+)
 from verticapy._utils._sql._sys import _executeSQL
-
-
-def is_valid_delimiter(delimiter: str) -> bool:
-    delimiter_ascii = ord(delimiter)
-    return 0 <= delimiter_ascii <= 127
 
 
 def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:

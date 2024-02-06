@@ -28,7 +28,7 @@ from verticapy.machine_learning.metrics.regression import (
     FUNCTIONS_REGRESSION_SQL_DICTIONARY,
 )
 
-from ._helper import execute_and_return, remove_comments
+from verticapy.pipeline._helper import execute_and_return, remove_comments
 
 
 def testing(
