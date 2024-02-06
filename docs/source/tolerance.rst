@@ -51,7 +51,7 @@ tolerances for each model:
     table+= f"| {fourth_col_title}" + " " * (fourth_col_dashes-len(fourth_col_title)-1) + "|\n"
     table+= double_separators
     tols = {key: (rel_tolerance_map[key], abs_tolerance_map[key]) for key in rel_tolerance_map.keys()}
-
+    tols = dict(sorted(tols.items()))
     for key in tols.keys():
         table+= f"| {key}" + " " * (first_col_dashes-len(key)-1) 
         table+= f"| {tols[key][0]}" + " " * (second_col_dashes-len(str(tols[key][0]))-1)
