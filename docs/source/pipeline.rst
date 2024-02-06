@@ -115,7 +115,7 @@ Documentation
 Ingestion
 ~~~~~~~~~
 
-For more information on how to customize this step: `DataLoader Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`__ and `Copy Parameters <https://docs.vertica.com/23.4.x/en/sql-reference/statements/copy/>`__.
+For more information on how to customize this step: `DataLoader Parameters <https://docs.vertica.com/latest/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`__ and `Copy Parameters <https://docs.vertica.com/latest/en/sql-reference/statements/copy/>`__.
 
 .. code:: yaml
 
@@ -128,7 +128,7 @@ For more information on how to customize this step: `DataLoader Parameters <http
 Transform
 ~~~~~~~~~
 
-For more information on how to customize this step: `Transform Functions <https://www.vertica.com/python/documentation/1.0.x/html/vdataframe.html#features-engineering>`__.
+For more information on how to customize this step: :ref:`api.vdataframe.features_engineering`.
 
 ``public.winequality``
 
@@ -201,7 +201,8 @@ For more information on how to customize this step: `Transform Functions <https:
 Train
 ~~~~~
 
-For more information on how to customize this step: `Models <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_vertica.html#api-machine-learning-vertica>`__.
+For more information on how to customize this step: :ref:`api.machine_learning.vertica`. 
+
 If you want to train a model, the default setting is to use all the previously created ``cols`` as predictors.
 To subtract the specified columns from the default columns use ``exclude``.
 To strictly choose subset to overide the default columns use ``include``.
@@ -241,7 +242,8 @@ The previous transform example is the basis for this train example:
 
 Test
 ~~~~
-For more information on how to customize this step: `Metric Functions <https://www.vertica.com/python/documentation/1.0.x/html/machine_learning_metrics.html#api-machine-learning-metrics>`__.
+For more information on how to customize this step: :ref:`api.machine_learning.metrics`.
+
 You may want to compute metrics for your newly created model. The results are stored in:
 
 ``[schema].[pipeline_name]_METRIC_TABLE``
@@ -287,7 +289,8 @@ You may want to compute metrics for your newly created model. The results are st
 Scheduler
 ~~~~~~~~~
 
-For more information to on how to customize this step: `Cron Wiki <https://en.wikipedia.org/wiki/Cron>`__ and `Vertica Schedulers <https://docs.vertica.com/23.4.x/en/sql-reference/statements/create-statements/create-schedule/>`__.
+For more information to on how to customize this step: `Cron Wiki <https://en.wikipedia.org/wiki/Cron>`__ and `Vertica Schedulers <https://docs.vertica.com/latest/en/sql-reference/statements/create-statements/create-schedule/>`__.
+
 If you would like the ``ingestion`` or ``train`` steps to continously update on a set
 schedule use the ``schedule`` key. The schedule follows the cron format.
 
