@@ -151,8 +151,10 @@ def collectionTableFactory(
         return QueryPlanProfilesTable(target_schema, key)
     if table_type == AllTableTypes.QUERY_PROFILES:
         return QueryProfilesTable(target_schema, key)
-    # TODO: eventually this will be an error
-    return CollectionTable(table_type, target_schema, key)
+    if table_type == AllTableTypes.RESOURCE_POOL_STATUS:
+        return ResourcePoolStatusTable(target_schema, key)
+
+    raise ValueError(f"Unrecognized table type {table_type}.")
 
 
 ############## collection_events ######################
@@ -1059,4 +1061,136 @@ class QueryProfilesTable(CollectionTable):
                 {import_name}.query_duration_us)
         ALL NODES;
 
+        """
+
+
+################ resource_pool_status ###################
+class ResourcePoolStatusTable(CollectionTable):
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__(AllTableTypes.RESOURCE_POOL_STATUS, table_schema, key)
+
+    def get_create_table_sql(self) -> str:
+        return f"""
+        /* Create the real table */
+        CREATE TABLE IF NOT EXISTS  {self.get_import_name_fq()}
+        (
+            node_name varchar(128),
+            pool_oid int,
+            pool_name varchar(128),
+            is_internal boolean,
+            memory_size_kb int,
+            memory_size_actual_kb int,
+            memory_inuse_kb int,
+            general_memory_borrowed_kb int,
+            queueing_threshold_kb int,
+            max_memory_size_kb int,
+            max_query_memory_size_kb int,
+            running_query_count int,
+            planned_concurrency int,
+            max_concurrency int,
+            is_standalone boolean,
+            -- queue timeout is really an interval
+            queue_timeout interval,
+            queue_timeout_in_seconds int,
+            execution_parallelism varchar(128),
+            priority int,
+            runtime_priority varchar(128),
+            runtime_priority_threshold int,
+            runtimecap_in_seconds int,
+            single_initiator varchar(128),
+            query_budget_kb int,
+            cpu_affinity_set varchar(256),
+            cpu_affinity_mask varchar(1024),
+            cpu_affinity_mode varchar(128),
+            transaction_id int,
+            statement_id int,
+            query_name varchar(128)
+        );
+        """
+
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name} 
+        /*+basename({import_name}),createtype(A)*/
+        (
+            node_name,
+            pool_oid,
+            pool_name,
+            is_internal,
+            memory_size_kb,
+            memory_size_actual_kb,
+            memory_inuse_kb,
+            general_memory_borrowed_kb,
+            queueing_threshold_kb,
+            max_memory_size_kb,
+            max_query_memory_size_kb,
+            running_query_count,
+            planned_concurrency,
+            max_concurrency,
+            is_standalone,
+            queue_timeout,
+            queue_timeout_in_seconds,
+            execution_parallelism,
+            priority,
+            runtime_priority,
+            runtime_priority_threshold,
+            runtimecap_in_seconds,
+            single_initiator,
+            query_budget_kb,
+            cpu_affinity_set,
+            cpu_affinity_mask,
+            cpu_affinity_mode,
+            transaction_id,
+            statement_id,
+            query_name
+        )
+        AS
+        SELECT {import_name}.node_name,
+                {import_name}.pool_oid,
+                {import_name}.pool_name,
+                {import_name}.is_internal,
+                {import_name}.memory_size_kb,
+                {import_name}.memory_size_actual_kb,
+                {import_name}.memory_inuse_kb,
+                {import_name}.general_memory_borrowed_kb,
+                {import_name}.queueing_threshold_kb,
+                {import_name}.max_memory_size_kb,
+                {import_name}.max_query_memory_size_kb,
+                {import_name}.running_query_count,
+                {import_name}.planned_concurrency,
+                {import_name}.max_concurrency,
+                {import_name}.is_standalone,
+                {import_name}.queue_timeout,
+                {import_name}.queue_timeout_in_seconds,
+                {import_name}.execution_parallelism,
+                {import_name}.priority,
+                {import_name}.runtime_priority,
+                {import_name}.runtime_priority_threshold,
+                {import_name}.runtimecap_in_seconds,
+                {import_name}.single_initiator,
+                {import_name}.query_budget_kb,
+                {import_name}.cpu_affinity_set,
+                {import_name}.cpu_affinity_mask,
+                {import_name}.cpu_affinity_mode,
+                {import_name}.transaction_id,
+                {import_name}.statement_id,
+                {import_name}.query_name
+        FROM {import_name_fq}
+        ORDER BY {import_name}.transaction_id,
+                {import_name}.statement_id,
+                {import_name}.node_name,
+                {import_name}.pool_name,
+                {import_name}.query_budget_kb
+        SEGMENTED BY hash({import_name}.pool_oid, 
+                    {import_name}.is_internal, 
+                    {import_name}.memory_size_kb, 
+                    {import_name}.memory_size_actual_kb,
+                    {import_name}.memory_inuse_kb,
+                    {import_name}.general_memory_borrowed_kb,
+                    {import_name}.queueing_threshold_kb,
+                    {import_name}.max_memory_size_kb) 
+        ALL NODES;
         """

@@ -87,6 +87,7 @@ class TestProfileImport:
             "qprof_query_consumption_aaa",
             "qprof_query_plan_profiles_aaa",
             "qprof_query_profiles_aaa",
+            "qprof_resource_pool_status_aaa",
         ]
         created_tables = self._get_set_of_tables_in_schema(schema_loader, test_key)
 

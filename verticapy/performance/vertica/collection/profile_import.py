@@ -137,27 +137,8 @@ class ProfileImport:
             target_schema=self.target_schema, key=self.key
         )
         for ctable in all_tables.values():
-            # TODO: for now, only try to create tables we have defined
-            # Later we will make all tables
-            # print(f"Table is {ctable.name}")
-            if (
-                ctable.table_type == AllTableTypes.COLLECTION_EVENTS
-                or ctable.table_type == AllTableTypes.COLLECTION_INFO
-                or ctable.table_type == AllTableTypes.DC_EXPLAIN_PLANS
-                or ctable.table_type == AllTableTypes.DC_QUERY_EXECUTIONS
-                or ctable.table_type == AllTableTypes.DC_REQUESTS_ISSUED
-                or ctable.table_type == AllTableTypes.EXECUTION_ENGINE_PROFILES
-                or ctable.table_type == AllTableTypes.EXPORT_EVENTS
-                or ctable.table_type == AllTableTypes.HOST_RESOURCES
-                or ctable.table_type == AllTableTypes.QUERY_CONSUMPTION
-                or ctable.table_type == AllTableTypes.QUERY_PLAN_PROFILES
-                or ctable.table_type == AllTableTypes.QUERY_PROFILES
-            ):
-                print(f"Running create statements for {ctable.name}")
-                table_sql = ctable.get_create_table_sql()
-                proj_sql = ctable.get_create_projection_sql()
-                _executeSQL(table_sql, method="fetchall")
-                _executeSQL(proj_sql, method="fetchall")
-                continue
-            # print(f"Skipped creating table {ctable.name}")
-            self.logger.info(f"Skipped creating table {ctable.name}")
+            print(f"Running create statements for {ctable.name}")
+            table_sql = ctable.get_create_table_sql()
+            proj_sql = ctable.get_create_projection_sql()
+            _executeSQL(table_sql, method="fetchall")
+            _executeSQL(proj_sql, method="fetchall")
