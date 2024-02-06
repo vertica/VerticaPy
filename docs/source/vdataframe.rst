@@ -625,6 +625,9 @@ Complete Disjunctive Table
 ______
 
 
+
+.. _api.vdataframe.features_engineering:
+
 Features Engineering
 ---------------------
 
