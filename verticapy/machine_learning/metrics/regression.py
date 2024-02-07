@@ -30,7 +30,7 @@ from verticapy.core.tablesample.base import TableSample
 SQL Metrics.
 """
 
-FUNCTIONS_REGRESSION_SQL_DICTIONNARY = {
+FUNCTIONS_REGRESSION_SQL_DICTIONARY = {
     "explained_variance": "1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true})",
     "max_error": "MAX(ABS({y_true} - {y_score}))::float",
     "median": "APPROXIMATE_MEDIAN(ABS({y_true} - {y_score}))",
@@ -1085,6 +1085,7 @@ def regression_report(
     input_relation: SQLRelation,
     metrics: Union[None, str, list[str]] = None,
     k: int = 1,
+    genSQL: bool = False,
 ) -> Union[float, TableSample]:
     """
     Computes a regression report
@@ -1192,7 +1193,11 @@ def regression_report(
 
     k: int, optional
         Number  of predictors. Used  to compute the adjusted
-        R2.
+        R2
+
+    genSQL: bool, optional
+        If set to ``True``, returns the sql that
+        is used to generate the metrics.
 
     Returns
     -------
@@ -1297,7 +1302,7 @@ def regression_report(
             else:
                 q = float(m[14:-1]) / 100
             metrics_sql += [
-                FUNCTIONS_REGRESSION_SQL_DICTIONNARY["qe"].format(
+                FUNCTIONS_REGRESSION_SQL_DICTIONARY["qe"].format(
                     y_true=y_true, y_score=y_score, q=q
                 )
             ]
@@ -1305,7 +1310,7 @@ def regression_report(
             metrics_sql += [str(mse)]
         else:
             metrics_sql += [
-                FUNCTIONS_REGRESSION_SQL_DICTIONNARY[m].format(
+                FUNCTIONS_REGRESSION_SQL_DICTIONARY[m].format(
                     y_true=y_true, y_score=y_score, k=k
                 )
             ]
@@ -1314,6 +1319,8 @@ def regression_report(
         FROM {relation} 
         WHERE {y_true} IS NOT NULL 
           AND {y_score} IS NOT NULL;"""
+    if genSQL:
+        return query
     result = _executeSQL(
         query, title="Computing the Regression Report.", method="fetchrow"
     )
