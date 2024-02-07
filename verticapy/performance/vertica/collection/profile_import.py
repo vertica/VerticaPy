@@ -29,7 +29,7 @@ class ProfileImportError(Exception):
 
 class ProfileImport:
     """
-    Loads data from a profile collection into a running database.
+    ProfileImport loads data from a profile collection into a running database.
     Can create schemas and tables to load the profile into.
     """
 
@@ -41,11 +41,18 @@ class ProfileImport:
         skip_create_table: bool = False,
     ) -> None:
         """
-        Load a query performance profile in `filename` into tables
-        in schema `target_schema` with suffix `key`.
+        Load a query performance profile in ``filename`` into tables
+        in schema ``target_schema`` with suffix ``key``.
 
-        `target_schema`: the schema to load the profile into
-        `key`
+        Parameters
+        ------------
+        target_schema: str
+            The schema to load the profile into. The schema will
+            be created unless ``skip_create_table`` is ``True``.
+        key: str
+            The suffix for tables to store profiling data.
+        filename: str
+            The tarball of parquet files to load into the database.
         """
         # TODO: at this time, we don't run any checks automatically
         # during __init__. Instead, we run the chceks manually. Running

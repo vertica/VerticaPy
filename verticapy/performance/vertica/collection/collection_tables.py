@@ -21,7 +21,7 @@ from typing import Mapping
 
 class AllTableTypes(Enum):
     """
-    Enumeration of all table types understood by profile collection.
+    Enumeration (``Enum``) of all table types understood by profile collection.
 
     It is best to match table schema (col types) by comparing to this enumeration.
     Tables can have the same schema and different names.
@@ -43,11 +43,13 @@ class AllTableTypes(Enum):
 
 class CollectionTable:
     """
-    Parent class for tables created by query profile export.
+    ``CollectionTable`` is the abstract parent class for tables created by query profile export.
 
     Child classes are expected to implement abstract methods
-        - get_create_table_sql()
-        - get_create_projection_sql()
+        - ``get_create_table_sql()``
+        - ``get_create_projection_sql()``
+        - ``has_copy_staging()``
+        - ``copy_from_local_file()``
     """
 
     def __init__(self, table_type: AllTableTypes, table_schema: str, key: str) -> None:
@@ -119,14 +121,23 @@ def getAllCollectionTables(
     target_schema: str, key: str
 ) -> Mapping[str, CollectionTable]:
     """
-    Returns a dictionary of CollectionTables.
+    Produces a map with one of each kind of collection table. The key
+    to the map is the table name.
 
-    The dictionary contains one collection table instance for each type in
-    AllTableTypes.
+    Returns
+    ----------
+    A ``dictionary`` of ``CollectionTables``.
 
-    `target_schema`: The schema for all tables.
+    The ``dictionary`` contains one collection table instance for each type in
+    ``AllTableTypes``. The key is the string value of the ``AllTableTypes`` enum.
 
-    `key`: A suffix for all table names to help uniquely identify the table.
+    Parameters
+    ----------
+    target_schema: str
+        The schema for all tables.
+
+    key: str
+        A suffix for all table names to help uniquely identify the table.
     """
     result = {}
     for name in AllTableTypes:
@@ -140,13 +151,24 @@ def collectionTableFactory(
     table_type: AllTableTypes, target_schema: str, key: str
 ) -> CollectionTable:
     """
-    Returns a instance of a CollectionTable for a given table_type.
+    ``collectionTableFactory`` implements the constructor pattern. It
+    instantiates the appropriate subclass of ``CollectionTable`` for
+    the parameter ``table_type``.
 
-    `table_type`: The type of table collectionTableFactory should create.
+    Returns
+    ----------
+    An instance of a CollectionTable for a given table_type.
 
-    `target_schema`: The schema for the table.
+    Parameters
+    ------------
+    table_type: AllTableTypes
+        The type of table collectionTableFactory should create.
 
-    `key`: The suffix for the table name.
+    target_schema: str
+        The schema for the table.
+
+    key: str
+        The suffix for the table name.
     """
     if table_type == AllTableTypes.COLLECTION_EVENTS:
         return CollectionEventsTable(target_schema, key)
@@ -179,7 +201,7 @@ def collectionTableFactory(
 ############## collection_events ######################
 class CollectionEventsTable(CollectionTable):
     """
-    CollectionEventsTable stores data produced during the ProfileCollection process.
+    ``CollectionEventsTable`` stores data produced during the ProfileCollection process.
     It is not a vertica system table, but rather a diagnostics table produced
     while profiling queries.
     """
@@ -229,7 +251,7 @@ class CollectionEventsTable(CollectionTable):
 ############## collection_info ######################
 class CollectionInfoTable(CollectionTable):
     """
-    CollectionInfoTable stores information about the profile collection,
+    ``CollectionInfoTable`` stores information about the profile collection,
     such as the vertica version and a some comments about the queries being profiled.
     """
 
@@ -293,7 +315,7 @@ class CollectionInfoTable(CollectionTable):
 ########### dc_explain_plans ######################
 class DCExplainPlansTable(CollectionTable):
     """
-    DCExplainPlansTable stores data from the system table
+    ``DCExplainPlansTable`` stores data from the system table
     dc_explain_plans
     """
 
@@ -377,7 +399,7 @@ class DCExplainPlansTable(CollectionTable):
 ################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
     """
-    DCQueryExecutionsTable stores data from the system table
+    ``DCQueryExecutionsTable`` stores data from the system table
     dc_query_executions
     """
 
@@ -459,7 +481,7 @@ class DCQueryExecutionsTable(CollectionTable):
 ################ dc_requests_issued ###################
 class DCRequestsIssuedTable(CollectionTable):
     """
-    DCRequestsIssuedTable stores data from the system table
+    ``DCRequestsIssuedTable`` stores data from the system table
     dc_requests_issued
     """
 
@@ -555,7 +577,7 @@ class DCRequestsIssuedTable(CollectionTable):
 ################ execution_engine_profiles ###################
 class ExecutionEngineProfilesTable(CollectionTable):
     """
-    ExecutionEngineProfilesTable stores data from the system view
+    ``ExecutionEngineProfilesTable`` stores data from the system view
     execution_engine_profiles
     """
 
@@ -658,7 +680,7 @@ class ExecutionEngineProfilesTable(CollectionTable):
 ################ export_events ###################
 class ExportEventsTable(CollectionTable):
     """
-    ExportEventsTable stores data produced during the ProfileCollection process.
+    ``ExportEventsTable`` stores data produced during the ProfileCollection process.
     It is not a vertica system table, but rather a diagnostics table produced
     when exporting profile information.
     """
@@ -706,7 +728,7 @@ class ExportEventsTable(CollectionTable):
 ################ host_resources ###################
 class HostResourcesTable(CollectionTable):
     """
-    HostResourcesTable stores a snapshot of data from the host_resources
+    ``HostResourcesTable`` stores a snapshot of data from the host_resources
     system table. It adds two columns to the host_resources table:
     transaction_id and statement_id.
     """
@@ -822,7 +844,7 @@ class HostResourcesTable(CollectionTable):
 ################ query_consumption ###################
 class QueryConsumptionTable(CollectionTable):
     """
-    QueryComsumptionTable stores data from the system view
+    ``QueryComsumptionTable`` stores data from the system view
     query_consumption.
     """
 
@@ -945,7 +967,7 @@ class QueryConsumptionTable(CollectionTable):
 ################ query_plan_profiles ###################
 class QueryPlanProfilesTable(CollectionTable):
     """
-    QueryPlanProfilesTable stores data from the system table
+    ``QueryPlanProfilesTable`` stores data from the system table
     query_plan_profiles.
     """
 
@@ -1039,7 +1061,7 @@ class QueryPlanProfilesTable(CollectionTable):
 ################ query_profiles ###################
 class QueryProfilesTable(CollectionTable):
     """
-    QueryProfilesTable stores data from the system table
+    ``QueryProfilesTable`` stores data from the system table
     query_profiles.
     """
 
@@ -1144,7 +1166,7 @@ class QueryProfilesTable(CollectionTable):
 ################ resource_pool_status ###################
 class ResourcePoolStatusTable(CollectionTable):
     """
-    ResourcePoolStatusTable stores a snapshot of data from the system table resource_pool_status.
+    ``ResourcePoolStatusTable`` stores a snapshot of data from the system table resource_pool_status.
     It adds two additional columns to the table to label the status: transaction_id and statement_id.
     """
 
