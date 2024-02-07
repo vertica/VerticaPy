@@ -118,6 +118,16 @@ class CollectionTable:
 def getAllCollectionTables(
     target_schema: str, key: str
 ) -> Mapping[str, CollectionTable]:
+    """
+    Returns a dictionary of CollectionTables.
+
+    The dictionary contains one collection table instance for each type in
+    AllTableTypes.
+
+    `target_schema`: The schema for all tables.
+
+    `key`: A suffix for all table names to help uniquely identify the table.
+    """
     result = {}
     for name in AllTableTypes:
         c = collectionTableFactory(name, target_schema, key)
@@ -129,6 +139,15 @@ def getAllCollectionTables(
 def collectionTableFactory(
     table_type: AllTableTypes, target_schema: str, key: str
 ) -> CollectionTable:
+    """
+    Returns a instance of a CollectionTable for a given table_type.
+
+    `table_type`: The type of table collectionTableFactory should create.
+
+    `target_schema`: The schema for the table.
+
+    `key`: The suffix for the table name.
+    """
     if table_type == AllTableTypes.COLLECTION_EVENTS:
         return CollectionEventsTable(target_schema, key)
     if table_type == AllTableTypes.COLLECTION_INFO:
@@ -159,6 +178,12 @@ def collectionTableFactory(
 
 ############## collection_events ######################
 class CollectionEventsTable(CollectionTable):
+    """
+    CollectionEventsTable stores data produced during the ProfileCollection process.
+    It is not a vertica system table, but rather a diagnostics table produced
+    while profiling queries.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.COLLECTION_EVENTS, table_schema, key)
 
@@ -203,6 +228,11 @@ class CollectionEventsTable(CollectionTable):
 
 ############## collection_info ######################
 class CollectionInfoTable(CollectionTable):
+    """
+    CollectionInfoTable stores information about the profile collection,
+    such as the vertica version and a some comments about the queries being profiled.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.COLLECTION_INFO, table_schema, key)
 
@@ -262,6 +292,11 @@ class CollectionInfoTable(CollectionTable):
 
 ########### dc_explain_plans ######################
 class DCExplainPlansTable(CollectionTable):
+    """
+    DCExplainPlansTable stores data from the system table
+    dc_explain_plans
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.DC_EXPLAIN_PLANS, table_schema, key)
 
@@ -341,6 +376,11 @@ class DCExplainPlansTable(CollectionTable):
 
 ################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
+    """
+    DCQueryExecutionsTable stores data from the system table
+    dc_query_executions
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.DC_QUERY_EXECUTIONS, table_schema, key)
 
@@ -418,6 +458,11 @@ class DCQueryExecutionsTable(CollectionTable):
 
 ################ dc_requests_issued ###################
 class DCRequestsIssuedTable(CollectionTable):
+    """
+    DCRequestsIssuedTable stores data from the system table
+    dc_requests_issued
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.DC_REQUESTS_ISSUED, table_schema, key)
 
@@ -509,6 +554,11 @@ class DCRequestsIssuedTable(CollectionTable):
 
 ################ execution_engine_profiles ###################
 class ExecutionEngineProfilesTable(CollectionTable):
+    """
+    ExecutionEngineProfilesTable stores data from the system view
+    execution_engine_profiles
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.EXECUTION_ENGINE_PROFILES, table_schema, key)
 
@@ -607,6 +657,12 @@ class ExecutionEngineProfilesTable(CollectionTable):
 
 ################ export_events ###################
 class ExportEventsTable(CollectionTable):
+    """
+    ExportEventsTable stores data produced during the ProfileCollection process.
+    It is not a vertica system table, but rather a diagnostics table produced
+    when exporting profile information.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.EXPORT_EVENTS, table_schema, key)
 
@@ -649,6 +705,12 @@ class ExportEventsTable(CollectionTable):
 
 ################ host_resources ###################
 class HostResourcesTable(CollectionTable):
+    """
+    HostResourcesTable stores a snapshot of data from the host_resources
+    system table. It adds two columns to the host_resources table:
+    transaction_id and statement_id.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.HOST_RESOURCES, table_schema, key)
 
@@ -759,6 +821,11 @@ class HostResourcesTable(CollectionTable):
 
 ################ query_consumption ###################
 class QueryConsumptionTable(CollectionTable):
+    """
+    QueryComsumptionTable stores data from the system view
+    query_consumption.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.QUERY_CONSUMPTION, table_schema, key)
 
@@ -877,6 +944,11 @@ class QueryConsumptionTable(CollectionTable):
 
 ################ query_plan_profiles ###################
 class QueryPlanProfilesTable(CollectionTable):
+    """
+    QueryPlanProfilesTable stores data from the system table
+    query_plan_profiles.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         # Note: This table requires a staging table
         super().__init__(AllTableTypes.QUERY_PLAN_PROFILES, table_schema, key)
@@ -966,6 +1038,11 @@ class QueryPlanProfilesTable(CollectionTable):
 
 ################ query_profiles ###################
 class QueryProfilesTable(CollectionTable):
+    """
+    QueryProfilesTable stores data from the system table
+    query_profiles.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.QUERY_PROFILES, table_schema, key)
 
@@ -1066,6 +1143,11 @@ class QueryProfilesTable(CollectionTable):
 
 ################ resource_pool_status ###################
 class ResourcePoolStatusTable(CollectionTable):
+    """
+    ResourcePoolStatusTable stores a snapshot of data from the system table resource_pool_status.
+    It adds two additional columns to the table to label the status: transaction_id and statement_id.
+    """
+
     def __init__(self, table_schema: str, key: str) -> None:
         super().__init__(AllTableTypes.RESOURCE_POOL_STATUS, table_schema, key)
 
