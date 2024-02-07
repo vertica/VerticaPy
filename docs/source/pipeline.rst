@@ -1,6 +1,6 @@
-=========
-Pipelines
-=========
+================
+Pipelines (Beta)
+================
 
 Vertica Pipelines is an open source platform for managing data
 scientists’ machine learning pipelines. They are built on a
