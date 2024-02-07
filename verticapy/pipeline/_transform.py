@@ -18,8 +18,6 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Transforming.
 """
-
-
 from queue import Queue
 
 from verticapy.core.vdataframe.base import vDataFrame

@@ -21,12 +21,14 @@ This script runs the Vertica Machine Learning Pipeline Test.
 from typing import Tuple
 
 from verticapy import vDataFrame
-from verticapy.machine_learning.vertica.base import VerticaModel
+
 from verticapy._typing import SQLColumns
+
 from verticapy.machine_learning.metrics.regression import (
     regression_report,
     FUNCTIONS_REGRESSION_SQL_DICTIONARY,
 )
+from verticapy.machine_learning.vertica.base import VerticaModel
 
 from verticapy.pipeline._helper import execute_and_return, remove_comments
 

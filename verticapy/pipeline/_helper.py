@@ -15,8 +15,9 @@ You may obtain a copy of the License at:
     See the  License for the specific  language governing
     permissions and limitations under the License.
 """
-"""This script has helpful functions for the pipeline. """
-
+"""
+This script has helpful functions for the pipeline.
+"""
 import re
 
 from verticapy._utils._sql._sys import _executeSQL

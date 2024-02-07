@@ -18,13 +18,13 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Ingestion
 """
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.pipeline._helper import (
-    required_keywords,
     execute_and_return,
     is_valid_delimiter,
+    required_keywords,
 )
-from verticapy._utils._sql._sys import _executeSQL
 
 
 def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:

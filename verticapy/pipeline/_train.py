@@ -20,9 +20,12 @@ This script runs the Vertica Machine Learning Pipeline Training.
 """
 from typing import Tuple
 
-from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._typing import SQLColumns
+
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.errors import QueryError
+
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import (
     BisectingKMeans,

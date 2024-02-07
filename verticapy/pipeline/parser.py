@@ -18,42 +18,17 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Parser.
 """
-
-# base package imports
-import yaml
 import argparse
-from tqdm import tqdm
 import re
+from tqdm import tqdm
+import yaml
 
-# required packages
 import verticapy as vp
-from verticapy.datasets import (
-    load_airline_passengers,
-    load_amazon,
-    load_cities,
-    load_commodities,
-    load_gapminder,
-    load_iris,
-    load_laliga,
-    load_market,
-    load_pop_growth,
-    load_smart_meters,
-    load_titanic,
-    load_winequality,
-    load_world,
-    load_africa_education,
-)
+
 from verticapy._utils._sql._sys import _executeSQL
 
-# local
-from verticapy.pipeline._helper import required_keywords, execute_and_return, setup
-from verticapy.pipeline import _ingest
-from verticapy.pipeline import _transform
-from verticapy.pipeline import _train
-from verticapy.pipeline import _validate
-from verticapy.pipeline import _schedule
-
-SUPPORTED_DATASETS = [
+from verticapy.datasets import (
+    load_africa_education,
     load_airline_passengers,
     load_amazon,
     load_cities,
@@ -67,7 +42,27 @@ SUPPORTED_DATASETS = [
     load_titanic,
     load_winequality,
     load_world,
+)
+
+from verticapy.pipeline import _ingest, _schedule, _train, _transform, _validate
+from verticapy.pipeline._helper import execute_and_return, required_keywords, setup
+
+
+SUPPORTED_DATASETS = [
     load_africa_education,
+    load_airline_passengers,
+    load_amazon,
+    load_cities,
+    load_commodities,
+    load_gapminder,
+    load_iris,
+    load_laliga,
+    load_market,
+    load_pop_growth,
+    load_smart_meters,
+    load_titanic,
+    load_winequality,
+    load_world,
 ]
 
 parser = argparse.ArgumentParser(
