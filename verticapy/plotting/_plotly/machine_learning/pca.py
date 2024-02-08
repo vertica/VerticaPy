@@ -137,11 +137,11 @@ class PCAScreePlot(PlotlyBase):
         )
         fig.update_xaxes(type="category")
         params = self._update_dict(self.init_layout_style, style_kwargs)
-        fig.update_layout(**params)
         fig_base.add_trace(fig.data[0])
         fig_base.update_layout(fig.layout)
         fig_base.add_trace(fig2.data[0])
         fig_base.update_layout(fig2.layout)
+        fig_base.update_layout(**params)
         return fig_base
 
 
