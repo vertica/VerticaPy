@@ -12,22 +12,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import io
-import re
-import logging
-import json
-from typing import Tuple, Literal
 from contextlib import redirect_stdout
+import io
+import json
+import logging
+import re
+from typing import Any, Literal, Tuple
+
 from graphviz import Digraph
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
-from verticapy.datasets import load_titanic
+
 import verticapy as vp
-from verticapy.tests_new.performance.vertica import QPROF_SQL1, QPROF_SQL2
-from verticapy.performance.vertica import QueryProfiler
 from verticapy.connection import current_cursor
 from verticapy.core.vdataframe import vDataFrame
+from verticapy.datasets import load_titanic
+from verticapy.performance.vertica import QueryProfiler
+
+from verticapy.tests_new.performance.vertica import QPROF_SQL1, QPROF_SQL2
 
 pd.set_option("display.max_columns", None)
 pd.set_option("display.max_rows", None)
@@ -107,7 +110,7 @@ def qprof_data(titanic_vd: pytest.fixture, schema_loader: pytest.fixture) -> Qpr
 
 
 def _get_chart_data(
-    qprof_attr_obj, kind: Literal["bar", "barh", "pie"]
+    qprof_attr_obj: Any, kind: Literal["bar", "barh", "pie"]
 ) -> Tuple[pd.Series, pd.Series]:
     """
     function to get chart data
@@ -230,13 +233,13 @@ class TestQueryProfiler:
         """
         test function for query_profiler
 
-        This function test QueryProfiler class and its parameters
+        This function test ``QueryProfiler`` class and its parameters
 
-        Step 1: Get QueryProfiler object by passing different combinations of parameters value
-                to QueryProfiler class
-        Step 2: Get parameter value from QueryProfiler object
-        Step 3: Get corresponding parameter value from qprof_data fixture
-        Step 4: compare step 2 and step 3 results
+        - Step 1: Get ``QueryProfiler`` object by passing different combinations of parameters value
+                to ``QueryProfiler`` class
+        - Step 2: Get parameter value from ``QueryProfiler`` object
+        - Step 3: Get corresponding parameter value from ``qprof_data`` fixture
+        - Step 4: compare step 2 and step 3 results
         """
 
         # need to check as target_schema is not getting created by vpy
@@ -366,7 +369,7 @@ class TestQueryProfiler:
         """
         test function for query_profiler attributes
 
-        This function tests QueryProfiler attributes
+        This function tests ``QueryProfiler`` attributes
 
         key_id and target_tables:
         To test key_id/target_tables, we need to know the key_id/target_tables generated.
@@ -552,18 +555,20 @@ class TestQueryProfiler:
         """
         test function for get_queries
 
-        # Steps to get actual result
-        Step 1: Get transactions from qprof_data fixture
-        Step 2: Get QueryProfiler object by passing transaction_id and statement_id
-                to QueryProfiler class
-        Step 3: Get all queries and its details using get_queries method with different
-                combinations of parameters (if applicable). get_queries
+        **steps to get actual result**
+        - Step 1: Get transactions from ``qprof_data`` fixture
+        - Step 2: Get ``QueryProfiler`` object by passing ``transaction_id`` and ``statement_id``
+                to ``QueryProfiler`` class
+        - Step 3: Get all queries and its details using ``get_queries`` method with different
+                combinations of parameters (if applicable). ``get_queries``
                 method returns vDataFrame.
-        # Steps to get expected result
-        step 4: Get all queries and its details from qprof_data fixture
-        # Steps to compare actual and expected results
-        step 5: compare actual and expected pandas dataframe using pandas compare function.
-        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+
+        **steps to get expected result**
+        - Step 4: Get all queries and its details from ``qprof_data`` fixture
+
+        **steps to compare actual and expected results**
+        - Step 5: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 6: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
         # transaction_id, statement_id = qprof_data.transactions[0]
@@ -648,36 +653,40 @@ class TestQueryProfiler:
         """
         test function for get_qsteps
 
-        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
-        # Steps to get actual result
-        Step 2: Get query execution steps chart using get_qsteps method with different combinations of parameters.
-                Note: it is drilldown chart (highcharts)
-        Step 3: For show=True
-                get_qsteps method returns highcharts object (drilldown), so it need to unroll.
+        - Step 1: Get ``QueryProfiler`` object by passing SQL to ``QueryProfiler`` class
+
+        **steps to get actual result**
+        - Step 2: Get query execution steps chart using ``get_qsteps`` method with different combinations of parameters.
+                .. Note::
+                    it is drilldown chart (highcharts)
+        - Step 3: For ``show=True``
+                ``get_qsteps`` method returns highcharts object (drilldown), so it need to unroll.
                 get series and drilldown data from highcharts objects, and then join these two datasets
                 based on step name.
                 get step name from series data, and sub_step name and elapsed_time details from drilldown data
 
-                For show=False
-                get_qsteps method returns vDataFrame.
-        step 4: convert it to pandas dataframe followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 5: Get completion_time, time, execution_step from v_internal.dc_query_executions table
-                using transaction_id and statement_id
-        Step 6: split execution_step into step and step_step based on ":" delimiter
-        Step 7: Get elapsed_time by subtracting time from completion_time, and Convert elapsed_time
+                For ``show=False``
+                ``get_qsteps`` method returns vDataFrame.
+        - Step 4: convert it to pandas dataframe followed by sorting based on key column(s).
+
+        **steps to get expected result**
+        - Step 5: Get ``completion_time``, ``time``, ``execution_step`` from ``v_internal.dc_query_executions`` table
+                using ``transaction_id`` and ``statement_id``
+        - Step 6: split ``execution_step`` into ``step`` and ``sub_step`` based on ":" delimiter
+        - Step 7: Get ``elapsed_time`` by subtracting ``time`` from ``completion_time``, and Convert ``elapsed_time``
                 into appropriate time interval (Seconds/Minutes/Hours)
-        Step 8: if category_order is category then sort data based on category else sort dataset
+        - Step 8: if ``category_order`` is category then sort data based on category else sort dataset
                 based on below logic:
-                # 1. Get all records where step and sub_step names are not same. This gives
+                # 1. Get all records where ``step`` and ``sub_step`` names are not same. This gives
                     level 2 data in drilldown chart
-                # 2. Get all records where step and sub_step names are same. This gives
+                # 2. Get all records where ``step`` and ``sub_step`` names are same. This gives
                     level 1 data in drilldown chart
-                # 3. Merge uneq_sub_step (level 2) and eq_sub_step (level 1) based on step name. sort
-                    it on ascending_flag
-        # Steps to compare actual and expected results
-        step 9: compare actual and expected pandas dataframe using pandas compare function.
-        step 10: compare function returns integers. if return value is ZERO, then actual and expected
+                # 3. Merge ``uneq_sub_step`` (level 2) and e``q_sub_step`` (level 1) based on step name. sort
+                    it on ``ascending_flag``
+
+        **steps to compare actual and expected results**
+        - Step 9: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 10: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
 
@@ -842,17 +851,20 @@ class TestQueryProfiler:
         """
         test function for get_qplan
 
-        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
-        # Steps to get actual result
-        Step 2: Get query plan chart using get_qplan method with different
+        - Step 1: Get ``QueryProfiler`` object by passing SQL to ``QueryProfiler`` class
+
+        **steps to get actual result**
+        - Step 2: Get query plan chart using ``get_qplan`` method with different
                 combinations of parameters (if applicable).
-        step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 4: Get query plan from v_internal.dc_explain_plans
-                table using transaction_id and statement_id, and repeat step 3
-        # Steps to compare actual and expected results
-        step 5: compare actual and expected pandas dataframe using pandas compare function.
-        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+        - Step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
+
+        **steps to get expected result**
+        - Step 4: Get query plan from ``v_internal.dc_explain_plans``
+                table using ``transaction_id`` and ``statement_id``, and repeat step 3
+
+        **steps to compare actual and expected results**
+        - Step 5: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 6: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
         # need to check. get_qplan is not returning anything with transaction_id and statement_id.
@@ -943,15 +955,18 @@ class TestQueryProfiler:
         """
         test function for get_qplan_tree
 
-        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
-        # Steps to get actual result
-        Step 2: Get query plan tree using get_qplan_tree method with different
-                combinations of parameters (if applicable). get_qplan_tree returns graphviz object
-        Step 3: Convert graphviz object to json object and parse it
-        # Steps to get expected result
-        step 4: Get query plan using get_qplan method and parse it
-        # Steps to compare actual and expected results
-        step 5: compare actual and expected query plan strings
+        - Step 1: Get ``QueryProfiler`` object by passing SQL to ``QueryProfiler`` class
+
+        **steps to get actual result**
+        - Step 2: Get query plan tree using ``get_qplan_tree`` method with different
+                combinations of parameters (if applicable). ``get_qplan_tree`` returns graphviz object
+        - Step 3: Convert graphviz object to json object and parse it
+
+        **steps to get expected result**
+        - Step 4: Get query plan using ``get_qplan`` method and parse it
+
+        **steps to compare actual and expected results**
+        - Step 5: compare actual and expected query plan strings
         """
         # need to check. get_qplan_tree is not returning anything with transaction_id, statement_id
         qprof = QueryProfiler(transactions=QPROF_SQL2)
@@ -1070,20 +1085,25 @@ class TestQueryProfiler:
         """
         test function for get_qplan_profile
 
-        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
-        # Steps to get actual result
-        Step 2: Get query plan chart using get_qplan_profile method with different combinations of parameters.
-        Step 3: For show=True : get_qplan_profile method returns plotly graph object. Get x (labels for pie)
+        - Step 1: Get ``QueryProfiler`` object by passing SQL to ``QueryProfiler`` class
+        **steps to get actual result**
+        - Step 2: Get query plan chart using ``get_qplan_profile`` method with different combinations of parameters.
+        - Step 3: For ``show=True``
+                ``get_qplan_profile`` method returns plotly graph object. Get x (labels for pie)
                 and y(values for pie) axes values from graph object.
-                For show=False : get_qplan_profile method returns vDataFrame.
-        step 4: Group result based required columns. convert it to pandas dataframe
+
+                For ``show=False``
+                ``get_qplan_profile`` method returns vDataFrame.
+        - Step 4: Group result based required columns. convert it to pandas dataframe
                 followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 5: Get query plan from v_monitor.query_plan_profiles table using transaction_id
-                and statement_id, and repeat step 4
-        # Steps to compare actual and expected results
-        step 6: compare actual and expected pandas dataframe using pandas compare function.
-        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+
+        **steps to get expected result**
+        - Step 5: Get query plan from ``v_monitor.query_plan_profiles`` table using ``transaction_id``
+                and ``statement_id``, and repeat step 4
+
+        **steps to compare actual and expected results**
+        - Step 6: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 7: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
 
@@ -1158,18 +1178,20 @@ class TestQueryProfiler:
         """
         test function for get_query_events
 
-        # Steps to get actual result
-        Step 1: Get transaction_id and statement_id from qprof_data fixture
-        Step 2: Get QueryProfiler object by passing transaction_id and statement_id
-                to QueryProfiler class
-        Step 3: Get query events details using get_query_events method with different
-                combinations of parameters (if applicable). get_query_events
+        **steps to get actual result**
+        - Step 1: Get ``transaction_id`` and ``statement_id`` from ``qprof_data`` fixture
+        - Step 2: Get ``QueryProfiler`` object by passing ``transaction_id`` and ``statement_id``
+                to ``QueryProfiler`` class
+        - Step 3: Get query events details using ``get_query_events`` method with different
+                combinations of parameters (if applicable). ``get_query_events``
                 method returns vDataFrame.
-        # Steps to get expected result
-        step 4: Get query events from v_monitor.query_events table using transaction_id and statement_id
-        # Steps to compare actual and expected results
-        step 5: compare actual and expected pandas dataframe using pandas compare function.
-        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+
+        **steps to get expected result**
+        - Step 4: Get query events from ``v_monitor.query_events`` table using ``transaction_id`` and ``statement_id``
+
+        **steps to compare actual and expected results**
+        - Step 5: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 6: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
         transaction_id, statement_id = qprof_data.transactions[2]
@@ -1227,20 +1249,25 @@ class TestQueryProfiler:
         """
         test function for get_cpu_time
 
-        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
-        # Steps to get actual result
-        Step 2: Get cpu time chart using get_cpu_time method with different combinations of parameters.
-        Step 3: For show=True : get_cpu_time method returns plotly graph object. Get x (labels for pie)
+        - Step 1: Get ``QueryProfiler`` object by passing SQL to ``QueryProfiler`` class
+        **steps to get actual result**
+        - Step 2: Get cpu time chart using get_cpu_time method with different combinations of parameters.
+        - Step 3: For ``show=True``
+                get_cpu_time method returns plotly graph object. Get x (labels for pie)
                 and y(values for pie) axes values from graph object.
-                For show=False : get_cpu_time method returns vDataFrame.
-        step 4: Group result based required columns. convert it to pandas dataframe
+
+                For ``show=False``
+                ``get_cpu_time`` method returns vDataFrame.
+        - Step 4: Group result based required columns. convert it to pandas dataframe
                 followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 5: Get cpu time from v_monitor.execution_engine_profiles table using transaction_id
-                and statement_id, and repeat step 4
-        # Steps to compare actual and expected results
-        step 6: compare actual and expected pandas dataframe using pandas compare function.
-        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+
+        **steps to get expected result**
+        - Step 5: Get cpu time from ``v_monitor.execution_engine_profiles`` table using ``transaction_id``
+                and ``statement_id``, and repeat step 4
+
+        **steps to compare actual and expected results**
+        - Step 6: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 7: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
         # need to check. getting error with transaction_id and statement_id
@@ -1301,18 +1328,20 @@ class TestQueryProfiler:
         """
         test function for get_qexecution_report
 
-        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
-        # Steps to get actual result
-        Step 2: Get query execution report using get_qexecution_report method with different
-                combinations of parameters (if applicable). get_qexecution_report method
+        - Step 1: Get ``QueryProfiler`` object by passing SQL to ``QueryProfiler`` class
+        **steps to get actual result**
+        - Step 2: Get query execution report using ``get_qexecution_report`` method with different
+                combinations of parameters (if applicable). ``get_qexecution_report`` method
                 returns vDataFrame.
-        step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 4: Get query execution report from v_monitor.execution_engine_profiles
-                table using transaction_id and statement_id, and repeat step 3
-        # Steps to compare actual and expected results
-        step 5: compare actual and expected pandas dataframe using pandas compare function.
-        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+        - Step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
+
+        **steps to get expected result**
+        - Step 4: Get query execution report from ``v_monitor.execution_engine_profiles``
+                table using ``transaction_id`` and ``statement_id``, and repeat step 3
+
+        **steps to compare actual and expected results**
+        - Step 5: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 6: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
 
@@ -1423,19 +1452,24 @@ class TestQueryProfiler:
         """
         test function for get_qexecution
 
-        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
-        # Steps to get actual result
-        Step 2: Get query execution chart using get_qexecution method with different combinations of parameters.
-        Step 3: For show=True : get_qexecution method returns plotly graph object. Get x (labels for pie)
+        - Step 1: Get ``QueryProfiler`` object by passing SQL to ``QueryProfiler`` class
+        **steps to get actual result**
+        - Step 2: Get query execution chart using ``get_qexecution`` method with different combinations of parameters.
+        - Step 3: For ``show=True``
+                ``get_qexecution`` method returns plotly graph object. Get x (labels for pie)
                 and y(values for pie) axes values from graph object.
-                For show=False : get_qexecution method returns vDataFrame.
-        step 4: Group result based required columns. convert it to pandas dataframe
+
+                For ``show=False``
+                ``get_qexecution`` method returns vDataFrame.
+        - Step 4: Group result based required columns. convert it to pandas dataframe
                 followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 5: Get query execution report (vDataframe) using get_qexecution_report method, and repeat step 4
-        # Steps to compare actual and expected results
-        step 6: compare actual and expected pandas dataframe using pandas compare function.
-        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+
+        **steps to get expected result**
+        - Step 5: Get query execution report (vDataframe) using ``get_qexecution_report`` method, and repeat step 4
+
+        **steps to compare actual and expected results**
+        - Step 6: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 7: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
         # need to check. getting error
@@ -1510,16 +1544,18 @@ class TestQueryProfiler:
         """
         test function for get_rp_status
 
-        # Steps to get actual result
-        Step 1: Get transaction_id, and statement_id from qprof_data fixture
-        Step 2: Pass transaction_id and statement_id to QueryProfiler object, and get
-                RP status using get_rp_status method (get_rp_status method returns vDataFrame)
-        step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 4: Get RP status from v_monitor.resource_pool_status table, and repeat step 3
-        # Steps to compare actual and expected results
-        step 5: compare actual and expected pandas dataframe using pandas compare function.
-        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+        **steps to get actual result**
+        - Step 1: Get transaction_id, and statement_id from ``qprof_data`` fixture
+        - Step 2: Pass ``transaction_id`` and ``statement_id`` to ``QueryProfiler`` object, and get
+                RP status using ``get_rp_status`` method (``get_rp_status`` method returns vDataFrame)
+        - Step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
+
+        **steps to get expected result**
+        - Step 4: Get RP status from ``v_monitor.resource_pool_status`` table, and repeat step 3
+
+        **steps to compare actual and expected results**
+        - Step 5: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 6: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
         logger.info("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
@@ -1549,19 +1585,21 @@ class TestQueryProfiler:
         """
         test function for get_cluster_config
 
-        # Steps to get actual result
-        Step 1: Get transaction_id and statement_id from qprof_data fixture
-        Step 2: Get QueryProfiler object by passing transaction_id and statement_id
-                to QueryProfiler class
-        Step 3: Get cluster configuration details using get_cluster_config method with different
-                combinations of parameters (if applicable). get_cluster_config
+        **steps to get actual result**
+        - Step 1: Get ``transaction_id`` and ``statement_id`` from ``qprof_data`` fixture
+        - Step 2: Get ``QueryProfiler`` object by passing ``transaction_id`` and ``statement_id``
+                to ``QueryProfiler`` class
+        - Step 3: Get cluster configuration details using ``get_cluster_config`` method with different
+                combinations of parameters (if applicable). ``get_cluster_config``
                 method returns vDataFrame.
-        step 4: convert return result to pandas dataframe followed by sorting based on key column(s).
-        # Steps to get expected result
-        step 5: Get cluster configuration from v_monitor.host_resources table, and repeat step 4
-        # Steps to compare actual and expected results
-        step 6: compare actual and expected pandas dataframe using pandas compare function.
-        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+        - Step 4: convert return result to pandas dataframe followed by sorting based on key column(s).
+
+        **steps to get expected result**
+        - Step 5: Get cluster configuration from ``v_monitor.host_resources`` table, and repeat step 4
+
+        **steps to compare actual and expected results**
+        - Step 6: compare actual and expected pandas dataframe using pandas compare function.
+        - Step 7: compare function returns integers. if return value is ZERO, then actual and expected
                 results are same, else it's not same and test will fail.
         """
         transaction_id, statement_id = qprof_data.transactions[2]

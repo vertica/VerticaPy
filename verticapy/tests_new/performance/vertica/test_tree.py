@@ -13,9 +13,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import graphviz
-from verticapy.tests_new.performance.vertica import QPROF_SQL2
-from verticapy.performance.vertica.tree import PerformanceTree
+
 from verticapy.performance.vertica import QueryProfiler
+from verticapy.performance.vertica.tree import PerformanceTree
+
+from verticapy.tests_new.performance.vertica import QPROF_SQL2
 
 
 class TestTree:
