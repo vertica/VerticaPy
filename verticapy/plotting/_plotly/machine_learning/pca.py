@@ -155,6 +155,13 @@ class PCAVarPlot(PlotlyBase):
     def _kind(self) -> Literal["pca_var"]:
         return "pca_var"
 
+    def _init_style(self) -> None:
+        self.init_layout_style = {
+            "yaxis_title": f"Dim{self.data['dim'][1]} ({round(self.data['explained_variance'][0]*100,2)}%)",
+            "xaxis_title": f"Dim{self.data['dim'][0]} ({round(self.data['explained_variance'][1]*100,2)}%)",
+        }
+        return None
+
     def draw(
         self,
         fig: Optional[Figure] = None,
@@ -181,5 +188,7 @@ class PCAVarPlot(PlotlyBase):
         for i in range(len(fig.data)):
             fig_base.add_trace(fig.data[i])
         fig_base.update_layout(fig.layout)
+        params = self._update_dict(self.init_layout_style, style_kwargs)
+        fig_base.update_layout(**params)
         fig_base.update_layout(width=700, height=500)
         return fig_base
