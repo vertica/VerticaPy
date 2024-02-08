@@ -20,6 +20,7 @@ from typing import Literal, Optional
 from plotly.graph_objs._figure import Figure
 from plotly.figure_factory import create_quiver
 import plotly.express as px
+import pandas as pd
 
 from verticapy.plotting._plotly.base import PlotlyBase
 
@@ -144,4 +145,41 @@ class PCAScreePlot(PlotlyBase):
         return fig_base
 
 
-class PCAVarPlot(PlotlyBase): ...
+class PCAVarPlot(PlotlyBase):
+
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["pca_var"]:
+        return "pca_var"
+
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
+        """
+        Draws a PCA Var plot using the Plotly API.
+        """
+        fig_base = self._get_fig(fig)
+        # Get rid of quotes
+        cols = [item.replace('"', "") for item in self.layout["columns"]]
+        # Create DataFrame
+        df = pd.DataFrame({"x": self.data["x"], "y": self.data["y"], "cols": cols})
+        # Create the plot
+        fig = px.scatter(df, y="y", x="x", color="cols", symbol="cols")
+        # Add bold line for x=0
+        fig.add_shape(
+            type="line", x0=0, y0=-1, x1=0, y1=1, line=dict(color="black", width=2)
+        )
+        # Add bold line for y=0
+        fig.add_shape(
+            type="line", x0=-1, y0=0, x1=1, y1=0, line=dict(color="black", width=2)
+        )
+        for i in range(len(fig.data)):
+            fig_base.add_trace(fig.data[i])
+        fig_base.update_layout(fig.layout)
+        fig_base.update_layout(width=700, height=500)
+        return fig_base

@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from verticapy.plotting._plotly.base import PlotlyBase
 
 from verticapy.plotting._plotly.machine_learning.champion_challenger import (
@@ -32,7 +33,11 @@ from verticapy.plotting._plotly.machine_learning.model_evaluation import (
     PRCCurve,
     ROCCurve,
 )
-from verticapy.plotting._plotly.machine_learning.pca import PCACirclePlot, PCAScreePlot
+from verticapy.plotting._plotly.machine_learning.pca import (
+    PCACirclePlot,
+    PCAScreePlot,
+    PCAVarPlot,
+)
 from verticapy.plotting._plotly.machine_learning.regression import RegressionPlot
 from verticapy.plotting._plotly.machine_learning.regression_tree import (
     RegressionTreePlot,
