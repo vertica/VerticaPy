@@ -2106,9 +2106,9 @@ class PCACirclePlot(BasicPlotTests):
         assert test_title in get_yaxis_label(self.result), "Y axis label incorrect"
 
 
-class PCAScreePlot(BasicPlotTests):
+class PCAVarPlot(BasicPlotTests):
     """
-    Testing different attributes of PCA Scree plot
+    Testing different attributes of PCA Var plot
     """
 
     # Testing variables
@@ -2124,7 +2124,7 @@ class PCAScreePlot(BasicPlotTests):
         """
         Load test model
         """
-        model = MCA(f"{schema_loader}.pca_circle_test")
+        model = MCA(f"{schema_loader}.mca_var_test")
         model.drop()
         data = dummy_dist_vd
         data = data[[self.COL_NAME_1, self.COL_NAME_2]].cdt()
@@ -2165,6 +2165,69 @@ class PCAScreePlot(BasicPlotTests):
         """
         test_title = self.cols[1]
         assert test_title in get_yaxis_label(self.result), "Y axis label incorrect"
+
+
+class PCAScreePlot(BasicPlotTests):
+    """
+    Testing different attributes of PCA Scree plot
+    """
+
+    # Testing variables
+    COL_NAME_1 = "binary"
+    COL_NAME_2 = "cats"
+
+    @pytest.fixture(autouse=True)
+    def model(
+        self,
+        schema_loader,
+        titanic_vd,
+    ):
+        """
+        Load test model
+        """
+        model = PCA(f"{schema_loader}.pca_scree_test")
+        model.drop()
+        model.fit(titanic_vd)
+        self.model = model
+        yield
+        model.drop()
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [
+            "dimensions",
+            "percentage",
+        ]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.model.plot_scree,
+            {},
+        )
+
+    def test_properties_xaxis_label(self):
+        """
+        Testing x-axis label
+        """
+        test_title = self.cols[0]
+        assert (
+            test_title.lower() in get_xaxis_label(self.result).lower()
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        """
+        Testing y-axis title
+        """
+        test_title = self.cols[1]
+        assert (
+            test_title.lower() in get_yaxis_label(self.result).lower()
+        ), "Y axis label incorrect"
 
 
 class LearningRegressionTreePlot(BasicPlotTests):

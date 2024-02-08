@@ -16,7 +16,11 @@ permissions and limitations under the License.
 """
 
 # Verticapy
-from verticapy.tests_new.plotting.base_test_files import PCACirclePlot, PCAScreePlot
+from verticapy.tests_new.plotting.base_test_files import (
+    PCACirclePlot,
+    PCAScreePlot,
+    PCAVarPlot,
+)
 
 
 class TestPlotlyMachineLearningPCACirclePlot(PCACirclePlot):
@@ -33,6 +37,12 @@ class TestPlotlyMachineLearningPCACirclePlot(PCACirclePlot):
         # Act
         # Assert
         assert len(self.result.data) == total_items, "Some columns missing"
+
+
+class TestPlotlyMachineLearningPCAVarPlot(PCAVarPlot):
+    """
+    Testing different attributes of PCA Var plot
+    """
 
 
 class TestPlotlyMachineLearningPCAScreePlot(PCAScreePlot):
