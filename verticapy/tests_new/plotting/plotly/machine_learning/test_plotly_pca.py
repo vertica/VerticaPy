@@ -14,8 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 # Verticapy
-from verticapy.tests_new.plotting.base_test_files import PCACirclePlot
+from verticapy.tests_new.plotting.base_test_files import PCACirclePlot, PCAScreePlot
 
 
 class TestPlotlyMachineLearningPCACirclePlot(PCACirclePlot):
@@ -32,3 +33,9 @@ class TestPlotlyMachineLearningPCACirclePlot(PCACirclePlot):
         # Act
         # Assert
         assert len(self.result.data) == total_items, "Some columns missing"
+
+
+class TestPlotlyMachineLearningPCAScreePlot(PCAScreePlot):
+    """
+    Testing different attributes of PCA Scree plot
+    """

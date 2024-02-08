@@ -25,7 +25,7 @@ from verticapy.machine_learning.vertica.ensemble import RandomForestClassifier
 from verticapy.machine_learning.vertica.neighbors import LocalOutlierFactor
 from verticapy.machine_learning.vertica.linear_model import LogisticRegression
 from verticapy.machine_learning.metrics import lift_chart, prc_curve
-from verticapy.machine_learning.vertica.decomposition import PCA
+from verticapy.machine_learning.vertica.decomposition import PCA, MCA
 from verticapy.machine_learning.vertica.tree import DecisionTreeRegressor
 from verticapy.machine_learning.vertica.linear_model import LinearRegression
 from verticapy.machine_learning.model_selection import stepwise
@@ -2103,6 +2103,67 @@ class PCACirclePlot(BasicPlotTests):
         test_title = "Dim2"
         # Act
         # Assert
+        assert test_title in get_yaxis_label(self.result), "Y axis label incorrect"
+
+
+class PCAScreePlot(BasicPlotTests):
+    """
+    Testing different attributes of PCA Scree plot
+    """
+
+    # Testing variables
+    COL_NAME_1 = "binary"
+    COL_NAME_2 = "cats"
+
+    @pytest.fixture(autouse=True)
+    def model(
+        self,
+        schema_loader,
+        dummy_dist_vd,
+    ):
+        """
+        Load test model
+        """
+        model = MCA(f"{schema_loader}.pca_circle_test")
+        model.drop()
+        data = dummy_dist_vd
+        data = data[[self.COL_NAME_1, self.COL_NAME_2]].cdt()
+        model.fit(data)
+        self.model = model
+        yield
+        model.drop()
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [
+            "Dim1",
+            "Dim2",
+        ]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.model.plot_var,
+            {},
+        )
+
+    def test_properties_xaxis_label(self):
+        """
+        Testing x-axis label
+        """
+        test_title = self.cols[0]
+        assert test_title in get_xaxis_label(self.result), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        """
+        Testing y-axis title
+        """
+        test_title = self.cols[1]
         assert test_title in get_yaxis_label(self.result), "Y axis label incorrect"
 
 
