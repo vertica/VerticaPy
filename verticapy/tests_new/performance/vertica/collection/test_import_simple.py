@@ -63,6 +63,25 @@ class TestProfileImport:
         ):
             pi.check_schema()
 
+
+    def test_missing_file(self):
+        """
+        Confirm failure when user specifies a file that does not exist
+        """
+        fname = "no_such_file.tar"
+        pi = ProfileImport(
+            target_schema="schema_not_used",
+            key="no_such_key",
+            filename=fname,
+            skip_create_table=True,
+        )
+        with pytest.raises(
+            FileNotFoundError, match=f"File {fname} does not exist"
+        ):
+            pi.check_file()
+
+
+
     def test_create_tables(self, schema_loader):
         """
         Confirm that all of the expected tables are created in an
