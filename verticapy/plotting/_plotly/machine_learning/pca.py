@@ -189,6 +189,6 @@ class PCAVarPlot(PlotlyBase):
             fig_base.add_trace(fig.data[i])
         fig_base.update_layout(fig.layout)
         params = self._update_dict(self.init_layout_style, style_kwargs)
-        fig_base.update_layout(**params)
         fig_base.update_layout(width=700, height=500)
+        fig_base.update_layout(**params)
         return fig_base
