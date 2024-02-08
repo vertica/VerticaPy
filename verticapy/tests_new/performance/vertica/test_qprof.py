@@ -16,6 +16,7 @@ import io
 import re
 import logging
 import json
+from typing import Tuple, Literal
 from contextlib import redirect_stdout
 from graphviz import Digraph
 import pandas as pd
@@ -33,6 +34,125 @@ pd.set_option("display.max_rows", None)
 logger = logging.getLogger(__name__)
 
 
+class QueryInfo:
+    """
+    test class for Query info
+    """
+
+    def __init__(self, query, label):
+        self.query = query
+        self.label = label
+
+
+class QprofAttr:
+    """
+    test class for Query attributes
+    """
+
+    def __init__(self, **kwargs):
+        self.transactions = kwargs["transactions"]
+        self.requests = kwargs["requests"]
+        self.request_labels = kwargs["request_labels"]
+        self.qdurations = kwargs["qdurations"]
+        self.key_id = None
+        self.target_schema = {"v_internal": "qprof_test", "v_monitor": "qprof_test"}
+        self.target_tables = {}
+        self.v_tables_dtypes = []
+        self.tables_dtypes = []
+        self.overwrite = False
+
+
+@pytest.fixture(name="qprof_data", scope="class")
+def qprof_data(titanic_vd: pytest.fixture, schema_loader: pytest.fixture) -> QprofAttr:
+    """
+    fixture for qprof data setup
+    """
+    # titanic = titanic_vd.to_pandas()
+
+    transactions, qdurations, request_labels = [], [], []
+
+    qprof_sql3 = f"""SELECT /*+LABEL('QueryProfiler_sql3_requests_UT')*/ ticket, substr(ticket, 1, 5) AS ticket, AVG(age) AS avg_age FROM {schema_loader}.titanic GROUP BY 1"""
+
+    queries = [QPROF_SQL1, QPROF_SQL2, qprof_sql3]
+
+    q_infos = [
+        QueryInfo(QPROF_SQL1, "QueryProfiler_sql1_requests_UT"),
+        QueryInfo(QPROF_SQL2, "QueryProfiler_sql2_requests_UT"),
+        QueryInfo(qprof_sql3, "QueryProfiler_sql3_requests_UT"),
+    ]
+
+    for q_info in q_infos:
+        request_labels.append(q_info.label)
+        current_cursor().execute(q_info.query)
+        sql = f"select transaction_id, statement_id from v_monitor.query_requests where request_label = '{q_info.label}' and request not like 'PROFILE%' ORDER BY start_timestamp DESC LIMIT 1"
+        res = current_cursor().execute(sql).fetchall()
+        logger.info(res)
+        transaction_id, statement_id = res[0] if isinstance(res[0], list) == 1 else res
+        transactions.append((transaction_id, statement_id))
+
+        qduration_sql = f"""SELECT query_duration_us FROM v_monitor.query_profiles WHERE transaction_id={transaction_id} AND statement_id={statement_id}"""
+        qduration_res = current_cursor().execute(qduration_sql).fetchall()[0][0]
+        # logger.info(qduration_res)
+        qdurations.append(qduration_res)
+        # logger.info(qdurations)
+
+    return QprofAttr(
+        **{
+            "transactions": transactions,
+            "requests": queries,
+            "request_labels": request_labels,
+            "qdurations": qdurations,
+        }
+    )
+
+
+def _get_chart_data(
+    qprof_attr_obj, kind: Literal["bar", "barh", "pie"]
+) -> Tuple[pd.Series, pd.Series]:
+    """
+    function to get chart data
+    """
+    if kind == "bar":
+        x = qprof_attr_obj.data[0].x
+        y = qprof_attr_obj.data[0].y
+    elif kind == "barh":
+        x = qprof_attr_obj.data[0].y
+        y = qprof_attr_obj.data[0].x
+    elif kind == "pie":
+        x = qprof_attr_obj.data[0].labels
+        y = qprof_attr_obj.data[0].values
+
+    return x, y
+
+
+def _get_time_div(unit: Literal["s", "m", "h"]) -> int:
+    """
+    function to get time div
+    """
+    if unit == "m":
+        div = 1000000 * 60
+    elif unit == "h":
+        div = 1000000 * 3600
+    else:
+        div = 1000000
+
+    return div
+
+
+def _compare_pandas(l_df: pd.DataFrame, r_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    function to compare two pandas dataframes
+    """
+    res = l_df.compare(
+        r_df,
+        result_names=(
+            "left",
+            "right",
+        ),
+    )
+    return res
+
+
 class TestQueryProfiler:
     """
     test class for QueryProfiler
@@ -48,62 +168,6 @@ class TestQueryProfiler:
         "resource_pool_status",
         "host_resources",
     ]
-
-    @pytest.fixture(name="qprof_data", scope="class")
-    def data_setup(self, titanic_vd, schema_loader):
-        """
-        test function for data setup
-        """
-        # titanic = titanic_vd.to_pandas()
-
-        transactions = []
-        qdurations = []
-        query_label_map = {
-            "qprof_sql1": "QueryProfiler_sql1_requests_UT",
-            "qprof_sql2": "QueryProfiler_sql2_requests_UT",
-            "qprof_sql3": "QueryProfiler_sql3_requests_UT",
-        }
-
-        qprof_sql3 = f"""SELECT /*+LABEL('QueryProfiler_sql3_requests_UT')*/ ticket, substr(ticket, 1, 5) AS ticket, AVG(age) AS avg_age FROM {schema_loader}.titanic GROUP BY 1"""
-
-        queries = [QPROF_SQL1, QPROF_SQL2, qprof_sql3]
-
-        for key, query in zip(query_label_map.keys(), queries):
-            current_cursor().execute(query)
-            sql = f"select transaction_id, statement_id from v_monitor.query_requests where request_label = '{query_label_map[key]}' and request not like 'PROFILE%' ORDER BY start_timestamp DESC LIMIT 1"
-            res = current_cursor().execute(sql).fetchall()
-            print(res)
-            transaction_id, statement_id = (
-                res[0] if isinstance(res[0], list) == 1 else res
-            )
-            transactions.append((transaction_id, statement_id))
-
-            qduration_sql = f"""SELECT query_duration_us FROM v_monitor.query_profiles WHERE transaction_id={transaction_id} AND statement_id={statement_id}"""
-            qduration_res = current_cursor().execute(qduration_sql).fetchall()[0][0]
-            # print(qduration_res)
-            qdurations.append(qduration_res)
-            # print(qdurations)
-
-        qprof_attr_map = {
-            "transactions": transactions,
-            "requests": queries,
-            "request_labels": list(query_label_map.values()),
-            "qdurations": qdurations,
-            "key_id": None,
-            # "request": queries[0],
-            # "qduration": qdurations[0],
-            # "transaction_id": transactions[0][0],
-            # "statement_id": transactions[0][1],
-            "target_schema": {"v_internal": "qprof_test", "v_monitor": "qprof_test"},
-            "target_tables": {},
-            "v_tables_dtypes": [],
-            "tables_dtypes": [],
-            "overwrite": False,
-            # "query1": queries[0],
-            # "query2": queries[1],
-        }
-
-        return qprof_attr_map
 
     @pytest.mark.parametrize(
         "test_name, transactions, key_id, resource_pool, target_schema, overwrite, add_profile, check_tables",
@@ -154,7 +218,7 @@ class TestQueryProfiler:
     def test_query_profiler(
         self,
         qprof_data,
-        test_name,
+        test_name: str,
         transactions,
         key_id,
         resource_pool,
@@ -165,6 +229,14 @@ class TestQueryProfiler:
     ):
         """
         test function for query_profiler
+
+        This function test QueryProfiler class and its parameters
+
+        Step 1: Get QueryProfiler object by passing different combinations of parameters value
+                to QueryProfiler class
+        Step 2: Get parameter value from QueryProfiler object
+        Step 3: Get corresponding parameter value from qprof_data fixture
+        Step 4: compare step 2 and step 3 results
         """
 
         # need to check as target_schema is not getting created by vpy
@@ -173,28 +245,28 @@ class TestQueryProfiler:
         current_cursor().execute("CREATE SCHEMA IF NOT EXISTS qprof_test2")
 
         if test_name == "transactions" and transactions == "integer":
-            qprof = QueryProfiler(transactions=qprof_data["transactions"][1][0])
-            expected_res = (qprof_data["transactions"][1][0], 1)
+            qprof = QueryProfiler(transactions=qprof_data.transactions[1][0])
+            expected_res = (qprof_data.transactions[1][0], 1)
             actual_res = qprof.transactions[0]
         elif test_name == "transactions" and transactions == "list_of_integers":
             qprof = QueryProfiler(
                 transactions=[
-                    qprof_data["transactions"][0][0],
-                    qprof_data["transactions"][1][0],
+                    qprof_data.transactions[0][0],
+                    qprof_data.transactions[1][0],
                 ]
             )
             expected_res = [
-                (qprof_data["transactions"][0][0], 1),
-                (qprof_data["transactions"][1][0], 1),
+                (qprof_data.transactions[0][0], 1),
+                (qprof_data.transactions[1][0], 1),
             ]
             actual_res = qprof.transactions
         elif test_name == "transactions" and transactions == "tuple" and not overwrite:
-            qprof = QueryProfiler(transactions=qprof_data["transactions"][1])
-            expected_res = qprof_data["transactions"][1]
+            qprof = QueryProfiler(transactions=qprof_data.transactions[1])
+            expected_res = qprof_data.transactions[1]
             actual_res = qprof.transactions[0]
         elif test_name == "transactions" and transactions == "list_of_tuples":
-            qprof = QueryProfiler(transactions=qprof_data["transactions"])
-            expected_res = qprof_data["transactions"]
+            qprof = QueryProfiler(transactions=qprof_data.transactions)
+            expected_res = qprof_data.transactions
             actual_res = qprof.transactions
         elif (
             test_name == "transactions"
@@ -202,19 +274,19 @@ class TestQueryProfiler:
             and not add_profile
         ):
             qprof = QueryProfiler(
-                transactions=qprof_data["requests"][0], add_profile=add_profile
+                transactions=qprof_data.requests[0], add_profile=add_profile
             )
-            expected_res = qprof_data["requests"][0]
+            expected_res = qprof_data.requests[0]
             actual_res = qprof.request
         elif test_name == "transactions" and transactions == "multiple_sql":
             qprof = QueryProfiler(
-                transactions=qprof_data["requests"], add_profile=add_profile
+                transactions=qprof_data.requests, add_profile=add_profile
             )
-            expected_res = qprof_data["requests"]
+            expected_res = qprof_data.requests
             actual_res = qprof.requests
         elif test_name == "key_id":
             qprof = QueryProfiler(
-                transactions=qprof_data["transactions"][1],
+                transactions=qprof_data.transactions[1],
                 key_id=key_id,
                 target_schema=target_schema,
             )
@@ -222,13 +294,13 @@ class TestQueryProfiler:
             actual_res = qprof.key_id
         elif test_name == "resource_pool":
             qprof = QueryProfiler(
-                transactions=qprof_data["transactions"][1],
+                transactions=qprof_data.transactions[1],
                 resource_pool=resource_pool,
             )
-            print(qprof.get_rp_status())
+            logger.info(qprof.get_rp_status())
         elif test_name == "target_schema":
             qprof = QueryProfiler(
-                transactions=qprof_data["transactions"][1],
+                transactions=qprof_data.transactions[1],
                 key_id=key_id,
                 target_schema=target_schema,
                 overwrite=overwrite,
@@ -240,7 +312,7 @@ class TestQueryProfiler:
                 actual_res = qprof.target_schema
         elif test_name == "overwrite":
             qprof = QueryProfiler(
-                transactions=qprof_data["transactions"][1],
+                transactions=qprof_data.transactions[1],
                 key_id=key_id,
                 target_schema=target_schema,
                 overwrite=overwrite,
@@ -249,18 +321,18 @@ class TestQueryProfiler:
             actual_res = list(qprof.target_tables.values())
         elif test_name == "add_profile":
             qprof = QueryProfiler(
-                transactions=qprof_data["requests"][0], add_profile=add_profile
+                transactions=qprof_data.requests[0], add_profile=add_profile
             )
             expected_res = True
             actual_res = "PROFILE" in qprof.request
         elif test_name == "check_tables":
             qprof = QueryProfiler(
-                transactions=qprof_data["requests"][0], check_tables=add_profile
+                transactions=qprof_data.requests[0], check_tables=add_profile
             )
             expected_res = True
             actual_res = "PROFILE" in qprof.request
 
-        print(
+        logger.info(
             f"Test Name: {test_name}, Expected result: {expected_res},  Actual result: {actual_res}"
         )
         assert expected_res == actual_res
@@ -293,6 +365,13 @@ class TestQueryProfiler:
     def test_qprof_attributes(self, qprof_data, attribute, schema):
         """
         test function for query_profiler attributes
+
+        This function tests QueryProfiler attributes
+
+        key_id and target_tables:
+        To test key_id/target_tables, we need to know the key_id/target_tables generated.
+        Generated key_id/target_tables is read from stdout and compared against key_id/
+        from qprof.key_id/target_tables attribute.
         """
         # need to check as target_schema is not getting created by vpy
         current_cursor().execute("create schema if not exists qprof_test")
@@ -307,27 +386,29 @@ class TestQueryProfiler:
             ]
             and schema
         ):
-            # reading stdout for key_id
+            # reading stdout for key_id and target_tables validation
             f = io.StringIO()
             with redirect_stdout(f):
                 qprof = QueryProfiler(
-                    transactions=qprof_data["transactions"][0],
+                    transactions=qprof_data.transactions[0],
                     target_schema="qprof_test",
                     overwrite=attribute == "overwrite",
                 )
             s = f.getvalue()
-            print(s)
+            logger.info(s)
         else:
-            qprof = QueryProfiler(transactions=qprof_data["transactions"])
+            qprof = QueryProfiler(transactions=qprof_data.transactions)
 
         actual_res = getattr(qprof, attribute)
-        print("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
-        print(actual_res)
+        logger.info("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(actual_res)
+
         if attribute in ["key_id", "target_tables"]:
             expected_res = "" if attribute == "key_id" else {}
             if schema:
+                # reading stdout data for key_id and target_tables
                 for line in s.splitlines():
-                    print(line)
+                    logger.info(line)
                     if attribute == "key_id" and line.startswith(
                         "The key used to build up the tables is"
                     ):
@@ -356,22 +437,23 @@ class TestQueryProfiler:
             actual_res = _actual_res
 
         elif attribute in ["request", "qduration"]:
-            expected_res = qprof_data[f"{attribute}s"][0]
+            expected_res = getattr(qprof_data, f"{attribute}s")[0]
+            # expected_res = f"qprof_data.{attribute}s"[0]
         elif attribute in ["transaction_id", "statement_id"]:
             expected_res = (
-                qprof_data["transactions"][0][0]
+                qprof_data.transactions[0][0]
                 if attribute == "transaction_id"
-                else qprof_data["transactions"][0][1]
+                else qprof_data.transactions[0][1]
             )
         elif attribute in ["target_schema"] and schema is None:
             expected_res = None
         elif attribute in ["overwrite"]:
             expected_res = schema is not None
         else:
-            expected_res = qprof_data[attribute]
+            expected_res = getattr(qprof_data, attribute)
 
-        print("<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
-        print(expected_res)
+        logger.info("<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(expected_res)
 
         assert expected_res == actual_res
 
@@ -380,18 +462,17 @@ class TestQueryProfiler:
         """
         test function for get_qduration
         """
-        transaction_id, statement_id = qprof_data["transactions"][0]
+        transaction_id, statement_id = qprof_data.transactions[0]
+
+        logger.info("<<<<<<<<<<<<<<<<<<<< actual result >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         actual_qprof_qdur = QueryProfiler(
             transactions=(transaction_id, statement_id)
         ).get_qduration(unit=unit)
 
-        expected_qprof_qdur = float(qprof_data["qdurations"][0] / 1000000)
-        if unit == "m":
-            expected_qprof_qdur = expected_qprof_qdur / 60
-        elif unit == "h":
-            expected_qprof_qdur = expected_qprof_qdur / 3600
-
-        print(
+        logger.info("<<<<<<<<<<<<<<<<<<<< expected result >>>>>>>>>>>>>>>>>>>>>>>>>>")
+        div = _get_time_div(unit)
+        expected_qprof_qdur = float(qprof_data.qdurations[0] / div)
+        logger.info(
             f"actual_qprof_qdur: {actual_qprof_qdur}, expected_qprof_qdur: {expected_qprof_qdur}"
         )
         assert actual_qprof_qdur == pytest.approx(expected_qprof_qdur)
@@ -409,19 +490,20 @@ class TestQueryProfiler:
         """
         test function for get_request
         """
-        transaction_id, statement_id = qprof_data["transactions"][0]
+        transaction_id, statement_id = qprof_data.transactions[0]
+
         actual_qprof_request = QueryProfiler(
             transactions=(transaction_id, statement_id)
         ).get_request(
             indent_sql=indent_sql, print_sql=print_sql, return_html=return_html
         )
-        print(actual_qprof_request)
+        logger.info(actual_qprof_request)
         if indent_sql and not print_sql and return_html:
             assert actual_qprof_request is not None
         if not indent_sql and print_sql and not return_html:
-            assert actual_qprof_request == qprof_data["requests"][0]
+            assert actual_qprof_request == qprof_data.requests[0]
         elif indent_sql and print_sql and return_html:
-            assert qprof_data["request_labels"][0] in actual_qprof_request
+            assert qprof_data.request_labels[0] in actual_qprof_request
         else:
             assert actual_qprof_request is None
 
@@ -429,7 +511,7 @@ class TestQueryProfiler:
         """
         test function for get_version
         """
-        transaction_id, statement_id = qprof_data["transactions"][0]
+        transaction_id, statement_id = qprof_data.transactions[0]
         _actual_qprof_version = QueryProfiler(
             transactions=(transaction_id, statement_id)
         ).get_version()
@@ -438,7 +520,7 @@ class TestQueryProfiler:
         expected_qprof_version = (
             current_cursor().execute("select version()").fetchall()[0][0]
         )
-        print(
+        logger.info(
             f"actual vertica version: {actual_qprof_version}, expected vertica version: {expected_qprof_version}"
         )
 
@@ -451,12 +533,12 @@ class TestQueryProfiler:
         test function for get_table
         """
 
-        transaction_id, statement_id = qprof_data["transactions"][0]
+        transaction_id, statement_id = qprof_data.transactions[0]
         actual_qprof_tables = QueryProfiler(
             transactions=(transaction_id, statement_id)
         ).get_table(table_name=table_name)
 
-        print(
+        logger.info(
             f"actual get_table: {actual_qprof_tables}, expected get_table: {self._target_tables}"
         )
         if table_name:
@@ -469,42 +551,53 @@ class TestQueryProfiler:
     def test_get_queries(self, qprof_data):
         """
         test function for get_queries
+
+        # Steps to get actual result
+        Step 1: Get transactions from qprof_data fixture
+        Step 2: Get QueryProfiler object by passing transaction_id and statement_id
+                to QueryProfiler class
+        Step 3: Get all queries and its details using get_queries method with different
+                combinations of parameters (if applicable). get_queries
+                method returns vDataFrame.
+        # Steps to get expected result
+        step 4: Get all queries and its details from qprof_data fixture
+        # Steps to compare actual and expected results
+        step 5: compare actual and expected pandas dataframe using pandas compare function.
+        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
-        # transaction_id, statement_id = qprof_data["transactions"][0]
+        # transaction_id, statement_id = qprof_data.transactions[0]
+        logger.info("<<<<<<<<<<<<<<<<<<<< actual result >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         actual_qprof_queries = (
-            QueryProfiler(transactions=qprof_data["transactions"])
+            QueryProfiler(transactions=qprof_data.transactions)
             .get_queries()
             .to_pandas()
             .astype({"qduration": float})
         )
-        print(actual_qprof_queries)
+        logger.info(f"Actual Result: {actual_qprof_queries}")
 
+        logger.info("<<<<<<<<<<<<<<<<<< expected result >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         expected_qprof_queries = pd.DataFrame(
             {
-                "index": list(range(len(qprof_data["transactions"]))),
+                "index": list(range(len(qprof_data.transactions))),
                 "is_current": [True]
-                + [False for _ in range(len(qprof_data["transactions"]) - 1)],
-                "transaction_id": [t for t, _ in qprof_data["transactions"]],
-                "statement_id": [s for _, s in qprof_data["transactions"]],
-                "request_label": qprof_data["request_labels"],
+                + [False for _ in range(len(qprof_data.transactions) - 1)],
+                "transaction_id": [t for t, _ in qprof_data.transactions],
+                "statement_id": [s for _, s in qprof_data.transactions],
+                "request_label": qprof_data.request_labels,
                 "request": [
-                    query.strip().replace("\n", "") for query in qprof_data["requests"]
+                    query.strip().replace("\n", "") for query in qprof_data.requests
                 ],
                 "qduration": [
-                    float(duration / 1000000) for duration in qprof_data["qdurations"]
+                    float(duration / 1000000) for duration in qprof_data.qdurations
                 ],
             }
         )
-        print(expected_qprof_queries)
+        logger.info(f"Expected Result: {expected_qprof_queries}")
 
-        res = expected_qprof_queries.compare(
-            actual_qprof_queries,
-            result_names=(
-                "left",
-                "right",
-            ),
-        )
-        print(res)
+        logger.info("<<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(expected_qprof_queries, actual_qprof_queries)
+        logger.info(f"Compare Result: {res}")
 
         assert len(res) == 0
 
@@ -554,6 +647,38 @@ class TestQueryProfiler:
     def test_get_qsteps(self, unit, kind, category_order, show):
         """
         test function for get_qsteps
+
+        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
+        # Steps to get actual result
+        Step 2: Get query execution steps chart using get_qsteps method with different combinations of parameters.
+                Note: it is drilldown chart (highcharts)
+        Step 3: For show=True
+                get_qsteps method returns highcharts object (drilldown), so it need to unroll.
+                get series and drilldown data from highcharts objects, and then join these two datasets
+                based on step name.
+                get step name from series data, and sub_step name and elapsed_time details from drilldown data
+
+                For show=False
+                get_qsteps method returns vDataFrame.
+        step 4: convert it to pandas dataframe followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 5: Get completion_time, time, execution_step from v_internal.dc_query_executions table
+                using transaction_id and statement_id
+        Step 6: split execution_step into step and step_step based on ":" delimiter
+        Step 7: Get elapsed_time by subtracting time from completion_time, and Convert elapsed_time
+                into appropriate time interval (Seconds/Minutes/Hours)
+        Step 8: if category_order is category then sort data based on category else sort dataset
+                based on below logic:
+                # 1. Get all records where step and sub_step names are not same. This gives
+                    level 2 data in drilldown chart
+                # 2. Get all records where step and sub_step names are same. This gives
+                    level 1 data in drilldown chart
+                # 3. Merge uneq_sub_step (level 2) and eq_sub_step (level 1) based on step name. sort
+                    it on ascending_flag
+        # Steps to compare actual and expected results
+        step 9: compare actual and expected pandas dataframe using pandas compare function.
+        step 10: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
 
         qprof = QueryProfiler(transactions=QPROF_SQL2)
@@ -582,20 +707,12 @@ class TestQueryProfiler:
         expected_qplans_pdf["elapsed_time"] = (
             expected_qplans_pdf["completion_time"] - expected_qplans_pdf["time"]
         ).dt.total_seconds()
-        if unit == "m":
-            expected_qplans_pdf["elapsed_time"] = round(
-                expected_qplans_pdf["elapsed_time"] / 60, 10
-            )
-        elif unit == "h":
-            expected_qplans_pdf["elapsed_time"] = round(
-                expected_qplans_pdf["elapsed_time"] / 3600, 10
-            )
-        else:
-            expected_qplans_pdf["elapsed_time"] = round(
-                expected_qplans_pdf["elapsed_time"], 10
-            )
+        div = _get_time_div(unit) / 1000000
+        expected_qplans_pdf["elapsed_time"] = round(
+            expected_qplans_pdf["elapsed_time"] / div, 10
+        )
         expected_qplans_pdf = expected_qplans_pdf[["step", "sub_step", "elapsed_time"]]
-        # print(expected_qplans_pdf)
+        # logger.info(expected_qplans_pdf)
 
         # ***********************************************************  #
         if show:
@@ -619,18 +736,22 @@ class TestQueryProfiler:
                 qsteps_arrays, columns=["step", "sub_step", "elapsed_time"]
             )
 
-            # sorting logic
+            # ************ sorting logic ***************************
             ascending_flag = "ascending" in category_order
 
             sort_key = "step" if "category" in category_order else "elapsed_time"
 
+            # if category_order is category, then it needs be sorted based on step and sub_step name
             if "category" in category_order:
                 expected_qplans = (
                     expected_qplans_pdf[["step", "sub_step", "elapsed_time"]]
                     .sort_values(by=["step", "sub_step"], ascending=ascending_flag)
                     .reset_index(drop=True)
                 )
+            # if category_order is not category, then it needs be sorted based on below logic
             else:
+                # 1. Get all records where step and sub_step names are not same.
+                # This gives level 2 data in drilldown chart
                 uneq_sub_step = (
                     expected_qplans_pdf.loc[
                         (expected_qplans_pdf.sub_step != expected_qplans_pdf.step)
@@ -646,9 +767,11 @@ class TestQueryProfiler:
                     )
                     .reset_index(drop=True)
                 )
-                # print("Unequal steps .................")
-                # print(uneq_sub_step)
+                # logger.info("Unequal steps .................")
+                # logger.info(uneq_sub_step)
 
+                # 2. Get all records where step and sub_step names are same.
+                # This gives level 1 data in drilldown chart
                 eq_sub_step = (
                     expected_qplans_pdf.loc[
                         (expected_qplans_pdf.sub_step == expected_qplans_pdf.step)
@@ -656,9 +779,10 @@ class TestQueryProfiler:
                     .sort_values(by=sort_key, ascending=ascending_flag)
                     .reset_index(drop=True)
                 )
-                # print("Equal steps .................")
-                # print(eq_sub_step)
+                # logger.info("Equal steps .................")
+                # logger.info(eq_sub_step)
 
+                # 3. Merge uneq_sub_step and eq_sub_step based on step name and sort it based on ascending_flag
                 expected_qplans = pd.DataFrame(data=None, columns=uneq_sub_step.columns)
                 for step in eq_sub_step["step"].values.tolist():
                     if ascending_flag:
@@ -678,8 +802,8 @@ class TestQueryProfiler:
                             ]
                         )
                 expected_qplans.reset_index(drop=True, inplace=True)
-                # print("Merged unequl and equal sub-plans ........................")
-                # print(expected_qplans)
+                # logger.info("Merged unequl and equal sub-plans ........................")
+                # logger.info(expected_qplans)
         else:
             actual_qplans = (
                 qprof_steps.to_pandas()
@@ -693,15 +817,15 @@ class TestQueryProfiler:
                 by=["sub_step"]
             ).reset_index(drop=True)
 
-        print("<<<<<<<<<<<<<<<<<<<<<< actual result >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(actual_qplans)
+        logger.info("<<<<<<<<<<<<<<<<<<<< actual result >>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(f"Actual Result: {actual_qplans}")
 
-        print("<<<<<<<<<<<<<<<<<<<< expected result >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(expected_qplans)
+        logger.info("<<<<<<<<<<<<<<<<< expected result >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(f"Expected Result: {expected_qplans}")
 
-        print("<<<<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        res = expected_qplans.compare(actual_qplans)
-        print(res)
+        logger.info("<<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(expected_qplans, actual_qplans)
+        logger.info(f"Compare Result: {res}")
 
         assert len(res) == 0
 
@@ -717,10 +841,23 @@ class TestQueryProfiler:
     def test_get_qplan(self, qprof_data, return_report, print_plan):
         """
         test function for get_qplan
+
+        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
+        # Steps to get actual result
+        Step 2: Get query plan chart using get_qplan method with different
+                combinations of parameters (if applicable).
+        step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 4: Get query plan from v_internal.dc_explain_plans
+                table using transaction_id and statement_id, and repeat step 3
+        # Steps to compare actual and expected results
+        step 5: compare actual and expected pandas dataframe using pandas compare function.
+        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
         # need to check. get_qplan is not returning anything with transaction_id and statement_id.
         # Also, its printing report 2 times
-        qprof = QueryProfiler(transactions=qprof_data["requests"][1])
+        qprof = QueryProfiler(transactions=qprof_data.requests[1])
         _actual_qprof_qplan = qprof.get_qplan(
             return_report=return_report, print_plan=print_plan
         )
@@ -739,27 +876,29 @@ class TestQueryProfiler:
                 .sort_values(by=["stmtid", "path_id", "path_line_index"])
                 .reset_index(drop=True)
             )
-            print("<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print(actual_qprof_qplan)
+            logger.info("<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>>>")
+            logger.info(f"Actual Result: {actual_qprof_qplan}")
 
-            print("<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print(expected_qprof_qplan)
-            print("<<<<<<<<<<<<<<<<<<<<<< compare output >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            res = expected_qprof_qplan.compare(actual_qprof_qplan)
-            print(res)
+            logger.info("<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>")
+            logger.info(f"Expected Result: {expected_qprof_qplan}")
+
+            logger.info("<<<<<<<<<<<<<<<<<<<< compare output >>>>>>>>>>>>>>>>>>>>>>>>")
+            res = _compare_pandas(expected_qprof_qplan, actual_qprof_qplan)
+            logger.info(f"Compare result: {res}")
 
             assert len(res) == 0
         else:
             actual_qprof_qplan = _actual_qprof_qplan
+
             _expected_qprof_qplan = current_cursor().execute(query).fetchall()
             expected_qprof_qplan = "\n".join(
                 [line[3] for line in _expected_qprof_qplan]
             )
-            print("<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print(actual_qprof_qplan)
+            logger.info("<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>>>")
+            logger.info(f"Actual Result: {actual_qprof_qplan}")
 
-            print("<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-            print(expected_qprof_qplan)
+            logger.info("<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>")
+            logger.info(f"Expected Result: {expected_qprof_qplan}")
 
             assert expected_qprof_qplan == actual_qprof_qplan
 
@@ -803,6 +942,16 @@ class TestQueryProfiler:
     ):
         """
         test function for get_qplan_tree
+
+        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
+        # Steps to get actual result
+        Step 2: Get query plan tree using get_qplan_tree method with different
+                combinations of parameters (if applicable). get_qplan_tree returns graphviz object
+        Step 3: Convert graphviz object to json object and parse it
+        # Steps to get expected result
+        step 4: Get query plan using get_qplan method and parse it
+        # Steps to compare actual and expected results
+        step 5: compare actual and expected query plan strings
         """
         # need to check. get_qplan_tree is not returning anything with transaction_id, statement_id
         qprof = QueryProfiler(transactions=QPROF_SQL2)
@@ -855,10 +1004,10 @@ class TestQueryProfiler:
                     if return_graphviz and metric in s:
                         _ss1 = re.search(rf".+{metric}", s).group(0).replace(metric, "")
                 ss1 += _ss1.strip().replace('"', "'") + " "
-        print("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
-        print(ss1)
+        logger.info("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(f"Actual Result: {ss1}")
 
-        # expected
+        # ***********expected ******************************************
         ss2 = ""
         qplan = qprof.get_qplan().split("\n")
         n = len(qplan)
@@ -876,8 +1025,8 @@ class TestQueryProfiler:
                 # replace non alphabet char with ''
                 _ss2 += re.sub(r"^\W+", "", s) + ""
             ss2 += _ss2.strip().replace('"', "'") + " "
-        print("<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
-        print(ss2)
+        logger.info("<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(f"Expected Result: {ss2}")
 
         assert ss2 == ss1
 
@@ -920,50 +1069,52 @@ class TestQueryProfiler:
     def test_get_qplan_profile(self, qprof_data, unit, kind, category_order, show):
         """
         test function for get_qplan_profile
+
+        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
+        # Steps to get actual result
+        Step 2: Get query plan chart using get_qplan_profile method with different combinations of parameters.
+        Step 3: For show=True : get_qplan_profile method returns plotly graph object. Get x (labels for pie)
+                and y(values for pie) axes values from graph object.
+                For show=False : get_qplan_profile method returns vDataFrame.
+        step 4: Group result based required columns. convert it to pandas dataframe
+                followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 5: Get query plan from v_monitor.query_plan_profiles table using transaction_id
+                and statement_id, and repeat step 4
+        # Steps to compare actual and expected results
+        step 6: compare actual and expected pandas dataframe using pandas compare function.
+        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
+
         # need to check. getting error with transaction_id, statement_id
         vp.set_option("plotting_lib", "plotly")
-        print(vp.get_option("plotting_lib"))
+        logger.info(vp.get_option("plotting_lib"))
+        div = _get_time_div(unit)
 
-        if unit == "m":
-            div = 1000000 * 60
-        elif unit == "h":
-            div = 1000000 * 3600
-        else:
-            div = 1000000
-
-        qprof = QueryProfiler(qprof_data["requests"][1])
+        qprof = QueryProfiler(qprof_data.requests[1])
         qprof_qplan_profile = qprof.get_qplan_profile(
             unit=unit, kind=kind, categoryorder=category_order, show=show
         )
-        print("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
+        logger.info("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
         if show:
-            print(qprof_qplan_profile.data[0])
-            if kind == "bar":
-                path_line = qprof_qplan_profile.data[0].x
-                total_run_time = qprof_qplan_profile.data[0].y
-            elif kind == "barh":
-                path_line = qprof_qplan_profile.data[0].y
-                total_run_time = qprof_qplan_profile.data[0].x
-            elif kind == "pie":
-                path_line = qprof_qplan_profile.data[0].labels
-                total_run_time = qprof_qplan_profile.data[0].values
-
+            logger.info(qprof_qplan_profile.data[0])
+            path_line, total_run_time = _get_chart_data(qprof_qplan_profile, kind)
             qprof_qplan_profile_pdf = pd.DataFrame(
                 {"path_line": path_line, "total_run_time": total_run_time}
             )
-            print(qprof_qplan_profile_pdf)
+            logger.info(qprof_qplan_profile_pdf)
         else:
             qprof_qplan_profile = qprof_qplan_profile.filter(
                 "running_time IS NOT NULL"
             )[["path_line", "running_time"]]
-            print(qprof_qplan_profile)
+            logger.info(qprof_qplan_profile)
             qprof_qplan_profile_pdf = qprof_qplan_profile.groupby(
                 columns=["path_line"],
                 expr=[f"sum(running_time) as total_run_time"],
             ).to_pandas()
 
-            print(qprof_qplan_profile_pdf)
+            logger.info(qprof_qplan_profile_pdf)
 
         actual_qprof_qplan_profile = (
             qprof_qplan_profile_pdf.astype({"total_run_time": np.float64})
@@ -973,13 +1124,13 @@ class TestQueryProfiler:
         actual_qprof_qplan_profile["total_run_time"] = round(
             actual_qprof_qplan_profile["total_run_time"], 10
         )
-        print(actual_qprof_qplan_profile)
+        logger.info(f"Actual Result: {actual_qprof_qplan_profile}")
 
-        print("<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
+        logger.info("<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
         transaction_id, statement_id = qprof.transactions[0]
         query = f"select left(path_line, 80) AS path_line, sum(running_time) total_run_time FROM v_monitor.query_plan_profiles WHERE transaction_id={transaction_id} and statement_id={statement_id} AND running_time IS NOT NULL group by left(path_line, 80) order by path_line"
         expected_qprof_qplan_profile = vDataFrame(query).to_pandas()
-        # print(expected_qprof_qplan_profile['total_run_time'])
+        # logger.info(expected_qprof_qplan_profile['total_run_time'])
         for i in range(len(expected_qprof_qplan_profile["total_run_time"])):
             expected_qprof_qplan_profile["total_run_time"][i] = int(
                 f"{expected_qprof_qplan_profile['total_run_time'][i].seconds}{expected_qprof_qplan_profile['total_run_time'][i].microseconds}"
@@ -995,38 +1146,50 @@ class TestQueryProfiler:
         expected_qprof_qplan_profile["total_run_time"] = round(
             expected_qprof_qplan_profile["total_run_time"], 10
         )
-        print(expected_qprof_qplan_profile)
+        logger.info(f"Expected Result: {expected_qprof_qplan_profile}")
 
-        print("<<<<<<<<<<<<<<<<< comparison result >>>>>>>>>>>>>>>>>>>>>")
-        res = expected_qprof_qplan_profile.compare(
-            actual_qprof_qplan_profile,
-            result_names=(
-                "left",
-                "right",
-            ),
-        )
-        print(res)
+        logger.info("<<<<<<<<<<<<<<<<< comparison result >>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(expected_qprof_qplan_profile, actual_qprof_qplan_profile)
+        logger.info(f"Compare Result: {res}")
 
         assert len(res) == 0
 
     def test_get_query_events(self, qprof_data):
         """
         test function for get_query_events
+
+        # Steps to get actual result
+        Step 1: Get transaction_id and statement_id from qprof_data fixture
+        Step 2: Get QueryProfiler object by passing transaction_id and statement_id
+                to QueryProfiler class
+        Step 3: Get query events details using get_query_events method with different
+                combinations of parameters (if applicable). get_query_events
+                method returns vDataFrame.
+        # Steps to get expected result
+        step 4: Get query events from v_monitor.query_events table using transaction_id and statement_id
+        # Steps to compare actual and expected results
+        step 5: compare actual and expected pandas dataframe using pandas compare function.
+        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
-        transaction_id, statement_id = qprof_data["transactions"][2]
+        transaction_id, statement_id = qprof_data.transactions[2]
+
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
         actual_qprof_events = (
             QueryProfiler(transactions=(transaction_id, statement_id))
             .get_query_events()
             .to_pandas()
         )
-        print(actual_qprof_events)
+        logger.info(actual_qprof_events)
 
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>")
         query = f"SELECT event_timestamp, node_name, event_category, event_type, event_description, operator_name, path_id, event_details, suggested_action FROM v_monitor.query_events WHERE transaction_id={transaction_id} AND statement_id={statement_id} ORDER BY 1"
         expected_qprof_events = vDataFrame(query).to_pandas()
-        print(expected_qprof_events)
+        logger.info(expected_qprof_events)
 
-        res = expected_qprof_events.compare(actual_qprof_events)
-        print(res)
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Compare result >>>>>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(expected_qprof_events, actual_qprof_events)
+        logger.info(res)
 
         assert len(res) == 0
 
@@ -1063,10 +1226,26 @@ class TestQueryProfiler:
     def test_get_cpu_time(self, category_order, kind, reverse, show):
         """
         test function for get_cpu_time
+
+        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
+        # Steps to get actual result
+        Step 2: Get cpu time chart using get_cpu_time method with different combinations of parameters.
+        Step 3: For show=True : get_cpu_time method returns plotly graph object. Get x (labels for pie)
+                and y(values for pie) axes values from graph object.
+                For show=False : get_cpu_time method returns vDataFrame.
+        step 4: Group result based required columns. convert it to pandas dataframe
+                followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 5: Get cpu time from v_monitor.execution_engine_profiles table using transaction_id
+                and statement_id, and repeat step 4
+        # Steps to compare actual and expected results
+        step 6: compare actual and expected pandas dataframe using pandas compare function.
+        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
         # need to check. getting error with transaction_id and statement_id
         vp.set_option("plotting_lib", "plotly")
-        print(vp.get_option("plotting_lib"))
+        logger.info(vp.get_option("plotting_lib"))
 
         qprof = QueryProfiler(QPROF_SQL2)
         actual_qprof_cpu_time_raw = qprof.get_cpu_time(
@@ -1077,18 +1256,16 @@ class TestQueryProfiler:
         query = f"SELECT node_name, path_id, counter_value counter_value FROM v_monitor.execution_engine_profiles WHERE TRIM(counter_name) = 'execution time (us)' and transaction_id={transaction_id} AND statement_id={statement_id}"
         expected_qprof_cpu_time_raw = vDataFrame(query)
 
-        print(actual_qprof_cpu_time_raw)
-        print(dir(actual_qprof_cpu_time_raw))
+        logger.info(actual_qprof_cpu_time_raw)
+        # logger.info(dir(actual_qprof_cpu_time_raw))
         if show:
+            node_name = actual_qprof_cpu_time_raw.data[0].name
+            path_id, counter_value = _get_chart_data(actual_qprof_cpu_time_raw, kind)
             actual_qprof_cpu_time_pdf = pd.DataFrame(
                 {
-                    "node_name": actual_qprof_cpu_time_raw.data[0].name,
-                    "path_id": actual_qprof_cpu_time_raw.data[0].x
-                    if kind == "bar"
-                    else actual_qprof_cpu_time_raw.data[0].y,
-                    "counter_value": actual_qprof_cpu_time_raw.data[0].y
-                    if kind == "bar"
-                    else actual_qprof_cpu_time_raw.data[0].x,
+                    "node_name": node_name,
+                    "path_id": path_id,
+                    "counter_value": counter_value,
                 }
             )
             expected_qprof_cpu_time_pdf = expected_qprof_cpu_time_raw.groupby(
@@ -1108,45 +1285,53 @@ class TestQueryProfiler:
             by=["node_name", "path_id", "counter_value"]
         ).reset_index(drop=True)
 
-        print("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
-        print(actual_qprof_cpu_time)
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(f"Actual Result: {actual_qprof_cpu_time}")
 
-        print("<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(expected_qprof_cpu_time)
+        logger.info("<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>")
+        logger.info(f"Expected Result: {expected_qprof_cpu_time}")
 
-        res = expected_qprof_cpu_time.compare(
-            actual_qprof_cpu_time,
-            result_names=(
-                "left",
-                "right",
-            ),
-        )
-        print("<<<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(res)
+        logger.info("<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(expected_qprof_cpu_time, actual_qprof_cpu_time)
+        logger.info(f"Compare Result: {res}")
 
         assert len(res) == 0
 
     def test_get_qexecution_report(self):
         """
         test function for get_qexecution_report
+
+        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
+        # Steps to get actual result
+        Step 2: Get query execution report using get_qexecution_report method with different
+                combinations of parameters (if applicable). get_qexecution_report method
+                returns vDataFrame.
+        step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 4: Get query execution report from v_monitor.execution_engine_profiles
+                table using transaction_id and statement_id, and repeat step 3
+        # Steps to compare actual and expected results
+        step 5: compare actual and expected pandas dataframe using pandas compare function.
+        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
 
         # need to check. no results, with transaction_id, statement_id
         # current_cursor().execute("create schema if not exists qprof_test")
-        # print(qprof_data)
+        # logger.info(qprof_data)
         qprof_common = QueryProfiler(transactions=QPROF_SQL2)
 
+        logger.info("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
         actual_qprof_qexecution_report = (
             qprof_common.get_qexecution_report()
             .to_pandas()[["node_name", "operator_name", "path_id"]]
             .sort_values(by=["node_name", "operator_name", "path_id"])
             .reset_index(drop=True)
         )
+        logger.info(f"Actual Result: {actual_qprof_qexecution_report}")
 
-        print("<<<<<<<<<<<<<<<<<<< Actual execution report >>>>>>>>>>>>>>>>>>>>>>")
-        print(actual_qprof_qexecution_report)
+        logger.info("<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
         transaction_id, statement_id = qprof_common.transactions[0]
-
         query = f"SELECT node_name, operator_name, path_id FROM v_monitor.execution_engine_profiles WHERE transaction_id={transaction_id} AND statement_id={statement_id} group by node_name, operator_name, path_id"
         expected_qprof_qexecution_report = (
             vDataFrame(query)
@@ -1154,18 +1339,13 @@ class TestQueryProfiler:
             .sort_values(by=["node_name", "operator_name", "path_id"])
             .reset_index(drop=True)
         )
-        print("<<<<<<<<<<<<<<<<< Expected execution report >>>>>>>>>>>>>>>>>>>>>>")
-        print(expected_qprof_qexecution_report)
+        logger.info(f"Expected Result: {expected_qprof_qexecution_report}")
 
-        res = expected_qprof_qexecution_report.compare(
-            actual_qprof_qexecution_report,
-            result_names=(
-                "left",
-                "right",
-            ),
+        res = _compare_pandas(
+            expected_qprof_qexecution_report, actual_qprof_qexecution_report
         )
-        print("<<<<<<<<<<<<<<< compare result actual vs expected >>>>>>>>>>>>>>>>>")
-        print(res)
+        logger.info("<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>")
+        logger.info(f"Compare result: {res}")
 
         assert len(res) == 0
 
@@ -1242,13 +1422,30 @@ class TestQueryProfiler:
     ):
         """
         test function for get_qexecution
+
+        Step 1: Get QueryProfiler object by passing SQL to QueryProfiler class
+        # Steps to get actual result
+        Step 2: Get query execution chart using get_qexecution method with different combinations of parameters.
+        Step 3: For show=True : get_qexecution method returns plotly graph object. Get x (labels for pie)
+                and y(values for pie) axes values from graph object.
+                For show=False : get_qexecution method returns vDataFrame.
+        step 4: Group result based required columns. convert it to pandas dataframe
+                followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 5: Get query execution report (vDataframe) using get_qexecution_report method, and repeat step 4
+        # Steps to compare actual and expected results
+        step 6: compare actual and expected pandas dataframe using pandas compare function.
+        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
         # need to check. getting error
         # need to check as target_schema is not getting created by vpy
-        # print(qprof_data["transactions"][0])
-        # transaction_id, statement_id = qprof_data["transactions"][0]
+        # logger.info(qprof_data.transactions[0])
+        # transaction_id, statement_id = qprof_data.transactions[0]
+
+        # setting default plotting to plotly
         vp.set_option("plotting_lib", "plotly")
-        print(vp.get_option("plotting_lib"))
+        logger.info(vp.get_option("plotting_lib"))
 
         qprof = QueryProfiler(transactions=QPROF_SQL2)
         qprof_qexecution = qprof.get_qexecution(
@@ -1262,36 +1459,20 @@ class TestQueryProfiler:
             cols=cols,
             show=show,
         )
-        expected_qprof_qexecution_raw = qprof.get_qexecution_report()[
-            ["operator_name", metric]
-        ]
-        print(qprof_qexecution)
+        # logger.info(qprof_qexecution)
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
         if show:
-            if kind == "bar":
-                operator_name = qprof_qexecution.data[0].x
-                execution_time = qprof_qexecution.data[0].y
-            elif kind == "barh":
-                operator_name = qprof_qexecution.data[0].y
-                execution_time = qprof_qexecution.data[0].x
-            elif kind == "pie":
-                operator_name = qprof_qexecution.data[0].labels
-                execution_time = qprof_qexecution.data[0].values
-
+            operator_name, execution_time = _get_chart_data(qprof_qexecution, kind)
             actual_qprof_qexecution_pdf = pd.DataFrame(
                 {"operator_name": operator_name, metric: execution_time}
             )
-            print(actual_qprof_qexecution_pdf)
+            logger.info(actual_qprof_qexecution_pdf)
         else:
             actual_qprof_qexecution_pdf = qprof_qexecution.groupby(
                 columns=["operator_name"],
                 expr=[f"sum({metric}) as {metric}"],
             ).to_pandas()
-            print(actual_qprof_qexecution_pdf)
-
-        expected_qprof_qexecution_pdf = expected_qprof_qexecution_raw.groupby(
-            columns=["operator_name"],
-            expr=[f"sum({metric}) as {metric}"],
-        ).to_pandas()
+            logger.info(actual_qprof_qexecution_pdf)
 
         actual_qprof_qexecution = (
             actual_qprof_qexecution_pdf.replace({"operator_name": {"Others": "Root"}})
@@ -1300,6 +1481,16 @@ class TestQueryProfiler:
             .sort_values(by=["operator_name"])
             .reset_index(drop=True)
         )
+        logger.info(f"Actual Result: {actual_qprof_qexecution}")
+
+        logger.info("<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>")
+        expected_qprof_qexecution_raw = qprof.get_qexecution_report()[
+            ["operator_name", metric]
+        ]
+        expected_qprof_qexecution_pdf = expected_qprof_qexecution_raw.groupby(
+            columns=["operator_name"],
+            expr=[f"sum({metric}) as {metric}"],
+        ).to_pandas()
 
         expected_qprof_qexecution = (
             expected_qprof_qexecution_pdf.fillna(0)
@@ -1307,31 +1498,32 @@ class TestQueryProfiler:
             .sort_values(by=["operator_name"])
             .reset_index(drop=True)
         )
+        logger.info(f"Expected Result: {expected_qprof_qexecution}")
 
-        print("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
-        print(actual_qprof_qexecution)
-
-        print("<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(expected_qprof_qexecution)
-
-        res = expected_qprof_qexecution.compare(
-            actual_qprof_qexecution,
-            result_names=(
-                "left",
-                "right",
-            ),
-        )
-        print("<<<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(res)
+        logger.info("<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(expected_qprof_qexecution, actual_qprof_qexecution)
+        logger.info(f"Compare Result: {res}")
 
         assert len(res) == 0
 
     def test_get_rp_status(self, qprof_data):
         """
         test function for get_rp_status
+
+        # Steps to get actual result
+        Step 1: Get transaction_id, and statement_id from qprof_data fixture
+        Step 2: Pass transaction_id and statement_id to QueryProfiler object, and get
+                RP status using get_rp_status method (get_rp_status method returns vDataFrame)
+        step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 4: Get RP status from v_monitor.resource_pool_status table, and repeat step 3
+        # Steps to compare actual and expected results
+        step 5: compare actual and expected pandas dataframe using pandas compare function.
+        step 6: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
-        print("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
-        transaction_id, statement_id = qprof_data["transactions"][1]
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
+        transaction_id, statement_id = qprof_data.transactions[1]
         actual_qprof_rp = (
             QueryProfiler(transactions=(transaction_id, statement_id))
             .get_rp_status()
@@ -1339,15 +1531,16 @@ class TestQueryProfiler:
             .sort_values(by="pool_oid")
             .reset_index(drop=True)
         )
-        print(actual_qprof_rp)
+        logger.info(f"Actual Result: {actual_qprof_rp}")
 
-        print("<<<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>")
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>")
         query = "SELECT * FROM v_monitor.resource_pool_status ORDER BY pool_oid"
         expected_qprof_rp = vDataFrame(query).to_pandas()
-        print(expected_qprof_rp)
+        logger.info(f"Expected Result: {expected_qprof_rp}")
 
-        res = expected_qprof_rp.compare(actual_qprof_rp)
-        print(res)
+        logger.info("<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(expected_qprof_rp, actual_qprof_rp)
+        logger.info(f"Compare Result: {res}")
 
         assert len(actual_qprof_rp) == len(expected_qprof_rp)
 
@@ -1355,9 +1548,24 @@ class TestQueryProfiler:
     def test_get_cluster_config(self, qprof_data):
         """
         test function for get_cluster_config
+
+        # Steps to get actual result
+        Step 1: Get transaction_id and statement_id from qprof_data fixture
+        Step 2: Get QueryProfiler object by passing transaction_id and statement_id
+                to QueryProfiler class
+        Step 3: Get cluster configuration details using get_cluster_config method with different
+                combinations of parameters (if applicable). get_cluster_config
+                method returns vDataFrame.
+        step 4: convert return result to pandas dataframe followed by sorting based on key column(s).
+        # Steps to get expected result
+        step 5: Get cluster configuration from v_monitor.host_resources table, and repeat step 4
+        # Steps to compare actual and expected results
+        step 6: compare actual and expected pandas dataframe using pandas compare function.
+        step 7: compare function returns integers. if return value is ZERO, then actual and expected
+                results are same, else it's not same and test will fail.
         """
-        transaction_id, statement_id = qprof_data["transactions"][2]
-        print("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
+        transaction_id, statement_id = qprof_data.transactions[2]
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>>>")
         actual_qprof_cluster_config = (
             QueryProfiler(transactions=(transaction_id, statement_id))
             .get_cluster_config()
@@ -1365,20 +1573,17 @@ class TestQueryProfiler:
             .sort_values(by="host_name")
             .reset_index(drop=True)
         )
-        print(actual_qprof_cluster_config)
+        logger.info(f"Actual Result: {actual_qprof_cluster_config}")
 
-        print("<<<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>")
+        logger.info("<<<<<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>>>")
         query = "SELECT * FROM v_monitor.host_resources ORDER BY host_name"
         expected_qprof_cluster_config = vDataFrame(query).to_pandas()
-        print(expected_qprof_cluster_config)
+        logger.info(f"Expected Result: {expected_qprof_cluster_config}")
 
-        res = expected_qprof_cluster_config.compare(
-            actual_qprof_cluster_config,
-            result_names=(
-                "left",
-                "right",
-            ),
+        logger.info("<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>")
+        res = _compare_pandas(
+            expected_qprof_cluster_config, actual_qprof_cluster_config
         )
-        print(res)
+        logger.info(f"Compare Result: {res}")
 
         assert len(res) == 0

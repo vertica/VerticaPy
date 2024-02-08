@@ -12,6 +12,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import graphviz
 from verticapy.tests_new.performance.vertica import QPROF_SQL2
 from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.performance.vertica import QueryProfiler
@@ -40,4 +41,7 @@ class TestTree:
         tree = PerformanceTree(qprof.get_qplan())
         res = tree.plot_tree()
 
-        assert tree.to_graphviz() == res.source.strip()
+        assert (
+            isinstance(res, graphviz.sources.Source)
+            and tree.to_graphviz() == res.source.strip()
+        )
