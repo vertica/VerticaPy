@@ -14,10 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from typing import Literal, Optional
 
 from plotly.graph_objs._figure import Figure
 from plotly.figure_factory import create_quiver
+import plotly.express as px
 
 from verticapy.plotting._plotly.base import PlotlyBase
 
@@ -91,8 +93,55 @@ class PCACirclePlot(PlotlyBase):
 
 
 class PCAScreePlot(PlotlyBase):
-    ...
+
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["pca_scree"]:
+        return "pca_scree"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_layout_style = {
+            "yaxis_title": "Percentage Explained Variance (%)",
+            "xaxis_title": "Dimensions",
+            "width": 400,
+            "height": 500,
+        }
+        return None
+
+    # Draw.
+
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
+        """
+        Draws a PCA Scree plot using the Plotly API.
+        """
+        fig_base = self._get_fig(fig)
+        fig = px.bar(
+            x=self.data["x"],
+            y=self.data["y"],
+        )
+        fig2 = px.line(
+            x=self.data["x"],
+            y=self.data["y"],
+            markers=True,
+            color_discrete_sequence=[self.get_colors(idx=1)],
+        )
+        fig.update_xaxes(type="category")
+        params = self._update_dict(self.init_layout_style, style_kwargs)
+        fig.update_layout(**params)
+        fig_base.add_trace(fig.data[0])
+        fig_base.update_layout(fig.layout)
+        fig_base.add_trace(fig2.data[0])
+        fig_base.update_layout(fig2.layout)
+        return fig_base
 
 
-class PCAVarPlot(PlotlyBase):
-    ...
+class PCAVarPlot(PlotlyBase): ...
