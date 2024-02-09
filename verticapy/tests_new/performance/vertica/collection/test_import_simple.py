@@ -16,9 +16,9 @@ permissions and limitations under the License.
 """
 import logging
 from typing import Set
-
+from pathlib import Path
 import pytest
-
+import verticapy.performance.vertica.collection
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.performance.vertica.collection.profile_import import (
     ProfileImport,
@@ -79,6 +79,26 @@ class TestProfileImport:
             FileNotFoundError, match=f"File {fname} does not exist"
         ):
             pi.check_file()
+
+    def test_untar_file(self):
+        """
+        Confirm failure when user specifies a file that does not exist
+        """
+        test_package_dir = Path(__file__).parent
+        print(f"Test package dir = {test_package_dir}")
+        # Morning: 
+        # See if you can find he file feb01_cqvs_ndv20.tar in the test directory
+        # Provide it as an argument to import
+
+        fname = test_package_dir / "feb01_cqvs_ndv20.tar"
+        pi = ProfileImport(
+            target_schema="schema_not_used",
+            key="no_such_key",
+            filename=fname,
+            skip_create_table=True,
+        )
+        pi.check_file()
+    
 
 
 

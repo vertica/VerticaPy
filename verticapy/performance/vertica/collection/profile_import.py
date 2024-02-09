@@ -16,6 +16,10 @@ permissions and limitations under the License.
 """
 import os
 import logging
+import tarfile
+from pathlib import Path
+import random
+from enum import Enum
 from typing import Set
 
 from verticapy._utils._sql._sys import _executeSQL
@@ -25,6 +29,16 @@ from .collection_tables import getAllCollectionTables, AllTableTypes
 
 class ProfileImportError(Exception):
     pass
+
+class BundleVersion(Enum):
+    """
+    ``BundleVersion`` contains the version of ProfileExport bundles. Versions
+    differ because of the contents of the bundle. For example, a change
+    in column data type would cause the bundle version to change.
+    """
+    V1 = 1
+    LATEST = V1
+
 
 
 class ProfileImport:
@@ -37,7 +51,7 @@ class ProfileImport:
         self,
         target_schema: str,
         key: str,
-        filename: str,
+        filename: Path,
         skip_create_table: bool = False,
     ) -> None:
         """
@@ -61,7 +75,7 @@ class ProfileImport:
         self.target_schema = target_schema
         self.key = key
         self.filename = filename
-        self.input_file_obj = None
+        self.tarfile_obj = None
         self.skip_create_table = skip_create_table
         self.logger = logging.getLogger("ProfileImport")
 
@@ -72,9 +86,10 @@ class ProfileImport:
         if not os.path.exists(self.filename):
             raise FileNotFoundError(f"File {self.filename} does not exist")
 
-        # Recall that open will raise errors if
-        # the file does not exist
-        self.input_file_obj = open(self.filename, "r")
+        unpack_dir = self._unpack_bundle()
+        bundle_version = self._calculate_bundle_version(unpack_dir)
+        self._check_for_missing_files(unpack_dir, bundle_version)
+
 
     def check_schema(self) -> None:
         """
@@ -149,3 +164,56 @@ class ProfileImport:
             proj_sql = ctable.get_create_projection_sql()
             _executeSQL(table_sql, method="fetchall")
             _executeSQL(proj_sql, method="fetchall")
+
+
+    def _unpack_bundle(self) -> Path:
+        """
+        Unpacks the bundle into a temp directory
+
+        Returns
+        --------
+        Returns a path 
+        """
+
+        self.tarfile_obj = tarfile.open(self.filename, "r")
+        names = '\n'.join(self.tarfile_obj.getnames())
+        print(f"Files in the archive: {names}")
+        tmp_dir = Path(os.getcwd()) / Path(f"profile_import_run{random.randint(10000, 20000)}")
+
+        print(f"Creating temporary directory: {tmp_dir}")
+
+        tmp_dir.mkdir()
+
+        self.tarfile_obj.extractall(tmp_dir)
+
+        print(f"Extracted files: {[x for x in tmp_dir.iterdir()]}")
+
+        return tmp_dir
+    
+    def _calculate_bundle_version(self, unpack_dir:Path) -> BundleVersion:
+        metadata_file = unpack_dir / "profile_metadata.json"
+        if not metadata_file.exists():
+            self.logger.info(f"Did not find metadata file {metadata_file}")
+            return BundleVersion.V1
+        
+        return BundleVersion.LATEST
+    
+    def _check_for_missing_files(self, unpack_dir:Path, version: BundleVersion) -> None:
+        if version == BundleVersion.V1:
+            self._check_v1_contents(unpack_dir)
+            return
+        raise ProfileImportError(f"Unrecognized bundle version {version} unpacked in directory {unpack_dir}")
+
+    def _check_v1_contents(self, unpack_dir:Path) -> None:
+        unpacked_files = set([x for x in unpack_dir.iterdir()])
+        missing_files = []
+
+        # TODO: perhaps we should generate a different list for 
+        # each version of the bundle
+        for type_name in AllTableTypes:
+            expected_file_path = Path(type_name.value + ".parquet")
+            if expected_file_path not in unpacked_files:
+                missing_files.append(expected_file_path)
+        if len(missing_files) > 0:
+            self.logger.warning(f"Bundle {self.filename} unpacked in directory {unpack_dir}"
+                                f" lacks {len(missing_files)} files: {','.join([str(f) for f in missing_files])}")
