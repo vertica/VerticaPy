@@ -599,6 +599,10 @@ class PerformanceTree:
             return "U"
         if "MERGE" in operator:
             return "M"
+        if "FILTER" in operator or "Filter" in operator:
+            return "F"
+        if "UNION" in operator:
+            return "U"
         return "?"
 
     def _get_operator_icon(self, operator: str) -> Optional[str]:
@@ -652,6 +656,8 @@ class PerformanceTree:
                     return "P"
                 elif "COL" in operator:
                     return "C"
+                elif "FILTER" in operator or "Filter" in operator:
+                    return "F"
             else:
                 if "INSERT" in operator:
                     return "📥"
@@ -679,6 +685,8 @@ class PerformanceTree:
                     return "📐"
                 elif "COL" in operator:
                     return "📋"
+                elif "FILTER" in operator or "Filter" in operator:
+                    return "🔍"
             return "?"
         return None
 
@@ -805,6 +813,8 @@ class PerformanceTree:
             res = row.split("Cost: ")[1].split(",")[0]
         elif isinstance(metric, NoneType):
             return None
+        elif metric in ("cost", "rows"):
+            return 0
         else:
             path_id = self._get_label(row, return_path_id=True)
             if path_id in self.metric_value[metric]:
@@ -1095,7 +1105,7 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
-        if isinstance(label, int) and label < -1000:
+        if isinstance(label, int) and label <= -1000:
             label = self._get_special_operator(operator)
         if not (self.style["display_operator"]) and len(colors) == 1:
             return f'"{label}", style="filled", fillcolor="{colors[0]}"'
@@ -1118,10 +1128,10 @@ class PerformanceTree:
         proj = ""
         if self.style["display_proj"] and "Projection: " in operator:
             proj = operator.split("Projection: ")[1].split("\n")[0]
-            if len(proj) > 13:
+            if len(proj) > 11:
                 proj = schema_relation(proj, do_quote=False)[1]
-            if len(proj) > 13:
-                proj = proj[:13] + ".."
+            if len(proj) > 11:
+                proj = proj[:11] + ".."
             proj = (
                 f'<TR><TD COLSPAN="{colspan}" WIDTH="{width}" '
                 f'HEIGHT="{height}" BGCOLOR="{fillcolor}" ><FONT '
@@ -1215,6 +1225,11 @@ class PerformanceTree:
                 operator=row,
             )
             if tree_id in links:
+                tooltip = row
+                if "ARRAY" in row:
+                    tooltip = row.split("ARRAY")[0] + "ARRAY[...]"
+                    if "(ARRAY[...]" in tooltip:
+                        tooltip += ")"
                 params = f'width={wh}, height={wh}, tooltip="{row}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}"'
                 res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
@@ -1246,6 +1261,11 @@ class PerformanceTree:
                         str(d) for d in descendants
                     )
                     descendants_str += f"\n\nTotal: {len(descendants)}"
+                    tooltip = descendants_str
+                    if "ARRAY" in descendants_str:
+                        tooltip = descendants_str.split("ARRAY")[0] + "ARRAY[...]"
+                        if "(ARRAY[...]" in tooltip:
+                            tooltip += ")"
                     res += f'\t{100000 - tree_id} [label="...", tooltip="{descendants_str}"];\n'
         return res
 
