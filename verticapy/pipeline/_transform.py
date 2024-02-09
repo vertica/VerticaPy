@@ -60,6 +60,64 @@ def transformation(transform: dict, table: str) -> vDataFrame:
     - When a column is successfully created, the error_string is reset, and all column flags are cleared in the queue.
     - If the next column in the queue has been flagged, it indicates that either errors persist or cyclic dependencies exist,
       in which case the error_string contains relevant error information.
+
+    Example
+    -------
+    Here you can use an existing relation.
+        .. code-block:: python
+
+                from verticapy.datasets import load_titanic
+        load_titanic() # Loading the titanic dataset in Vertica
+
+        import verticapy as vp
+        vp.vDataFrame("public.titanic")
+
+    Now you can apply a transform.
+        .. code-block:: python
+
+                from your_module import transformation
+
+                # Define the transformation steps in a YAML object
+                transform = {
+                        'family_size': {
+                                'sql': 'parch+sibsp+1'
+                        },
+                        'fares': {
+                                'sql': 'fare',
+                                'transform_method': {
+                                        'name': 'fill_outliers',
+                                        'params': {
+                                                'method': 'winsorize',
+                                                'alpha': 0.03
+                                        }
+                                }
+                        },
+                        'sexes': {
+                                'sql': 'sex',
+                                'transform_method': {
+                                        'name': 'label_encode'
+                                }
+                        },
+                        'ages': {
+                                'sql': 'age',
+                                'transform_method': {
+                                        'name': 'fillna',
+                                        'params': {
+                                                'method': 'mean',
+                                                'by': ['pclass', 'sex']
+                                        }
+                                }
+                        }
+                }
+
+                # Specify the target table for transformation
+                table = "public.titanic"
+
+                # Call the transformation function
+                transformed_vdf = transformation(transform, table)
+
+                # Display the transformed vDataFrame
+                print(transformed_vdf)
     """
     vdf = vDataFrame(table)
 

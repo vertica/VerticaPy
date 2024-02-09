@@ -44,6 +44,34 @@ def scheduler(
     -------
     str
         The SQL to replicate the steps of the yaml file.
+
+    Examples
+    --------
+        This example demonstrates how to use the `schedule` function to run the schedule step of a pipeline.
+    Here you can use an existing relation.
+        .. code-block:: python
+
+                from verticapy.datasets import load_titanic
+        load_titanic() # Loading the titanic dataset in Vertica
+
+        import verticapy as vp
+        vp.vDataFrame("public.titanic")
+
+    Now you can feed in the parameters.
+    .. code-block:: python
+                # Define the cron format schedule
+        schedule =  "* * * * *"
+        model_sql = "SELECT rf_regressor('public.pipeline_MODEL', 'public.titanic', 'survived', '"family_size","fares","sexes","ages");"
+        table_sql = 'public.titanic'
+
+                # Define the pipeline name
+                pipeline_name = "pipeline"
+
+                # Call the schedule function
+                sql_query = ingestion(schedule, model_sql, table_sql, pipeline_name)
+
+                # Execute the SQL query
+                _executeSQL(sql_query)
     """
     meta_sql = ""
     model_string = to_sql(model_sql)

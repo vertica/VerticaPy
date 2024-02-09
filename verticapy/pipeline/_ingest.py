@@ -46,6 +46,34 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
     -------
     str
         The SQL to replicate the steps of the yaml file.
+
+    Examples
+    --------
+        This example demonstrates how to use the `ingestion` function to run the ingestion step of a pipeline.
+
+        .. code-block:: python
+
+                from your_module import ingestion
+
+                # Define the ingestion steps in a YAML object
+                ingest = {
+                        'from': '~/data/bucket/*',
+                        'delimiter': ',',
+                        'retry_limit': 'NONE',
+                        'retention_interval': "'15 days'"
+                }
+
+                # Define the pipeline name
+                pipeline_name = "my_pipeline"
+
+                # Specify the target table for ingestion
+                table = "my_table"
+
+                # Call the ingestion function
+                sql_query = ingestion(ingest, pipeline_name, table)
+
+                # Execute the SQL query
+                _executeSQL(sql_query)
     """
     meta_sql = ""
     if required_keywords(ingest, ["from"]):
@@ -76,7 +104,6 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
                     "Delimiter must have an ASCII value in the range E'\\000' to E'\\177' inclusive"
                 )
         data_loader_sql += "DIRECT;"
-        print(data_loader_sql)
         meta_sql += execute_and_return(data_loader_sql)
         meta_sql += execute_and_return(
             f"EXECUTE DATA LOADER {pipeline_name + '_DATALOADER'};"

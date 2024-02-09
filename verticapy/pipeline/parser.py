@@ -65,29 +65,11 @@ SUPPORTED_DATASETS = [
     load_world,
 ]
 
-parser = argparse.ArgumentParser(
-    description="""Vertica Pipelines is an open source platform for
-    managing data scientists machine learning pipelines.
-    They are built on a human-readable data format: YAML."""
-)
-parser.add_argument("connection_file", help="Path to the connection yaml file")
-parser.add_argument("input_file", help="Path to the input yaml file")
-parser.add_argument(
-    "-o",
-    "--outfile",
-    nargs="?",
-    help="[Optional] Path to the output sql file. If unspecified pipeline_name.sql will be used.",
-    default=None,
-    required=False,
-)
 
-args = parser.parse_args()
-config_name = args.connection_file
-file_name = args.input_file
-output_name = args.outfile
-
-with open(config_name, "r", encoding="utf-8") as file:
-    connect = yaml.safe_load(file)
+def connect_with_yaml(connect: dict):
+    """
+    Connect to the database with a yaml file.
+    """
     if required_keywords(connect, ["host", "port", "database", "password", "user"]):
         vp.new_connection(
             {
@@ -102,8 +84,10 @@ with open(config_name, "r", encoding="utf-8") as file:
         vp.connect("temp")
 
 
-with open(file_name, "r", encoding="utf-8") as file:
-    pipeline = yaml.safe_load(file)
+def parse_yaml(pipeline: dict):
+    """
+    Convert a yaml pipeline file to a functional pipeline.
+    """
     schema_name = pipeline["schema"]
     name = pipeline["pipeline"]
     pipeline_name = schema_name + "." + name
@@ -120,7 +104,6 @@ with open(file_name, "r", encoding="utf-8") as file:
     supported_table_names = list(
         map(lambda x: re.search(r"load\S*", str(x)).group(), SUPPORTED_DATASETS)
     )
-    print(supported_table_names)
     if (
         len(table_split) == 2
         and table_split[0] == "public"
@@ -196,8 +179,42 @@ with open(file_name, "r", encoding="utf-8") as file:
                 schedule, MODEL_SQL, TABLE_SQL, pipeline_name
             )
 
-        if output_name is None:
-            output_name = pipeline_name + ".sql"
+    return META_SQL
 
-        with open(output_name, "w", encoding="utf-8") as file:
-            file.write(META_SQL)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="""Vertica Pipelines is an open source platform for
+        managing data scientists machine learning pipelines.
+        They are built on a human-readable data format: YAML."""
+    )
+    parser.add_argument("connection_file", help="Path to the connection yaml file")
+    parser.add_argument("input_file", help="Path to the input yaml file")
+    parser.add_argument(
+        "-o",
+        "--outfile",
+        nargs="?",
+        help="[Optional] Path to the output sql file. If unspecified pipeline_name.sql will be used.",
+        default=None,
+        required=False,
+    )
+
+    args = parser.parse_args()
+    config_name = args.connection_file
+    file_name = args.input_file
+    output_name = args.outfile
+
+    with open(config_name, "r", encoding="utf-8") as file:
+        connection_yaml = yaml.safe_load(file)
+        connect_with_yaml(connection_yaml)
+
+    with open(file_name, "r", encoding="utf-8") as file:
+        pipeline_yaml = yaml.safe_load(file)
+        sql = parse_yaml(pipeline_yaml)
+
+    if output_name is None:
+        output_name = pipeline_yaml["schema"] + "." + pipeline_yaml["pipeline"]
+        output_name += ".sql"
+
+    with open(output_name, "w", encoding="utf-8") as file:
+        file.write(sql)
