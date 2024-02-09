@@ -69,6 +69,10 @@ class QprofAttr:
 def qprof_data(titanic_vd: pytest.fixture, schema_loader: pytest.fixture) -> QprofAttr:
     """
     fixture for qprof data setup
+
+    This fixture generates collections of test values for the QueryProfiler constructor.
+    The constructor uses different types of QueryProfiler initialization values. For example,
+    the QueryProfiler constructor can use a query (string), or a transaction id and statement id, or a schema.
     """
     # titanic = titanic_vd.to_pandas()
 
