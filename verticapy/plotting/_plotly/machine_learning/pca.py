@@ -94,6 +94,7 @@ class PCACirclePlot(PlotlyBase):
 
 
 class PCAScreePlot(PlotlyBase):
+    # Properties
 
     @property
     def _category(self) -> Literal["plot"]:
@@ -146,6 +147,7 @@ class PCAScreePlot(PlotlyBase):
 
 
 class PCAVarPlot(PlotlyBase):
+    # Properties
 
     @property
     def _category(self) -> Literal["plot"]:
