@@ -78,14 +78,14 @@ def testing(
         # Define the training steps in a YAML object
         train = {
                 'method':
-                                                name: 'RandomForestClassifier',
-                                                target: survival,
-                                'params': {
-                                        'n_estimators': 100,
-                                        'max_depth': 5,
-                                        'min_samples_split': 2,
-                                        'min_samples_leaf': 1
-                                }
+                        'name': 'RandomForestClassifier',
+                        'target': 'survival',
+                        'params': {
+                                'n_estimators': 100,
+                                'max_depth': 5,
+                                'min_samples_split': 2,
+                                'min_samples_leaf': 1
+                        }
         }
 
         # Define the vDataFrame containing the training data
@@ -108,23 +108,23 @@ def testing(
 
         # Define the training steps in a YAML object
                 test = {
-                                'test': {
-                                        'metric1': {
-                                                         'name': accuracy_score,
-                                                         'y_true': survival,
-                                                         'y_score': prediction,
-                                        },
-                                        'metric2': {
-                                                         'name': r2_score,
-                                                         'y_true': survival,
-                                                         'y_score': prediction
-                                        },
-                                        'metric3': {
-                                                         'name': max_error,
-                                                         'y_true': survival,
-                                                         'y_score': prediction
-                                        }
-                           }
+                        'test': {
+                                'metric1': {
+                                                 'name': 'accuracy_score',
+                                                 'y_true': 'survival',
+                                                 'y_score': 'prediction',
+                                },
+                                'metric2': {
+                                                 'name': 'r2_score',
+                                                 'y_true': 'survival',
+                                                 'y_score': 'prediction'
+                                },
+                                'metric3': {
+                                                 'name': 'max_error',
+                                                 'y_true': 'survival',
+                                                 'y_score': 'prediction'
+                                }
+                }
 
         # Define the vDataFrame containing the training data
         vdf = vDataFrame("public.titanic")

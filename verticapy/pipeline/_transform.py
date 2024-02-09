@@ -75,7 +75,7 @@ def transformation(transform: dict, table: str) -> vDataFrame:
     Now you can apply a transform.
         .. code-block:: python
 
-                from your_module import transformation
+                from verticapy.pipeline._transform import transformation
 
                 # Define the transformation steps in a YAML object
                 transform = {
