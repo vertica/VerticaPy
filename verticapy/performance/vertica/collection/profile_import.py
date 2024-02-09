@@ -24,22 +24,11 @@ from typing import Set
 
 from verticapy._utils._sql._sys import _executeSQL
 
-from .collection_tables import getAllCollectionTables, AllTableTypes
+from .collection_tables import getAllCollectionTables, AllTableTypes, BundleVersion
 
 
 class ProfileImportError(Exception):
     pass
-
-class BundleVersion(Enum):
-    """
-    ``BundleVersion`` contains the version of ProfileExport bundles. Versions
-    differ because of the contents of the bundle. For example, a change
-    in column data type would cause the bundle version to change.
-    """
-    V1 = 1
-    LATEST = V1
-
-
 
 class ProfileImport:
     """
@@ -75,9 +64,13 @@ class ProfileImport:
         self.target_schema = target_schema
         self.key = key
         self.filename = filename
-        self.tarfile_obj = None
+        
         self.skip_create_table = skip_create_table
         self.logger = logging.getLogger("ProfileImport")
+
+        # initialize internal attributes
+        self.tarfile_obj = None
+        self.bundle_version = None
 
     def check_file(self) -> None:
         """
@@ -87,8 +80,8 @@ class ProfileImport:
             raise FileNotFoundError(f"File {self.filename} does not exist")
 
         unpack_dir = self._unpack_bundle()
-        bundle_version = self._calculate_bundle_version(unpack_dir)
-        self._check_for_missing_files(unpack_dir, bundle_version)
+        self.bundle_version = self._calculate_bundle_version(unpack_dir)
+        self._check_for_missing_files(unpack_dir, self.bundle_version)
 
 
     def check_schema(self) -> None:
@@ -96,6 +89,10 @@ class ProfileImport:
         Checks to see that the schema and expected tables exist.
         Optionally creates the schema and expected tables.
         """
+        if self.bundle_version is None:
+            self.bundle_version = BundleVersion.LATEST
+            self.logger.info(f"Set bunlde version to latest ({self.bundle_version}) because"
+                             f"it was not set previously")
         if self.skip_create_table:
             self._schema_exists_or_raise()
             self._tables_exist_or_raise()
@@ -116,7 +113,9 @@ class ProfileImport:
     def _tables_exist_or_raise(self) -> None:
         tables_in_schema = self._get_set_of_tables_in_schema()
         all_tables = getAllCollectionTables(
-            target_schema=self.target_schema, key=self.key
+            target_schema=self.target_schema, 
+            key=self.key,
+            version=self.bundle_version
         )
         missing_tables = []
         for ctable in all_tables.values():
@@ -156,7 +155,9 @@ class ProfileImport:
 
     def _create_tables_if_not_exists(self) -> None:
         all_tables = getAllCollectionTables(
-            target_schema=self.target_schema, key=self.key
+            target_schema=self.target_schema, 
+            key=self.key,
+            version=self.bundle_version
         )
         for ctable in all_tables.values():
             self.logger.info(f"Running create statements for {ctable.name}")
@@ -208,10 +209,13 @@ class ProfileImport:
         unpacked_files = set([x for x in unpack_dir.iterdir()])
         missing_files = []
 
-        # TODO: perhaps we should generate a different list for 
-        # each version of the bundle
-        for type_name in AllTableTypes:
-            expected_file_path = Path(type_name.value + ".parquet")
+        all_tables = getAllCollectionTables(
+            target_schema=self.target_schema, 
+            key=self.key,
+            version=self.bundle_version
+        )
+        for ctable in all_tables.values():
+            expected_file_path = Path(ctable.get_parquet_file_name())
             if expected_file_path not in unpacked_files:
                 missing_files.append(expected_file_path)
         if len(missing_files) > 0:
