@@ -31,14 +31,18 @@ def scheduler(
     Parameters
     ----------
     schedule: dict
-        YAML object which outlines the steps of the operation.
+        YAML object which outlines
+        the steps of the operation.
     model_sql: str
-        The SQL required to replicate the model training.
+        The SQL required to replicate
+        the model training.
     table_sql: str
-        The SQL required to replicate the metric table.
+        The SQL required to replicate
+        the metric table.
     pipeline_name: str
-        The prefix name of the intended pipeline to unify
-        the creation of the objects.
+        The prefix name of the intended
+        pipeline to unify the creation
+        of the objects.
 
     Returns
     -------
@@ -47,9 +51,13 @@ def scheduler(
 
     Examples
     --------
-        This example demonstrates how to use the `schedule` function to run the schedule step of a pipeline.
+    This example demonstrates how to use the
+    `schedule` function to run the schedule
+    step of a pipeline.
+
     Here you can use an existing relation.
-        .. code-block:: python
+
+    .. code-block:: python
 
         from verticapy.datasets import load_titanic
         load_titanic() # Loading the titanic dataset in Vertica
@@ -58,12 +66,14 @@ def scheduler(
         vp.vDataFrame("public.titanic")
 
     Now you can feed in the parameters.
+
     .. code-block:: python
+
         from verticapy.pipeline._schedule import scheduler
-        _
+
         # Define the cron format schedule
         schedule =  "* * * * *"
-        model_sql = "SELECT rf_regressor('public.pipeline_MODEL', 'public.titanic', 'survived', '"family_size","fares","sexes","ages");"
+        model_sql = "SELECT RF_REGRESSOR('public.pipeline_MODEL', 'public.titanic', 'survived', '"family_size", "fares", "sexes", "ages");"
         table_sql = 'public.titanic'
 
         # Define the pipeline name

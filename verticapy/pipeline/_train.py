@@ -126,28 +126,37 @@ def training(
     Parameters
     ----------
     train: dict
-        YAML object which outlines the steps of the operation.
+        YAML object which outlines
+        the steps of the operation.
     vdf: vDataFrame
-        The model trained in the training step.
+        The model trained in the
+        training step.
     pipeline_name: str
-        The prefix name of the intended pipeline to unify
+        The prefix name of the
+        intended pipeline to unify
         the creation of the objects.
     cols: SQLColumns
-        ``list`` of the columns needed to deploy the model.
+        ``list`` of the columns needed
+        to deploy the model.
 
     Returns
     -------
-    return meta_sql, model, model_sql
+    return ``meta_sql, model, model_sql``
+
     str
-        The SQL to replicate the steps of the yaml file.
+        The SQL to replicate the
+        steps of the yaml file.
     VerticaModel
-        The model created after training.
+        The model created after
+        training.
     str
-        The SQL needed to retrain the model
+        The SQL needed to retrain
+        the model.
 
     Example
     -------
     Here you can use an existing relation.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
@@ -156,24 +165,28 @@ def training(
         import verticapy as vp
         vp.vDataFrame("public.titanic")
 
-    If you want to make some transformations checkout :py:function:`~pipeline._transform.transformation`.
+    If you want to make some transformations checkout
+    :py:function:`~pipeline._transform.transformation`.
+
     Then you can train a model.
-    This example demonstrates how to use the `training` function to run the training step of a pipeline.
+    This example demonstrates how to use the `training`
+    function to run the training step of a pipeline.
+
     .. code-block:: python
 
         from verticapy.pipeline._train import training
 
         # Define the training steps in a YAML object
         train = {
-                'method':
-                    'name': 'RandomForestClassifier',
-                    'target': 'survival',
-                    'params': {
-                            'n_estimators': 100,
-                            'max_depth': 5,
-                            'min_samples_split': 2,
-                            'min_samples_leaf': 1
-                    }
+            'method':
+                'name': 'RandomForestClassifier',
+                'target': 'survival',
+                'params': {
+                    'n_estimators': 100,
+                    'max_depth': 5,
+                    'min_samples_split': 2,
+                    'min_samples_leaf': 1,
+                }
         }
 
         # Define the vDataFrame containing the training data

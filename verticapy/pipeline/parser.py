@@ -68,7 +68,8 @@ SUPPORTED_DATASETS = [
 
 def connect_with_yaml(connect: dict):
     """
-    Connect to the database with a yaml file.
+    Connect to the database
+    with a yaml file.
     """
     if required_keywords(connect, ["host", "port", "database", "password", "user"]):
         vp.new_connection(
@@ -86,7 +87,8 @@ def connect_with_yaml(connect: dict):
 
 def parse_yaml(pipeline: dict):
     """
-    Convert a yaml pipeline file to a functional pipeline.
+    Convert a yaml pipeline file
+    to a functional pipeline.
     """
     schema_name = pipeline["schema"]
     name = pipeline["pipeline"]
