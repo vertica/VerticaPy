@@ -21,7 +21,10 @@ from pathlib import Path
 import random
 from typing import Set, List
 
+import pandas as pd
+
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy.core.vdataframe import vDataFrame
 
 from .collection_tables import getAllCollectionTables, AllTableTypes, BundleVersion
 
@@ -72,12 +75,12 @@ class ProfileImport:
     @property
     def skip_create_table(self) -> bool:
         """
-        ProfileImport will SKIP running ddl statements to create new 
+        ProfileImport will SKIP running ddl statements to create new
         tables when skip_creat_table is True. Otherwise it will run
         DDL statements. Default value is False.
 
         The DDL statements are:
-           CREATE TABLE ... IF NOT EXISTS 
+           CREATE TABLE ... IF NOT EXISTS
            CREATE PROJECTION ... IF NOT EXISTS
         """
         return self._skip_create_table
@@ -93,8 +96,8 @@ class ProfileImport:
     @property
     def raise_when_missing_files(self) -> bool:
         """
-        ProfileImport will raise and exception if a bundle lacks 
-        any of the expected files and raise_when_missing_files is True. 
+        ProfileImport will raise and exception if a bundle lacks
+        any of the expected files and raise_when_missing_files is True.
         Otherwise, it will write a warning to the log. Default value is False.
         """
         return self._raise_when_missing_files
@@ -110,14 +113,14 @@ class ProfileImport:
     @property
     def tmp_path(self) -> Path:
         """
-        ProfileImport will raise and exception if a bundle lacks 
-        any of the expected files and raise_when_missing_files is True. 
+        ProfileImport will raise and exception if a bundle lacks
+        any of the expected files and raise_when_missing_files is True.
         Otherwise, it will write a warning to the log. Default value is False.
         """
         return self._tmp_path
 
     @tmp_path.setter
-    def tmp_path(self, val: str|os.PathLike ) -> None:
+    def tmp_path(self, val: str | os.PathLike) -> None:
         if not isinstance(val, str) and not isinstance(val, os.PathLike):
             raise ValueError(
                 f"Cannot set tmp_dir to value of type {type(val)}. Must be type string or PathLike."
@@ -134,6 +137,7 @@ class ProfileImport:
         unpack_dir = self._unpack_bundle()
         self.bundle_version = self._calculate_bundle_version(unpack_dir)
         self._check_for_missing_files(unpack_dir, self.bundle_version)
+        self._load_vdataframes(unpack_dir, self.bundle_version)
 
     def check_schema(self) -> None:
         """
@@ -227,6 +231,7 @@ class ProfileImport:
         self.tarfile_obj = tarfile.open(self.filename, "r")
         names = "\n".join(self.tarfile_obj.getnames())
         print(f"Files in the archive: {names}")
+        # There are other ways to generate a
         tmp_dir = self.tmp_path / Path(
             f"profile_import_run{random.randint(10000, 20000)}"
         )
@@ -252,19 +257,11 @@ class ProfileImport:
     def _check_for_missing_files(
         self, unpack_dir: Path, version: BundleVersion
     ) -> None:
-        if version == BundleVersion.V1:
-            self._check_v1_contents(unpack_dir)
-            return
-        raise ProfileImportError(
-            f"Unrecognized bundle version {version} unpacked in directory {unpack_dir}"
-        )
-
-    def _check_v1_contents(self, unpack_dir: Path) -> None:
         unpacked_files = set([x for x in unpack_dir.iterdir()])
         missing_files = []
 
         all_tables = getAllCollectionTables(
-            target_schema=self.target_schema, key=self.key, version=self.bundle_version
+            target_schema=self.target_schema, key=self.key, version=version
         )
         for ctable in all_tables.values():
             expected_file_path = unpack_dir / Path(ctable.get_parquet_file_name())
@@ -286,3 +283,19 @@ class ProfileImport:
             self.logger.warning(message)
             return
         raise ImportError(message)
+
+    def _load_vdataframes(self, unpack_dir: Path, version: BundleVersion) -> None:
+        unpacked_files = set([x for x in unpack_dir.iterdir()])
+
+        all_tables = getAllCollectionTables(
+            target_schema=self.target_schema, key=self.key, version=version
+        )
+        for ctable in all_tables.values():
+            expected_file_path = unpack_dir / Path(ctable.get_parquet_file_name())
+            if expected_file_path not in unpacked_files:
+                self.logger.info(f"Skipping missing file {expected_file_path}")
+                continue
+            pd_dataframe = pd.read_parquet(expected_file_path)
+            cols = list(pd_dataframe.columns)
+            self.logger.info(f"File {expected_file_path} has columns {cols}")
+            # Next PR: load the vdataframe into the database
