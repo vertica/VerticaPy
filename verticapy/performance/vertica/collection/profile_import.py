@@ -67,6 +67,7 @@ class ProfileImport:
         self.bundle_version = None
         self.raise_when_missing_files = False
         self.skip_create_table = False
+        self.tmp_path = os.getcwd()
 
     @property
     def skip_create_table(self) -> bool:
@@ -105,6 +106,23 @@ class ProfileImport:
                 f"Cannot set raise_when_missing_files to value of type {type(val)}. Must be type bool."
             )
         self._raise_when_missing_files = val
+
+    @property
+    def tmp_path(self) -> Path:
+        """
+        ProfileImport will raise and exception if a bundle lacks 
+        any of the expected files and raise_when_missing_files is True. 
+        Otherwise, it will write a warning to the log. Default value is False.
+        """
+        return self._tmp_path
+
+    @tmp_path.setter
+    def tmp_path(self, val: str|os.PathLike ) -> None:
+        if not isinstance(val, str) and not isinstance(val, os.PathLike):
+            raise ValueError(
+                f"Cannot set tmp_dir to value of type {type(val)}. Must be type string or PathLike."
+            )
+        self._tmp_path = val
 
     def check_file(self) -> None:
         """
@@ -209,7 +227,7 @@ class ProfileImport:
         self.tarfile_obj = tarfile.open(self.filename, "r")
         names = "\n".join(self.tarfile_obj.getnames())
         print(f"Files in the archive: {names}")
-        tmp_dir = Path(os.getcwd()) / Path(
+        tmp_dir = self.tmp_path / Path(
             f"profile_import_run{random.randint(10000, 20000)}"
         )
 

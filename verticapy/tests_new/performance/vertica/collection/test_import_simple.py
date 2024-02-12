@@ -98,6 +98,7 @@ class TestProfileImport:
         )
         pi.skip_create_table = True
         pi.raise_when_missing_files = True
+        pi.tmp_path = tmp_path_with_test_bundles
         # check_file shouldn't raise any errors because the input is valid
         pi.check_file()
 
