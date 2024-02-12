@@ -14,28 +14,5 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
-# Verticapy
-from verticapy.tests_new.plotting.base_test_files import (
-    PCACirclePlot,
-    PCAVarPlot,
-    PCAScreePlot,
-)
-
-
-class TestHighchartsMachineLearningPCACirclePlot(PCACirclePlot):
-    """
-    Testing different attributes of PCA circle plot
-    """
-
-
-class TestHighchartsMachineLearningPCAVarPlot(PCAVarPlot):
-    """
-    Testing different attributes of PCA Var plot
-    """
-
-
-class TestHighchartsMachineLearningPCAScreePlot(PCAScreePlot):
-    """
-    Testing different attributes of PCA Scree plot
-    """
+QPROF_SQL1 = """SELECT /*+LABEL('QueryProfiler_sql1_requests_UT')*/ transaction_id, statement_id, request, request_duration FROM v_monitor.query_requests WHERE start_timestamp > NOW() - INTERVAL'1 hour' ORDER BY request_duration DESC LIMIT 10"""
+QPROF_SQL2 = """SELECT /*+LABEL('QueryProfiler_sql2_requests_UT')*/ transaction_id, statement_id, request, request_duration FROM v_monitor.query_requests WHERE start_timestamp > NOW() - INTERVAL'1 hour' ORDER BY request_duration DESC LIMIT 10"""

@@ -987,9 +987,13 @@ class QueryProfiler:
         self._create_copy_v_table()
 
         # SETTING THE requests.
+        if conf.get_option("print_info"):
+            print("Setting the requests...")
         self._set_request()
 
         # SETTING THE queries durations.
+        if conf.get_option("print_info"):
+            print("Setting the queries durations...")
         self._set_qduration()
 
         # WARNING MESSAGES.
@@ -1271,31 +1275,31 @@ class QueryProfiler:
                 if not (exists) or (self.overwrite):
                     self.tables_dtypes += [self.v_tables_dtypes[-1]]
 
-            if not (exists) or (self.overwrite):
-                if conf.get_option("print_info"):
-                    print(
-                        f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
-                    )
-                try:
-                    if self.overwrite:
-                        _executeSQL(
-                            f"DROP TABLE IF EXISTS {new_schema}.{new_table}",
-                            title="Dropping the performance table.",
+                if not (exists) or (self.overwrite):
+                    if conf.get_option("print_info"):
+                        print(
+                            f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
                         )
-                    _executeSQL(
-                        sql,
-                        title="Creating performance tables.",
-                    )
-                except Exception as e:
-                    warning_message = (
-                        "An error occurs during the creation "
-                        f"of the relation {new_schema}.{new_table}.\n"
-                        "Tips: To overwrite the tables, set the parameter "
-                        "overwrite=True.\nYou can also set create_table=False"
-                        " to skip the table creation and to use the existing "
-                        "ones.\n\nError Details:\n" + str(e)
-                    )
-                    warnings.warn(warning_message, Warning)
+                    try:
+                        if self.overwrite:
+                            _executeSQL(
+                                f"DROP TABLE IF EXISTS {new_schema}.{new_table}",
+                                title="Dropping the performance table.",
+                            )
+                        _executeSQL(
+                            sql,
+                            title="Creating performance tables.",
+                        )
+                    except Exception as e:
+                        warning_message = (
+                            "An error occurs during the creation "
+                            f"of the relation {new_schema}.{new_table}.\n"
+                            "Tips: To overwrite the tables, set the parameter "
+                            "overwrite=True.\nYou can also set create_table=False"
+                            " to skip the table creation and to use the existing "
+                            "ones.\n\nError Details:\n" + str(e)
+                        )
+                        warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
 
     def _check_v_table(self) -> None:
@@ -1307,7 +1311,12 @@ class QueryProfiler:
         tables_schema = self._v_table_dict()
         config_table = self._v_config_table_list()
         warning_message = ""
-        for tr_id, st_id in self.transactions:
+        loop = self.transactions
+        if conf.get_option("print_info"):
+            print("Checking all the tables consistency...")
+        if conf.get_option("tqdm"):
+            loop = tqdm(loop, total=len(loop))
+        for tr_id, st_id in loop:
             for table_name in tables:
                 if table_name not in config_table:
                     if len(self.target_tables) == 0:

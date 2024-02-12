@@ -25,6 +25,7 @@ import numpy as np
 import verticapy._config.config as conf
 from verticapy._utils._sql._format import schema_relation
 from verticapy._typing import NoneType
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 
 from verticapy.plotting.base import get_default_graphviz_options
 
@@ -158,16 +159,8 @@ class PerformanceTree:
                 "It seems to be empty.\nAre you sured to have "
                 "profiled your query?"
             )
-        qplan = rows.split("\n")
-        n = len(qplan)
-        self.rows, tmp_rows = [], []
-        for i in range(n):
-            if "PATH ID: " in qplan[i] and i > 0:
-                self.rows += ["\n".join(tmp_rows)]
-                tmp_rows = []
-            tmp_rows += [qplan[i]]
-        self.rows += ["\n".join(tmp_rows)]
-        self.path_order = [self._get_label(row) for row in self.rows]
+        self.rows = QprofUtility._get_rows(rows)
+        self.path_order = QprofUtility._get_path_order(self.rows)
         if isinstance(path_id, NoneType):
             path_id = self.path_order[0]
         if isinstance(path_id, int) and path_id in self.path_order:
@@ -469,51 +462,6 @@ class PerformanceTree:
     # Special Methods
 
     @staticmethod
-    def _get_label(row: str, return_path_id: bool = True) -> Union[str, int]:
-        """
-        Gets the label from
-        Query Plan chart.
-
-        Parameters
-        ----------
-        row: str
-            Tree row.
-        return_path_id: bool, optional
-            If set to ``True`` returns
-            the path ID instead.
-
-        Returns
-        -------
-        str
-            label.
-
-        Examples
-        --------
-        See :py:meth:`~verticapy.performance.vertica.tree`
-        for more information.
-        """
-        res = row
-        while len(res) > 0 and res[0] in ("+", "-", " ", "|", ">"):
-            res = res[1:]
-        if return_path_id:
-            if "PATH ID: " not in res:
-                if "INSERT" in res:
-                    return -1001
-                if "DELETE" in res:
-                    return -1002
-                if "UPDATE" in res:
-                    return -1003
-                if "MERGE" in res:
-                    return -1004
-                return -1000
-            res = res.split("PATH ID: ")[1].split(")")[0]
-            res = re.sub(r"[^0-9]", "", res)
-            if len(res) == 0:
-                return -1
-            return int(res)
-        return res
-
-    @staticmethod
     def _get_level(row: str) -> int:
         """
         Gets the level of the
@@ -599,6 +547,10 @@ class PerformanceTree:
             return "U"
         if "MERGE" in operator:
             return "M"
+        if "FILTER" in operator or "Filter" in operator:
+            return "F"
+        if "UNION" in operator:
+            return "U"
         return "?"
 
     def _get_operator_icon(self, operator: str) -> Optional[str]:
@@ -652,6 +604,8 @@ class PerformanceTree:
                     return "P"
                 elif "COL" in operator:
                     return "C"
+                elif "FILTER" in operator or "Filter" in operator:
+                    return "F"
             else:
                 if "INSERT" in operator:
                     return "📥"
@@ -679,6 +633,8 @@ class PerformanceTree:
                     return "📐"
                 elif "COL" in operator:
                     return "📋"
+                elif "FILTER" in operator or "Filter" in operator:
+                    return "🔍"
             return "?"
         return None
 
@@ -805,8 +761,10 @@ class PerformanceTree:
             res = row.split("Cost: ")[1].split(",")[0]
         elif isinstance(metric, NoneType):
             return None
+        elif metric in ("cost", "rows"):
+            return 0
         else:
-            path_id = self._get_label(row, return_path_id=True)
+            path_id = QprofUtility._get_label(row, return_path_id=True)
             if path_id in self.metric_value[metric]:
                 res = self.metric_value[metric][path_id]
                 if isinstance(res, NoneType):
@@ -1095,7 +1053,7 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
-        if isinstance(label, int) and label < -1000:
+        if isinstance(label, int) and label <= -1000:
             label = self._get_special_operator(operator)
         if not (self.style["display_operator"]) and len(colors) == 1:
             return f'"{label}", style="filled", fillcolor="{colors[0]}"'
@@ -1118,10 +1076,10 @@ class PerformanceTree:
         proj = ""
         if self.style["display_proj"] and "Projection: " in operator:
             proj = operator.split("Projection: ")[1].split("\n")[0]
-            if len(proj) > 13:
+            if len(proj) > 11:
                 proj = schema_relation(proj, do_quote=False)[1]
-            if len(proj) > 13:
-                proj = proj[:13] + ".."
+            if len(proj) > 11:
+                proj = proj[:11] + ".."
             proj = (
                 f'<TR><TD COLSPAN="{colspan}" WIDTH="{width}" '
                 f'HEIGHT="{height}" BGCOLOR="{fillcolor}" ><FONT '
@@ -1201,7 +1159,7 @@ class PerformanceTree:
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
-            label = self._get_label(self.rows[i])
+            label = QprofUtility._get_label(self.rows[i])
             colors = [color]
             if len(self.metric) > 1:
                 if not (isinstance(self.metric[1], NoneType)):
@@ -1215,7 +1173,12 @@ class PerformanceTree:
                 operator=row,
             )
             if tree_id in links:
-                params = f'width={wh}, height={wh}, tooltip="{row}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}"'
+                tooltip = row
+                if "ARRAY" in row:
+                    tooltip = row.split("ARRAY")[0] + "ARRAY[...]"
+                    if "(ARRAY[...]" in tooltip:
+                        tooltip += ")"
+                params = f'width={wh}, height={wh}, tooltip="{tooltip}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}"'
                 res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
@@ -1246,7 +1209,12 @@ class PerformanceTree:
                         str(d) for d in descendants
                     )
                     descendants_str += f"\n\nTotal: {len(descendants)}"
-                    res += f'\t{100000 - tree_id} [label="...", tooltip="{descendants_str}"];\n'
+                    tooltip = descendants_str
+                    if "ARRAY" in descendants_str:
+                        tooltip = descendants_str.split("ARRAY")[0] + "ARRAY[...]"
+                        if "(ARRAY[...]" in tooltip:
+                            tooltip += ")"
+                    res += f'\t{100000 - tree_id} [label="...", tooltip="{tooltip}"];\n'
         return res
 
     def _gen_links(self) -> str:

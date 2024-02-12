@@ -18,13 +18,13 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Ingestion
 """
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.pipeline._helper import (
-    required_keywords,
     execute_and_return,
     is_valid_delimiter,
+    required_keywords,
 )
-from verticapy._utils._sql._sys import _executeSQL
 
 
 def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
@@ -35,17 +35,51 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
     Parameters
     ----------
     ingestion: dict
-        YAML object which outlines the steps of the operation.
+        YAML object which outlines
+        the steps of the operation.
     pipeline_name: str
-        The prefix name of the intended pipeline to unify
-        the creation of the objects.
+        The prefix name of the intended
+        pipeline to unify the creation of
+        the objects.
     table: str
-        The name of the table the pipeline is ingesting to.
+        The name of the table the pipeline
+        is ingesting to.
 
     Returns
     -------
     str
-        The SQL to replicate the steps of the yaml file.
+        The SQL to replicate the
+        steps of the yaml file.
+
+    Examples
+    --------
+    This example demonstrates how to use the
+    `ingestion` function to run the ingestion
+    step of a pipeline.
+
+    .. code-block:: python
+
+        from your_module import ingestion
+
+        # Define the ingestion steps in a YAML object
+        ingest = {
+            'from': '~/data/bucket/*',
+            'delimiter': ',',
+            'retry_limit': 'NONE',
+            'retention_interval': "'15 days'",
+        }
+
+        # Define the pipeline name
+        pipeline_name = "my_pipeline"
+
+        # Specify the target table for ingestion
+        table = "my_table"
+
+        # Call the ingestion function
+        sql_query = ingestion(ingest, pipeline_name, table)
+
+        # Execute the SQL query
+        _executeSQL(sql_query)
     """
     meta_sql = ""
     if required_keywords(ingest, ["from"]):
@@ -76,7 +110,6 @@ def ingestion(ingest: dict, pipeline_name: str, table: str) -> str:
                     "Delimiter must have an ASCII value in the range E'\\000' to E'\\177' inclusive"
                 )
         data_loader_sql += "DIRECT;"
-        print(data_loader_sql)
         meta_sql += execute_and_return(data_loader_sql)
         meta_sql += execute_and_return(
             f"EXECUTE DATA LOADER {pipeline_name + '_DATALOADER'};"
