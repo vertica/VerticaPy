@@ -19,8 +19,7 @@ import logging
 import tarfile
 from pathlib import Path
 import random
-from enum import Enum
-from typing import Set
+from typing import Set, List
 
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -29,6 +28,7 @@ from .collection_tables import getAllCollectionTables, AllTableTypes, BundleVers
 
 class ProfileImportError(Exception):
     pass
+
 
 class ProfileImport:
     """
@@ -41,7 +41,6 @@ class ProfileImport:
         target_schema: str,
         key: str,
         filename: Path,
-        skip_create_table: bool = False,
     ) -> None:
         """
         Load a query performance profile in ``filename`` into tables
@@ -57,20 +56,41 @@ class ProfileImport:
         filename: str
             The tarball of parquet files to load into the database.
         """
-        # TODO: at this time, we don't run any checks automatically
-        # during __init__. Instead, we run the chceks manually. Running
-        # the checks manually facilitates early testing.
 
         self.target_schema = target_schema
         self.key = key
         self.filename = filename
-        
-        self.skip_create_table = skip_create_table
         self.logger = logging.getLogger("ProfileImport")
 
         # initialize internal attributes
         self.tarfile_obj = None
         self.bundle_version = None
+        self.raise_when_missing_files = False
+        self.skip_create_table = False
+
+    @property
+    def skip_create_table(self) -> bool:
+        return self._skip_create_table
+
+    @skip_create_table.setter
+    def skip_create_table(self, val: bool) -> None:
+        if not isinstance(val, bool):
+            raise ValueError(
+                f"Cannot set skip_create_table to value of type {type(val)}. Must be type bool."
+            )
+        self._skip_create_table = val
+
+    @property
+    def raise_when_missing_files(self) -> bool:
+        return self._raise_when_missing_files
+
+    @raise_when_missing_files.setter
+    def raise_when_missing_files(self, val: bool) -> None:
+        if not isinstance(val, bool):
+            raise ValueError(
+                f"Cannot set raise_when_missing_files to value of type {type(val)}. Must be type bool."
+            )
+        self._raise_when_missing_files = val
 
     def check_file(self) -> None:
         """
@@ -83,7 +103,6 @@ class ProfileImport:
         self.bundle_version = self._calculate_bundle_version(unpack_dir)
         self._check_for_missing_files(unpack_dir, self.bundle_version)
 
-
     def check_schema(self) -> None:
         """
         Checks to see that the schema and expected tables exist.
@@ -91,8 +110,10 @@ class ProfileImport:
         """
         if self.bundle_version is None:
             self.bundle_version = BundleVersion.LATEST
-            self.logger.info(f"Set bunlde version to latest ({self.bundle_version}) because"
-                             f"it was not set previously")
+            self.logger.info(
+                f"Set bunlde version to latest ({self.bundle_version}) because"
+                f"it was not set previously"
+            )
         if self.skip_create_table:
             self._schema_exists_or_raise()
             self._tables_exist_or_raise()
@@ -113,9 +134,7 @@ class ProfileImport:
     def _tables_exist_or_raise(self) -> None:
         tables_in_schema = self._get_set_of_tables_in_schema()
         all_tables = getAllCollectionTables(
-            target_schema=self.target_schema, 
-            key=self.key,
-            version=self.bundle_version
+            target_schema=self.target_schema, key=self.key, version=self.bundle_version
         )
         missing_tables = []
         for ctable in all_tables.values():
@@ -155,9 +174,7 @@ class ProfileImport:
 
     def _create_tables_if_not_exists(self) -> None:
         all_tables = getAllCollectionTables(
-            target_schema=self.target_schema, 
-            key=self.key,
-            version=self.bundle_version
+            target_schema=self.target_schema, key=self.key, version=self.bundle_version
         )
         for ctable in all_tables.values():
             self.logger.info(f"Running create statements for {ctable.name}")
@@ -166,20 +183,21 @@ class ProfileImport:
             _executeSQL(table_sql, method="fetchall")
             _executeSQL(proj_sql, method="fetchall")
 
-
     def _unpack_bundle(self) -> Path:
         """
         Unpacks the bundle into a temp directory
 
         Returns
         --------
-        Returns a path 
+        Returns a path
         """
 
         self.tarfile_obj = tarfile.open(self.filename, "r")
-        names = '\n'.join(self.tarfile_obj.getnames())
+        names = "\n".join(self.tarfile_obj.getnames())
         print(f"Files in the archive: {names}")
-        tmp_dir = Path(os.getcwd()) / Path(f"profile_import_run{random.randint(10000, 20000)}")
+        tmp_dir = Path(os.getcwd()) / Path(
+            f"profile_import_run{random.randint(10000, 20000)}"
+        )
 
         print(f"Creating temporary directory: {tmp_dir}")
 
@@ -190,34 +208,52 @@ class ProfileImport:
         print(f"Extracted files: {[x for x in tmp_dir.iterdir()]}")
 
         return tmp_dir
-    
-    def _calculate_bundle_version(self, unpack_dir:Path) -> BundleVersion:
+
+    def _calculate_bundle_version(self, unpack_dir: Path) -> BundleVersion:
         metadata_file = unpack_dir / "profile_metadata.json"
         if not metadata_file.exists():
             self.logger.info(f"Did not find metadata file {metadata_file}")
             return BundleVersion.V1
-        
+
         return BundleVersion.LATEST
-    
-    def _check_for_missing_files(self, unpack_dir:Path, version: BundleVersion) -> None:
+
+    def _check_for_missing_files(
+        self, unpack_dir: Path, version: BundleVersion
+    ) -> None:
         if version == BundleVersion.V1:
             self._check_v1_contents(unpack_dir)
             return
-        raise ProfileImportError(f"Unrecognized bundle version {version} unpacked in directory {unpack_dir}")
+        raise ProfileImportError(
+            f"Unrecognized bundle version {version} unpacked in directory {unpack_dir}"
+        )
 
-    def _check_v1_contents(self, unpack_dir:Path) -> None:
+    def _check_v1_contents(self, unpack_dir: Path) -> None:
         unpacked_files = set([x for x in unpack_dir.iterdir()])
+        self.logger.info(f"JSDEBUG: Unpacked files: {unpacked_files}")
         missing_files = []
 
         all_tables = getAllCollectionTables(
-            target_schema=self.target_schema, 
-            key=self.key,
-            version=self.bundle_version
+            target_schema=self.target_schema, key=self.key, version=self.bundle_version
         )
         for ctable in all_tables.values():
-            expected_file_path = Path(ctable.get_parquet_file_name())
+            expected_file_path = unpack_dir / Path(ctable.get_parquet_file_name())
+            self.logger.info(f"Looking for file: {expected_file_path}")
             if expected_file_path not in unpacked_files:
                 missing_files.append(expected_file_path)
-        if len(missing_files) > 0:
-            self.logger.warning(f"Bundle {self.filename} unpacked in directory {unpack_dir}"
-                                f" lacks {len(missing_files)} files: {','.join([str(f) for f in missing_files])}")
+
+        self._handle_missing_files(unpack_dir, missing_files)
+
+    def _handle_missing_files(
+        self, unpack_dir: Path, missing_files: List[Path]
+    ) -> None:
+        if len(missing_files) == 0:
+            return
+        message = (
+            f"Bundle {self.filename} unpacked in directory {unpack_dir}"
+            f" lacks {len(missing_files)} files: {','.join([str(f) for f in missing_files])}"
+        )
+        if not self.raise_when_missing_files:
+            # Just a warning
+            self.logger.warning(message)
+            return
+        raise ImportError(message)

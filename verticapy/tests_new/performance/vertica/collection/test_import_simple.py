@@ -15,10 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import logging
-from typing import Set
 from pathlib import Path
+import shutil
+from typing import Set
+
 import pytest
-import verticapy.performance.vertica.collection
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.performance.vertica.collection.profile_import import (
     ProfileImport,
@@ -31,6 +32,16 @@ class TestProfileImport:
     Collection of tests for ProfileImport class
     """
 
+    @pytest.fixture
+    def tmp_path_with_test_bundles(self, tmp_path):
+        test_package_dir = Path(__file__).parent
+        print(f"tmp_path is {tmp_path}")
+        for f in test_package_dir.iterdir():
+            if f.match("*.tar"):
+                shutil.copy(f, tmp_path)
+        yield tmp_path
+        # No cleanup to do: tmp_path will do it for us
+
     def test_empty_schema(self, schema_loader):
         """Confirm that the profile import fails when schema is present but
         tables are missing, and the user specifies not to create the tables
@@ -39,8 +50,8 @@ class TestProfileImport:
             target_schema=schema_loader,
             key="no_such_key",
             filename="no_such_file.tar",
-            skip_create_table=True,
         )
+        pi.skip_create_table = True
         with pytest.raises(
             ProfileImportError, match=f"Missing [0-9]+ tables in schema {schema_loader}"
         ):
@@ -55,52 +66,40 @@ class TestProfileImport:
             target_schema="no_such_schema",
             key="no_such_key",
             filename="no_such_file.tar",
-            skip_create_table=True,
         )
-
+        pi.skip_create_table = True
         with pytest.raises(
             ProfileImportError, match=f"Schema no_such_schema does not exist"
         ):
             pi.check_schema()
 
-
-    def test_missing_file(self):
+    def test_missing_bundle(self):
         """
         Confirm failure when user specifies a file that does not exist
         """
         fname = "no_such_file.tar"
         pi = ProfileImport(
-            target_schema="schema_not_used",
-            key="no_such_key",
-            filename=fname,
-            skip_create_table=True,
+            target_schema="schema_not_used", key="no_such_key", filename=fname
         )
-        with pytest.raises(
-            FileNotFoundError, match=f"File {fname} does not exist"
-        ):
+        pi.skip_create_table = True
+        with pytest.raises(FileNotFoundError, match=f"File {fname} does not exist"):
             pi.check_file()
 
-    def test_untar_file(self):
+    def test_untar_file(self, tmp_path_with_test_bundles):
         """
         Confirm failure when user specifies a file that does not exist
         """
-        test_package_dir = Path(__file__).parent
-        print(f"Test package dir = {test_package_dir}")
-        # Morning: 
-        # See if you can find he file feb01_cqvs_ndv20.tar in the test directory
-        # Provide it as an argument to import
 
-        fname = test_package_dir / "feb01_cqvs_ndv20.tar"
+        fname = tmp_path_with_test_bundles / "feb01_cqvs_ndv20.tar"
         pi = ProfileImport(
             target_schema="schema_not_used",
             key="no_such_key",
             filename=fname,
-            skip_create_table=True,
         )
+        pi.skip_create_table = True
+        pi.raise_when_missing_files = True
+        # check_file shouldn't raise any errors because the input is valid
         pi.check_file()
-    
-
-
 
     def test_create_tables(self, schema_loader):
         """

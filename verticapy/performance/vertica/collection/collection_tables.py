@@ -40,12 +40,14 @@ class AllTableTypes(Enum):
     QUERY_PROFILES = "query_profiles"
     RESOURCE_POOL_STATUS = "resource_pool_status"
 
+
 class BundleVersion(Enum):
     """
     ``BundleVersion`` contains the version of ProfileExport bundles. Versions
     differ because of the contents of the bundle. For example, a change
     in column data type would cause the bundle version to change.
     """
+
     V1 = 1
     LATEST = V1
 
@@ -78,7 +80,7 @@ class CollectionTable:
 
     def get_super_proj_name_fq(self) -> str:
         return f"{self._get_import_name(fully_qualified=True)}_super"
-    
+
     def get_parquet_file_name(self) -> str:
         return f"{self.name}.parquet"
 
@@ -130,9 +132,7 @@ class CollectionTable:
 
 
 def getAllCollectionTables(
-    target_schema: str, 
-    key: str,
-    version: BundleVersion
+    target_schema: str, key: str, version: BundleVersion
 ) -> Mapping[str, CollectionTable]:
     """
     Produces a map with one of each kind of collection table. The key
@@ -155,8 +155,9 @@ def getAllCollectionTables(
     """
     if version == BundleVersion.V1:
         return _getAllTables_v1(target_schema, key)
-    
+
     raise ValueError(f"Unrecognized bundle version {version}")
+
 
 ALL_TABLES_V1 = [
     AllTableTypes.COLLECTION_EVENTS,
@@ -171,19 +172,17 @@ ALL_TABLES_V1 = [
     AllTableTypes.QUERY_CONSUMPTION,
     AllTableTypes.QUERY_PLAN_PROFILES,
     AllTableTypes.QUERY_PROFILES,
-    AllTableTypes.RESOURCE_POOL_STATUS
+    AllTableTypes.RESOURCE_POOL_STATUS,
 ]
 
-def _getAllTables_v1(
-        target_schema: str,
-        key: str
-) -> Mapping[str, CollectionTable]:
+
+def _getAllTables_v1(target_schema: str, key: str) -> Mapping[str, CollectionTable]:
     """
     Produces a map with one of each kind of CollectionTable subclass
     available for version V1 of the profile bundle.
     """
     result = {}
- 
+
     for name in ALL_TABLES_V1:
         c = collectionTableFactory(name, target_schema, key)
         result[name.name] = c
