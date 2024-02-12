@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import re
 from typing import Union
 
+
 class QprofUtility:
     """
     A class that contains a collection of static methods
@@ -70,6 +71,9 @@ class QprofUtility:
 
     @staticmethod
     def _get_rows(rows: str) -> list:
+        """
+        ...
+        """
         qplan = rows.split("\n")
         n = len(qplan)
         rows_list, tmp_rows = [], []
@@ -80,31 +84,40 @@ class QprofUtility:
             tmp_rows += [qplan[i]]
         rows_list += ["\n".join(tmp_rows)]
         return rows_list
-    
+
     @staticmethod
     def _get_path_order(rows: list) -> list:
+        """
+        ...
+        """
         return [QprofUtility._get_label(row) for row in rows]
-    
+
     @staticmethod
     def _get_metrics() -> list:
+        """
+        ...
+        """
         return [
-                    None,
-                    "cost",
-                    "rows",
-                    "exec_time_ms",
-                    "est_rows",
-                    "proc_rows",
-                    "prod_rows",
-                    "rle_prod_rows",
-                    "clock_time_us",
-                    "cstall_us",
-                    "pstall_us",
-                    "mem_res_mb",
-                    "mem_all_mb",
-                ]
-        
+            None,
+            "cost",
+            "rows",
+            "exec_time_ms",
+            "est_rows",
+            "proc_rows",
+            "prod_rows",
+            "rle_prod_rows",
+            "clock_time_us",
+            "cstall_us",
+            "pstall_us",
+            "mem_res_mb",
+            "mem_all_mb",
+        ]
+
     @staticmethod
     def _get_categoryorder() -> list:
+        """
+        ...
+        """
         return [
             "trace",
             "category ascending",
