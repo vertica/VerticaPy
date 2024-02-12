@@ -70,6 +70,15 @@ class ProfileImport:
 
     @property
     def skip_create_table(self) -> bool:
+        """
+        ProfileImport will SKIP running ddl statements to create new 
+        tables when skip_creat_table is True. Otherwise it will run
+        DDL statements. Default value is False.
+
+        The DDL statements are:
+           CREATE TABLE ... IF NOT EXISTS 
+           CREATE PROJECTION ... IF NOT EXISTS
+        """
         return self._skip_create_table
 
     @skip_create_table.setter
@@ -82,6 +91,11 @@ class ProfileImport:
 
     @property
     def raise_when_missing_files(self) -> bool:
+        """
+        ProfileImport will raise and exception if a bundle lacks 
+        any of the expected files and raise_when_missing_files is True. 
+        Otherwise, it will write a warning to the log. Default value is False.
+        """
         return self._raise_when_missing_files
 
     @raise_when_missing_files.setter
@@ -229,7 +243,6 @@ class ProfileImport:
 
     def _check_v1_contents(self, unpack_dir: Path) -> None:
         unpacked_files = set([x for x in unpack_dir.iterdir()])
-        self.logger.info(f"JSDEBUG: Unpacked files: {unpacked_files}")
         missing_files = []
 
         all_tables = getAllCollectionTables(
@@ -237,7 +250,6 @@ class ProfileImport:
         )
         for ctable in all_tables.values():
             expected_file_path = unpack_dir / Path(ctable.get_parquet_file_name())
-            self.logger.info(f"Looking for file: {expected_file_path}")
             if expected_file_path not in unpacked_files:
                 missing_files.append(expected_file_path)
 
@@ -253,7 +265,6 @@ class ProfileImport:
             f" lacks {len(missing_files)} files: {','.join([str(f) for f in missing_files])}"
         )
         if not self.raise_when_missing_files:
-            # Just a warning
             self.logger.warning(message)
             return
         raise ImportError(message)
