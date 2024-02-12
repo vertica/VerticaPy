@@ -120,7 +120,7 @@ class ProfileImport:
         return self._tmp_path
 
     @tmp_path.setter
-    def tmp_path(self, val: str | os.PathLike) -> None:
+    def tmp_path(self, val: os.PathLike) -> None:
         if not isinstance(val, str) and not isinstance(val, os.PathLike):
             raise ValueError(
                 f"Cannot set tmp_dir to value of type {type(val)}. Must be type string or PathLike."
