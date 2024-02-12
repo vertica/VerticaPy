@@ -1178,7 +1178,7 @@ class PerformanceTree:
                     tooltip = row.split("ARRAY")[0] + "ARRAY[...]"
                     if "(ARRAY[...]" in tooltip:
                         tooltip += ")"
-                params = f'width={wh}, height={wh}, tooltip="{row}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}"'
+                params = f'width={wh}, height={wh}, tooltip="{tooltip}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}"'
                 res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
@@ -1214,7 +1214,7 @@ class PerformanceTree:
                         tooltip = descendants_str.split("ARRAY")[0] + "ARRAY[...]"
                         if "(ARRAY[...]" in tooltip:
                             tooltip += ")"
-                    res += f'\t{100000 - tree_id} [label="...", tooltip="{descendants_str}"];\n'
+                    res += f'\t{100000 - tree_id} [label="...", tooltip="{tooltip}"];\n'
         return res
 
     def _gen_links(self) -> str:
