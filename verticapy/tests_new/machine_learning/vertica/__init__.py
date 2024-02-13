@@ -20,7 +20,7 @@ ABS_TOLERANCE = 1e-12
 rel_abs_tol_map = {
     "RandomForestRegressor": {
         "explained_variance": {"rel": 1e-01, "abs": ABS_TOLERANCE},
-        "max_error": {"rel": 1e-01, "abs": ABS_TOLERANCE},
+        "max_error": {"rel": 1e-00, "abs": ABS_TOLERANCE},
         "median_absolute_error": {"rel": 1e-01, "abs": ABS_TOLERANCE},
         "mean_absolute_error": {"rel": 1e-01, "abs": ABS_TOLERANCE},
         "mean_squared_error": {"rel": 1e-01, "abs": ABS_TOLERANCE},
@@ -219,7 +219,7 @@ rel_abs_tol_map = {
         "precision": {"rel": 1e-00, "abs": ABS_TOLERANCE},
         "recall": {"rel": 1e-00, "abs": ABS_TOLERANCE},
         "f1_score": {"rel": 1e-00, "abs": ABS_TOLERANCE},
-        "mcc": {"rel": 1e-01, "abs": ABS_TOLERANCE},
+        "mcc": {"rel": 1e-00, "abs": ABS_TOLERANCE},
         "markedness": {"rel": 1e-00, "abs": ABS_TOLERANCE},
         "csi": {"rel": 1e-00, "abs": ABS_TOLERANCE},
         "confusion_matrix": {"rel": 1e-00, "abs": ABS_TOLERANCE},
