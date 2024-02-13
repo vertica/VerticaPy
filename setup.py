@@ -47,7 +47,7 @@ setuptools.setup(
         "vertica-highcharts>=0.1.4",
         "vertica-python>=1.2.0",
         "plotly>=5.10.0",
-        "pyyaml>=6.0.1"
+        "pyyaml>=6.0.1",
     ],
     extras_require={
         "all": [

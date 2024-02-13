@@ -19,6 +19,7 @@ import pytest
 from verticapy.machine_learning.memmodel.cluster import KMeans
 from verticapy.machine_learning.memmodel.cluster import KPrototypes
 from verticapy.machine_learning.memmodel.cluster import BisectingKMeans
+from verticapy.machine_learning.memmodel.cluster import NearestCentroid
 
 
 @pytest.fixture(scope="module")
@@ -60,6 +61,15 @@ def memmodel_bkm():
     children_right = [2, 4, None, None, None]
     memmodel_bkm = BisectingKMeans(clusters, children_left, children_right)
     yield memmodel_bkm
+
+
+@pytest.fixture(scope="module")
+def memmodel_nc():
+    clusters = [[0.5, 0.6], [1, 2], [100, 200]]
+    p = 2
+    classes = ["class_a", "class_b", "class_c"]
+    memmodel_nc = NearestCentroid(clusters, classes, p)
+    yield memmodel_nc
 
 
 class TestKMeans:
@@ -465,3 +475,130 @@ class TestBisectingKMeans:
         test function - object_type
         """
         assert memmodel_bkm.object_type == "BisectingKMeans"
+
+
+class TestNearestCentroid:
+    """
+    test class - TestNearestCentroid
+    """
+
+    @pytest.mark.parametrize(
+        "col1, col2, expected_output",
+        [
+            (2, 3, "class_b"),
+            (100, 150, "class_c"),
+        ],
+    )
+    def test_predict(self, memmodel_nc, col1, col2, expected_output):
+        """
+        test function - predict
+        """
+        data = [
+            [col1, col2],
+        ]
+        prediction = memmodel_nc.predict(data)
+        assert prediction[0] == expected_output
+
+    @pytest.mark.parametrize(
+        "col1, col2, expected_output",
+        [
+            (2, 3, [0.33177263, 0.66395985, 0.00426752]),
+            (100, 150, [0.17863144, 0.1800781, 0.64129046]),
+        ],
+    )
+    def test_predict_proba(self, memmodel_nc, col1, col2, expected_output):
+        """
+        test function - predict_proba
+        """
+        data = [
+            [col1, col2],
+        ]
+        prediction = memmodel_nc.predict_proba(data)
+        assert prediction[0][0] == pytest.approx(expected_output[0])
+        assert prediction[0][1] == pytest.approx(expected_output[1])
+        assert prediction[0][2] == pytest.approx(expected_output[2])
+
+    @pytest.mark.parametrize(
+        "col1, col2, expected_output",
+        [
+            (2, 3, [2.83019434, 1.41421356, 220.02954347]),
+            (100, 150, [179.50100278, 178.05897899, 50]),
+        ],
+    )
+    def test_transform(self, memmodel_nc, col1, col2, expected_output):
+        """
+        test function - transform
+        """
+        data = [
+            [col1, col2],
+        ]
+        prediction = memmodel_nc.transform(data)
+        assert prediction[0][0] == pytest.approx(expected_output[0])
+        assert prediction[0][1] == pytest.approx(expected_output[1])
+        assert prediction[0][2] == pytest.approx(expected_output[2])
+
+    def test_predict_sql(self, memmodel_nc):
+        """
+        test function - predict_sql
+        """
+        cnames = ["col1", "col2"]
+        pred_sql = memmodel_nc.predict_sql(cnames)
+        assert (
+            pred_sql
+            == "CASE WHEN col1 IS NULL OR col2 IS NULL THEN NULL WHEN POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2) <= POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2) AND POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2) <= POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2) THEN 'class_c' WHEN POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2) <= POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2) THEN 'class_b' ELSE 'class_a' END"
+        )
+
+    def test_predict_proba_sql(self, memmodel_nc):
+        """
+        test function - predict_proba_sql
+        """
+        cnames = ["col1", "col2"]
+        pred_proba_sql = memmodel_nc.predict_proba_sql(cnames)
+        assert (
+            pred_proba_sql[0]
+            == "(CASE WHEN POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2) = 0 THEN 1.0 ELSE 1 / (POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2)) / (1 / (POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2)) + 1 / (POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2)) + 1 / (POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2))) END)"
+        )
+        assert (
+            pred_proba_sql[1]
+            == "(CASE WHEN POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2) = 0 THEN 1.0 ELSE 1 / (POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2)) / (1 / (POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2)) + 1 / (POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2)) + 1 / (POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2))) END)"
+        )
+        assert (
+            pred_proba_sql[2]
+            == "(CASE WHEN POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2) = 0 THEN 1.0 ELSE 1 / (POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2)) / (1 / (POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2)) + 1 / (POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2)) + 1 / (POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2))) END)"
+        )
+
+    def test_transform_sql(self, memmodel_nc):
+        """
+        test function - transform_sql
+        """
+        cnames = ["col1", "col2"]
+        transform_sql = memmodel_nc.transform_sql(cnames)
+        assert (
+            transform_sql[0]
+            == "POWER(POWER(col1 - 0.5, 2) + POWER(col2 - 0.6, 2), 1 / 2)"
+        )
+        assert (
+            transform_sql[1]
+            == "POWER(POWER(col1 - 1.0, 2) + POWER(col2 - 2.0, 2), 1 / 2)"
+        )
+        assert (
+            transform_sql[2]
+            == "POWER(POWER(col1 - 100.0, 2) + POWER(col2 - 200.0, 2), 1 / 2)"
+        )
+
+    def test_get_attributes(self, memmodel_nc):
+        """
+        test function - get_attributes
+        """
+        attributes = memmodel_nc.get_attributes()
+        assert attributes["clusters"][0][0] == 0.5
+        assert attributes["clusters"][0][1] == 0.6
+        assert attributes["clusters"][1][0] == 1
+        assert attributes["clusters"][1][1] == 2
+        assert attributes["p"] == 2
+
+    def test_object_type(self, memmodel_nc):
+        """
+        test function - object_type
+        """
+        assert memmodel_nc.object_type == "NearestCentroid"

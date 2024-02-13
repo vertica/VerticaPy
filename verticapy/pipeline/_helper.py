@@ -35,7 +35,8 @@ def execute_and_return(sql: str) -> str:
 
 def remove_comments(input_string: str) -> str:
     """
-    Remove comments of the form /* */ from SQL string.
+    Remove comments of the
+    form /* */ from SQL string.
     """
     pattern = r"/\*.*?\*/"
     result = re.sub(pattern, "", input_string, flags=re.DOTALL)
@@ -44,7 +45,9 @@ def remove_comments(input_string: str) -> str:
 
 def to_sql(sql: str) -> str:
     """
-    Transform any 'str' to QUOTE_LITERAL('str') in SQL string.
+    Transform any 'str' to
+    ``QUOTE_LITERAL('str')``
+    in SQL string.
     """
     even = True
     string = ""
@@ -66,7 +69,8 @@ def to_sql(sql: str) -> str:
 
 def is_valid_delimiter(delimiter: str) -> bool:
     """
-    Returns True if the delimiter char is allowed.
+    Returns ``True`` if the
+    delimiter char is allowed.
     """
     delimiter_ascii = ord(delimiter)
     return 0 <= delimiter_ascii <= 127
@@ -74,7 +78,8 @@ def is_valid_delimiter(delimiter: str) -> bool:
 
 def required_keywords(yaml: dict, keywords: list) -> bool:
     """
-    Returns if all the expected keywords are in the yaml level.
+    Returns if all the expected
+    keywords are in the yaml level.
     """
     for keyword in keywords:
         if keyword not in yaml.keys():
@@ -84,7 +89,8 @@ def required_keywords(yaml: dict, keywords: list) -> bool:
 
 def setup():
     """
-    Execute the creation of drop_pipeline.
+    Execute the creation
+    of ``drop_pipeline``.
     """
     _executeSQL(
         """CREATE OR REPLACE PROCEDURE drop_pipeline(schem VARCHAR, pipe VARCHAR) LANGUAGE PLvSQL AS $$
