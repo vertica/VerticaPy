@@ -54,6 +54,7 @@ setuptools.setup(
             "descartes>=1.0.0",
             "geopandas>=0.8.0",
             "shapely>=1.6.0",
+            "pyarrow>=14.0.0"
         ],
     },
     package_data={"": ["*.csv", "*.json", "*.css", "*.html"]},
