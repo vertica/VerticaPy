@@ -23,7 +23,7 @@ import verticapy as vp
 from verticapy.machine_learning.vertica.feature_extraction.text import (
     TfidfVectorizer as vpy_TfidfVectorizer,
 )
-from verticapy.tests_new.machine_learning.vertica import abs_tolerance_map
+from verticapy.tests_new.machine_learning.vertica import rel_abs_tol_map
 
 
 class TestTFIDF:
@@ -167,7 +167,7 @@ class TestTFIDF:
             merge_vdf_pdf["tfidf"],
             merge_vdf_pdf["tfidf_py"],
             check_names=False,
-            atol=abs_tolerance_map["TFIDF"],
+            atol=rel_abs_tol_map["TFIDF"],
         )
 
     def test_get_attributes(self, schema_loader):

@@ -21,7 +21,7 @@ import subprocess
 import numpy as np
 import pytest
 from verticapy.machine_learning.vertica import export_models, import_models, load_model
-from verticapy.tests_new.machine_learning.vertica import rel_tolerance_map
+from verticapy.tests_new.machine_learning.vertica import rel_abs_tol_map
 import verticapy as vp
 
 if sys.version_info < (3, 12):
@@ -261,7 +261,9 @@ class TestModelManagement:
 
         remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
 
-        assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
+        assert vpy_res == pytest.approx(
+            py_res, rel=rel_abs_tol_map[model_class]["load_model"]["rel"]
+        )
 
 
 @pytest.mark.parametrize(
@@ -366,4 +368,4 @@ class TestModelManagementTF:
         remove_model_dir(folder_path=f"/tmp/{schema_loader}")
         vp.drop(name=f"{schema_loader}.tf_frozen_model")
 
-        assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
+        assert vpy_res == pytest.approx(py_res, rel=rel_abs_tol_map[model_class])
