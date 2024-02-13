@@ -18,42 +18,17 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Parser.
 """
-
-# base package imports
-import yaml
 import argparse
-from tqdm import tqdm
 import re
+from tqdm import tqdm
+import yaml
 
-# required packages
 import verticapy as vp
-from verticapy.datasets import (
-    load_airline_passengers,
-    load_amazon,
-    load_cities,
-    load_commodities,
-    load_gapminder,
-    load_iris,
-    load_laliga,
-    load_market,
-    load_pop_growth,
-    load_smart_meters,
-    load_titanic,
-    load_winequality,
-    load_world,
-    load_africa_education,
-)
+
 from verticapy._utils._sql._sys import _executeSQL
 
-# local
-from verticapy.pipeline._helper import required_keywords, execute_and_return, setup
-from verticapy.pipeline import _ingest
-from verticapy.pipeline import _transform
-from verticapy.pipeline import _train
-from verticapy.pipeline import _validate
-from verticapy.pipeline import _schedule
-
-SUPPORTED_DATASETS = [
+from verticapy.datasets import (
+    load_africa_education,
     load_airline_passengers,
     load_amazon,
     load_cities,
@@ -67,32 +42,35 @@ SUPPORTED_DATASETS = [
     load_titanic,
     load_winequality,
     load_world,
+)
+
+from verticapy.pipeline import _ingest, _schedule, _train, _transform, _validate
+from verticapy.pipeline._helper import execute_and_return, required_keywords, setup
+
+
+SUPPORTED_DATASETS = [
     load_africa_education,
+    load_airline_passengers,
+    load_amazon,
+    load_cities,
+    load_commodities,
+    load_gapminder,
+    load_iris,
+    load_laliga,
+    load_market,
+    load_pop_growth,
+    load_smart_meters,
+    load_titanic,
+    load_winequality,
+    load_world,
 ]
 
-parser = argparse.ArgumentParser(
-    description="""Vertica Pipelines is an open source platform for
-    managing data scientists machine learning pipelines.
-    They are built on a human-readable data format: YAML."""
-)
-parser.add_argument("connection_file", help="Path to the connection yaml file")
-parser.add_argument("input_file", help="Path to the input yaml file")
-parser.add_argument(
-    "-o",
-    "--outfile",
-    nargs="?",
-    help="[Optional] Path to the output sql file. If unspecified pipeline_name.sql will be used.",
-    default=None,
-    required=False,
-)
 
-args = parser.parse_args()
-config_name = args.connection_file
-file_name = args.input_file
-output_name = args.outfile
-
-with open(config_name, "r", encoding="utf-8") as file:
-    connect = yaml.safe_load(file)
+def connect_with_yaml(connect: dict):
+    """
+    Connect to the database
+    with a yaml file.
+    """
     if required_keywords(connect, ["host", "port", "database", "password", "user"]):
         vp.new_connection(
             {
@@ -107,8 +85,11 @@ with open(config_name, "r", encoding="utf-8") as file:
         vp.connect("temp")
 
 
-with open(file_name, "r", encoding="utf-8") as file:
-    pipeline = yaml.safe_load(file)
+def parse_yaml(pipeline: dict):
+    """
+    Convert a yaml pipeline file
+    to a functional pipeline.
+    """
     schema_name = pipeline["schema"]
     name = pipeline["pipeline"]
     pipeline_name = schema_name + "." + name
@@ -125,7 +106,6 @@ with open(file_name, "r", encoding="utf-8") as file:
     supported_table_names = list(
         map(lambda x: re.search(r"load\S*", str(x)).group(), SUPPORTED_DATASETS)
     )
-    print(supported_table_names)
     if (
         len(table_split) == 2
         and table_split[0] == "public"
@@ -201,8 +181,42 @@ with open(file_name, "r", encoding="utf-8") as file:
                 schedule, MODEL_SQL, TABLE_SQL, pipeline_name
             )
 
-        if output_name is None:
-            output_name = pipeline_name + ".sql"
+    return META_SQL
 
-        with open(output_name, "w", encoding="utf-8") as file:
-            file.write(META_SQL)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="""Vertica Pipelines is an open source platform for
+        managing data scientists machine learning pipelines.
+        They are built on a human-readable data format: YAML."""
+    )
+    parser.add_argument("connection_file", help="Path to the connection yaml file")
+    parser.add_argument("input_file", help="Path to the input yaml file")
+    parser.add_argument(
+        "-o",
+        "--outfile",
+        nargs="?",
+        help="[Optional] Path to the output sql file. If unspecified pipeline_name.sql will be used.",
+        default=None,
+        required=False,
+    )
+
+    args = parser.parse_args()
+    config_name = args.connection_file
+    file_name = args.input_file
+    output_name = args.outfile
+
+    with open(config_name, "r", encoding="utf-8") as file:
+        connection_yaml = yaml.safe_load(file)
+        connect_with_yaml(connection_yaml)
+
+    with open(file_name, "r", encoding="utf-8") as file:
+        pipeline_yaml = yaml.safe_load(file)
+        sql = parse_yaml(pipeline_yaml)
+
+    if output_name is None:
+        output_name = pipeline_yaml["schema"] + "." + pipeline_yaml["pipeline"]
+        output_name += ".sql"
+
+    with open(output_name, "w", encoding="utf-8") as file:
+        file.write(sql)

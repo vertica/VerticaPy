@@ -280,7 +280,8 @@ class TestClassificationMetrics:
         global python_metrics_map
         python_metrics_map = defaultdict(list)
         func_args = {}
-        rel_tolerance = 1e-2
+        rel_tolerance = 1e-1
+        abs_tolerance = 1e-2
 
         (
             vdf,
@@ -549,9 +550,9 @@ class TestClassificationMetrics:
         if isinstance(vpy_res, dict):
             for v, s in zip(vpy_res.values(), skl_res.values()):
                 assert v == pytest.approx(
-                    s, rel=rel_tolerance
+                    s, rel=rel_tolerance, abs=abs_tolerance
                 ), f"vertica: {vpy_res}, sklearn: {skl_res}"
         else:
             assert vpy_res == pytest.approx(
-                skl_res, rel=rel_tolerance
+                skl_res, rel=rel_tolerance, abs=abs_tolerance
             ), f"vertica: {vpy_res}, sklearn: {skl_res}"

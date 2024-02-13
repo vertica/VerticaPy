@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <link rel="modulepreload" href="https://d3js.org/d3.v5.min.js" >
+    
+</head>
+<body>
+    <div id="graph" style="text-align: center;"></div>
+    <script src="https://d3js.org/d3.v5.min.js" type="module"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js" onload="initializeGraphviz()"></script>
+    <script>
+
+
+        function initializeGraphviz() {
+            var dotSrc = [];
+            // Now you can use d3-graphviz safely
+            d3.select("#graph").graphviz()
+                .renderDot(dotSrc);
+        }
+
+        // document.addEventListener('DOMContentLoaded', initializeGraphviz);
+
+    </script>
+</body>
+</html>

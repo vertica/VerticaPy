@@ -21,12 +21,14 @@ This script runs the Vertica Machine Learning Pipeline Test.
 from typing import Tuple
 
 from verticapy import vDataFrame
-from verticapy.machine_learning.vertica.base import VerticaModel
+
 from verticapy._typing import SQLColumns
+
 from verticapy.machine_learning.metrics.regression import (
     regression_report,
     FUNCTIONS_REGRESSION_SQL_DICTIONARY,
 )
+from verticapy.machine_learning.vertica.base import VerticaModel
 
 from verticapy.pipeline._helper import execute_and_return, remove_comments
 
@@ -41,21 +43,116 @@ def testing(
     Parameters
     ----------
     test: dict
-        YAML object which outlines the steps of the operation.
+        YAML object which outlines
+        the steps of the operation.
     model: VerticaModel
-        The model trained in the training step.
+        The model trained in the training
+        step.
     pipeline_name: str
-        The prefix name of the intended pipeline to unify
-        the creation of the objects.
+        The prefix name of the intended
+        pipeline to unify the creation
+        of the objects.
     cols: SQLColumns
-        ``list`` of the columns used to deploy the model.
+        ``list`` of the columns used to
+        deploy the model.
 
     Returns
     -------
     str
-        The SQL to replicate the steps of the yaml file.
+        The SQL to replicate
+        the steps of the yaml
+        file.
     str
-        The SQL to replicate the metric table.
+        The SQL to replicate
+        the metric table.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_titanic
+        load_titanic() # Loading the titanic dataset in Vertica
+
+        import verticapy as vp
+        vp.vDataFrame("public.titanic")
+
+    If you want to make some transformations checkout
+    :py:function:`~pipeline._transform.transformation`.
+    Then you can train a model, see
+    :py:function:`~pipeline._train.train`.
+
+    .. code-block:: python
+
+        from verticapy.pipeline._train import training
+
+        # Define the training steps in a YAML object
+        train = {
+            'method': {
+                'name': 'RandomForestClassifier',
+                'target': 'survival',
+                'params': {
+                    'n_estimators': 100,
+                    'max_depth': 5,
+                    'min_samples_split': 2,
+                    'min_samples_leaf': 1,
+            }
+        }
+
+        # Define the vDataFrame containing the training data
+        vdf = vDataFrame("public.titanic")
+
+        # Define the pipeline name
+        pipeline_name = "my_pipeline"
+
+        # Define the columns needed to deploy the model
+        cols = ['family_size', 'fares', 'sexes', 'ages']
+
+        # Call the training function
+        meta_sql, model, model_sql = training(train, vdf, pipeline_name, cols)
+
+    This example demonstrates how to use
+    the `testing` function to run the
+    testing step of a pipeline.
+
+    Then you can train a model, see
+    :py:function:`~pipeline._train.train`.
+
+    .. code-block:: python
+
+        from verticapy.pipeline._validate import testing
+
+        # Define the training steps in a YAML object
+        test = {
+            'test': {
+                'metric1': {
+                    'name': 'accuracy_score',
+                    'y_true': 'survival',
+                    'y_score': 'prediction',
+                },
+                'metric2': {
+                    'name': 'r2_score',
+                    'y_true': 'survival',
+                    'y_score': 'prediction',
+                },
+                'metric3': {
+                    'name': 'max_error',
+                    'y_true': 'survival',
+                    'y_score': 'prediction',
+                },
+            }
+        }
+
+        # Define the vDataFrame containing the training data
+        vdf = vDataFrame("public.titanic")
+
+        # Define the pipeline name
+        pipeline_name = "my_pipeline"
+
+        # Define the columns needed to deploy the model
+        cols = ['family_size', 'fares', 'sexes', 'ages']
+
+        # Call the testing function
+        meta_sql, table_sql = testing(test, model, pipeline_name, cols)
     """
     meta_sql = ""
     dummy = model.predict(
