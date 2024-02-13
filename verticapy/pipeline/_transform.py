@@ -25,7 +25,8 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 def reset_queue(column_queue: Queue) -> Queue:
     """
-    Return a new Queue where all columns haven't been tried.
+    Return a new Queue where all
+    columns haven't been tried.
     """
     new_queue = Queue()
     while not column_queue.empty():
@@ -36,88 +37,107 @@ def reset_queue(column_queue: Queue) -> Queue:
 
 def transformation(transform: dict, table: str) -> vDataFrame:
     """
-    This function takes a set of transforms, each containing a column name and instructions, and attempts to create the columns
-    in the given table, according to the given instructions while handling exceptions and cyclic dependencies.
+    This function takes a set of transforms,
+    each containing a column name and instructions,
+    and attempts to create the columns in the given
+    table, according to the given instructions while
+    handling exceptions and cyclic dependencies.
 
     Parameters
     ----------
     transform: dict
-        YAML object which outlines the steps of the operation.
+        YAML object which outlines
+        the steps of the operation.
     table: str
-        The name of the table the pipeline is ingesting to.
+        The name of the table the
+        pipeline is ingesting to.
 
     Returns
     -------
     vDataFrame
-        The transformed vDataFrame
+        The transformed ``vDataFrame``.
 
     Description
     -----------
-    - The function processes the columns in a queue-based approach, allowing for columns to be created in any order.
-    - It tries to execute the instructions for each column to create the respective column.
-    - If an exception occurs during column creation, it logs the error message in the 'error_string', moves the
-      column to the back of the queue, and marks it as flagged.
-    - When a column is successfully created, the error_string is reset, and all column flags are cleared in the queue.
-    - If the next column in the queue has been flagged, it indicates that either errors persist or cyclic dependencies exist,
-      in which case the error_string contains relevant error information.
+    - The function processes the columns in
+      a queue-based approach, allowing for
+      columns to be created in any order.
+    - It tries to execute the instructions
+      for each column to create the respective
+      column.
+    - If an exception occurs during column
+      creation, it logs the error message in
+      the 'error_string', moves the column to
+      the back of the queue, and marks it as
+      flagged.
+    - When a column is successfully created,
+      the error_string is reset, and all column
+      flags are cleared in the queue.
+    - If the next column in the queue has been
+      flagged, it indicates that either errors
+      persist or cyclic dependencies exist,
+      in which case the error_string contains
+      relevant error information.
 
     Example
     -------
     Here you can use an existing relation.
-        .. code-block:: python
 
-                from verticapy.datasets import load_titanic
+    .. code-block:: python
+
+        from verticapy.datasets import load_titanic
         load_titanic() # Loading the titanic dataset in Vertica
 
         import verticapy as vp
         vp.vDataFrame("public.titanic")
 
     Now you can apply a transform.
-        .. code-block:: python
 
-                from verticapy.pipeline._transform import transformation
+    .. code-block:: python
 
-                # Define the transformation steps in a YAML object
-                transform = {
-                        'family_size': {
-                                'sql': 'parch+sibsp+1'
-                        },
-                        'fares': {
-                                'sql': 'fare',
-                                'transform_method': {
-                                        'name': 'fill_outliers',
-                                        'params': {
-                                                'method': 'winsorize',
-                                                'alpha': 0.03
-                                        }
+        from verticapy.pipeline._transform import transformation
+
+        # Define the transformation steps in a YAML object
+        transform = {
+                'family_size': {
+                        'sql': 'parch+sibsp+1'
+                },
+                'fares': {
+                        'sql': 'fare',
+                        'transform_method': {
+                                'name': 'fill_outliers',
+                                'params': {
+                                        'method': 'winsorize',
+                                        'alpha': 0.03
                                 }
-                        },
-                        'sexes': {
-                                'sql': 'sex',
-                                'transform_method': {
-                                        'name': 'label_encode'
-                                }
-                        },
-                        'ages': {
-                                'sql': 'age',
-                                'transform_method': {
-                                        'name': 'fillna',
-                                        'params': {
-                                                'method': 'mean',
-                                                'by': ['pclass', 'sex']
-                                        }
+                        }
+                },
+                'sexes': {
+                        'sql': 'sex',
+                        'transform_method': {
+                                'name': 'label_encode'
+                        }
+                },
+                'ages': {
+                        'sql': 'age',
+                        'transform_method': {
+                                'name': 'fillna',
+                                'params': {
+                                        'method': 'mean',
+                                        'by': ['pclass', 'sex']
                                 }
                         }
                 }
+        }
 
-                # Specify the target table for transformation
-                table = "public.titanic"
+        # Specify the target table for transformation
+        table = "public.titanic"
 
-                # Call the transformation function
-                transformed_vdf = transformation(transform, table)
+        # Call the transformation function
+        transformed_vdf = transformation(transform, table)
 
-                # Display the transformed vDataFrame
-                print(transformed_vdf)
+        # Display the transformed vDataFrame
+        print(transformed_vdf)
     """
     vdf = vDataFrame(table)
 
