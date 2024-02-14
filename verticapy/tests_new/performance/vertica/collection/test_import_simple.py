@@ -139,6 +139,22 @@ class TestProfileImport:
             len(missing_tables) == 0
         ), f"Failed to create tables: [{','.join(missing_tables)}]"
 
+    def test_skip_create_table_property(self):
+        pi = ProfileImport(
+            target_schema="no_such_schema", key="any_key", filename="no_such_file.tar"
+        )
+        pi.raise_when_missing_files = True
+        with pytest.raises(TypeError):
+            pi.raise_when_missing_files = "not valid to set to string"
+
+        pi.skip_create_table = True
+        with pytest.raises(TypeError):
+            pi.skip_create_table = "cannot be set to string"
+
+        pi.tmp_path = "/tmp"
+        with pytest.raises(TypeError):
+            pi.tmp_path = None
+
     @staticmethod
     def _get_set_of_tables_in_schema(target_schema: str, key: str) -> Set[str]:
         """

@@ -88,7 +88,7 @@ class ProfileImport:
     @skip_create_table.setter
     def skip_create_table(self, val: bool) -> None:
         if not isinstance(val, bool):
-            raise ValueError(
+            raise TypeError(
                 f"Cannot set skip_create_table to value of type {type(val)}. Must be type bool."
             )
         self._skip_create_table = val
@@ -105,7 +105,7 @@ class ProfileImport:
     @raise_when_missing_files.setter
     def raise_when_missing_files(self, val: bool) -> None:
         if not isinstance(val, bool):
-            raise ValueError(
+            raise TypeError(
                 f"Cannot set raise_when_missing_files to value of type {type(val)}. Must be type bool."
             )
         self._raise_when_missing_files = val
@@ -122,7 +122,7 @@ class ProfileImport:
     @tmp_path.setter
     def tmp_path(self, val: os.PathLike) -> None:
         if not isinstance(val, str) and not isinstance(val, os.PathLike):
-            raise ValueError(
+            raise TypeError(
                 f"Cannot set tmp_dir to value of type {type(val)}. Must be type string or PathLike."
             )
         self._tmp_path = val
