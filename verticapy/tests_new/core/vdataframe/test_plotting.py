@@ -16,8 +16,24 @@ permissions and limitations under the License.
 """
 import pytest
 
+import verticapy as vp
+
 
 class TestPlotting:
     """
     test class for Plotting functions test
     """
+
+    @pytest.mark.parametrize(
+        "columns, max_nb_points",
+        [(["SepalLengthCm", "SepalWidthCm", "PetalWidthCm"], 5)],
+    )
+    def test_scatter_matrix(self, iris_vd, columns, max_nb_points):
+        """
+        test function - scatter_matrix
+        """
+        vp.set_option("plotting_lib", "plotly")
+        print(vp.get_option("plotting_lib"))
+
+        res = iris_vd.scatter_matrix(columns=columns, max_nb_points=max_nb_points)
+        assert len(res) == len(columns)

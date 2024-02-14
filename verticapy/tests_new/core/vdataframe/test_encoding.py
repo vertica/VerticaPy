@@ -26,6 +26,31 @@ class TestEncoding:
     test class for encoding function test
     """
 
+    def test_case_when(self, titanic_vd_fun):
+        """
+        test function - case_when
+        """
+        titanic_vd_fun.case_when(
+            "age_category",
+            titanic_vd_fun["age"] < 12,
+            "children",
+            titanic_vd_fun["age"] < 18,
+            "teenagers",
+            titanic_vd_fun["age"] > 60,
+            "seniors",
+            titanic_vd_fun["age"] < 25,
+            "young adults",
+            "adults",
+        )
+
+        assert titanic_vd_fun["age_category"].distinct() == [
+            "adults",
+            "children",
+            "seniors",
+            "teenagers",
+            "young adults",
+        ]
+
     @pytest.mark.parametrize(
         "column, breaks, labels, include_lowest, right",
         [

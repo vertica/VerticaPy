@@ -18,6 +18,11 @@ import pytest
 
 from IPython.display import HTML
 
+import verticapy as vp
+
+vp.set_option("plotting_lib", "plotly")
+print(vp.get_option("plotting_lib"))
+
 
 class TestPlottingAnimated:
     """

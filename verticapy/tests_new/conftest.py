@@ -42,6 +42,8 @@ from verticapy.datasets import (
     load_airline_passengers,
     load_pop_growth,
     load_gapminder,
+    load_cities,
+    load_world,
 )
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -565,3 +567,23 @@ def gapminder_vd_fun(schema_loader):
     gapminder = load_gapminder(schema_loader, "gapminder")
     yield gapminder
     drop(name=f"{schema_loader}.gapminder")
+
+
+@pytest.fixture(scope="module")
+def world_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for load_world dataset
+    """
+    world = load_world(schema_loader, "world")
+    yield world
+    drop(name=f"{schema_loader}.world")
+
+
+@pytest.fixture(scope="module")
+def cities_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for load_cities dataset
+    """
+    cities = load_cities(schema_loader, "cities")
+    yield cities
+    drop(name=f"{schema_loader}.cities")
