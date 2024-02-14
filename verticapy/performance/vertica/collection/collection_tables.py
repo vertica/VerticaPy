@@ -159,8 +159,15 @@ def getAllCollectionTables(
     raise ValueError(f"Unrecognized bundle version {version}")
 
 
+# Different versions of the bundle will expect to have different
+# tables present. We expect to add more tables as time goes on.
+# ALL_TABLES_V* constants will store lists of tables for each
+# version of the bundles.
+#
+# We expect that the most recent version will be all tables
+# in AllTableTypes.
+
 ALL_TABLES_V1 = [
-    AllTableTypes.COLLECTION_EVENTS,
     AllTableTypes.COLLECTION_EVENTS,
     AllTableTypes.COLLECTION_INFO,
     AllTableTypes.DC_EXPLAIN_PLANS,
