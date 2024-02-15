@@ -74,6 +74,7 @@ class ProfileImport:
         self.raise_when_missing_files = False
         self.skip_create_table = False
         self.tmp_path = os.getcwd()
+        self.unpack_dir = None
 
     @property
     def skip_create_table(self) -> bool:
@@ -132,15 +133,16 @@ class ProfileImport:
 
     def check_file(self) -> None:
         """
-        Checks to see that the file exists and that we can open it
+        Checks to see that the file exists and that we can open it.
+        
+        Sets ``self.unpack_dir`` and ``self.bundle_version``.
         """
         if not os.path.exists(self.filename):
             raise FileNotFoundError(f"File {self.filename} does not exist")
 
-        unpack_dir = self._unpack_bundle()
-        self.bundle_version = self._calculate_bundle_version(unpack_dir)
-        self._check_for_missing_files(unpack_dir, self.bundle_version)
-        self._load_vdataframes(unpack_dir, self.bundle_version)
+        self.unpack_dir = self._unpack_bundle()
+        self.bundle_version = self._calculate_bundle_version(self.unpack_dir)
+        self._check_for_missing_files(self.unpack_dir, self.bundle_version)
 
     def check_schema(self) -> None:
         """
@@ -153,6 +155,11 @@ class ProfileImport:
             return
         self._create_schema_if_not_exists()
         self._create_tables_if_not_exists()
+
+    def load_file(self) -> None:
+        self.check_file()
+        self._load_vdataframes(self.unpack_dir, self.bundle_version)
+        # copy the file into the database
 
     def _schema_exists_or_raise(self) -> None:
         result = _executeSQL(
@@ -279,7 +286,7 @@ class ProfileImport:
         if not self.raise_when_missing_files:
             self.logger.warning(message)
             return
-        raise ImportError(message)
+        raise ProfileImportError(message)
 
     def _load_vdataframes(self, unpack_dir: Path, version: BundleVersion) -> None:
         unpacked_files = set([x for x in unpack_dir.iterdir()])

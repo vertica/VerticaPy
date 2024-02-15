@@ -75,7 +75,7 @@ class TestProfileImport:
 
     def test_missing_bundle(self):
         """
-        Confirm failure when user specifies a file that does not exist
+        Confirm ProfileImport raises when user specifies a file that does not exist
         """
         fname = "no_such_file.tar"
         pi = ProfileImport(
@@ -87,7 +87,8 @@ class TestProfileImport:
 
     def test_untar_file(self, tmp_path_with_test_bundles):
         """
-        Confirm failure when user specifies a file that does not exist
+        Untars a valid file, identifies the version, and checks for
+        missing parquet files.
         """
 
         fname = tmp_path_with_test_bundles / "feb01_cqvs_ndv20.tar"
@@ -101,6 +102,40 @@ class TestProfileImport:
         pi.tmp_path = tmp_path_with_test_bundles
         # check_file shouldn't raise any errors because the input is valid
         pi.check_file()
+
+    def test_untar_incomplete_file(self, tmp_path_with_test_bundles):
+        """
+        Confirm ProfileImport raises when user specifies a file that does not exist
+        """
+
+        fname = tmp_path_with_test_bundles / "feb01_cqvs_missing_parquet.tar"
+        pi = ProfileImport(
+            target_schema="schema_not_used",
+            key="no_such_key",
+            filename=fname,
+        )
+        pi.skip_create_table = True
+        pi.raise_when_missing_files = False
+        pi.tmp_path = tmp_path_with_test_bundles
+        # check_file was configured to log warnings instead of printing errors
+        pi.check_file()
+        pi.raise_when_missing_files = True
+        with pytest.raises(ProfileImportError, match=f"Bundle .* lacks [0-9]+ files"):
+            pi.check_file()
+
+    def test_load_file(self, tmp_path_with_test_bundles):
+        fname = tmp_path_with_test_bundles / "feb01_cqvs_ndv20.tar"
+        pi = ProfileImport(
+            # schema and target will be once this test copies 
+            # files into a schema
+            target_schema="schema_not_used",
+            key="no_such_key",
+            filename=fname,
+        )
+        pi.skip_create_table = True
+        pi.raise_when_missing_files = True
+        pi.tmp_path = tmp_path_with_test_bundles
+        pi.load_file()
 
     def test_create_tables(self, schema_loader):
         """
