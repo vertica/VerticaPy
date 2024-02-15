@@ -249,6 +249,13 @@ class ProfileImport:
         return tmp_dir
 
     def _calculate_bundle_version(self, unpack_dir: Path) -> BundleVersion:
+        """
+        Computes the version of the bundle based on the files in the bundle.
+
+        Retuns
+        --------
+        BundleVersion: the detected version of the bundle
+        """
         metadata_file = unpack_dir / "profile_metadata.json"
         if not metadata_file.exists():
             self.logger.info(f"Did not find metadata file {metadata_file}")
@@ -259,6 +266,17 @@ class ProfileImport:
     def _check_for_missing_files(
         self, unpack_dir: Path, version: BundleVersion
     ) -> None:
+        """
+        Looks in ``unpack_dir`` for parquet files corresponding to the
+        expected set of tables for ``version`` of the bundle.
+
+        Pass a list of missing files to ``_handle_missing_files``, which
+        may raise or warn about any missing files.
+
+        Returns
+        -------
+        None
+        """
         unpacked_files = set([x for x in unpack_dir.iterdir()])
         missing_files = []
 
@@ -275,6 +293,10 @@ class ProfileImport:
     def _handle_missing_files(
         self, unpack_dir: Path, missing_files: List[Path]
     ) -> None:
+        """
+        When files are missing, logs a warning or raises an error depending on
+        the value of ``self.raise_when_missing_files``
+        """
         if len(missing_files) == 0:
             return
         message = (
