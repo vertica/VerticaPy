@@ -126,7 +126,7 @@ class TestProfileImport:
     def test_load_file(self, tmp_path_with_test_bundles):
         fname = tmp_path_with_test_bundles / "feb01_cqvs_ndv20.tar"
         pi = ProfileImport(
-            # schema and target will be once this test copies 
+            # schema and target will be once this test copies
             # files into a schema
             target_schema="schema_not_used",
             key="no_such_key",

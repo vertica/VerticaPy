@@ -14,11 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import os
+import datetime
 import logging
-import tarfile
+import os
 from pathlib import Path
-import random
+import tarfile
 from typing import Set, List
 
 import pandas as pd
@@ -134,7 +134,7 @@ class ProfileImport:
     def check_file(self) -> None:
         """
         Checks to see that the file exists and that we can open it.
-        
+
         Sets ``self.unpack_dir`` and ``self.bundle_version``.
         """
         if not os.path.exists(self.filename):
@@ -235,10 +235,9 @@ class ProfileImport:
         self.tarfile_obj = tarfile.open(self.filename, "r")
         names = "\n".join(self.tarfile_obj.getnames())
         print(f"Files in the archive: {names}")
-        # There are other ways to generate a
-        tmp_dir = self.tmp_path / Path(
-            f"profile_import_run{random.randint(10000, 20000)}"
-        )
+        current_datetime = datetime.datetime.now()
+        timestamp_suffix = current_datetime.strftime("%Y-%m-%d_%H:%M:%S_%f")
+        tmp_dir = self.tmp_path / Path(f"profile_import_run_{timestamp_suffix}")
 
         print(f"Creating temporary directory: {tmp_dir}")
 
