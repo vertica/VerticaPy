@@ -159,7 +159,7 @@ class ProfileImport:
     def load_file(self) -> None:
         self.check_file()
         self._load_vdataframes(self.unpack_dir, self.bundle_version)
-        # copy the file into the database
+        # Future PR: copy the file into the database
 
     def _schema_exists_or_raise(self) -> None:
         result = _executeSQL(
