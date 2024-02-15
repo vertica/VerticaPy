@@ -236,7 +236,7 @@ class ProfileImport:
         names = "\n".join(self.tarfile_obj.getnames())
         print(f"Files in the archive: {names}")
         current_datetime = datetime.datetime.now()
-        timestamp_suffix = current_datetime.strftime("%Y-%m-%d_%H:%M:%S_%f")
+        timestamp_suffix = current_datetime.strftime("%Y-%m-%d_%H-%M-%S_%f")
         tmp_dir = self.tmp_path / Path(f"profile_import_run_{timestamp_suffix}")
 
         print(f"Creating temporary directory: {tmp_dir}")

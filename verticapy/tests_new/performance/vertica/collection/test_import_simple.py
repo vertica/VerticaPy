@@ -32,15 +32,16 @@ class TestProfileImport:
     Collection of tests for ProfileImport class
     """
 
-    @pytest.fixture
-    def tmp_path_with_test_bundles(self, tmp_path):
+    @pytest.fixture(scope="class")
+    def tmp_path_with_test_bundles(self, tmp_path_factory):
         test_package_dir = Path(__file__).parent
-        print(f"tmp_path is {tmp_path}")
+        class_tmp_path = tmp_path_factory.mktemp('test_profile_import')
+        logging.info(f"tmp_path_with_test_bundles is {class_tmp_path}")
         for f in test_package_dir.iterdir():
             if f.match("*.tar"):
-                shutil.copy(f, tmp_path)
-        yield tmp_path
-        # No cleanup to do: tmp_path will do it for us
+                shutil.copy(f, class_tmp_path)
+        yield class_tmp_path
+        # No cleanup to do: tmp_path_factory will do it for us
 
     def test_empty_schema(self, schema_loader):
         """Confirm that the profile import fails when schema is present but
