@@ -26,7 +26,10 @@ import pandas as pd
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 
-from .collection_tables import getAllCollectionTables, AllTableTypes, BundleVersion
+from verticapy.performance.vertica.collection.collection_tables import (
+    getAllCollectionTables,
+    BundleVersion,
+)
 
 
 class ProfileImportError(Exception):
