@@ -579,6 +579,7 @@ class VerticaModel(PlottingUtils):
             specific to your class of interest,
             please refer to that particular class.
         """
+        vertica_version(condition=[12, 0, 4])
         try:
             if not self._is_native:
                 raise RuntimeError("Only native models can be registered.")
