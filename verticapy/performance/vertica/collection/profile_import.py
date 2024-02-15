@@ -35,7 +35,7 @@ class ProfileImportError(Exception):
 
 class ProfileImport:
     """
-    ProfileImport loads data from a profile collection into a running database.
+    ``ProfileImport`` loads data from a profile collection into a running database.
     Can create schemas and tables to load the profile into.
     """
 
@@ -79,8 +79,8 @@ class ProfileImport:
     @property
     def skip_create_table(self) -> bool:
         """
-        ProfileImport will SKIP running ddl statements to create new
-        tables when skip_creat_table is True. Otherwise it will run
+        ``ProfileImport`` will SKIP running ddl statements to create new
+        tables when ``skip_create_table`` is True. Otherwise it will run
         DDL statements. Default value is False.
 
         The DDL statements are:
@@ -100,8 +100,8 @@ class ProfileImport:
     @property
     def raise_when_missing_files(self) -> bool:
         """
-        ProfileImport will raise and exception if a bundle lacks
-        any of the expected files and raise_when_missing_files is True.
+        ``ProfileImport`` will raise and exception if a bundle lacks
+        any of the expected files and ``raise_when_missing_files`` is True.
         Otherwise, it will write a warning to the log. Default value is False.
         """
         return self._raise_when_missing_files
@@ -117,9 +117,8 @@ class ProfileImport:
     @property
     def tmp_path(self) -> Path:
         """
-        ProfileImport will raise and exception if a bundle lacks
-        any of the expected files and raise_when_missing_files is True.
-        Otherwise, it will write a warning to the log. Default value is False.
+        ``ProfileImport`` creates temporary directories in ``tmp_path``
+        when unpacking bundles.
         """
         return self._tmp_path
 

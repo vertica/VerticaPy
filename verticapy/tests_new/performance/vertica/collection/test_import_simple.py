@@ -35,7 +35,7 @@ class TestProfileImport:
     @pytest.fixture(scope="class")
     def tmp_path_with_test_bundles(self, tmp_path_factory):
         test_package_dir = Path(__file__).parent
-        class_tmp_path = tmp_path_factory.mktemp('test_profile_import')
+        class_tmp_path = tmp_path_factory.mktemp("test_profile_import")
         logging.info(f"tmp_path_with_test_bundles is {class_tmp_path}")
         for f in test_package_dir.iterdir():
             if f.match("*.tar"):
