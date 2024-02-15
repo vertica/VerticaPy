@@ -22,6 +22,7 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.model_management import load_model
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy._typing import (
     NoneType,
@@ -46,6 +47,7 @@ class RegisteredModel:
         of models registered with this name.
     """
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(self, registered_name: str) -> None:
         self.registered_name = registered_name
