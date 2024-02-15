@@ -48,6 +48,7 @@ class RegisteredModel:
 
     @save_verticapy_logs
     def __init__(self, registered_name: str) -> None:
+        vertica_version(condition=[12, 0, 4])
         self.registered_name = registered_name
 
         # it raises an error if it cannot find any model with such a registered name
