@@ -67,7 +67,10 @@ class ProfileImport:
 
         # initialize internal attributes
         self.tarfile_obj = None
-        self.bundle_version = None
+
+        # Default bundle version is LATEST until we unpack the bundle
+        # and learn otherwise
+        self.bundle_version = BundleVersion.LATEST
         self.raise_when_missing_files = False
         self.skip_create_table = False
         self.tmp_path = os.getcwd()
@@ -144,12 +147,6 @@ class ProfileImport:
         Checks to see that the schema and expected tables exist.
         Optionally creates the schema and expected tables.
         """
-        if self.bundle_version is None:
-            self.bundle_version = BundleVersion.LATEST
-            self.logger.info(
-                f"Set bunlde version to latest ({self.bundle_version}) because"
-                f"it was not set previously"
-            )
         if self.skip_create_table:
             self._schema_exists_or_raise()
             self._tables_exist_or_raise()
