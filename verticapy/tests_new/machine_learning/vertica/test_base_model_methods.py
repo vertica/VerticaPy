@@ -15,17 +15,21 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections import namedtuple
+from decimal import Decimal
+
 import numpy as np
+import pytest
+import plotly
+from scipy import stats
+import matplotlib.pyplot as plt
+
 from verticapy.connection import current_cursor
 from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
     rel_abs_tol_map,
 )
 from vertica_highcharts.highcharts.highcharts import Highchart
-import plotly
-from scipy import stats
-import pytest
-import matplotlib.pyplot as plt
+
 
 details_report_args = (
     "metric, expected",
@@ -226,6 +230,20 @@ def model_params(model_class):
     }
 
     return model_params_map[model_class]
+
+
+def calculate_tolerance(vpy_score, py_score):
+    if isinstance(vpy_score, (list, np.ndarray)):
+        vpy_score, py_score = vpy_score[0], py_score[0]
+
+    _rel_tol = abs(vpy_score - py_score) / min(abs(vpy_score), abs(py_score))
+    _abs_tol = abs(vpy_score - py_score) / (1 + min(abs(vpy_score), abs(py_score)))
+
+    print(
+        f"rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+    )
+
+    return _rel_tol, _abs_tol
 
 
 def regression_report_none(
@@ -824,19 +842,23 @@ class TestBaseModelMethods:
             "ARMA",
             "ARIMA",
         ]:
-            assert get_models.vpy.pred_vdf[
-                ["prediction"]
-            ].to_numpy().mean() == pytest.approx(
-                get_models.py.pred.mean(),
-                rel=rel_abs_tol_map[model_class]["predict"]["rel"],
+            vpy_res = get_models.vpy.pred_vdf[["prediction"]].to_numpy().mean()
+            py_res = get_models.py.pred.mean()
+
+            assert vpy_res == pytest.approx(
+                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
             )
         else:
-            assert get_models.vpy.pred_vdf[
-                ["quality_pred"]
-            ].to_numpy().mean() == pytest.approx(
-                get_models.py.pred.mean(),
-                rel=rel_abs_tol_map[model_class]["predict"]["rel"],
+            vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy().mean()
+            py_res = get_models.py.pred.mean()
+            assert vpy_res == pytest.approx(
+                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
             )
+
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+        print(
+            f"Model_class: {model_class}, Metric_name: prediction, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
 
     def test_contour(self, model_class, get_vpy_model):
         """
@@ -1394,9 +1416,16 @@ class TestBaseModelMethods:
             py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
             vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy()[10]
 
+        py_res = [np.exp(py_res) if model_class == "PoissonRegressor" else py_res]
+
+        print(f"vertica: {vpy_res}, sklearn: {py_res}")
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+        print(
+            f"Model_class: {model_class}, Metric_name: to_python, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
+
         assert vpy_res == pytest.approx(
-            np.exp(py_res) if model_class == "PoissonRegressor" else py_res,
-            rel=rel_abs_tol_map[model_class]["to_python"]["rel"],
+            py_res, rel=rel_abs_tol_map[model_class]["to_python"]["rel"]
         )
 
     def test_to_sql(self, get_models, model_class):

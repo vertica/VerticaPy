@@ -14,9 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from decimal import Decimal
 import os
 import pandas as pd
 import pytest
+
+import sklearn.metrics as skl_metrics
+
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
     rel_abs_tol_map,
     REL_TOLERANCE,
@@ -29,8 +33,8 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
     regression_report_none,
     regression_report_details,
     regression_report_anova,
+    calculate_tolerance,
 )
-import sklearn.metrics as skl_metrics
 
 
 @pytest.mark.parametrize(
@@ -69,6 +73,11 @@ class TestBaseTreeModel:
 
         vpy_res = getattr(vpy_model_obj.model, fit_attr)()
         py_res = getattr(py_model_obj.model, fit_attr)(py_model_obj.X, py_model_obj.y)
+
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+        print(
+            f"Model_class: {model_class}, Metric_name: {fit_attr}, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
 
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class][fit_attr]["rel"]
@@ -230,18 +239,23 @@ class TestRegressionTreeModel:
             expected,
         )
 
+        if metric in ["Dep. Variable", "Model", "No. Observations", "No. Predictors"]:
+            tol = REL_TOLERANCE
+        else:
+            tol = rel_abs_tol_map[model_class][metric]["rel"]
+            _rel_tol, _abs_tol = calculate_tolerance(
+                vpy_reg_rep_details_map[metric], py_res
+            )
+            print(
+                f"Model_class: {model_class}, Metric_name: {metric}, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+            )
+
         if py_res == 0:
             assert vpy_reg_rep_details_map[metric] == pytest.approx(
                 py_res, abs=rel_abs_tol_map[model_class][metric]["abs"]
             )
         else:
-            assert vpy_reg_rep_details_map[metric] == pytest.approx(
-                py_res,
-                rel=REL_TOLERANCE
-                if metric
-                in ["Dep. Variable", "Model", "No. Observations", "No. Predictors"]
-                else rel_abs_tol_map[model_class][metric]["rel"],
-            )
+            assert vpy_reg_rep_details_map[metric] == pytest.approx(py_res, rel=tol)
 
     @pytest.mark.parametrize(*anova_report_args)
     @pytest.mark.parametrize("fun_name", ["regression", "report"])
@@ -268,12 +282,18 @@ class TestRegressionTreeModel:
         for vpy_res, metric_type in zip(reg_rep_anova[metric], metric_types):
             py_res = regression_metrics_map[metric_type]
 
-            if py_res == 0:
-                assert vpy_res == pytest.approx(py_res, abs=1e-9)
-            else:
-                assert vpy_res == pytest.approx(
-                    py_res, rel=rel_abs_tol_map[model_class][metric]["rel"]
+            if metric_type != "":
+                _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+                print(
+                    f"Model_class: {model_class}, Metric_name: {metric}, Metric_type: {metric_type}, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
                 )
+
+                if py_res == 0:
+                    assert vpy_res == pytest.approx(py_res, abs=1e-9)
+                else:
+                    assert vpy_res == pytest.approx(
+                        py_res, rel=rel_abs_tol_map[model_class][metric]["rel"]
+                    )
 
     @pytest.mark.parametrize(*regression_metrics_args)
     def test_score(
@@ -300,6 +320,8 @@ class TestRegressionTreeModel:
             model_params,
         )
 
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_score, py_score)
+
         self.abs_error_report_reg_tree[(model_class, py_metric_name)] = {
             "Model_class": model_class,
             "Metric_name": py_metric_name.title()
@@ -307,9 +329,11 @@ class TestRegressionTreeModel:
             else py_metric_name.upper(),
             "Vertica": vpy_score,
             "Sklearn": py_score,
-            "Absolute_percentage_difference": (
-                (vpy_score - py_score) / (py_score if py_score else 1e-15)
-            )
+            "rel_tol": _rel_tol,
+            "abs_tol": _abs_tol,
+            "rel_tol(e)": "%.e" % Decimal(_rel_tol),
+            "abs_tol(e)": "%.e" % Decimal(_abs_tol),
+            "abs_pct_diff": ((vpy_score - py_score) / (py_score if py_score else 1e-15))
             * 100,
         }
         print(self.abs_error_report_reg_tree[(model_class, py_metric_name)])
@@ -381,6 +405,8 @@ class TestClassificationTreeModel:
             self.model_class_set_cls_tree
         )
 
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_score, py_score)
+
         self.abs_error_report_cls_tree[(model_class, py_metric_name)] = {
             "Model_class": model_class,
             "Metric_name": py_metric_name.title()
@@ -388,9 +414,11 @@ class TestClassificationTreeModel:
             else py_metric_name.upper(),
             "Vertica": vpy_score,
             "Sklearn": py_score,
-            "Absolute_percentage_difference": (
-                (vpy_score - py_score) / (py_score if py_score else 1e-15)
-            )
+            "rel_tol": _rel_tol,
+            "abs_tol": _abs_tol,
+            "rel_tol(e)": "%.e" % Decimal(_rel_tol),
+            "abs_tol(e)": "%.e" % Decimal(_abs_tol),
+            "abs_pct_diff": ((vpy_score - py_score) / (py_score if py_score else 1e-15))
             * 100,
         }
         print(self.abs_error_report_cls_tree[(model_class, py_metric_name)])
@@ -491,6 +519,9 @@ class TestClassificationTreeModel:
         py_model_obj = get_py_model(model_class)
         py_res = skl_metrics.confusion_matrix(py_model_obj.y, py_model_obj.pred)
 
+        print(f"vertica: {vpy_res}, sklearn: {py_res}")
+        # _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["confusion_matrix"]["rel"]
         )
@@ -508,24 +539,30 @@ class TestClassificationTreeModel:
         py_fpr, py_tpr, _ = skl_metrics.roc_curve(y_true=y, y_score=score)
         py_res = skl_metrics.auc(py_fpr, py_tpr)
 
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["cutoff_curve"]["rel"]
         )
 
-    def test_lift_chart(self, model_class, get_vpy_model):
+    @pytest.mark.parametrize(
+        "lift_chart_type, expected",
+        [
+            ("decision_boundary", 0.299),
+            ("positive_prediction_ratio", 0.30946),
+            ("lift", 2.4658),
+        ],
+    )
+    def test_lift_chart(self, model_class, get_vpy_model, lift_chart_type, expected):
         """
         test function - test_lift_chart
         """
         lift_chart = get_vpy_model(model_class).model.lift_chart(show=False)
+        actual = lift_chart[lift_chart_type][300]
+        _rel_tol, _abs_tol = calculate_tolerance(actual, expected)
 
-        assert lift_chart["decision_boundary"][300] == pytest.approx(
-            0.299, rel=rel_abs_tol_map[model_class]["lift_chart"]["rel"]
-        )
-        assert lift_chart["positive_prediction_ratio"][300] == pytest.approx(
-            0.30946, rel=rel_abs_tol_map[model_class]["lift_chart"]["rel"]
-        )
-        assert lift_chart["lift"][300] == pytest.approx(
-            2.4658, rel=rel_abs_tol_map[model_class]["lift_chart"]["rel"]
+        assert actual == pytest.approx(
+            expected, rel=rel_abs_tol_map[model_class]["lift_chart"]["rel"]
         )
 
     def test_prc_curve(self, model_class, get_vpy_model, get_py_model):
@@ -543,6 +580,8 @@ class TestClassificationTreeModel:
         )
         py_res = skl_metrics.auc(recall, precision)
 
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["prc_curve"]["rel"]
         )
@@ -558,6 +597,8 @@ class TestClassificationTreeModel:
             .ravel()
         )
         py_res = get_py_model(model_class).pred_prob[:, 1].ravel()
+
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
 
         assert vpy_res[:5] == pytest.approx(
             py_res[:5], rel=rel_abs_tol_map[model_class]["predict_proba"]["rel"]
@@ -579,6 +620,8 @@ class TestClassificationTreeModel:
             y_true=py_model_obj.y.ravel(), y_score=py_model_obj.pred_prob[:, 1].ravel()
         )
         py_res = skl_metrics.auc(py_fpr, py_tpr)
+
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
 
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["roc_curve"]["rel"]
