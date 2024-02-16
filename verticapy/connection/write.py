@@ -14,7 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import warnings
+from getpass import getpass
 
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import connect
@@ -184,6 +186,7 @@ def delete_connection(name: str) -> bool:
 def new_connection(
     conn_info: dict,
     name: str = "vertica_connection",
+    prompt: bool = False,
     auto: bool = True,
     overwrite: bool = True,
 ) -> None:
@@ -238,6 +241,9 @@ def new_connection(
 
     name: str, optional
         Name of the connection.
+    prompt: bool, optional
+        If set to True, it will open a prompt
+        tp ask for ``oauth_refresh_token`` as well as ``client_secret``.
     auto: bool, optional
         If set to True, the connection
         will become the new auto-connection.
@@ -289,6 +295,24 @@ def new_connection(
         confparser.remove_section(name)
 
     confparser.add_section(name)
+    if prompt:
+        oauth_access_token = getpass("Input OAuth Access Token:")
+        if oauth_access_token == "":
+            print("INPUT EMPTY, using default value.")
+        else:
+            conn_info["oauth_access_token"] = oauth_access_token
+    if prompt:
+        oath_refresh_token = getpass("Input OAuth Refresh Token:")
+        if oath_refresh_token == "":
+            print("INPUT EMPTY, using default value.")
+        else:
+            conn_info["oauth_refresh_token"] = oath_refresh_token
+    if prompt:
+        client_secret = getpass("Input OAuth Client Secret:")
+        if client_secret == "":
+            print("INPUT EMPTY, using default value.")
+        else:
+            conn_info["oauth_config"]["client_secret"] = client_secret
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
 

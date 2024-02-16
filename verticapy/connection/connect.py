@@ -14,11 +14,13 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from typing import Optional
 
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
+from vertica_python.errors import OAuthTokenRefreshError
 
 from verticapy.connection.global_connection import (
     get_global_connection,
@@ -444,7 +446,20 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
         | :py:func:`~verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
-    return vertica_python.connect(**read_dsn(section, dsn))
+    try:
+        return vertica_python.connect(**read_dsn(section, dsn))
+    except OAuthTokenRefreshError as e:
+        error_message = str(e)
+        # Check if the error message contains the TOKEN part
+        if "Failed getting OAuth access token from a refresh token" in error_message:
+            # Handle the specific error related to the TOKEN part
+            print("Refresh Token or Client ID is not valid. Please re-enter")
+            from verticapy.connection.write import new_connection
+
+            new_connection(conn_info=read_dsn(section, dsn), prompt=True)
+        else:
+            # Handle other types of ConnectionError
+            print("An error occurred:", error_message)
 
 
 # VerticaPy Lab Connection.
