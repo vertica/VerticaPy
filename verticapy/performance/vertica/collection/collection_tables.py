@@ -41,6 +41,17 @@ class AllTableTypes(Enum):
     RESOURCE_POOL_STATUS = "resource_pool_status"
 
 
+class BundleVersion(Enum):
+    """
+    ``BundleVersion`` contains the version of ProfileExport bundles. Versions
+    differ because of the contents of the bundle. For example, a change
+    in column data type would cause the bundle version to change.
+    """
+
+    V1 = 1
+    LATEST = V1
+
+
 class CollectionTable:
     """
     ``CollectionTable`` is the abstract parent class for tables created by query profile export.
@@ -69,6 +80,9 @@ class CollectionTable:
 
     def get_super_proj_name_fq(self) -> str:
         return f"{self._get_import_name(fully_qualified=True)}_super"
+
+    def get_parquet_file_name(self) -> str:
+        return f"{self.name}.parquet"
 
     def _get_import_name(self, fully_qualified) -> str:
         return (
@@ -118,7 +132,7 @@ class CollectionTable:
 
 
 def getAllCollectionTables(
-    target_schema: str, key: str
+    target_schema: str, key: str, version: BundleVersion
 ) -> Mapping[str, CollectionTable]:
     """
     Produces a map with one of each kind of collection table. The key
@@ -139,8 +153,44 @@ def getAllCollectionTables(
     key: str
         A suffix for all table names to help uniquely identify the table.
     """
+    if version == BundleVersion.V1:
+        return _getAllTables_v1(target_schema, key)
+
+    raise ValueError(f"Unrecognized bundle version {version}")
+
+
+# Different versions of the bundle will expect to have different
+# tables present. We expect to add more tables as time goes on.
+# ALL_TABLES_V* constants will store lists of tables for each
+# version of the bundles.
+#
+# We expect that the most recent version will be all tables
+# in AllTableTypes.
+
+ALL_TABLES_V1 = [
+    AllTableTypes.COLLECTION_EVENTS,
+    AllTableTypes.COLLECTION_INFO,
+    AllTableTypes.DC_EXPLAIN_PLANS,
+    AllTableTypes.DC_QUERY_EXECUTIONS,
+    AllTableTypes.DC_REQUESTS_ISSUED,
+    AllTableTypes.EXECUTION_ENGINE_PROFILES,
+    AllTableTypes.EXPORT_EVENTS,
+    AllTableTypes.HOST_RESOURCES,
+    AllTableTypes.QUERY_CONSUMPTION,
+    AllTableTypes.QUERY_PLAN_PROFILES,
+    AllTableTypes.QUERY_PROFILES,
+    AllTableTypes.RESOURCE_POOL_STATUS,
+]
+
+
+def _getAllTables_v1(target_schema: str, key: str) -> Mapping[str, CollectionTable]:
+    """
+    Produces a map with one of each kind of CollectionTable subclass
+    available for version V1 of the profile bundle.
+    """
     result = {}
-    for name in AllTableTypes:
+
+    for name in ALL_TABLES_V1:
         c = collectionTableFactory(name, target_schema, key)
         result[name.name] = c
 
