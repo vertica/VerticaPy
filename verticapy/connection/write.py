@@ -189,6 +189,7 @@ def new_connection(
     prompt: bool = False,
     auto: bool = True,
     overwrite: bool = True,
+    connect_attempt: bool = True,
 ) -> None:
     """
     Saves the new connection in the VerticaPy
@@ -251,6 +252,9 @@ def new_connection(
         If set to ``True`` and the connection
         already exists, the existing connection
         will be overwritten.
+    connect_attempt: bool
+        If set to False, it will not attempt
+        to connect automatically.
 
     Examples
     --------
@@ -296,21 +300,21 @@ def new_connection(
 
     confparser.add_section(name)
     if prompt:
-        oauth_access_token = getpass("Input OAuth Access Token:")
+        oauth_access_token = getpass("Input OAUTH Access Token:")
         if oauth_access_token == "":
-            print("INPUT EMPTY, using default value.")
+            print("INPUT EMPTY, using default value")
         else:
             conn_info["oauth_access_token"] = oauth_access_token
     if prompt:
-        oath_refresh_token = getpass("Input OAuth Refresh Token:")
+        oath_refresh_token = getpass("Input OAUTH Refresh Token:")
         if oath_refresh_token == "":
-            print("INPUT EMPTY, using default value.")
+            print("INPUT EMPTY, using default value")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
     if prompt:
-        client_secret = getpass("Input OAuth Client Secret:")
+        client_secret = getpass("Input OAUTH Client Secret:")
         if client_secret == "":
-            print("INPUT EMPTY, using default value.")
+            print("INPUT EMPTY, using default value")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
     for c in conn_info:
@@ -321,8 +325,8 @@ def new_connection(
 
     if auto:
         change_auto_connection(name)
-
-    connect(name, path)
+    if connect_attempt:
+        connect(name, path)
 
 
 new_auto_connection = new_connection
