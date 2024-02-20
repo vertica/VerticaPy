@@ -20,7 +20,6 @@ from typing import Optional
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
-from vertica_python.vertica.oauth_manager import OAuthManager
 from vertica_python.errors import OAuthTokenRefreshError, ConnectionError
 
 import verticapy._config.config as conf
@@ -30,6 +29,7 @@ from verticapy.connection.global_connection import (
 )
 from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
+from verticapy.connection.write import new_connection
 
 """
 Connecting to the DB.
@@ -134,8 +134,6 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
     except OAuthTokenRefreshError as e:
         error_message = str(e)
 
-        from verticapy.connection.write import new_connection
-
         # Check if the error message contains the refresh token part
         if "Failed getting OAuth access token from a refresh token" in error_message:
             # Handle the specific error related to the Refresh token part
@@ -157,7 +155,6 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
 
     except ConnectionError as e:
         error_message = str(e)
-        from verticapy.connection.write import new_connection
 
         # Check if the error message contains the access token part
         if "Token introspection failed" in error_message:

@@ -18,9 +18,10 @@ permissions and limitations under the License.
 from getpass import getpass
 import warnings
 
+import vertica_python
+
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
-from verticapy.connection.connect import connect
 from verticapy.connection.utils import get_confparser, get_connection_file
 
 
@@ -330,7 +331,8 @@ def new_connection(
     if (
         connect_attempt
     ):  # To prevent auto-connection. Needed for re-prompts in case of errors.
-        connect(name, path)
+        gb_conn = get_global_connection()
+        gb_conn.set_connection(vertica_python.connect(name, path), name, path)
 
 
 new_auto_connection = new_connection
