@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
-import warnings
 from getpass import getpass
+import warnings
 
+import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import connect
 from verticapy.connection.utils import get_confparser, get_connection_file
@@ -186,10 +187,10 @@ def delete_connection(name: str) -> bool:
 def new_connection(
     conn_info: dict,
     name: str = "vertica_connection",
-    prompt: bool = False,
     auto: bool = True,
     overwrite: bool = True,
     connect_attempt: bool = True,
+    prompt: bool = False,
 ) -> None:
     """
     Saves the new connection in the VerticaPy
@@ -242,9 +243,6 @@ def new_connection(
 
     name: str, optional
         Name of the connection.
-    prompt: bool, optional
-        If set to True, it will open a prompt
-        tp ask for ``oauth_refresh_token`` as well as ``client_secret``.
     auto: bool, optional
         If set to True, the connection
         will become the new auto-connection.
@@ -255,6 +253,9 @@ def new_connection(
     connect_attempt: bool
         If set to False, it will not attempt
         to connect automatically.
+    prompt: bool, optional
+        If set to True, it will open a prompt
+        tp ask for ``oauth_refresh_token`` as well as ``client_secret``.
 
     Examples
     --------
@@ -302,19 +303,20 @@ def new_connection(
     if prompt:
         oauth_access_token = getpass("Input OAUTH Access Token:")
         if oauth_access_token == "":
-            print("INPUT EMPTY, using default value")
+            if conf.get_option("print_info"):
+                print("INPUT EMPTY, using default value")
         else:
             conn_info["oauth_access_token"] = oauth_access_token
-    if prompt:
         oath_refresh_token = getpass("Input OAUTH Refresh Token:")
         if oath_refresh_token == "":
-            print("INPUT EMPTY, using default value")
+            if conf.get_option("print_info"):
+                print("INPUT EMPTY, using default value")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
-    if prompt:
         client_secret = getpass("Input OAUTH Client Secret:")
         if client_secret == "":
-            print("INPUT EMPTY, using default value")
+            if conf.get_option("print_info"):
+                print("INPUT EMPTY, using default value")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
     for c in conn_info:
@@ -325,7 +327,7 @@ def new_connection(
 
     if auto:
         change_auto_connection(name)
-    if connect_attempt:
+    if connect_attempt: # To prevent auto-connection. Needed for re-prompts in case of errors.
         connect(name, path)
 
 

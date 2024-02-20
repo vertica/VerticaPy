@@ -20,10 +20,10 @@ from typing import Optional
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
-import vertica_python
 from vertica_python.vertica.oauth_manager import OAuthManager
 from vertica_python.errors import OAuthTokenRefreshError, ConnectionError
 
+import verticapy._config.config as conf
 from verticapy.connection.global_connection import (
     get_global_connection,
     GlobalConnection,
@@ -129,7 +129,8 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         prev_conn.close()
     try:
         gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
-        print("Connected Successfuly!")
+        if conf.get_option("print_info"):
+            print("Connected Successfully!")
     except OAuthTokenRefreshError as e:
         error_message = str(e)
 
@@ -146,11 +147,12 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             )
             try:
                 gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
-                print("Connected Successfuly!")
+                if conf.get_option("print_info"):
+                    print("Connected Successfully!")
             except OAuthTokenRefreshError as e:
                 print("Refresh token or Client ID is still not valid.")
         else:
-            # Handle other types of ConnectionError
+            # Handle other types of errors
             print("An error occurred:", error_message)
 
     except ConnectionError as e:
@@ -167,11 +169,12 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             )
             try:
                 gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
-                print("Connected Successfuly!")
+                if conf.get_option("print_info"):
+                    print("Connected Successfully!")
             except ConnectionError as e:
                 print("Access token is still not valid.")
         else:
-            # Handle other types of ConnectionError
+            # Handle other types of errors
             print("An error occurred:", error_message)
 
             raise e
