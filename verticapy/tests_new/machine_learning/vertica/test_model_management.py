@@ -15,14 +15,21 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections import namedtuple
+from decimal import Decimal
 from itertools import chain
 import sys
 import subprocess
-import numpy as np
+
 import pytest
-from verticapy.machine_learning.vertica import export_models, import_models, load_model
-from verticapy.tests_new.machine_learning.vertica import rel_tolerance_map
+import numpy as np
+
 import verticapy as vp
+from verticapy.machine_learning.vertica import export_models, import_models, load_model
+from verticapy.tests_new.machine_learning.vertica import rel_abs_tol_map
+from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
+    calculate_tolerance,
+)
+
 
 if sys.version_info < (3, 12):
     from verticapy.machine_learning.vertica.tensorflow.freeze_tf2_model import (
@@ -261,7 +268,14 @@ class TestModelManagement:
 
         remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
 
-        assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+        print(
+            f"Model_class: {model_class}, Metric_name: load_model, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
+
+        assert vpy_res == pytest.approx(
+            py_res, rel=rel_abs_tol_map[model_class]["load_model"]["rel"]
+        )
 
 
 @pytest.mark.parametrize(
@@ -366,4 +380,4 @@ class TestModelManagementTF:
         remove_model_dir(folder_path=f"/tmp/{schema_loader}")
         vp.drop(name=f"{schema_loader}.tf_frozen_model")
 
-        assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
+        assert vpy_res == pytest.approx(py_res, rel=rel_abs_tol_map[model_class])
