@@ -327,7 +327,9 @@ def new_connection(
 
     if auto:
         change_auto_connection(name)
-    if connect_attempt: # To prevent auto-connection. Needed for re-prompts in case of errors.
+    if (
+        connect_attempt
+    ):  # To prevent auto-connection. Needed for re-prompts in case of errors.
         connect(name, path)
 
 
