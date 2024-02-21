@@ -141,7 +141,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
             if conf.get_option("print_info"):
                 print("Connected Successfully!")
-        except OAuthTokenRefreshError as error:
+        except (ConnectionError, OAuthTokenRefreshError) as error:
             print("Error persists:")
             raise error
 

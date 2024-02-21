@@ -19,9 +19,11 @@ from getpass import getpass
 import warnings
 
 import vertica_python
+from vertica_python.errors import OAuthTokenRefreshError, ConnectionError
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
+from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
 
 
@@ -332,7 +334,24 @@ def new_connection(
         connect_attempt
     ):  # To prevent auto-connection. Needed for re-prompts in case of errors.
         gb_conn = get_global_connection()
-        gb_conn.set_connection(vertica_python.connect(name, path), name, path)
+        try:
+            gb_conn.set_connection(
+                vertica_python.connect(**read_dsn(name, path)), name, path
+            )
+        except (ConnectionError, OAuthTokenRefreshError):
+            print("Authentication failed. Please re-try")
+            new_connection(
+                conn_info=read_dsn(name, path), prompt=True, connect_attempt=False
+            )
+            try:
+                gb_conn.set_connection(
+                    vertica_python.connect(**read_dsn(name, path)), name, path
+                )
+                if conf.get_option("print_info"):
+                    print("Connected Successfully!")
+            except (ConnectionError, OAuthTokenRefreshError) as error:
+                print("Error persists:")
+                raise error
 
 
 new_auto_connection = new_connection
