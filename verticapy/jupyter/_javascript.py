@@ -34,7 +34,8 @@ Utils Functions.
 
 def find_package_file(*path) -> str:
     """
-    Returns the full path to a file from the itables
+    Returns the full path to
+    a file from the itables
     package.
     """
     current_path = os.path.dirname(__file__)
@@ -43,7 +44,8 @@ def find_package_file(*path) -> str:
 
 def read_package_file(*path) -> TextIO:
     """
-    Returns the content of a file from the itables
+    Returns the content of
+    a file from the itables
     package.
     """
     with open(find_package_file(*path), encoding="utf-8") as fp:
@@ -52,8 +54,10 @@ def read_package_file(*path) -> TextIO:
 
 def replace_value(template: str, pattern: str, value: Any, count: int = 1) -> str:
     """
-    Sets the given pattern to the desired value in the template,
-    after making sure that the pattern is found exactly once.
+    Sets the given pattern to the
+    desired value in the template,
+    after making sure that the pattern
+    is found exactly once.
     """
     assert isinstance(template, str)
     assert template.count(pattern) == count
@@ -90,7 +94,9 @@ def beautiful_header(
     percent: Optional[dict] = None,
 ) -> str:
     """
-    Transforms the header columns according to the type.
+    Transforms the header
+    columns according to
+    the type.
     """
     dtype, percent = format_type(dtype, percent, dtype=dict)
     n = len(header)
@@ -159,7 +165,8 @@ def _table_header(
     dtype: Optional[dict] = None,
 ) -> str:
     """
-    Returns the HTML table header. Rows are not included.
+    Returns the HTML table header.
+    Rows are not included.
     """
     dtype = format_type(dtype, dtype=dict)
     head = beautiful_header(
@@ -195,7 +202,9 @@ def _table_header(
 
 def clean_data(data: ArrayLike) -> ArrayLike:
     """
-    Cleans the data to improve the html display.
+    Cleans the data to
+    improve the html
+    display.
     """
     for i in range(0, len(data)):
         for j in range(0, len(data[0])):
@@ -236,7 +245,8 @@ def datatables_repr(
     dtype: Optional[dict] = None,
 ) -> str:
     """
-    Returns the HTML/javascript representation of the table.
+    Returns the HTML/javascript
+    representation of the table.
     """
     dtype = format_type(dtype, dtype=dict)
     if not repeat_first_column:

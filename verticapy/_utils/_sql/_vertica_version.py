@@ -63,6 +63,7 @@ MINIMUM_VERTICA_VERSION = {
     "RandomForestClassifier": [8, 1, 1],
     "RandomForestRegressor": [9, 0, 1],
     "read_file": [11, 1, 1],
+    "RegisteredModel": [12, 0, 4],
     "Ridge": [8, 0, 0],
     "RobustScaler": [8, 1, 0],
     "roc_curve": [8, 0, 0],

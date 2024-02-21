@@ -46,12 +46,15 @@ setuptools.setup(
         "tqdm>=4.0.0",
         "vertica-highcharts>=0.1.4",
         "vertica-python>=1.2.0",
+        "plotly>=5.10.0",
+        "pyyaml>=6.0.1",
     ],
     extras_require={
         "all": [
             "descartes>=1.0.0",
             "geopandas>=0.8.0",
             "shapely>=1.6.0",
+            "pyarrow>=14.0.0",
         ],
     },
     package_data={"": ["*.csv", "*.json", "*.css", "*.html"]},

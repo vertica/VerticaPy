@@ -18,3 +18,5 @@ scikit-learn
 xgboost
 statsmodels
 bs4
+ipywidgets
+pyarrow

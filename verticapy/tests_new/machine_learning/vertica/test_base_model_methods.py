@@ -15,89 +15,81 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections import namedtuple
+from decimal import Decimal
+
 import numpy as np
+import pytest
+import plotly
+from scipy import stats
+import matplotlib.pyplot as plt
+
 from verticapy.connection import current_cursor
 from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
-    ABS_TOLERANCE,
-    rel_tolerance_map,
-    abs_tolerance_map,
+    rel_abs_tol_map,
 )
 from vertica_highcharts.highcharts.highcharts import Highchart
-import plotly
-from scipy import stats
-import pytest
-import matplotlib.pyplot as plt
+
 
 details_report_args = (
-    "metric, expected, _rel_tolerance, _abs_tolerance",
+    "metric, expected",
     [
-        ("Dep. Variable", '"quality"', "NA", "NA"),
-        ("Model", "LinearRegression", "NA", "NA"),
-        ("No. Observations", None, REL_TOLERANCE, ABS_TOLERANCE),
-        ("No. Predictors", None, REL_TOLERANCE, ABS_TOLERANCE),
-        ("R-squared", None, rel_tolerance_map, ABS_TOLERANCE),
-        ("Adj. R-squared", None, rel_tolerance_map, ABS_TOLERANCE),
-        ("F-statistic", None, rel_tolerance_map, 1e-9),
-        ("Prob (F-statistic)", None, REL_TOLERANCE, ABS_TOLERANCE),
-        ("Kurtosis", None, 1e-2, ABS_TOLERANCE),
-        ("Skewness", None, 1e-3, ABS_TOLERANCE),
-        ("Jarque-Bera (JB)", None, 1e-2, ABS_TOLERANCE),
+        ("Dep. Variable", '"quality"'),
+        ("Model", "LinearRegression"),
+        ("No. Observations", None),
+        ("No. Predictors", None),
+        ("R-squared", None),
+        ("Adj. R-squared", None),
+        ("F-statistic", None),
+        ("Prob (F-statistic)", None),
+        ("Kurtosis", None),
+        ("Skewness", None),
+        ("Jarque-Bera (JB)", None),
     ],
 )
 anova_report_args = (
-    "metric, metric_types, _rel_tolerance, _abs_tolerance",
+    "metric, metric_types",
     [
-        ("df", ("dfr", "dfe"), rel_tolerance_map, ABS_TOLERANCE),
-        ("ss", ("ssr", "sse"), rel_tolerance_map, ABS_TOLERANCE),
-        ("ms", ("msr", "mse"), rel_tolerance_map, ABS_TOLERANCE),
-        ("f", ("f", ""), rel_tolerance_map, ABS_TOLERANCE),
-        ("p_value", ("p_value", ""), rel_tolerance_map, ABS_TOLERANCE),
+        ("df", ("dfr", "dfe")),
+        ("ss", ("ssr", "sse")),
+        ("ms", ("msr", "mse")),
+        ("f", ("f", "")),
+        ("p_value", ("p_value", "")),
     ],
 )
 
 regression_metrics_args = (
-    "vpy_metric_name, py_metric_name, _rel_tolerance",
+    "vpy_metric_name, py_metric_name",
     [
-        (("explained_variance", None), "explained_variance_score", rel_tolerance_map),
-        (("max_error", None), "max_error", rel_tolerance_map),
-        (("median_absolute_error", None), "median_absolute_error", rel_tolerance_map),
-        (("mean_absolute_error", None), "mean_absolute_error", rel_tolerance_map),
-        (("mean_squared_error", None), "mean_squared_error", rel_tolerance_map),
-        (("mean_squared_log_error", None), "mean_squared_log_error", rel_tolerance_map),
-        (
-            (
-                "rmse",
-                "root_mean_squared_error",
-            ),
-            "rmse",
-            rel_tolerance_map,
-        ),
-        (("r2", None), "r2_score", rel_tolerance_map),
-        (("r2_adj", None), "rsquared_adj", rel_tolerance_map),
-        (("aic", None), "aic", rel_tolerance_map),
-        (("bic", None), "bic", rel_tolerance_map),
+        (("explained_variance", None), "explained_variance_score"),
+        (("max_error", None), "max_error"),
+        (("median_absolute_error", None), "median_absolute_error"),
+        (("mean_absolute_error", None), "mean_absolute_error"),
+        (("mean_squared_error", None), "mean_squared_error"),
+        (("mean_squared_log_error", None), "mean_squared_log_error"),
+        (("rmse", "root_mean_squared_error"), "rmse"),
+        (("r2", None), "r2_score"),
+        (("r2_adj", None), "rsquared_adj"),
+        (("aic", None), "aic"),
+        (("bic", None), "bic"),
     ],
 )
 
 classification_metrics_args = (
-    "vpy_metric_name, py_metric_name, _rel_tolerance",
+    "vpy_metric_name, py_metric_name",
     [
-        (("auc", None), "auc", rel_tolerance_map),
-        (("prc_auc", None), "prc_auc", rel_tolerance_map),
-        (("accuracy", None), "accuracy_score", rel_tolerance_map),
-        (
-            ("log_loss", None),
-            "log_loss",
-            rel_tolerance_map,
-        ),  # vertica uses log base 10, sklean uses natural log(e)
-        (("precision", None), "precision_score", rel_tolerance_map),
-        (("recall", None), "recall_score", rel_tolerance_map),
-        (("f1_score", None), "f1_score", rel_tolerance_map),
-        (("mcc", None), "matthews_corrcoef", rel_tolerance_map),
-        # (("informedness", None), "informedness", rel_tolerance_map), # getting mismatch for xgb
-        (("markedness", None), "markedness", rel_tolerance_map),
-        (("csi", None), "critical_success_index", rel_tolerance_map),
+        (("auc", None), "auc"),
+        (("prc_auc", None), "prc_auc"),
+        (("accuracy", None), "accuracy_score"),
+        # vertica uses log base 10, sklean uses natural log(e)
+        (("log_loss", None), "log_loss"),
+        (("precision", None), "precision_score"),
+        (("recall", None), "recall_score"),
+        (("f1_score", None), "f1_score"),
+        (("mcc", None), "matthews_corrcoef"),
+        # (("informedness", None), "informedness"), # getting mismatch for xgb
+        (("markedness", None), "markedness"),
+        (("csi", None), "critical_success_index"),
     ],
 )
 
@@ -240,6 +232,20 @@ def model_params(model_class):
     return model_params_map[model_class]
 
 
+def calculate_tolerance(vpy_score, py_score):
+    if isinstance(vpy_score, (list, np.ndarray)):
+        vpy_score, py_score = vpy_score[0], py_score[0]
+
+    _rel_tol = abs(vpy_score - py_score) / min(abs(vpy_score), abs(py_score))
+    _abs_tol = abs(vpy_score - py_score) / (1 + min(abs(vpy_score), abs(py_score)))
+
+    print(
+        f"rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+    )
+
+    return _rel_tol, _abs_tol
+
+
 def regression_report_none(
     get_vpy_model,
     get_py_model,
@@ -248,7 +254,6 @@ def regression_report_none(
     fun_name,
     vpy_metric_name,
     py_metric_name,
-    _rel_tolerance,
     model_params,
 ):
     """
@@ -324,8 +329,6 @@ def regression_report_details(
     fun_name,
     metric,
     expected,
-    _rel_tolerance,
-    _abs_tolerance,
 ):
     """
     test function - regression/report details
@@ -399,8 +402,6 @@ def regression_report_anova(
     get_py_model,
     regression_metrics,
     fun_name,
-    _rel_tolerance,
-    _abs_tolerance,
 ):
     """
     test function - regression/report anova
@@ -435,7 +436,6 @@ def model_score(
     _metrics,
     vpy_metric_name,
     py_metric_name,
-    _rel_tolerance,
     model_params,
 ):
     """
@@ -832,7 +832,9 @@ class TestBaseModelMethods:
             )
             py_res = get_models.py.pred.sum()
 
-            assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
+            assert vpy_res == pytest.approx(
+                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
+            )
 
         elif model_class in [
             "AR",
@@ -840,17 +842,23 @@ class TestBaseModelMethods:
             "ARMA",
             "ARIMA",
         ]:
-            assert get_models.vpy.pred_vdf[
-                ["prediction"]
-            ].to_numpy().mean() == pytest.approx(
-                get_models.py.pred.mean(), rel=rel_tolerance_map[model_class]
+            vpy_res = get_models.vpy.pred_vdf[["prediction"]].to_numpy().mean()
+            py_res = get_models.py.pred.mean()
+
+            assert vpy_res == pytest.approx(
+                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
             )
         else:
-            assert get_models.vpy.pred_vdf[
-                ["quality_pred"]
-            ].to_numpy().mean() == pytest.approx(
-                get_models.py.pred.mean(), rel=rel_tolerance_map[model_class]
+            vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy().mean()
+            py_res = get_models.py.pred.mean()
+            assert vpy_res == pytest.approx(
+                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
             )
+
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+        print(
+            f"Model_class: {model_class}, Metric_name: prediction, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
 
     def test_contour(self, model_class, get_vpy_model):
         """
@@ -1408,9 +1416,16 @@ class TestBaseModelMethods:
             py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
             vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy()[10]
 
+        py_res = [np.exp(py_res) if model_class == "PoissonRegressor" else py_res]
+
+        print(f"vertica: {vpy_res}, sklearn: {py_res}")
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+        print(
+            f"Model_class: {model_class}, Metric_name: to_python, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
+
         assert vpy_res == pytest.approx(
-            np.exp(py_res) if model_class == "PoissonRegressor" else py_res,
-            rel=rel_tolerance_map[model_class],
+            py_res, rel=rel_abs_tol_map[model_class]["to_python"]["rel"]
         )
 
     def test_to_sql(self, get_models, model_class):
