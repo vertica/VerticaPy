@@ -15,10 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from itertools import chain
-import pandas as pd
+
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+import pandas as pd
 import pytest
+from sklearn.preprocessing import LabelEncoder
 
 
 class TestEncoding:
@@ -210,6 +211,7 @@ class TestEncoding:
             ("vcolumn", "Species", "dummy"),
         ],
     )
+    @pytest.mark.parametrize("method", ["one_hot_encode", "get_dummies"])
     def test_one_hot_encode(
         self,
         iris_vd_fun,
@@ -220,6 +222,7 @@ class TestEncoding:
         prefix_sep,
         drop_first,
         use_numbers_as_suffix,
+        method,
     ):
         """
         test function - one_hot_encode
@@ -230,23 +233,19 @@ class TestEncoding:
         idx = -(len(unique_val) - 1) if drop_first else -len(unique_val)
 
         if function_type in ["vDataFrame", "vDataFrame_with_column"]:
-            _vpy_res = iris_vd_fun.one_hot_encode(
+            _vpy_res = getattr(iris_vd_fun, method)(
                 columns=columns,
                 prefix_sep=prefix_sep,
                 drop_first=drop_first,
                 use_numbers_as_suffix=use_numbers_as_suffix,
             ).get_columns()[idx:]
         else:
-            _vpy_res = (
-                iris_vd_fun[columns]
-                .one_hot_encode(
-                    prefix=prefix,
-                    prefix_sep=prefix_sep,
-                    drop_first=drop_first,
-                    use_numbers_as_suffix=use_numbers_as_suffix,
-                )
-                .get_columns()[idx:]
-            )
+            _vpy_res = getattr(iris_vd_fun[columns], method)(
+                prefix=prefix,
+                prefix_sep=prefix_sep,
+                drop_first=drop_first,
+                use_numbers_as_suffix=use_numbers_as_suffix,
+            ).get_columns()[idx:]
         vpy_res = [v.replace('"', "") for v in _vpy_res]
 
         py_res = pd.get_dummies(

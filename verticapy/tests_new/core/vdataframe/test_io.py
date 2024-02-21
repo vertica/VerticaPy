@@ -14,26 +14,30 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import glob
-import numpy as np
 import os
-import pandas as pd
 import pickle
-import pytest
-import geopandas
+import shutil
 
+import geopandas
+import numpy as np
+import pandas as pd
+import pytest
+
+import verticapy as vp
 from verticapy.connection import current_cursor
 from verticapy.sql.sys import current_session, username
-import verticapy as vp
 
 
-def tear_down(path, file_extension=","):
+def tear_down(path: str) -> None:
+    """
+    This functions removes files/directories
+    """
     if os.path.isfile(path):
+        print(f"Deleting file {path}")
         os.remove(path)
-    if os.path.isdir(path):
-        for f in glob.glob(f"{path}/*.{file_extension}"):
-            os.remove(f)
-        os.rmdir(path)
+    if os.path.isdir(path) and path.startswith("/tmp/"):
+        print(f"Deleting directory {path}")
+        shutil.rmtree(path)
 
 
 class TestIO:
@@ -74,21 +78,22 @@ class TestIO:
         assert len(titanic_vd_fun._vars["saving"]) == 1
 
     @pytest.mark.parametrize(
-        "sep, na_rep, quotechar, usecols, header, new_header, order_by, n_files",
+        "idx, sep, na_rep, quotechar, usecols, header, new_header, order_by, n_files",
         [
-            ("|", None, None, None, None, None, None, 1),
-            (None, "Unknown", None, None, None, None, None, 1),
-            (None, None, "'", None, None, None, None, 1),
-            (None, None, None, ["name"], None, None, None, 1),
+            (1, "|", None, None, None, None, None, None, 1),
+            (2, None, "Unknown", None, None, None, None, None, 1),
+            (3, None, None, "'", None, None, None, None, 1),
+            (4, None, None, None, ["name"], None, None, None, 1),
             # failed Header=False
-            # (None, None, None, None, False, None, None, 1),
-            (None, None, None, None, None, ["name_new", "fare_new"], None, 1),
-            (None, None, None, None, None, None, ["name", "age", "fare"], 4),
+            # (5, None, None, None, None, False, None, None, 1),
+            (6, None, None, None, None, None, None, ["name", "age", "fare"], 4),
+            (7, None, None, None, None, None, ["name_new", "fare_new"], None, 1),
         ],
     )
     def test_to_csv(
         self,
         titanic_vd_fun,
+        idx,
         sep,
         na_rep,
         quotechar,
@@ -101,12 +106,12 @@ class TestIO:
         """
         test function - to_csv
         """
-        path = "/tmp/verticapy_test_to_csv"
+        path = f"/tmp/verticapy_test_to_csv{idx}"
         columns = ["name", "fare"]
         data = titanic_vd_fun
 
         sep = sep if sep else ","
-        header = False if header is False else True
+        header = not header
         file_name = f"{path}.csv"
         quote = '"' if new_header else ""
         vdf_row = vp.vDataFrame({columns[0]: [None], columns[1]: [1.5]})
@@ -126,15 +131,16 @@ class TestIO:
                 order_by=order_by,
                 n_files=n_files,
             )
-            result = open(file_name, "r").read()
-            print(result)
+            with open(file_name, "r") as file:
+                result = file.read()
+            # print(result)
             columns = new_header if new_header else columns
 
             if usecols:
                 expected = f"""{columns[0]}\n"Abbing, Mr. Anthony"\n"Abbott, Master. Eugene Joseph"\n{na_rep if na_rep else ''}"""
             else:
                 expected = f"""{quote}{columns[0]}{quote}{sep}{quote}{columns[1]}{quote}\n"Abbing, Mr. Anthony"{sep}7.55000\n"Abbott, Master. Eugene Joseph"{sep}20.25000\n{na_rep if na_rep else ''}{sep}1.50000"""
-            print(expected)
+            # print(expected)
 
             assert result == expected
         else:
@@ -157,6 +163,7 @@ class TestIO:
     @pytest.mark.parametrize("relation_type", ["view", "table", "temporary", "local"])
     def test_to_db(
         self,
+        schema_loader,
         titanic_vd_fun,
         relation_type,
         inplace,
@@ -172,7 +179,7 @@ class TestIO:
         data = titanic_vd_fun
         usecols = ["age", "fare", "survived"]
         catalog = "view_columns" if relation_type == "view" else "columns"
-        schema = "v_temp_schema" if relation_type == "local" else "public"
+        schema = "v_temp_schema" if relation_type == "local" else schema_loader
 
         vp.drop(
             f"{schema}.{relation_name}",
@@ -207,23 +214,23 @@ class TestIO:
         assert isinstance(gdf, geopandas.GeoDataFrame) and gdf.shape == (177, 4)
 
     @pytest.mark.parametrize(
-        "usecols, order_by, n_files",
+        "idx, usecols, order_by, n_files",
         [
-            (None, None, 1),
-            (None, ["name", "age", "fare"], 4),
-            (["name", "fare"], ["name", "age", "fare"], 4),
+            (1, None, None, 1),
+            (2, None, ["name", "age", "fare"], 4),
+            (3, ["name", "fare"], ["name", "age", "fare"], 4),
         ],
     )
-    def test_to_json(self, titanic_vd_fun, usecols, order_by, n_files):
+    def test_to_json(self, titanic_vd_fun, idx, usecols, order_by, n_files):
         """
         test function - to_json
         """
-        path = "/tmp/verticapy_test_to_json"
+        path = f"/tmp/verticapy_test_to_json{idx}"
         columns = ["name", "fare"]
         data = titanic_vd_fun
         file_name = f"{path}.json"
 
-        tear_down(path, file_extension="json")
+        tear_down(path)
         if n_files == 1:
             raw_vdf = data.select(columns).sort({columns[0]: "asc", columns[1]: "desc"})
             vdf = raw_vdf[:2]
@@ -232,10 +239,11 @@ class TestIO:
                 path=file_name,
                 n_files=n_files,
             )
-            result = open(file_name, "r").read()
-            print(result)
+            with open(file_name, "r") as file:
+                result = file.read()
+            # print(result)
             expected = '[\n{"name": "Abbing, Mr. Anthony", "fare": 7.55000},\n{"name": "Abbott, Master. Eugene Joseph", "fare": 20.25000}\n]'
-            print(expected)
+            # print(expected)
 
             assert result == expected
         else:
@@ -248,7 +256,7 @@ class TestIO:
             else:
                 assert titanic_test.shape() == (1234, 14)
 
-        tear_down(path, file_extension="json")
+        tear_down(path)
 
     def test_to_list(self, titanic_vd_fun):
         """
@@ -271,13 +279,23 @@ class TestIO:
         result = titanic_vd_fun.to_pandas()
         assert isinstance(result, pd.DataFrame) and result.shape == (1234, 14)
 
-    def test_to_parquet(self, titanic_vd_fun):
+    @pytest.mark.parametrize(
+        "by, order_by",
+        [
+            ("pclass", {"name": "asc"}),
+            (None, None),
+        ],
+    )
+    def test_to_parquet(self, titanic_vd_fun, by, order_by):
         """
         test function - to_parquet
         """
-        session_id = f"{current_session()}_{username()}"
-        name = "parquet_test_{}".format(session_id)
-        result = titanic_vd_fun.to_parquet(name)
+        session_id = f"{current_session()}_{username()}_{by}"
+        name = "/tmp/parquet_test_{}".format(session_id)
+
+        result = titanic_vd_fun.to_parquet(
+            name, compression="gzip", by=by, order_by=order_by
+        )
         assert result["Rows Exported"][0] == 1234
 
     def test_to_pickle(self, titanic_vd_fun):
@@ -291,27 +309,39 @@ class TestIO:
         os.remove("save.p")
 
     @pytest.mark.parametrize(
-        "usecols,overwrite,shape", [(None, None, "Point"), (None, False, "Point")]
+        "usecols,overwrite,shape, expected",
+        [
+            (None, None, "Point", (202, 3)),
+            (["country", "Geometry"], None, "Polygon", (1, 3)),
+            (None, True, "MultiPolygon", (1, 5)),
+        ],
     )
-    def test_to_shp(self, cities_vd, usecols, overwrite, shape):
+    def test_to_shp(self, cities_vd, world_vd, usecols, overwrite, shape, expected):
         """
         test function - to_shp
         """
-        name = "cities_test"
+        name = f"shp_test_{shape}"
         path = "/tmp/"
-        vp.drop(name="public.cities_test")
-        cities_vd.to_shp(
+
+        tear_down(f"/tmp/{name}.shp")
+        vp.drop(name=f"public.{name}")
+
+        if shape == "Point":
+            data = cities_vd
+        else:
+            world_vd_copy = world_vd.copy()
+            data = world_vd_copy.filter(
+                f"country = '{'Greenland' if shape == 'Polygon' else 'Antarctica'}'"
+            )
+
+        data.to_shp(
             name=name,
             path=path,
+            usecols=usecols,
             overwrite=overwrite if overwrite or overwrite is False else True,
             shape=shape,
         )
-        vdf = vp.read_shp("/tmp/cities_test.shp")
-        assert vdf.shape() == (202, 3)
-        try:
-            os.remove("/tmp/cities_test.shp")
-            os.remove("/tmp/cities_test.shx")
-            os.remove("/tmp/cities_test.dbf")
-        except:
-            pass
-        vp.drop(name="public.cities_test")
+        vdf = vp.read_shp(f"/tmp/{name}.shp")
+        assert vdf.shape() == expected
+
+        vp.drop(name=f"public.{name}")
