@@ -20,7 +20,9 @@ from typing import Optional
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
+from vertica_python.vertica.oauth_manager import OAuthManager
 from vertica_python.errors import OAuthTokenRefreshError, ConnectionError
+
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import (
@@ -131,50 +133,21 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
         if conf.get_option("print_info"):
             print("Connected Successfully!")
-    except OAuthTokenRefreshError as e:
-        error_message = str(e)
+    except (ConnectionError, OAuthTokenRefreshError):
 
-        # Check if the error message contains the refresh token part
-        if "Failed getting OAuth access token from a refresh token" in error_message:
-            # Handle the specific error related to the Refresh token part
+        print("Authentication failed. Please re-try")
 
-            print("Refresh Token or Client ID is not valid. Please re-enter")
+        new_connection(
+            conn_info=read_dsn(section, dsn), prompt=True, connect_attempt=False
+        )
+        try:
+            gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
+            if conf.get_option("print_info"):
+                print("Connected Successfully!")
+        except OAuthTokenRefreshError as error:
+            print("Error persists:")
+            raise error
 
-            new_connection(
-                conn_info=read_dsn(section, dsn), prompt=True, connect_attempt=False
-            )
-            try:
-                gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
-                if conf.get_option("print_info"):
-                    print("Connected Successfully!")
-            except OAuthTokenRefreshError as e:
-                print("Refresh token or Client ID is still not valid.")
-        else:
-            # Handle other types of errors
-            print("An error occurred:", error_message)
-
-    except ConnectionError as e:
-        error_message = str(e)
-
-        # Check if the error message contains the access token part
-        if "Token introspection failed" in error_message:
-            # Handle the specific error related to the Access token part
-            print("Access token is not valid. Please re-enter")
-
-            new_connection(
-                conn_info=read_dsn(section, dsn), prompt=True, connect_attempt=False
-            )
-            try:
-                gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
-                if conf.get_option("print_info"):
-                    print("Connected Successfully!")
-            except ConnectionError as e:
-                print("Access token is still not valid.")
-        else:
-            # Handle other types of errors
-            print("An error occurred:", error_message)
-
-            raise e
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
