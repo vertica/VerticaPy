@@ -20,7 +20,6 @@ from typing import Optional
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
-from vertica_python.vertica.oauth_manager import OAuthManager
 from vertica_python.errors import OAuthTokenRefreshError, ConnectionError
 
 
@@ -134,9 +133,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         if conf.get_option("print_info"):
             print("Connected Successfully!")
     except (ConnectionError, OAuthTokenRefreshError):
-
         print("Authentication failed. Please re-try")
-
         new_connection(
             conn_info=read_dsn(section, dsn), prompt=True, connect_attempt=False
         )
