@@ -304,22 +304,22 @@ def new_connection(
 
     confparser.add_section(name)
     if prompt:
-        oauth_access_token = getpass("Input OAUTH Access Token:")
+        oauth_access_token = getpass("Input OAuth Access Token:")
         if oauth_access_token == "":
             if conf.get_option("print_info"):
-                print("INPUT EMPTY, using default value")
+                print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_access_token"] = oauth_access_token
-        oath_refresh_token = getpass("Input OAUTH Refresh Token:")
+        oath_refresh_token = getpass("Input OAuth Refresh Token:")
         if oath_refresh_token == "":
             if conf.get_option("print_info"):
-                print("INPUT EMPTY, using default value")
+                print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
-        client_secret = getpass("Input OAUTH Client Secret:")
+        client_secret = getpass("Input OAuth Client Secret:")
         if client_secret == "":
             if conf.get_option("print_info"):
-                print("INPUT EMPTY, using default value")
+                print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
     for c in conn_info:
@@ -332,14 +332,15 @@ def new_connection(
         change_auto_connection(name)
     if (
         connect_attempt
-    ):  # To prevent auto-connection. Needed for re-prompts in case of errors.
+    ):  
+        # To prevent auto-connection. Needed for re-prompts in case of errors.
         gb_conn = get_global_connection()
         try:
             gb_conn.set_connection(
                 vertica_python.connect(**read_dsn(name, path)), name, path
             )
         except (ConnectionError, OAuthTokenRefreshError):
-            print("Authentication failed. Please re-try")
+            print("Access Denied: Your authentication credentials are incorrect or have expired. Please retry")
             new_connection(
                 conn_info=read_dsn(name, path), prompt=True, connect_attempt=False
             )

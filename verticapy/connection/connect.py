@@ -133,7 +133,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         if conf.get_option("print_info"):
             print("Connected Successfully!")
     except (ConnectionError, OAuthTokenRefreshError):
-        print("Authentication failed. Please re-try")
+        print("Access Denied: Your authentication credentials are incorrect or have expired. Please retry")
         new_connection(
             conn_info=read_dsn(section, dsn), prompt=True, connect_attempt=False
         )
