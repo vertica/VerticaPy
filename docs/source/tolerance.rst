@@ -1,8 +1,8 @@
 .. _tolerance:
 
-==========================================
-Tolerance with other popular ML algorithms
-==========================================
+================================================================
+ML algorithm tolerance compared with other open-source libraries
+================================================================
 
 At VerticaPy, we pride ourselves on delivering robust and 
 reliable machine learning algorithms. As part of our 
@@ -16,24 +16,23 @@ transparency and facilitate easy reference, we establish
 specific tolerances for each type of algorithm. These 
 tolerances serve as benchmarks for evaluating the 
 accuracy and efficiency of our algorithms, guaranteeing 
-that they meet or exceed expectations in diverse machine 
-learning tasks.
+that they meet or exceed expectations across diverse
+machine learning tasks.
 
+Below we have created a table that lists some of the different
+tolerances for several models:
 
-Below we have created a table which lists some of the different
-tolerances for each model:
-
-.. important:: All our models are tested against popular libraries, but here we only list a few. 
+.. important:: All our models are tested against popular libraries, but only a few are included in the below table.
 
 .. note:: 
     
-    The formula for relative error is as follows:
+    The formula for relative error:
 
     .. math::
 
         relative\ error = \frac{{|Score_{verticapy} - Score_{python}|}}{{\min(|Score_{verticapy}|, |Score_{python}|)}}
 
-    The formula for absolute error is as follows:
+    The formula for absolute error:
 
     .. math::
 
@@ -41,7 +40,7 @@ tolerances for each model:
 
     Absolute error is only used in cases where the result is very close to 0.
 
-    For more information on pytest approxiamtions, please read `this link <https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest-approx>`_
+    For more information on pytest approximations, see the `pytest documentation <https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest-approx>`_
 
 Regression
 ===========
@@ -151,5 +150,5 @@ Others
 
 .. include:: ../tolerance_table_others.rst
 
-.. note:: To learn more about the subtle difference betweeen Absolute Error and Relative Error please refer to `this link <https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest-approx>`_.
+.. note:: To learn more about the subtle difference between Absolute Error and Relative Error, see the following `link <https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest-approx>`_.
 
