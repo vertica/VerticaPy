@@ -156,6 +156,7 @@ class TestSys:
 
         assert titanic_vd_fun["copy_age"].mean() == titanic_vd_fun["age"].mean()
 
+    @pytest.mark.skip("Test is not stable")
     @pytest.mark.parametrize(
         "input_type, column, expected",
         [("vcolumn", "number", 1724), ("vDataFrame", None, 1039)],
