@@ -19,10 +19,6 @@ accuracy and efficiency of our algorithms, guaranteeing
 that they meet or exceed expectations in diverse machine 
 learning tasks.
 
-.. math::
-
-    relative tolerance = \frac{{|vpy\_score - py\_score|}}{{\min(|vpy\_score|, |py\_score|)}}
-
 
 Below we have created a table which lists some of the different
 tolerances for each model:
