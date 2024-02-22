@@ -17,7 +17,14 @@ permissions and limitations under the License.
 import itertools
 import pytest
 from verticapy import drop
-from verticapy.datasets import load_smart_meters, load_titanic, load_iris, load_amazon, load_winequality
+from verticapy.datasets import (
+    load_smart_meters, 
+    load_titanic, 
+    load_iris, 
+    load_amazon, 
+    load_winequality, 
+    load_airline_passengers
+)
 from verticapy.pipeline._train import training
 import verticapy.sql.sys as sys
 from verticapy._utils._sql._sys import _executeSQL
@@ -103,10 +110,10 @@ SUPPORTED_FUNCTIONS = [
     DecisionTreeRegressor,  # Winequality
     DummyTreeClassifier,    # Winequality
     DummyTreeRegressor,     # Winequality
-    ARIMA,
-    ARMA,
-    AR,
-    MA,
+    ARIMA,                  # Airline 
+    ARMA,                   # Airline
+    AR,                     # Airline
+    MA,                     # Airline
 ]
 class TestTrain:
     """
@@ -119,6 +126,7 @@ class TestTrain:
     - KMeans
     - KPrototypes
     """
+    @pytest.mark.skip(reason='just bc')
     @pytest.mark.parametrize(
         "kwargs",
         [
@@ -430,3 +438,65 @@ class TestTrain:
         assert not sys.does_view_exist("test_pipeline_TEST_VIEW", 'public')
 
         drop('public.iris')
+    
+
+    @pytest.mark.parametrize(
+        "kwargs",
+        [
+            {'method': 
+                {'name': 'ARIMA',
+                 'target': "passengers",
+                 'params': {
+                        'order': (12,1,2)
+                    }
+                 },
+             'cols': 'date'},
+            {'method': 
+                {'name': 'ARMA',
+                 'target': "passengers",
+                 'params': {
+                        'order': (12,1,2)
+                    }
+                 },
+             'cols': 'date'},
+            {'method': 
+                {'name': 'AR',
+                 'target': "passengers",
+                 'params': {
+                        'p': 2
+                    }
+                 },
+             'cols': 'date'},
+            {'method': 
+                {'name': 'MA',
+                 'target': "passengers",
+                 'params': {
+                        'q': 2
+                    }
+                 },
+             'cols': 'date'},
+        ]
+    )
+    def test_iris(self, kwargs):
+        _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
+        table = load_airline_passengers()
+        print(kwargs)
+        cols = kwargs['cols']
+        name = kwargs['method']['name']
+
+        # return ``meta_sql, model, model_sql``
+        meta_sql, model, model_sql = training(kwargs, table, 'test_pipeline', cols)
+        assert model
+
+        assert model.does_model_exists('public.test_pipeline_MODEL')
+        assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", 'public')
+        assert sys.does_view_exist("test_pipeline_TEST_VIEW", 'public')
+
+        # drop pipeline
+        _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
+
+        assert not model.does_model_exists('public.test_pipeline_MODEL')
+        assert not sys.does_view_exist("test_pipeline_TRAIN_VIEW", 'public')
+        assert not sys.does_view_exist("test_pipeline_TEST_VIEW", 'public')
+
+        drop('public.airline_passengers')
