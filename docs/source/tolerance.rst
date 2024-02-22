@@ -1,8 +1,8 @@
 .. _tolerance:
 
-======================================
-Tolerance's with other ML algorithms
-======================================
+==========================================
+Tolerance with other popular ML algorithms
+==========================================
 
 At VerticaPy, we pride ourselves on delivering robust and 
 reliable machine learning algorithms. As part of our 
@@ -19,55 +19,141 @@ accuracy and efficiency of our algorithms, guaranteeing
 that they meet or exceed expectations in diverse machine 
 learning tasks.
 
+.. math::
+
+    relative tolerance = \frac{{|vpy\_score - py\_score|}}{{\min(|vpy\_score|, |py\_score|)}}
+
+
 Below we have created a table which lists some of the different
 tolerances for each model:
 
 .. important:: All our models are tested against popular libraries, but here we only list a few. 
 
+.. note:: 
+    
+    The formula for relative error is as follows:
+
+    .. math::
+
+        relative\ error = \frac{{|Score_{verticapy} - Score_{python}|}}{{\min(|Score_{verticapy}|, |Score_{python}|)}}
+
+    The formula for absolute error is as follows:
+
+    .. math::
+
+        relative\ error = \frac{{|Score_{verticapy} - Score_{python}|}}{{1 + \min(|Score_{verticapy}|, |Score_{python}|)}}
+
+    Absolute error is only used in cases where the result is very close to 0.
+
+    For more information on pytest approxiamtions, please read `this link <https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest-approx>`_
+
+Regression
+===========
+
 .. ipython:: python
     :suppress:
 
-    from verticapy.tests_new.machine_learning.vertica import rel_tolerance_map, abs_tolerance_map
+    from verticapy.tests_new.machine_learning.vertica import rel_abs_tol_map
 
-    first_col_dashes = 30
-    second_col_dashes = 20
-    third_col_dashes = 20
-    fourth_col_dashes = 20
-
-    first_col_title = "Algorithm"
-    second_col_title = "Relative Toelrance"
-    third_col_title = "Absolute Tolerance"
-    fourth_col_title = "Comparison Library"
-    scikit = "Scikit Learn"
-    stats = "Statsmodels"
-    tensorflow = "Tensorflow"
-    table = ""
-    separators = "+" + "-" * first_col_dashes + "+" + "-" * second_col_dashes + "+" + "-" * third_col_dashes + "+" + "-" * fourth_col_dashes + "+\n"
-    double_separators = separators.replace("-","=")
-    table+= separators
-    table+= f"| {first_col_title}" + " " * (first_col_dashes-len(first_col_title)-1) 
-    table+= f"| {second_col_title}" + " " * (second_col_dashes-len(second_col_title)-1)
-    table+= f"| {third_col_title}" + " " * (third_col_dashes-len(third_col_title)-1)
-    table+= f"| {fourth_col_title}" + " " * (fourth_col_dashes-len(fourth_col_title)-1) + "|\n"
-    table+= double_separators
-    tols = {key: (rel_tolerance_map[key], abs_tolerance_map[key]) for key in rel_tolerance_map.keys()}
-    tols = dict(sorted(tols.items()))
-    for key in tols.keys():
-        table+= f"| {key}" + " " * (first_col_dashes-len(key)-1) 
-        table+= f"| {tols[key][0]}" + " " * (second_col_dashes-len(str(tols[key][0]))-1)
-        table+= f"| {tols[key][1]}" + " " * (third_col_dashes-len(str(tols[key][1]))-1)
-        if key in ["AR", "ARIMA", "MA", "ARMA"]:
-            table+= f"| {stats}" + " " * (third_col_dashes-len(stats)-1) + "|\n"
-        elif key in ["TENSORFLOW"]:
-            table+= f"| {tensorflow}" + " " * (third_col_dashes-len(tensorflow)-1) + "|\n"
-        else:
-            table+= f"| {scikit}" + " " * (third_col_dashes-len(scikit)-1) + "|\n"
+    def build_table(tols, table: str = ""):
+        first_col_dashes = 30
+        second_col_dashes = 22
+        third_col_dashes = 22
+        first_col_title = "Metric"
+        second_col_title = "Relative Toelrance"
+        third_col_title = "Absolute Tolerance"
+        separators = "+" + "-" * first_col_dashes + "+" + "-" * second_col_dashes + "+" + "-" * third_col_dashes + "+\n"
+        double_separators = separators.replace("-","=")
         table+= separators
-    file_path = "tolerance_table.rst"
+        table+= f"| {first_col_title}" + " " * (first_col_dashes-len(first_col_title)-1) 
+        table+= f"| {second_col_title}" + " " * (second_col_dashes-len(second_col_title)-1)
+        table+= f"| {third_col_title}" + " " * (third_col_dashes-len(third_col_title)-1) + "|\n"
+        table+= double_separators
+        tols = dict(sorted(tols.items()))
+        for key in tols.keys():
+            table+= f"| {key}" + " " * (first_col_dashes-len(str(key))-1)
+            table+= f"| {tols[key][0]}" + " " * (second_col_dashes-len(str(tols[key][0]))-1) 
+            table+= f"| {tols[key][1]}" + " " * (third_col_dashes-len(str(tols[key][1]))-1) + "|\n"
+            table+= separators
+        return table
+
+    def comparison_lib(key):
+        if key in ["AR", "ARIMA", "MA", "ARMA"]:
+            return "Statsmodel"
+        elif key in ["TENSORFLOW"]:
+            return "Tensorflow"
+        return "Scikit Learn"
+
+    keys_list = list(rel_abs_tol_map.keys())
+    keys_list.sort()
+    table = ""
+    for algorithm in keys_list:
+        included_terms = ['Regr', 'Ridge', 'Lasso', 'Elastic', 'SVR']
+        if any(term in algorithm for term in included_terms):
+            details = rel_abs_tol_map[algorithm] 
+            table += algorithm + "\n" + "-" * len(algorithm) + "\n"
+            table += "**Comparison Library**:" + " :bdg-primary-line:`" + comparison_lib(algorithm) + "`" + "\n" + "\n"
+            tols = {key: (details[key]['rel'], details[key]['abs']) for key in details.keys()}
+            tols
+            table = build_table(tols, table)
+            table += "\n"
+    file_path = "tolerance_table_regression.rst"
     with open(file_path, "w") as rst_file:
         rst_file.write(table)
 
-.. include:: ../tolerance_table.rst
+.. include:: ../tolerance_table_regression.rst
+
+Classification
+===============
+
+.. ipython:: python
+    :suppress:
+
+    keys_list = list(rel_abs_tol_map.keys())
+    keys_list.sort()
+    table = ""
+    for algorithm in keys_list:
+        included_terms = ['Classifier']
+        if any(term in algorithm for term in included_terms):
+            details = rel_abs_tol_map[algorithm] 
+            table += algorithm + "\n" + "-" * len(algorithm) + "\n"
+            table += "**Comparison Library**:" + " :bdg-primary-line:`" + comparison_lib(algorithm) + "`" + "\n" + "\n"
+            tols = {key: (details[key]['rel'], details[key]['abs']) for key in details.keys()}
+            tols
+            table = build_table(tols, table)
+            table += "\n"
+    file_path = "tolerance_table_classification.rst"
+    with open(file_path, "w") as rst_file:
+        rst_file.write(table)
+
+.. include:: ../tolerance_table_classification.rst
+
+Others
+=======
+
+.. ipython:: python
+    :suppress:
+
+    keys_list = list(rel_abs_tol_map.keys())
+    keys_list.sort()
+    table = ""
+    for algorithm in keys_list:
+        excluded_terms = ['Regr', 'Classifier', 'Ridge', 'Lasso', 'Elastic', 'SVR', 'TENSORFLOW', 'TF']
+        if not any(term in algorithm for term in excluded_terms):
+            details = rel_abs_tol_map[algorithm] 
+            table += algorithm + "\n" + "-" * len(algorithm) + "\n"
+            table += "**Comparison Library**:" + " :bdg-primary-line:`" + comparison_lib(algorithm) + "`" + "\n" + "\n"
+            tols = {key: (details[key]['rel'], details[key]['abs']) for key in details.keys()}
+            tols
+            table = build_table(tols, table)
+            table += "\n"
+    file_path = "tolerance_table_others.rst"
+    with open(file_path, "w") as rst_file:
+        rst_file.write(table)
+    
+
+
+.. include:: ../tolerance_table_others.rst
 
 .. note:: To learn more about the subtle difference betweeen Absolute Error and Relative Error please refer to `this link <https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest-approx>`_.
 
