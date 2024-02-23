@@ -124,19 +124,42 @@ class TestProfileImport:
         with pytest.raises(ProfileImportError, match=f"Bundle .* lacks [0-9]+ files"):
             pi.check_file()
 
-    def test_load_file(self, tmp_path_with_test_bundles):
-        fname = tmp_path_with_test_bundles / "feb01_cqvs_ndv20.tar"
+    def test_create_tables_copy_data(self, schema_loader, tmp_path_with_test_bundles):
+        fname = tmp_path_with_test_bundles / "feb20_demo_djr_v03.tar"
+        
         pi = ProfileImport(
             # schema and target will be once this test copies
             # files into a schema
-            target_schema="schema_not_used",
-            key="no_such_key",
+            target_schema=schema_loader,
+            key="test123",
             filename=fname,
         )
-        pi.skip_create_table = True
+        pi.skip_create_table = False
         pi.raise_when_missing_files = True
         pi.tmp_path = tmp_path_with_test_bundles
-        pi.load_file()
+        pi.check_schema_and_load_file()
+
+        tables_and_rows = [
+            ("qprof_collection_events_test123", 2),
+            ("qprof_collection_info_test123", 1),
+            ("qprof_dc_explain_plans_test123", 2),
+            ("qprof_dc_query_executions_test123", 1),
+            ("qprof_dc_requests_issued_test123", 1) ,
+            ("qprof_execution_engine_profiles_test123", 1),
+            ("qprof_export_events_test123", 1),
+            ("qprof_host_resources_test123", 1),
+            ("qprof_query_consumption_test123", 1),
+            ("qprof_query_plan_profiles_test123", 1),
+            ("qprof_query_profiles_test123", 1),
+            ("qprof_resource_pool_status_test123", 1),
+        ]
+
+        # TODO: check load numbers
+        for table, row in tables_and_rows:
+            result = _executeSQL(f"""select count(*) from {schema_loader}.{table}""",
+                                 method="fetchall")
+            assert len(result) == 1
+            assert result[0][0] > 0, f"table {table} has zero rows"
 
     def test_create_tables(self, schema_loader):
         """
