@@ -2482,6 +2482,7 @@ class Tree:
         if self._model_type == "IsolationForest":
             tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
             for i in range(n):
+
                 # Check if any training_row_count is NaN
                 if not isinstance(
                     tree.values["training_row_count"][i], NoneType
