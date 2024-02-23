@@ -980,16 +980,16 @@ class VerticaModel(PlottingUtils):
         for param in self.parameters:
             if param == "class_weight":
                 if isinstance(self.parameters[param], (list, np.ndarray)):
-                    parameters["class_weights"] = (
-                        f"'{', '.join([str(p) for p in self.parameters[param]])}'"
-                    )
+                    parameters[
+                        "class_weights"
+                    ] = f"'{', '.join([str(p) for p in self.parameters[param]])}'"
                 else:
                     parameters["class_weights"] = f"'{self.parameters[param]}'"
 
             elif isinstance(self.parameters[param], (str, dict)):
-                parameters[self._map_to_vertica_param_name(param)] = (
-                    f"'{self.parameters[param]}'"
-                )
+                parameters[
+                    self._map_to_vertica_param_name(param)
+                ] = f"'{self.parameters[param]}'"
 
             else:
                 parameters[self._map_to_vertica_param_name(param)] = self.parameters[
@@ -2482,7 +2482,6 @@ class Tree:
         if self._model_type == "IsolationForest":
             tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
             for i in range(n):
-
                 # Check if any training_row_count is NaN
                 if not isinstance(
                     tree.values["training_row_count"][i], NoneType
