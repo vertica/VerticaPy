@@ -2482,11 +2482,16 @@ class Tree:
         if self._model_type == "IsolationForest":
             tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
             for i in range(n):
+                # Check if any training_row_count is NaN
                 if not isinstance(
                     tree.values["training_row_count"][i], NoneType
                 ) and np.isnan(tree.values["training_row_count"][i]):
+                    # Check if the node is root
                     if not (tree.values["node_depth"][i] == 0):
                         tree.values["training_row_count"][i] = 0
+                    else:
+                        # If ``training_row_count`` is nan and the node is root, then discard the tree.
+                        return None
                 if not isinstance(tree.values["leaf_path_length"][i], NoneType):
                     tree.values["prediction"] += [
                         [
