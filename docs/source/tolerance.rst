@@ -55,7 +55,7 @@ Regression
         second_col_dashes = 22
         third_col_dashes = 22
         first_col_title = "Metric"
-        second_col_title = "Relative Toelrance"
+        second_col_title = "Relative Tolerance"
         third_col_title = "Absolute Tolerance"
         separators = "+" + "-" * first_col_dashes + "+" + "-" * second_col_dashes + "+" + "-" * third_col_dashes + "+\n"
         double_separators = separators.replace("-","=")
@@ -149,6 +149,3 @@ Others
 
 
 .. include:: ../tolerance_table_others.rst
-
-.. note:: To learn more about the subtle difference between Absolute Error and Relative Error, see the following `link <https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest-approx>`_.
-
