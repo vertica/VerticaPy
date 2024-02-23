@@ -19,6 +19,22 @@ accuracy and efficiency of our algorithms, guaranteeing
 that they meet or exceed expectations across diverse
 machine learning tasks.
 
+In addition to our algorithms, we also establish 
+tolerances for all the different metrics we use to 
+measure the accuracy of our models. The tolerances 
+for all metrics are:
+
+.. list-table:: 
+    :header-rows: 1
+    
+    * - Model Type
+      - Relative Error
+    * - Regression
+      - 1%
+    * - Classification
+      - 10%
+    
+
 Below we have created a table that lists some of the different
 tolerances for several models:
 
