@@ -26,6 +26,7 @@ import pandas as pd
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.core.parsers.pandas import read_pandas
+
 # from verticapy.sql import insert_into
 
 from verticapy.performance.vertica.collection.collection_tables import (
@@ -164,7 +165,7 @@ class ProfileImport:
     def _load_file(self) -> None:
         self.check_file()
         self._load_vdataframes(self.unpack_dir, self.bundle_version)
-    
+
     def check_schema_and_load_file(self) -> None:
         self.check_schema()
         self._load_file()
@@ -330,5 +331,3 @@ class ProfileImport:
                 continue
             pd_dataframe = pd.read_parquet(expected_file_path)
             ctable.copy_from_pandas_dataframe(pd_dataframe)
-
-            

@@ -23,6 +23,7 @@ import pandas as pd
 
 from verticapy.core.parsers.pandas import read_pandas
 
+
 class AllTableTypes(Enum):
     """
     Enumeration (``Enum``) of all table types understood by profile collection.
@@ -126,12 +127,12 @@ class CollectionTable:
             f" Current table name = {self.name} schema {self.schema}"
         )
 
-    def get_pandas_column_type_adjustments(self) -> Mapping[str,str]:
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
         # Should we list all integer columns as Int64?
         # What is going on with dc_requests_issued? I suspect that the problem
         # is newlines in the output that is making csv export a mess
         return {}
-        
+
     def copy_from_pandas_dataframe(self, dataframe: pd.DataFrame) -> int:
         cols = list(dataframe.columns)
         self.logger.info(f"Dataframe for table {self.name} has num columns {len(cols)}")
@@ -140,16 +141,17 @@ class CollectionTable:
             # copies the dataframe. in-place update is deprecated according
             # to the pandas docs
             dataframe = dataframe.astype(adjustments)
-        adj_table_types = '\n'.join([str(x) for x in dataframe.dtypes])
+        adj_table_types = "\n".join([str(x) for x in dataframe.dtypes])
         self.logger.info(f"Adjusted Column types:\n{adj_table_types}")
         self.logger.info(f"Loading table {self.get_import_name()}")
-        vdf = read_pandas(df=dataframe,
-                        name=self.get_import_name(),
-                        schema=self.schema,
-                        insert=True,
-                        abort_on_error=True)
+        vdf = read_pandas(
+            df=dataframe,
+            name=self.get_import_name(),
+            schema=self.schema,
+            insert=True,
+            abort_on_error=True,
+        )
         self.logger.info(f"Loaded (rows, columns) {vdf.shape()}")
-
 
 
 def getAllCollectionTables(
@@ -643,8 +645,9 @@ class DCRequestsIssuedTable(CollectionTable):
             {import_name}.digest) 
         ALL NODES;
         """
+
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        # There are certainly type adjustments to make here 
+        # There are certainly type adjustments to make here
         return {}
 
 
@@ -749,14 +752,14 @@ class ExecutionEngineProfilesTable(CollectionTable):
             {import_name}.localplan_id) 
         ALL NODES;
         """
+
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
         # Parquet stores int nulls as NaN, which is a float
         # That means exported integer columns will be float64 type
-        # verticapy's data loading process converts the data to csv 
+        # verticapy's data loading process converts the data to csv
         # first, and float strings won't parse as integers.
         # Int64 is a nullable integer type defined by pandas.
-        return {'operator_id': 'Int64',
-                'counter_value': 'Int64'}
+        return {"operator_id": "Int64", "counter_value": "Int64"}
 
 
 ################ export_events ###################
@@ -1138,14 +1141,16 @@ class QueryPlanProfilesTable(CollectionTable):
                 {import_name}.running_time) 
         ALL NODES;
         """
-    
+
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        return {"path_id": "Int64",
-                "path_line_index": "Int64",
-                "memory_allocated_bytes": "Int64",
-                "read_from_disk_bytes": "Int64",
-                "received_bytes": "Int64",
-                "sent_bytes": "Int64"}
+        return {
+            "path_id": "Int64",
+            "path_line_index": "Int64",
+            "memory_allocated_bytes": "Int64",
+            "read_from_disk_bytes": "Int64",
+            "received_bytes": "Int64",
+            "sent_bytes": "Int64",
+        }
 
 
 ################ query_profiles ###################
@@ -1388,21 +1393,22 @@ class ResourcePoolStatusTable(CollectionTable):
                     {import_name}.max_memory_size_kb) 
         ALL NODES;
         """
-    
+
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        return {"memory_size_kb" : "Int64",
-                "memory_size_actual_kb": "Int64",
-                "memory_inuse_kb": "Int64",
-                "general_memory_borrowed_kb":"Int64",
-                "queueing_threshold_kb": "Int64",
-                "max_memory_size_kb": "Int64",
-                "max_query_memory_size_kb": "Int64",
-                "running_query_count": "Int64",
-                "planned_concurrency": "Int64",
-                "max_concurrency": "Int64",
-                "queue_timeout_in_seconds": "Int64",
-                "priority": "Int64",
-                "runtime_priority_threshold": "Int64",
-                "runtimecap_in_seconds": "Int64",
-                "query_budget_kb": "Int64"
-                }
+        return {
+            "memory_size_kb": "Int64",
+            "memory_size_actual_kb": "Int64",
+            "memory_inuse_kb": "Int64",
+            "general_memory_borrowed_kb": "Int64",
+            "queueing_threshold_kb": "Int64",
+            "max_memory_size_kb": "Int64",
+            "max_query_memory_size_kb": "Int64",
+            "running_query_count": "Int64",
+            "planned_concurrency": "Int64",
+            "max_concurrency": "Int64",
+            "queue_timeout_in_seconds": "Int64",
+            "priority": "Int64",
+            "runtime_priority_threshold": "Int64",
+            "runtimecap_in_seconds": "Int64",
+            "query_budget_kb": "Int64",
+        }

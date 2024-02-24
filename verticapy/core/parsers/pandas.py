@@ -109,7 +109,7 @@ def read_pandas(
     abort_on_error: bool, optional
         If set to ``True``, any parser
         error that would reject a row
-        will cause the copy statement 
+        will cause the copy statement
         to fail and rollback.
 
     Returns
@@ -360,16 +360,15 @@ def read_pandas(
             path,
             index=False,
             quoting=csv.QUOTE_NONE,
-            escapechar='\027',
-            sep='\001',
-            lineterminator='\002'
+            escapechar="\027",
+            sep="\001",
+            lineterminator="\002",
         )
 
         if len(str_cols) > 0 or len(null_columns) > 0:
             # to_csv is adding an undesired special character
             # we remove it
-            logging.debug(f"Replacing undesired characters in"
-                          f" csv file {path}")
+            logging.debug(f"Replacing undesired characters in" f" csv file {path}")
             with open(path, "r", encoding="utf-8") as f:
                 filedata = f.read()
             filedata = filedata.replace(",", ",").replace('""', "")
@@ -405,8 +404,8 @@ def read_pandas(
                 dtype=dtype,
                 temporary_local_table=True,
                 parse_nrows=parse_nrows,
-                sep='\001',
-                record_terminator='\002',
+                sep="\001",
+                record_terminator="\002",
                 escape="\027",
             )
         else:
@@ -417,8 +416,8 @@ def read_pandas(
                 schema=schema,
                 temporary_local_table=False,
                 parse_nrows=parse_nrows,
-                sep='\001',
-                record_terminator='\002',
+                sep="\001",
+                record_terminator="\002",
                 escape="\027",
             )
     finally:
