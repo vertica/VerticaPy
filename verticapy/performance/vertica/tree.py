@@ -280,16 +280,20 @@ class PerformanceTree:
             d["info_rowsize"] = 30
         if "info_fontsize" not in d:
             d["info_fontsize"] = 8
+        if "storage_access" not in d:
+            d["storage_access"] = 9
         if "display_operator" not in d:
             d["display_operator"] = True
         if "display_operator_edge" not in d:
             d["display_operator_edge"] = True
         if "two_legend" not in d:
-            d["two_legend"] = False
+            d["two_legend"] = True
         if "display_proj" not in d:
             d["display_proj"] = True
         if "display_etc" not in d:
             d["display_etc"] = True
+        if "network_edge" not in d:
+            d["network_edge"] = True
         if "network_edge" not in d:
             d["network_edge"] = True
         self.style = d
@@ -1042,6 +1046,8 @@ class PerformanceTree:
         colors: list
             A ``list`` of one or
             two colors.
+        operator: str, optional
+            Operator Icon.
 
         Returns
         -------
@@ -1076,10 +1082,11 @@ class PerformanceTree:
         proj = ""
         if self.style["display_proj"] and "Projection: " in operator:
             proj = operator.split("Projection: ")[1].split("\n")[0]
-            if len(proj) > 11:
+            ss = self.style["storage_access"]
+            if len(proj) > ss:
                 proj = schema_relation(proj, do_quote=False)[1]
-            if len(proj) > 11:
-                proj = proj[:11] + ".."
+            if len(proj) > ss:
+                proj = proj[:ss] + ".."
             proj = (
                 f'<TR><TD COLSPAN="{colspan}" WIDTH="{width}" '
                 f'HEIGHT="{height}" BGCOLOR="{fillcolor}" ><FONT '
@@ -1155,7 +1162,10 @@ class PerformanceTree:
             row = self._format_row(self.rows[i].replace('"', "'"))
             operator_icon = self._get_operator_icon(row)
             if not (isinstance(self.metric[0], NoneType)):
-                alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                if m_max - m_min != 0:
+                    alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                else:
+                    alpha = 1.0
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
@@ -1163,7 +1173,10 @@ class PerformanceTree:
             colors = [color]
             if len(self.metric) > 1:
                 if not (isinstance(self.metric[1], NoneType)):
-                    alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
+                    if m_max_2 - m_min_2 != 0:
+                        alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
+                    else:
+                        alpha = 1.0
                     colors += [self._generate_gradient_color(alpha)]
                 else:
                     colors += [self.style["fillcolor"]]
@@ -1326,6 +1339,8 @@ class PerformanceTree:
                 math.log(1 + self._get_metric(self.rows[i], me)) for i in range(n)
             ]
         m_min, m_max = min(all_metrics), max(all_metrics)
+        if m_min == m_max:
+            m_min = 0
         cats = [0.0, 0.25, 0.5, 0.75, 1.0]
         cats = [
             self._format_number(int(math.exp(x * (m_max - m_min) + m_min) - 1))
