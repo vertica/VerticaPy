@@ -18,6 +18,8 @@ You may obtain a copy of the License at:
 """
 This script runs the Vertica Machine Learning Pipeline Test.
 """
+import pytest
+
 from typing import Tuple
 
 from verticapy import vDataFrame
@@ -33,6 +35,8 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.pipeline._helper import execute_and_return, remove_comments
 
 
+
+@pytest.mark.skip(reason='this is not a test.')
 def testing(
     test: dict, model: VerticaModel, pipeline_name: str, cols: SQLColumns
 ) -> Tuple[str, str]:
