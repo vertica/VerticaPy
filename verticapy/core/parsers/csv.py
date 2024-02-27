@@ -790,7 +790,7 @@ def read_csv(
         ):
             if not path_first_file_in_folder:
                 raise ValueError("No CSV file detected in the folder.")
-            file_header = get_header_names(path_first_file_in_folder, sep)
+            file_header = get_header_names(path_first_file_in_folder, sep, record_terminator=record_terminator)
         elif not header_names and not dtype and (compression != "UNCOMPRESSED"):
             raise ValueError(
                 "The input file is compressed and parameters 'dtypes' and 'header_names'"
@@ -891,6 +891,7 @@ def read_csv(
                     quotechar,
                     escape,
                     ingest_local=ingest_local,
+                    record_terminator=record_terminator,
                 )
             if parse_nrows > 0:
                 os.remove(path_test)
@@ -920,6 +921,7 @@ def read_csv(
             DELIMITER '{sep}' 
             NULL '{na_rep}' 
             ENCLOSED BY '{quotechar}' 
+            RECORD TERMINATOR '{record_terminator}'
             ESCAPE AS '{escape}'{skip};"""
         if genSQL:
             if insert:
