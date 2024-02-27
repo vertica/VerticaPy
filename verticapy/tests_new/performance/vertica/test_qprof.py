@@ -1004,18 +1004,18 @@ class TestQueryProfiler:
                 for s in obj["tooltip"].split("\n"):
                     if s != "" and not s.startswith(
                         (
-                            "cost",
-                            "rows",
-                            "exec_time_ms",
-                            "est_rows",
-                            "proc_rows",
-                            "prod_rows",
-                            "rle_prod_rows",
-                            "clock_time_us",
-                            "cstall_us",
-                            "pstall_us",
-                            "mem_res_mb",
-                            "mem_all_mb",
+                            "Query plan cost",
+                            "Estimated row count",
+                            "Execution time in ms",
+                            "Estimated row count",
+                            "Processed row count",
+                            "Produced row count",
+                            "Produced RLE row count",
+                            "Clock time in us",
+                            "Network consumer stall time in us",
+                            "Network producer stall time in us",
+                            "Reserved memory size in MB",
+                            "Allocated memory size in MB",
                         )
                     ):
                         _ss1 += s + ""
