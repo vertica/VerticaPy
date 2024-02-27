@@ -790,7 +790,9 @@ def read_csv(
         ):
             if not path_first_file_in_folder:
                 raise ValueError("No CSV file detected in the folder.")
-            file_header = get_header_names(path_first_file_in_folder, sep, record_terminator=record_terminator)
+            file_header = get_header_names(
+                path_first_file_in_folder, sep, record_terminator=record_terminator
+            )
         elif not header_names and not dtype and (compression != "UNCOMPRESSED"):
             raise ValueError(
                 "The input file is compressed and parameters 'dtypes' and 'header_names'"
