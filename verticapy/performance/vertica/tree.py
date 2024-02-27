@@ -1155,7 +1155,8 @@ class PerformanceTree:
         for i in range(n):
             tooltip_metrics = "\n"
             for j, x in enumerate(me):
-                tooltip_metrics += f"\n{self.metric[j]}: {x[i]}"
+                me_j = QprofUtility._get_metrics_name(self.metric[j])
+                tooltip_metrics += f"\n{me_j}: {x[i]}"
             tree_id = self.path_order[i]
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
@@ -1355,9 +1356,10 @@ class PerformanceTree:
         if len(metric) == 1 and isinstance(metric[0], NoneType):
             legend = "Legend"
         elif len(metric) > 1:
-            legend = f"{metric[0]} | {metric[1]}"
+            legend = f"{QprofUtility._get_metrics_name(metric[0])} | "
+            legend += f"{QprofUtility._get_metrics_name(metric[1])}"
         else:
-            legend = metric[0]
+            legend = QprofUtility._get_metrics_name(metric[0])
         default_params = get_default_graphviz_options()
         bgcolor = default_params["legend_bgcolor"]
         fontcolor = default_params["legend_fontcolor"]
