@@ -140,18 +140,18 @@ class TestProfileImport:
         pi.check_schema_and_load_file()
 
         tables_and_rows = [
-            ("qprof_collection_events_test123", 2),
-            ("qprof_collection_info_test123", 1),
-            ("qprof_dc_explain_plans_test123", 2),
-            ("qprof_dc_query_executions_test123", 1),
-            ("qprof_dc_requests_issued_test123", 1),
-            ("qprof_execution_engine_profiles_test123", 1),
-            ("qprof_export_events_test123", 1),
-            ("qprof_host_resources_test123", 1),
-            ("qprof_query_consumption_test123", 1),
-            ("qprof_query_plan_profiles_test123", 1),
-            ("qprof_query_profiles_test123", 1),
-            ("qprof_resource_pool_status_test123", 1),
+            ("qprof_collection_events_test123", 20),
+            ("qprof_collection_info_test123", 2),
+            ("qprof_dc_explain_plans_test123", 191),
+            ("qprof_dc_query_executions_test123", 138),
+            ("qprof_dc_requests_issued_test123", 2),
+            ("qprof_execution_engine_profiles_test123", 63373),
+            ("qprof_export_events_test123", 12),
+            ("qprof_host_resources_test123", 12),
+            ("qprof_query_consumption_test123", 2),
+            ("qprof_query_plan_profiles_test123", 179),
+            ("qprof_query_profiles_test123", 2),
+            ("qprof_resource_pool_status_test123", 216),
         ]
 
         # TODO: check load numbers
@@ -160,7 +160,9 @@ class TestProfileImport:
                 f"""select count(*) from {schema_loader}.{table}""", method="fetchall"
             )
             assert len(result) == 1
-            assert result[0][0] > 0, f"table {table} has zero rows"
+            assert (
+                result[0][0] == row
+            ), f"table {table} expected {row} observed {result[0][0]}"
 
     def test_create_tables(self, schema_loader):
         """

@@ -128,22 +128,23 @@ class CollectionTable:
         )
 
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        # Should we list all integer columns as Int64?
-        # What is going on with dc_requests_issued? I suspect that the problem
-        # is newlines in the output that is making csv export a mess
+        # Subclasses should provide an implementation of this
+        # method that sets nullable integer columns to Int64.
+        #
+        # Parquet stores int nulls as NaN, which is a float
+        # That means exported integer columns will be float64 type
+        # verticapy's data loading process converts the data to csv
+        # first, and float strings won't parse as integers.
+        # Int64 is a nullable integer type defined by pandas.
         return {}
 
     def copy_from_pandas_dataframe(self, dataframe: pd.DataFrame) -> int:
-        cols = list(dataframe.columns)
-        self.logger.info(f"Dataframe for table {self.name} has num columns {len(cols)}")
         adjustments = self.get_pandas_column_type_adjustments()
         if len(adjustments) != 0:
             # copies the dataframe. in-place update is deprecated according
             # to the pandas docs
             dataframe = dataframe.astype(adjustments)
-        adj_table_types = "\n".join([str(x) for x in dataframe.dtypes])
-        self.logger.info(f"Adjusted Column types:\n{adj_table_types}")
-        self.logger.info(f"Loading table {self.get_import_name()}")
+        self.logger.info(f"Begin copy to table {self.get_import_name()}")
         vdf = read_pandas(
             df=dataframe,
             name=self.get_import_name(),
@@ -151,7 +152,10 @@ class CollectionTable:
             insert=True,
             abort_on_error=True,
         )
-        self.logger.info(f"Loaded (rows, columns) {vdf.shape()}")
+        self.logger.info(
+            f"End copy to table  {self.get_import_name()}."
+            f" Loaded (rows, columns) {vdf.shape()}"
+        )
 
 
 def getAllCollectionTables(
@@ -754,11 +758,6 @@ class ExecutionEngineProfilesTable(CollectionTable):
         """
 
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        # Parquet stores int nulls as NaN, which is a float
-        # That means exported integer columns will be float64 type
-        # verticapy's data loading process converts the data to csv
-        # first, and float strings won't parse as integers.
-        # Int64 is a nullable integer type defined by pandas.
         return {"operator_id": "Int64", "counter_value": "Int64"}
 
 
