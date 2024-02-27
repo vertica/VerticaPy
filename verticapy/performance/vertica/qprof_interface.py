@@ -72,6 +72,30 @@ class QueryProfilerInterface(QueryProfiler):
         prev_button.on_click(self.prev_button_clicked)
         self.transaction_buttons = widgets.HBox([prev_button, next_button])
 
+        # Query Inofrmation - Query Text & Time
+        query_display_time = widgets.HTML(
+            value=f"<h4>Execution Time: {self.get_qduration()} (sec)</h4> <hr>"
+        )
+        query_display_header = widgets.HTML(
+            value='<h3 style="text-align: center;">QUERY</h3> <hr>'
+        )
+        query_display_text = self.get_request(
+            print_sql=False,
+            return_html=True,
+        )
+
+        query_display_text_widget = widgets.VBox(
+            [
+                widgets.HTML(
+                    query_display_text,
+                    layout={"max_height": "350px", "overflow_y": "auto"},
+                )
+            ]
+        )
+        self.query_display = widgets.VBox(
+            [query_display_time, query_display_header, query_display_text_widget]
+        )
+
         self.index_widget = widgets.IntText(
             description="Index:", value=self.transactions_idx
         )
@@ -172,10 +196,7 @@ class QueryProfilerInterface(QueryProfiler):
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
         )
-        settings = [
-            accordions,
-            self.transaction_buttons,
-        ]
+        settings = [accordions, self.transaction_buttons, self.query_display]
         viz = Visualizer(
             settings_wids=settings, graph_wids=[header_box, interactive_output]
         )
