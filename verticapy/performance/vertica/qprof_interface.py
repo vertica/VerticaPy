@@ -73,28 +73,23 @@ class QueryProfilerInterface(QueryProfiler):
         self.transaction_buttons = widgets.HBox([prev_button, next_button])
 
         # Query Inofrmation - Query Text & Time
-        query_display_time = widgets.HTML(
+        self.query_display_time = widgets.HTML(
             value=f"<h4>Execution Time: {self.get_qduration()} (sec)</h4> <hr>"
         )
-        query_display_header = widgets.HTML(
+        self.query_display_header = widgets.HTML(
             value='<h3 style="text-align: center;">QUERY</h3> <hr>'
         )
-        query_display_text = self.get_request(
-            print_sql=False,
-            return_html=True,
-        )
-
-        query_display_text_widget = widgets.VBox(
-            [
-                widgets.HTML(
-                    query_display_text,
-                    layout={"max_height": "350px", "overflow_y": "auto"},
-                )
-            ]
+        self.query_display_text_widget = widgets.HTML(
+            layout={"max_height": "350px", "overflow_y": "auto", "padding-left": "10px"}
         )
         self.query_display = widgets.VBox(
-            [query_display_time, query_display_header, query_display_text_widget]
+            [
+                self.query_display_time,
+                self.query_display_header,
+                self.query_display_text_widget,
+            ]
         )
+        self.update_query_display()
 
         self.index_widget = widgets.IntText(
             description="Index:", value=self.transactions_idx
@@ -260,6 +255,7 @@ class QueryProfilerInterface(QueryProfiler):
         self.pathid_dropdown.set_child_attr("disabled", True)
         self.refresh_pathids.disabled = False
         self.index_widget.value = (self.index_widget.value + 1) % len(self.transactions)
+        self.update_query_display()
         button.disabled = False
 
     def prev_button_clicked(self, button):
@@ -277,6 +273,7 @@ class QueryProfilerInterface(QueryProfiler):
         self.pathid_dropdown.set_child_attr("disabled", True)
         self.refresh_pathids.disabled = False
         self.index_widget.value = (self.index_widget.value - 1) % len(self.transactions)
+        self.update_query_display()
         button.disabled = False
 
     def refresh_clicked(self, button):
@@ -298,6 +295,20 @@ class QueryProfilerInterface(QueryProfiler):
             "color_high": self.colors["color high"].get_child_attr("value"),
         }
         self.apply_tree.value = not self.apply_tree.value
+
+    def update_query_display(self):
+        """
+        Updates the query display text widget with the current query.
+        """
+        current_query = self.get_request(
+            print_sql=False, return_html=True
+        )  # Fetch the current query
+        self.query_display_text_widget.value = (
+            current_query  # Update the value of the HTML widget
+        )
+        self.query_display_time.value = (
+            f"<h4>Execution Time: {self.get_qduration()} (sec)</h4> <hr>"
+        )
 
     ##########################################################################
 
