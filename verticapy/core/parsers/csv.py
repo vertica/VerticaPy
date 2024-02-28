@@ -945,7 +945,8 @@ def read_csv(
                 print(f"The table {input_relation} has been successfully created.")
             return vDataFrame(table_name, schema=schema)
 
-def _get_quoted_record_terminator(record_terminator:str) -> str:
+
+def _get_quoted_record_terminator(record_terminator: str) -> str:
     """
     Quotes a string for use in a copy statement. Common end-of-line characters
     need to be quoted in escaped literals, such as `E'\\n'`.
