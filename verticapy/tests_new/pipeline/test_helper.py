@@ -117,7 +117,6 @@ def test_setup():
     """
     test function setup
     """
-    helper.setup()
     # Does function exist?
     assert _executeSQL("""SELECT EXISTS (
     SELECT 1
