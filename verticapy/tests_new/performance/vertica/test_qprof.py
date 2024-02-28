@@ -29,6 +29,7 @@ from verticapy.connection import current_cursor
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.datasets import load_titanic
 from verticapy.performance.vertica import QueryProfiler
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 
 from verticapy.tests_new.performance.vertica import QPROF_SQL1, QPROF_SQL2
 
@@ -930,21 +931,20 @@ class TestQueryProfiler:
         ],
     )
     @pytest.mark.parametrize(
-        "metric",
+        "metric, metric_info",
         [
-            "cost",
-            "rows",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            # "cstall_us",  # ZeroDivisionError
-            # "pstall_us",  # ZeroDivisionError
-            "mem_res_mb",
-            # "mem_all_mb",  # ZeroDivisionError
-            # ["cost", "proc_rows"],
+            ("cost", "Query plan cost"),
+            ("rows", "Estimated row count"),
+            ("exec_time_ms", "Execution time in ms"),
+            ("est_rows", "Estimated row count"),
+            ("proc_rows", "Processed row count"),
+            ("prod_rows", "Produced row count"),
+            ("rle_prod_rows", "Produced RLE row count"),
+            ("clock_time_us", "Clock time in us"),
+            # ("cstall_us", "Network consumer stall time in us"), # ZeroDivisionError
+            # ("pstall_us", "Network producer stall time in us"), # ZeroDivisionError
+            ("mem_res_mb", "Reserved memory size in MB"),
+            # ("mem_all_mb", "Allocated memory size in MB"),  # ZeroDivisionError
         ],
     )
     def test_get_qplan_tree(
@@ -953,6 +953,7 @@ class TestQueryProfiler:
         path_id_info,
         show_ancestors,
         metric,
+        metric_info,
         pic_path,
         return_graphviz,
     ):
@@ -1002,26 +1003,16 @@ class TestQueryProfiler:
             if "tooltip" in obj.keys():
                 _ss1 = ""
                 for s in obj["tooltip"].split("\n"):
-                    if s != "" and not s.startswith(
-                        (
-                            "Query plan cost",
-                            "Estimated row count",
-                            "Execution time in ms",
-                            "Estimated row count",
-                            "Processed row count",
-                            "Produced row count",
-                            "Produced RLE row count",
-                            "Clock time in us",
-                            "Network consumer stall time in us",
-                            "Network producer stall time in us",
-                            "Reserved memory size in MB",
-                            "Allocated memory size in MB",
-                        )
-                    ):
+                    if s != "" and not s.startswith(metric_info):
                         _ss1 += s + ""
                     # for return_graphviz = True
-                    if return_graphviz and metric in s:
-                        _ss1 = re.search(rf".+{metric}", s).group(0).replace(metric, "")
+                    if return_graphviz and metric_info in s:
+                        # remove metric info from the string i.e. 'Query plan cost'
+                        _ss1 = (
+                            re.search(rf".+{metric_info}", s)
+                            .group(0)
+                            .replace(metric_info, "")
+                        )
                 ss1 += _ss1.strip().replace('"', "'") + " "
         logger.info("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
         logger.info(f"Actual Result: {ss1}")
