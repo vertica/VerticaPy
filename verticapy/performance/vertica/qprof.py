@@ -34,6 +34,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.performance.vertica.tree import PerformanceTree
+from verticapy.performance.vertica.collection.profile_export import ProfileExport
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.sql.dtypes import get_data_types
 
@@ -3283,3 +3284,19 @@ class QueryProfiler:
         query = """SELECT * FROM v_monitor.host_resources;"""
         query = self._replace_schema_in_query(query)
         return vDataFrame(query)
+
+    def export_profile(self, filename) -> None:
+        """
+        Creates a parquet file of the replica tables used while 
+        profiling a query. 
+        """
+        unique_schemas = set([x for x in self.target_schema.values()])
+        if len(unique_schemas) != 1:
+            raise ValueError(f"Expected one unique schema, but found {unique_schemas}")
+        actual_schema = unique_schemas.pop()
+        exp = ProfileExport(target_schema=actual_schema,
+                            key=self.key_id,
+                            filename=filename)
+        
+        exp.export()
+

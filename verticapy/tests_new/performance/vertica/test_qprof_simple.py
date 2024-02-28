@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import logging
+import os
 
 import verticapy as vp
 
@@ -94,3 +95,26 @@ class TestQueryProfilerSimple:
         qp = QueryProfiler(request)
         self.check_version(qp)
         self.check_request(qp, "avg(number) AS avg_number")
+        # TODO: check query events?
+
+
+    def test_profile_export(self, amazon_vd, schema_loader, tmp_path):
+        request = f"""
+        SELECT 
+            date, 
+            MONTH(date) AS month, 
+            AVG(number) AS avg_number 
+        FROM 
+            {schema_loader}.amazon 
+        GROUP BY 1;
+        """
+
+        qp = QueryProfiler(request,
+                           target_schema=schema_loader)
+        
+        # Assert that the tables exist?
+
+        outfile = tmp_path / "qprof_test_001.tar"
+        qp.export_profile(filename=outfile)
+
+        assert os.path.exists("qprof_test_001.tar")
