@@ -35,8 +35,7 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.pipeline._helper import execute_and_return, remove_comments
 
 
-
-@pytest.mark.skip(reason='this is not a test.')
+@pytest.mark.skip(reason="[MODULE FOR PIPELINE, NOT A TEST]")
 def testing(
     test: dict, model: VerticaModel, pipeline_name: str, cols: SQLColumns
 ) -> Tuple[str, str]:
