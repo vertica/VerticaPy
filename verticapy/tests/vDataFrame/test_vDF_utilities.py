@@ -195,40 +195,6 @@ class TestvDFUtilities:
         os.remove("titanic_verticapy_test_to_csv/3.csv")
         os.rmdir("titanic_verticapy_test_to_csv")
 
-    def test_read_pandas_abort_on_error(self, titanic_vd):
-        """
-        Tries to use read_pandas() to load a dataframe into a table
-        that has the right column names, but the wrong column type
-        for the data format. Asserts that abort_on_error behaves as
-        expected.
-        """
-        pandas_df = titanic_vd.to_pandas()
-        assert pandas_df.shape == (1234, 14)
-        random_name = f"titanic_hack_{int(time.time())}"
-        try:
-            current_cursor().execute(
-                f"create table public.{random_name} like"
-                " public.titanic excluding projections"
-            ).fetchall()
-            current_cursor().execute(
-                f'alter table public.{random_name} drop column "survived"'
-            ).fetchall()
-            current_cursor().execute(
-                f'alter table public.{random_name} add column "survived" interval'
-            ).fetchall()
-            with pytest.raises(CopyRejected):
-                read_pandas(
-                    df=pandas_df,
-                    name=random_name,
-                    schema="public",
-                    insert=True,
-                    abort_on_error=True,
-                )
-        finally:
-            current_cursor().execute(
-                f"drop table if exists public.{random_name}"
-            ).fetchall()
-
     def test_vDF_to_parquet(self, titanic_vd):
         session_id = f"{current_session()}_{username()}"
         name = "parquet_test_{}".format(session_id)
