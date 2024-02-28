@@ -108,6 +108,10 @@ class CollectionTable:
     # Recall: abstract methods won't raise by default
     @abstractmethod
     def get_create_table_sql(self) -> str:
+        """
+        Returns a string containing a valid SQL statement to create a table
+        in the database.
+        """
         raise NotImplementedError(
             f"get_create_table_sql is not implemented in the base class CollectionTable."
             f" Current table name = {self.name} schema {self.schema}"
@@ -115,6 +119,10 @@ class CollectionTable:
 
     @abstractmethod
     def get_create_projection_sql(self) -> str:
+        """
+        Returns a string containing a valid SQL statement to create a projection
+        for a table created by ``get_create_table_sql()``
+        """
         raise NotImplementedError(
             f"get_create_projection_sql is not implemented in the base class CollectionTable"
             f" Current table name = {self.name} schema {self.schema}"
@@ -128,6 +136,21 @@ class CollectionTable:
         )
 
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        """
+        Returns a dictionary that maps columns to new pandas datatypes.
+        Subclasses should provide an implementation for their column
+        datatype overrides.
+
+        Used by ``copy_from_pandas_dataframe()`` to adjust column
+        types before they are serialized to load into the database.
+
+        Returns
+        --------
+        A dictionary ``{"column_name" : "pandas_data_type_name", ...}``.
+        The dictionary is suitable to use as inpput to the
+        ``pandas.DataFrame.astype()`` method.
+
+        """
         # Subclasses should provide an implementation of this
         # method that sets nullable integer columns to Int64.
         #
@@ -139,6 +162,22 @@ class CollectionTable:
         return {}
 
     def copy_from_pandas_dataframe(self, dataframe: pd.DataFrame) -> int:
+        """
+        Copies a dataframe into the the table described by this
+        CollectionTable. Returns the number of rows inserted.
+        Raises a ``vertica_python.errors.CopyRejected``
+        exception and rolls back the transaction if any rows are rejected due to improperly formatted
+        data.
+
+        Parameters
+        ---------------
+        dataframe: pandas.DataFrame
+            A pandas dataframe
+
+        Returns
+        --------------
+        An integer representing the number of rows loaded into the database.
+        """
         adjustments = self.get_pandas_column_type_adjustments()
         if len(adjustments) != 0:
             # copies the dataframe. in-place update is deprecated according
@@ -156,6 +195,7 @@ class CollectionTable:
             f"End copy to table  {self.get_import_name()}."
             f" Loaded (rows, columns) {vdf.shape()}"
         )
+        return vdf.shape()[0]
 
 
 def getAllCollectionTables(
@@ -472,6 +512,12 @@ class DCExplainPlansTable(CollectionTable):
         ALL NODES;
         """
 
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "path_id": "Int64",
+            "path_line_index": "Int64",
+        }
+
 
 ################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
@@ -651,8 +697,7 @@ class DCRequestsIssuedTable(CollectionTable):
         """
 
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        # There are certainly type adjustments to make here
-        return {}
+        return {"query_start_epoch": "Int64", "digest": "Int64"}
 
 
 ################ execution_engine_profiles ###################
@@ -758,7 +803,16 @@ class ExecutionEngineProfilesTable(CollectionTable):
         """
 
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        return {"operator_id": "Int64", "counter_value": "Int64"}
+        return {
+            "plan_id": "Int64",
+            "operator_id": "Int64",
+            "baseplan_id": "Int64",
+            "path_id": "Int64",
+            "localplan_id": "Int64",
+            "activity_id": "Int64",
+            "resource_id": "Int64",
+            "counter_value": "Int64",
+        }
 
 
 ################ export_events ###################
@@ -1047,6 +1101,23 @@ class QueryConsumptionTable(CollectionTable):
         ALL NODES;
         """
 
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "cpu_cycles_us": "Int64",
+            "network_bytes_received": "Int64",
+            "network_bytes_sent": "Int64",
+            "data_bytes_read": "Int64",
+            "data_bytes_written": "Int64",
+            "data_bytes_loaded": "Int64",
+            "bytes_spilled": "Int64",
+            "input_rows": "Int64",
+            "input_rows_processed": "Int64",
+            "peak_memory_kb": "Int64",
+            "thread_count": "Int64",
+            "duration_ms": "Int64",
+            "output_rows": "Int64",
+        }
+
 
 ################ query_plan_profiles ###################
 class QueryPlanProfilesTable(CollectionTable):
@@ -1255,6 +1326,13 @@ class QueryProfilesTable(CollectionTable):
         ALL NODES;
 
         """
+
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "error_code": "Int64",
+            "processed_row_count": "Int64",
+            "reserved_extra_memory_b": "Int64",
+        }
 
 
 ################ resource_pool_status ###################
