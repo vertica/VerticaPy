@@ -29,7 +29,6 @@ from verticapy.connection import current_cursor
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.datasets import load_titanic
 from verticapy.performance.vertica import QueryProfiler
-from verticapy.performance.vertica.qprof_utility import QprofUtility
 
 from verticapy.tests_new.performance.vertica import QPROF_SQL1, QPROF_SQL2
 
