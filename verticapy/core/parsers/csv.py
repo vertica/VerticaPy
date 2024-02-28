@@ -51,7 +51,7 @@ def pcsv(
     na_rep: Optional[str] = None,
     quotechar: str = '"',
     escape: str = "\027",
-    record_terminator: str = "\n",
+    record_terminator: str = os.linesep,
     trim: bool = True,
     omit_empty_keys: bool = False,
     reject_on_duplicate: bool = False,
@@ -253,8 +253,6 @@ def pcsv(
     header_names = format_type(header_names, dtype=list)
     if isinstance(na_rep, NoneType):
         na_rep = ""
-    if record_terminator == "\n":
-        record_terminator = "\\n"
     if not flex_name:
         flex_name = gen_tmp_name(name="flex")[1:-1]
     if header_names:
@@ -267,6 +265,7 @@ def pcsv(
     reject_on_duplicate = str(reject_on_duplicate).lower()
     reject_on_empty_key = str(reject_on_empty_key).lower()
     reject_on_materialized_type_error = str(reject_on_materialized_type_error).lower()
+    record_term_quoted = _get_quoted_record_terminator(record_terminator)
     compression = extract_compression(path)
     query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
     query2 = f"""
@@ -278,7 +277,7 @@ def pcsv(
             header = {header}, {header_names} 
             enclosed_by = '{quotechar}', 
             escape = '{escape}',
-            record_terminator = '{record_terminator}',
+            record_terminator = {record_term_quoted},
             trim = {trim},
             omit_empty_keys = {omit_empty_keys},
             reject_on_duplicate = {reject_on_duplicate},
@@ -917,13 +916,14 @@ def read_csv(
         skip = " SKIP 1" if (header) else ""
         local = "LOCAL " if ingest_local else ""
         header_names_str = ", ".join([f'"{column}"' for column in header_names])
+        record_terminator_quoted = _get_quoted_record_terminator(record_terminator)
         query2 = f"""
             COPY {input_relation}({header_names_str}) 
             FROM {local}'{path}' {compression} 
             DELIMITER '{sep}' 
             NULL '{na_rep}' 
-            ENCLOSED BY '{quotechar}' 
-            RECORD TERMINATOR '{record_terminator}'
+            ENCLOSED BY '{quotechar}'
+            RECORD TERMINATOR {record_terminator_quoted}
             ESCAPE AS '{escape}'{skip};"""
         if genSQL:
             if insert:
@@ -944,3 +944,24 @@ def read_csv(
             ):
                 print(f"The table {input_relation} has been successfully created.")
             return vDataFrame(table_name, schema=schema)
+
+def _get_quoted_record_terminator(record_terminator:str) -> str:
+    """
+    Quotes a string for use in a copy statement. Common end-of-line characters
+    need to be quoted in escaped literals, such as `E'\\n'`.
+
+    Parameters
+    ----------
+    record_terminator: str
+        A string that determines the end of a record
+
+    Returns
+    ----------
+    A properly quoted string for a sql statement.
+
+    """
+    if record_terminator == "\n":
+        return "E'\\n'"
+    if record_terminator == "\r\n":
+        return "E'\\r\\n'"
+    return f"'{record_terminator}'"
