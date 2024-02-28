@@ -54,11 +54,12 @@ def get_header_names(
         # Creating a CSV example.
         file_name = 'verticapy_test_parsers.csv'
         f = open(file_name, 'a')
-        f.write("A;B;C;D")
+        f.write("A;B;C;D&1;2;3;4&")
         f.close()
 
         # Example.
-        get_header_names(file_name, sep = ';')
+        get_header_names(file_name, sep = ';', 
+                        record_terminator='&')
 
         # Deleting the CSV file.
         import os
@@ -163,7 +164,8 @@ def get_first_record_as_list(path: str, sep: str, record_terminator: str) -> Lis
     Examples
     -------------------
 
-    .. ipython:: python
+    .. code-block:: python
+
         # import the function
         from verticapy._utils._parsers import get_first_record_as_list
 
@@ -174,7 +176,6 @@ def get_first_record_as_list(path: str, sep: str, record_terminator: str) -> Lis
         print(cols)
         # Should print
         #    ['col1', 'col2', 'col3']
-
 
     """
     first_line = read_first_record(path, record_terminator)
@@ -187,7 +188,7 @@ def get_first_record_as_list(path: str, sep: str, record_terminator: str) -> Lis
 def read_first_record(path: str, record_terminator: str) -> str:
     """
     Reads the first record of a file and return it as a string. Includes
-    the record terminator in he string returned.
+    the record terminator in the string returned.
 
     Parameters
     ------------
@@ -202,7 +203,8 @@ def read_first_record(path: str, record_terminator: str) -> str:
 
     Examples
     ------------
-    .. ipython:: python
+    .. code-block:: python
+
         # import the function
         from verticapy._utils._parsers import read_first_record
 
@@ -229,12 +231,12 @@ def read_first_record(path: str, record_terminator: str) -> str:
         # We could pick any size chunk to read... 1024 seems
         # reasonably large for csv files. We expect that there
         # is some other buffering happening within the file_obj
-        charaters_per_read = 1024
+        characters_per_read = 1024
         total_characters_read = 0
         while True:
             # Read some bytes, look for end of line
-            line = file_obj.read(charaters_per_read)
-            total_characters_read += charaters_per_read
+            line = file_obj.read(characters_per_read)
+            total_characters_read += characters_per_read
             if line == "":
                 raise ValueError(
                     f"Unable to find record terminator "
