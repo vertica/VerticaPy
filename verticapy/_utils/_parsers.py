@@ -58,7 +58,7 @@ def get_header_names(
         f.close()
 
         # Example.
-        get_header_names(file_name, sep = ';', 
+        get_header_names(file_name, sep = ';',
                         record_terminator='&')
 
         # Deleting the CSV file.

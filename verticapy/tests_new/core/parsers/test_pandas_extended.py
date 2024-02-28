@@ -34,14 +34,15 @@ from verticapy.connection import current_cursor
 from verticapy.core.parsers.pandas import read_pandas
 from verticapy.datasets import load_titanic
 
+
 @pytest.fixture(scope="module")
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
     drop(name="public.titanic")
 
-class TestPandasExtended:
 
+class TestPandasExtended:
     def test_read_pandas_abort_on_error(self, titanic_vd):
         """
         Tries to use read_pandas() to load a dataframe into a table

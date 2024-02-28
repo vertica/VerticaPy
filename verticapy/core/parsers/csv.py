@@ -949,7 +949,7 @@ def read_csv(
 def _get_quoted_record_terminator(record_terminator: str) -> str:
     """
     Quotes a string for use in a copy statement. Common end-of-line characters
-    need to be quoted in escaped literals, such as `E'\\n'`.
+    need to be quoted in escaped literals, such as ``E'\\n'``.
 
     Parameters
     ----------
