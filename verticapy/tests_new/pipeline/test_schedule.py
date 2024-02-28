@@ -14,13 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import pytest
-import itertools
-
 from verticapy import drop
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.datasets import load_winequality
-from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
 from verticapy.pipeline._validate import testing
 from verticapy.pipeline._schedule import scheduler
@@ -59,13 +55,13 @@ class TestSchedule:
         }
         schedule = "* * * * *"
         # Part 1: Train a Model
-        meta_sql, model, model_sql = training(kwargs, table, "test_pipeline", cols)
+        _, model, model_sql = training(kwargs, table, "test_pipeline", cols)
 
         # Part 2: Run the Metrics
-        test_sql, table_sql = testing(test, model, pipeline_name, cols)
+        _, table_sql = testing(test, model, pipeline_name, cols)
 
         # Part 3: Run the Scheduler
-        sql = scheduler(schedule, model_sql, table_sql, pipeline_name)
+        scheduler(schedule, model_sql, table_sql, pipeline_name)
         assert model
 
         assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")

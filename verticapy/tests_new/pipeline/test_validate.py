@@ -15,12 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import pytest
-import itertools
 
 from verticapy import drop
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.datasets import load_winequality
-from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
 from verticapy.pipeline._validate import testing
 from verticapy.pipeline._train import training
@@ -30,12 +28,8 @@ import verticapy.sql.sys as sys
 
 class TestValidate:
     """
-    test class for Transform tests
-    """
-
-    """
     Analytic Functions test
-    - 
+    -
     """
 
     @pytest.mark.parametrize(
@@ -117,10 +111,10 @@ class TestValidate:
         cols = ["fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar"]
 
         # Part 1: Train a Model
-        meta_sql, model, model_sql = training(kwargs, table, "test_pipeline", cols)
+        _, model, _ = training(kwargs, table, "test_pipeline", cols)
 
         # Part 2: Run the Metrics
-        res = testing(test, model, pipeline_name, cols)
+        testing(test, model, pipeline_name, cols)
 
         assert model
         assert model.does_model_exists("public.test_pipeline_MODEL")

@@ -14,11 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import pytest
-from collections import defaultdict
-
-from verticapy._utils._sql._sys import _executeSQL
-
 from verticapy.pipeline import parser
 
 import verticapy.sql.sys as sys

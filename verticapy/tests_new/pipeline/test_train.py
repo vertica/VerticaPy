@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import pytest
-import itertools
 
 from verticapy import drop
 from verticapy._utils._sql._sys import _executeSQL
@@ -25,7 +24,6 @@ from verticapy.datasets import (
     load_winequality,
 )
 
-from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import (
     BisectingKMeans,
     DBSCAN,
@@ -118,10 +116,6 @@ SUPPORTED_FUNCTIONS = [
 
 
 class TestTrain:
-    """
-    test class for Train tests
-    """
-
     """
     Test winequality dependent models.
     """
@@ -487,10 +481,9 @@ class TestTrain:
         table = load_winequality()
         print(kwargs)
         cols = kwargs["cols"]
-        name = kwargs["method"]["name"]
 
         # return ``meta_sql, model, model_sql``
-        meta_sql, model, model_sql = training(kwargs, table, "test_pipeline", cols)
+        _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
         assert model.does_model_exists("public.test_pipeline_MODEL")
@@ -540,10 +533,9 @@ class TestTrain:
         table = load_iris()
         print(kwargs)
         cols = kwargs["cols"]
-        name = kwargs["method"]["name"]
 
         # return ``meta_sql, model, model_sql``
-        meta_sql, model, model_sql = training(kwargs, table, "test_pipeline", cols)
+        _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
         assert model.does_model_exists("public.test_pipeline_MODEL")
@@ -593,10 +585,9 @@ class TestTrain:
         table = load_airline_passengers()
         print(kwargs)
         cols = kwargs["cols"]
-        name = kwargs["method"]["name"]
 
         # return ``meta_sql, model, model_sql``
-        meta_sql, model, model_sql = training(kwargs, table, "test_pipeline", cols)
+        _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
         assert model.does_model_exists("public.test_pipeline_MODEL")

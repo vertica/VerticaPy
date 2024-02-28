@@ -105,7 +105,7 @@ class TestTransform:
         }
         # Column gets made in output column
         res = transformation(transform, "public.titanic")
-        assert f'"{name}"' in res._vars["columns"]
+        assert f'"{name}"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize(
@@ -134,7 +134,7 @@ class TestTransform:
         }
         # Column gets made in output column
         res = transformation(transform, "public.smart_meters")
-        assert f'"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.smart_meters")
 
     """
@@ -156,7 +156,7 @@ class TestTransform:
             name: {"transform_method": {"name": "eval", "params": {"expr": expr}}}
         }
         res = transformation(transform, "public.titanic")
-        assert f'"{name}"' in res._vars["columns"]
+        assert f'"{name}"' in res.get_columns()
         drop("public.titanic")
 
     """
@@ -209,7 +209,7 @@ class TestTransform:
         )
         result = ["_".join(perm) for perm in unique_combinations]
         for col in result:
-            assert f'"{col}"' in res._vars["columns"]
+            assert f'"{col}"' in res.get_columns()
         drop("public.iris")
 
     @pytest.mark.parametrize(
@@ -231,7 +231,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize(
@@ -256,7 +256,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize(
@@ -300,8 +300,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        print(res._vars["columns"])
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize(
@@ -331,7 +330,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.smart_meters")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.smart_meters")
 
     @pytest.mark.parametrize(
@@ -355,7 +354,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize(
@@ -383,7 +382,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.smart_meters")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.smart_meters")
 
     """
@@ -421,7 +420,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.amazon")
-        assert f'"{name}"' in res._vars["columns"]
+        assert f'"{name}"' in res.get_columns()
         drop("public.amazon")
 
     """
@@ -481,7 +480,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        assert f'"{name}"' in res._vars["columns"]
+        assert f'"{name}"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize(
@@ -502,7 +501,7 @@ class TestTransform:
         }
 
         res = transformation(transform, "public.titanic")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize(
@@ -523,7 +522,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
 
     @pytest.mark.parametrize("column, start, end", [("name", 0, 3), ("name", 0, 4)])
@@ -542,7 +541,7 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
 
     """
@@ -578,5 +577,5 @@ class TestTransform:
             }
         }
         res = transformation(transform, "public.titanic")
-        assert '"new_colm"' in res._vars["columns"]
+        assert '"new_colm"' in res.get_columns()
         drop("public.titanic")
