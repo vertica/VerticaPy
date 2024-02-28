@@ -73,28 +73,24 @@ class QueryProfilerInterface(QueryProfiler):
         self.transaction_buttons = widgets.HBox([prev_button, next_button])
 
         # Query Inofrmation - Query Text & Time
-        self.query_display_time = widgets.HTML(
-            value=f"<h4>Execution Time: {self.get_qduration()} (sec)</h4> <hr>"
+        self.query_display_info = widgets.HTML(
+            value=f"""
+        <b>Execution Time:</b> {self.get_qduration()}
+        <b>Target Schema:</b> {self.target_schema}
+        <b>Transaction ID:</b> {self.transaction_id}
+        <b>Statement ID:</b> {self.statement_id}
+        <b>Key ID:</b> {self.key_id}
+        """
         )
-        self.query_display_header = widgets.HTML(
-            value='<h3 style="text-align: center;">QUERY</h3> <hr>'
-        )
-        self.query_display_text_widget = widgets.VBox(
+        self.query_display = widgets.VBox(
             [
                 widgets.HTML(
                     layout={
-                        "max_height": "350px",
+                        "max_height": "320px",
                         "overflow_y": "auto",
                         "padding-left": "10px",
                     }
                 )
-            ]
-        )
-        self.query_display = widgets.VBox(
-            [
-                self.query_display_time,
-                self.query_display_header,
-                self.query_display_text_widget,
             ]
         )
         self.update_query_display()
@@ -182,11 +178,13 @@ class QueryProfilerInterface(QueryProfiler):
                 [self.pathid_dropdown.get_item(), refresh_pathids_box]
             ),
             "Tree style": widgets.VBox(tree_settings),
+            "Query Text": self.query_display,
         }
+        query_text_index = list(accordion_items.keys()).index("Query Text")
         accordions = Visualizer._accordion(
             list(accordion_items.values()), accordion_items.keys()
         )
-
+        accordions.selected_index = query_text_index
         header_box = widgets.HBox(
             [self.qpt_header], layout={"justify_content": "center"}
         )
@@ -199,7 +197,7 @@ class QueryProfilerInterface(QueryProfiler):
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
         )
-        settings = [accordions, self.transaction_buttons, self.query_display]
+        settings = [accordions, self.transaction_buttons, self.query_display_info]
         viz = Visualizer(
             settings_wids=settings, graph_wids=[header_box, interactive_output]
         )
@@ -309,10 +307,14 @@ class QueryProfilerInterface(QueryProfiler):
         Updates the query display text widget with the current query.
         """
         current_query = self.get_request(print_sql=False, return_html=True)
-        self.query_display_text_widget.children[0].value = current_query
-        self.query_display_time.value = (
-            f"<h4>Execution Time: {self.get_qduration()} (sec)</h4> <hr>"
-        )
+        self.query_display.children[0].value = current_query
+        self.query_display_info.value = f"""
+        <b>Execution Time:</b> {self.get_qduration()}
+        <b>Target Schema:</b> {self.target_schema}
+        <b>Transaction ID:</b> {self.transaction_id}
+        <b>Statement ID:</b> {self.statement_id}
+        <b>Key ID:</b> {self.key_id}
+        """
 
     ##########################################################################
 

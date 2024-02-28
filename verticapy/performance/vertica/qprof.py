@@ -1812,12 +1812,16 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
-        res = format_query(
-            query=self.request, indent_sql=indent_sql, print_sql=print_sql
-        )
         if return_html:
-            return res[1]
-        return res[0]
+            return format_query(
+                query=self.request,
+                indent_sql=indent_sql,
+                print_sql=print_sql,
+                only_html=True,
+            )
+        return format_query(
+            query=self.request, indent_sql=indent_sql, print_sql=print_sql
+        )[0]
 
     # Step 2: Query duration
     def get_qduration(
