@@ -585,7 +585,10 @@ def _format_keys(
 
 
 def format_query(
-    query: SQLExpression, indent_sql: bool = True, print_sql: bool = True
+    query: SQLExpression,
+    indent_sql: bool = True,
+    print_sql: bool = True,
+    only_html: bool = False,
 ) -> SQLExpression:
     """
     Query Formatter. It is used
@@ -698,7 +701,11 @@ def format_query(
         res = indent_vpy_sql(res)
     elif print_sql:
         print(res)
-    return res, html_res
+    if display_success:
+        return res, html_res
+    elif only_html:
+        return html_res
+    return res
 
 
 """
