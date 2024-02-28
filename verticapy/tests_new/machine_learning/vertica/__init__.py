@@ -508,6 +508,30 @@ rel_abs_tol_map = {
         "mse_": {"rel": 3e-03, "abs": ABS_TOLERANCE},
         "predict": {"rel": 4e-02, "abs": ABS_TOLERANCE},
     },
+    "KMeans": {
+        "predict": {"rel": 2e-01, "abs": ABS_TOLERANCE},
+        "to_python": {"rel": REL_TOLERANCE, "abs": ABS_TOLERANCE},
+    },
     "TENSORFLOW": REL_TOLERANCE,
     "TFIDF": 1e-01,
 }
+
+REGRESSION_MODELS = [
+    "RandomForestRegressor",
+    "DecisionTreeRegressor",
+    # "DummyTreeRegressor",
+    "XGBRegressor",
+    "Ridge",
+    "Lasso",
+    "ElasticNet",
+    "LinearRegression",
+    # "LinearSVR",
+    "PoissonRegressor",
+]
+CLASSIFICATION_MODELS = [
+    "RandomForestClassifier",
+    "DecisionTreeClassifier",
+    # "DummyTreeClassifier",
+    "XGBClassifier",
+]
+TIMESERIES_MODELS = ["AR", "MA", "ARMA", "ARIMA"]
