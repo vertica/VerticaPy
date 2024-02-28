@@ -154,7 +154,6 @@ class TestProfileImport:
             ("qprof_resource_pool_status_test123", 216),
         ]
 
-        # TODO: check load numbers
         for table, row in tables_and_rows:
             result = _executeSQL(
                 f"""select count(*) from {schema_loader}.{table}""", method="fetchall"
