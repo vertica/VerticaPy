@@ -204,7 +204,7 @@ class TestvDFUtilities:
         """
         pandas_df = titanic_vd.to_pandas()
         assert pandas_df.shape == (1234, 14)
-        random_name = f'titanic_hack_{int(time.time())}'
+        random_name = f"titanic_hack_{int(time.time())}"
         try:
             current_cursor().execute(
                 f"create table public.{random_name} like"
@@ -217,16 +217,17 @@ class TestvDFUtilities:
                 f'alter table public.{random_name} add column "survived" interval'
             ).fetchall()
             with pytest.raises(CopyRejected):
-                read_pandas(df=pandas_df,
-                            name=random_name,
-                            schema='public',
-                            insert=True,
-                            abort_on_error=True)
+                read_pandas(
+                    df=pandas_df,
+                    name=random_name,
+                    schema="public",
+                    insert=True,
+                    abort_on_error=True,
+                )
         finally:
             current_cursor().execute(
                 f"drop table if exists public.{random_name}"
             ).fetchall()
-        
 
     def test_vDF_to_parquet(self, titanic_vd):
         session_id = f"{current_session()}_{username()}"

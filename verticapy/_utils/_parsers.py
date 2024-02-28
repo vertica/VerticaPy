@@ -155,7 +155,7 @@ def get_first_record_as_list(path: str, sep: str, record_terminator: str) -> Lis
         The field seperator in the delimited file. Example: `','`
     record_terminator: str
         The string marking the end of a record. Example: `'\\n'`
-    
+
     Returns
     ----------
     A list of strings. Each item in the list is a value in the first record of the file.
@@ -169,7 +169,7 @@ def get_first_record_as_list(path: str, sep: str, record_terminator: str) -> Lis
 
         # If you have a file called 'test.csv'
         # with a first line that looks like
-        # col1,col2,col3 
+        # col1,col2,col3
         cols = get_first_record_as_list('test.csv', ',', '\\n')
         print(cols)
         # Should print
@@ -193,7 +193,7 @@ def read_first_record(path: str, record_terminator: str) -> str:
     ------------
     path: str
         The path to the file. The file will be opened.
-    record_terminator: str 
+    record_terminator: str
         The string that marks the end of a record.
 
     Returns
@@ -209,7 +209,7 @@ def read_first_record(path: str, record_terminator: str) -> str:
         # If you have a file called 'test.csv'
         # with a first two lines that looks like
         # col1,col2,col3;
-        # 100,abc,3.14; 
+        # 100,abc,3.14;
         r = read_first_record('test.csv', ',', ';')
         print(r)
         # Should print
@@ -226,7 +226,7 @@ def read_first_record(path: str, record_terminator: str) -> str:
         # need manual handling
         buf = io.StringIO()
 
-        # We could pick any size chunk to read... 1024 seems 
+        # We could pick any size chunk to read... 1024 seems
         # reasonably large for csv files. We expect that there
         # is some other buffering happening within the file_obj
         charaters_per_read = 1024
