@@ -14,19 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import itertools
 import pytest
-
-from verticapy.pipeline._validate import testing
-
-from verticapy._utils._sql._sys import _executeSQL
+import itertools
 
 from verticapy import drop
+from verticapy._utils._sql._sys import _executeSQL
 from verticapy.datasets import load_winequality 
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
+from verticapy.pipeline._validate import testing
 from verticapy.pipeline._train import training
+
 import verticapy.sql.sys as sys
 
-from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
 class TestValidate:
     """
@@ -115,11 +115,11 @@ class TestValidate:
         # Part 2: Run the Metrics
         res = testing(test, model, pipeline_name, cols)
         
-        assert True
         assert model
-
+        assert model.does_model_exists('public.test_pipeline_MODEL')
         assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", 'public')
         assert sys.does_view_exist("test_pipeline_TEST_VIEW", 'public')
+        assert sys.does_table_exist("test_pipeline_METRIC_TABLE", 'public')
 
         # drop pipeline
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")

@@ -14,10 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import itertools
 import pytest
+import itertools
+
 from verticapy import drop
-from verticapy.datasets import load_smart_meters, load_titanic, load_iris, load_amazon
+from verticapy.datasets import (
+    load_amazon,
+    load_iris,
+    load_smart_meters, 
+    load_titanic,  
+)
+
 from verticapy.pipeline._transform import transformation
 
 
@@ -184,7 +191,6 @@ class TestTransform:
     )
     def test_polynomial_comb(self, columns, r):
         load_iris()
-        # FIXME: Add a parameter of 'vDataFrame' or 'global': True and then it will automatically try it 
         transform = {
                         'new_colm': {
 							# This is a dummy to create the column

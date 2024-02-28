@@ -14,10 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-
 import pytest
-import verticapy.pipeline._helper as helper
+
+from verticapy.pipeline._helper import setup
+
 
 @pytest.fixture(scope="session", autouse=True)
-def setup():
-    helper.setup()
+def pipeline_setup():
+    setup()

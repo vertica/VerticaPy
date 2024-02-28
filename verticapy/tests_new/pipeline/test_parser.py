@@ -14,14 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from collections import defaultdict
-import verticapy.pipeline._helper as helper
-from verticapy._utils._sql._sys import _executeSQL
 import pytest
+from collections import defaultdict
+
+from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.pipeline import parser
 
 import verticapy.sql.sys as sys
+
 
 def build_pipeline(pipeline_name: str):
     steps = {'schema': 'public', 
@@ -63,9 +64,13 @@ def build_pipeline(pipeline_name: str):
 
 def test_parser():
     build_pipeline('test_pipeline')
-    build_pipeline('test_pipeline')
+    build_pipeline('test_pipeline') # Purposely test duplicates
     build_pipeline('test_pipeline_2')
 
     assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", 'public')
     assert sys.does_view_exist("test_pipeline_TEST_VIEW", 'public')
     assert sys.does_table_exist("test_pipeline_METRIC_TABLE", 'public')
+    
+    assert sys.does_view_exist("test_pipeline_2_TRAIN_VIEW", 'public')
+    assert sys.does_view_exist("test_pipeline_2_TEST_VIEW", 'public')
+    assert sys.does_table_exist("test_pipeline_2_METRIC_TABLE", 'public')

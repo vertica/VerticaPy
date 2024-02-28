@@ -14,32 +14,24 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import itertools
 import pytest
+import itertools
+
+from verticapy import drop
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.datasets import load_winequality 
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
 from verticapy.pipeline._validate import testing
 from verticapy.pipeline._schedule import scheduler
 from verticapy.pipeline._train import training
 
-from verticapy._utils._sql._sys import _executeSQL
-
-from verticapy import drop
-from verticapy.datasets import load_winequality 
 import verticapy.sql.sys as sys
 
-from verticapy.machine_learning.vertica.linear_model import LinearRegression
-from verticapy.machine_learning.vertica.linear_model import (
-    ElasticNet,
-    Lasso,
-    LinearRegression,
-    LogisticRegression,
-    PoissonRegressor,
-    Ridge,
-)
+
 class TestSchedule:
 
     def test_schedule_good(self):
-
         pipeline_name = 'test_pipeline'
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
         

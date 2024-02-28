@@ -14,20 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import itertools
 import pytest
+import itertools
+
 from verticapy import drop
-from verticapy.datasets import (
-    load_smart_meters, 
-    load_titanic, 
-    load_iris, 
-    load_amazon, 
-    load_winequality, 
-    load_airline_passengers
-)
-from verticapy.pipeline._train import training
-import verticapy.sql.sys as sys
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy.datasets import (
+    load_airline_passengers,
+    load_iris, 
+    load_winequality, 
+)
 
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import (
@@ -75,13 +71,17 @@ from verticapy.machine_learning.vertica.tree import (
 )
 from verticapy.machine_learning.vertica.tsa import ARIMA, ARMA, AR, MA
 
+from verticapy.pipeline._train import training
+
+import verticapy.sql.sys as sys
+
 SUPPORTED_FUNCTIONS = [
     BisectingKMeans,        # Winequality
     DBSCAN,                 # [Not Tested]
     KMeans,                 # Winequality
     KPrototypes,            # Winequality
-    NearestCentroid,        # Iris [FIXME: Non Native Function]
-    MCA,                    # Titanic [FIXME: Non Native Function] 
+    NearestCentroid,        # [FIXME: Non Native Function]
+    MCA,                    # [FIXME: Non Native Function] 
     PCA,                    # Winequality
     SVD,                    # Winequality
     IsolationForest,        # Winequality
@@ -100,8 +100,8 @@ SUPPORTED_FUNCTIONS = [
     GaussianNB,             # [Not Tested]
     MultinomialNB,          # [Not Tested]
     NaiveBayes,             # Iris
-    KNeighborsClassifier,   # Winequality [FIXME: Non Native Function]
-    KernelDensity,          # Winequality [FIXME: Model_NAMING? weird]
+    KNeighborsClassifier,   # [FIXME: Non Native Function]
+    KernelDensity,          # [FIXME: Model_NAMING error]
     KNeighborsRegressor,    # Winequality
     LocalOutlierFactor,     # [FIXME: Non Native Function]
     LinearSVC,              # Winequality
@@ -115,18 +115,16 @@ SUPPORTED_FUNCTIONS = [
     AR,                     # Airline
     MA,                     # Airline
 ]
+
+
 class TestTrain:
     """
     test class for Train tests
     """
     
     """
-    Test winequality dependent Algos
-    - BisectingKMeans
-    - KMeans
-    - KPrototypes
+    Test winequality dependent models.
     """
-    @pytest.mark.skip(reason='just bc')
     @pytest.mark.parametrize(
         "kwargs",
         [
@@ -399,7 +397,6 @@ class TestTrain:
         drop('public.winequality')
     
 
-    @pytest.mark.skip(reason='just bc')
     @pytest.mark.parametrize(
         "kwargs",
         [
@@ -477,7 +474,7 @@ class TestTrain:
              'cols': 'date'},
         ]
     )
-    def test_iris(self, kwargs):
+    def test_airline_passengers(self, kwargs):
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
         table = load_airline_passengers()
         print(kwargs)

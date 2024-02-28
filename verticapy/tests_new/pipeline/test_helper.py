@@ -14,12 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from collections import defaultdict
-import verticapy.pipeline._helper as helper
-from verticapy._utils._sql._sys import _executeSQL
 import pytest
+from collections import defaultdict
 
-from verticapy.pipeline import parser
+from verticapy._utils._sql._sys import _executeSQL
+
+from verticapy.pipeline import parser, _helper
 
 import verticapy.sql.sys as sys
 
@@ -30,42 +30,42 @@ def test_required_keywords():
     """
     yaml = {"key1": 1, "key2": 2, "key3": 3}
     keywords = ["key1", "key2", "key3"]
-    assert helper.required_keywords(yaml, keywords) == True
+    assert _helper.required_keywords(yaml, keywords) == True
     
     yaml = {"key1": 1, "key3": 3}
     keywords = ["key1", "key2", "key3"]
     with pytest.raises(KeyError) as error_info:
-        helper.required_keywords(yaml, keywords)
+        _helper.required_keywords(yaml, keywords)
     assert 'key2' in str(error_info.value)
 
     
     yaml = {}
     keywords = []
-    assert helper.required_keywords(yaml, keywords) == True
+    assert _helper.required_keywords(yaml, keywords) == True
 
     yaml = {"key1": 1}
     keywords = []
-    assert helper.required_keywords(yaml, keywords) == True
+    assert _helper.required_keywords(yaml, keywords) == True
 
 def test_execute_and_return():
     """
-    test function execute_and_return
+    test function execute_and_return.
     """
     sql = "SELECT 1;"
-    assert helper.execute_and_return(sql) == "SELECT 1;\n"
+    assert _helper.execute_and_return(sql) == "SELECT 1;\n"
 
 def test_remove_comments():
     """
     test function remove_comments
     """
     input_string = "SELECT 1;"
-    assert helper.remove_comments(input_string) == input_string
+    assert _helper.remove_comments(input_string) == input_string
 
     input_string = "SELECT 1; /* THIS IS A COMMENT */ "
-    assert helper.remove_comments(input_string) == "SELECT 1;  "
+    assert _helper.remove_comments(input_string) == "SELECT 1;  "
     
     input_string = "SELECT 1; /* THIS IS A COMMENT */ /* THIS IS ALSO A COMMENT */"
-    assert helper.remove_comments(input_string) == "SELECT 1;  "
+    assert _helper.remove_comments(input_string) == "SELECT 1;  "
 
 def test_to_sql():
     """
@@ -73,10 +73,14 @@ def test_to_sql():
     """
     dummy_sql = """SELECT model('model_name', 'table_name', 'target_column', '"col1, col2"')"""
     dummy_string = """SELECT model(' || QUOTE_LITERAL('model_name') || ', ' || QUOTE_LITERAL('table_name') || ', ' || QUOTE_LITERAL('target_column') || ', ' || QUOTE_LITERAL('"col1, col2"') || '';""" 
-    assert helper.to_sql(dummy_sql) == dummy_string
+    assert _helper.to_sql(dummy_sql) == dummy_string
 
 
 def build_pipeline(pipeline_name: str):
+    """
+    helper function to build identical pipelines
+    with different names.
+    """
     steps = {'schema': 'public', 
              'pipeline': pipeline_name, 
              'table': 'public.winequality', 
@@ -115,7 +119,7 @@ def build_pipeline(pipeline_name: str):
 
 def test_setup():
     """
-    test function setup
+    test function setup.
     """
     # Does function exist?
     assert _executeSQL("""SELECT EXISTS (
@@ -124,7 +128,8 @@ def test_setup():
     WHERE procedure_name = 'drop_pipeline');
     """)
     assert _executeSQL("CALL drop_pipeline('public', 'pipeline');")
-    # TODO: Does it do the expected thing?
+    
+    # Does it do the expected thing?
     build_pipeline('test_pipeline')
     build_pipeline('test_pipeline2')
     build_pipeline('test_pipeline_2')
