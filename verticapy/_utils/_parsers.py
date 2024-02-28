@@ -71,7 +71,7 @@ def get_header_names(
         construct others, simplifying the overall
         code.
     """
-    file_header = get_first_line_as_list(path, sep, record_terminator)
+    file_header = get_first_record_as_list(path, sep, record_terminator)
 
     for idx, col in enumerate(file_header):
         if col == "":
@@ -143,15 +143,78 @@ def guess_sep(file_str: str) -> str:
     return sep
 
 
-def get_first_line_as_list(path: str, sep: str, record_terminator: str) -> List[str]:
-    first_line = read_first_line(path, sep, record_terminator)
+def get_first_record_as_list(path: str, sep: str, record_terminator: str) -> List[str]:
+    """
+    Reads the first record from a file and splits it into a list.
+
+    Parameters
+    ------------
+    path: str
+        The name of the file to open
+    sep: str
+        The field seperator in the delimited file. Example: `','`
+    record_terminator: str
+        The string marking the end of a record. Example: `'\\n'`
+    
+    Returns
+    ----------
+    A list of strings. Each item in the list is a value in the first record of the file.
+
+    Examples
+    -------------------
+
+    .. ipython:: python
+        # import the function
+        from verticapy._utils._parsers import get_first_record_as_list
+
+        # If you have a file called 'test.csv'
+        # with a first line that looks like
+        # col1,col2,col3 
+        cols = get_first_record_as_list('test.csv', ',', '\\n')
+        print(cols)
+        # Should print
+        #    ['col1', 'col2', 'col3']
+
+
+    """
+    first_line = read_first_record(path, record_terminator)
     file_header = first_line.replace(record_terminator, "").replace('"', "")
     if not sep:
         sep = guess_sep(file_header)
     return file_header.split(sep)
 
 
-def read_first_line(path: str, sep: str, record_terminator: str) -> str:
+def read_first_record(path: str, record_terminator: str) -> str:
+    """
+    Reads the first record of a file and return it as a string. Includes
+    the record terminator in he string returned.
+
+    Parameters
+    ------------
+    path: str
+        The path to the file. The file will be opened.
+    record_terminator: str 
+        The string that marks the end of a record.
+
+    Returns
+    ----------
+    A string that is the full first record.
+
+    Examples
+    ------------
+    .. ipython:: python
+        # import the function
+        from verticapy._utils._parsers import read_first_record
+
+        # If you have a file called 'test.csv'
+        # with a first two lines that looks like
+        # col1,col2,col3;
+        # 100,abc,3.14; 
+        r = read_first_record('test.csv', ',', ';')
+        print(r)
+        # Should print
+        #    'col1,col2,col3;'
+    """
     with open(path, "r", encoding="utf-8") as file_obj:
         # readline will read up to a end of line. The value that determines the end of line
         # is set by open(). open() takes an argument of newline, but will only accept
@@ -162,6 +225,10 @@ def read_first_line(path: str, sep: str, record_terminator: str) -> str:
         # record separator is special
         # need manual handling
         buf = io.StringIO()
+
+        # We could pick any size chunk to read... 1024 seems 
+        # reasonably large for csv files. We expect that there
+        # is some other buffering happening within the file_obj
         charaters_per_read = 1024
         total_characters_read = 0
         while True:
@@ -181,4 +248,4 @@ def read_first_line(path: str, sep: str, record_terminator: str) -> str:
                 # Slice 0:m returns characters from position 0 to m exclusive
                 # so we need len(sep) more to include the terminator
                 # because readline includes the terminator
-                return current_value[0 : (pos_of_term + len(sep))]
+                return current_value[0 : (pos_of_term + len(record_terminator))]
