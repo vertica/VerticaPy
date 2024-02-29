@@ -699,13 +699,13 @@ def format_query(
         display(Markdown(html_res))
     if indent_sql:
         res = indent_vpy_sql(res)
-    elif print_sql:
+    if print_sql:
         print(res)
-    if display_success:
-        return res, html_res
-    elif only_html:
+    if only_html:
         return html_res
-    return res
+    elif display_success:
+        return res, html_res
+    return res, None
 
 
 """
