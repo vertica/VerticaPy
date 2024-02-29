@@ -33,6 +33,7 @@ from verticapy.tests_new.machine_learning.vertica import (
     REGRESSION_MODELS,
     CLASSIFICATION_MODELS,
     TIMESERIES_MODELS,
+    CLUSTER_MODELS,
 )
 from vertica_highcharts.highcharts.highcharts import Highchart
 from verticapy.machine_learning.vertica.base import VerticaModel
@@ -272,7 +273,7 @@ def regression_report_none(
     )
     vpy_model_obj = get_vpy_model(model_class)
 
-    if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+    if model_class in TIMESERIES_MODELS:
         if model_class == "AR":
             p_val = _model_class_tuple.p
         elif model_class == "MA":
@@ -853,10 +854,12 @@ class TestBaseModelMethods:
         columns = ", ".join(f'"{col}"' for col in get_models.py.X.columns)
 
         vpy_pred_sql = get_models.vpy.model.deploySQL()
-        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
-            pred_sql = f"""{pred_fun_name}( USING PARAMETERS model_name = '{get_models.vpy.schema_name}.{get_models.vpy.model_name}', add_mean = True, npredictions = 10 ) OVER ()"""
-        else:
-            pred_sql = f"""{pred_fun_name}({columns} USING PARAMETERS model_name = '{get_models.vpy.schema_name}.{get_models.vpy.model_name}', match_by_pos = 'true')"""
+        pred_sql = _get_deploysql(model_class).format(
+            pred_fun_name=pred_fun_name,
+            columns=columns,
+            schema_name=get_models.vpy.schema_name,
+            model_name=get_models.vpy.model_name,
+        )
 
         assert vpy_pred_sql == pred_sql
 
@@ -875,26 +878,18 @@ class TestBaseModelMethods:
             get_models.vpy.model.does_model_exists(
                 name=model_name_with_schema, raise_error=True
             )
-        except NameError as error:
-            assert (
-                error.args[0] == f"The model 'vpy_model_{model_class}' already exists!"
+        except NameError:
+            with pytest.raises(NameError) as exception_info:
+                get_models.vpy.model.does_model_exists(
+                    name=model_name_with_schema, raise_error=True
+                )
+            assert exception_info.match(
+                f"The model 'vpy_model_{model_class}' already exists!"
             )
 
         assert get_models.vpy.model.does_model_exists(
             name=model_name_with_schema, return_model_type=True
-        )[1] in [
-            "LINEAR_REGRESSION",
-            "SVM_REGRESSOR",
-            "RF_REGRESSOR",
-            "RF_CLASSIFIER",
-            "XGB_REGRESSOR",
-            "XGB_CLASSIFIER",
-            "POISSON_REGRESSION",
-            "AUTOREGRESSOR",
-            "MOVING_AVERAGE",
-            "ARIMA",
-            "KMEANS",
-        ]
+        )[1] in get_train_function(model_class)
 
         get_models.vpy.model.drop()
         assert (
@@ -960,7 +955,7 @@ class TestBaseModelMethods:
         """
         test function - get_match_index
         """
-        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+        if model_class in TIMESERIES_MODELS:
             x = get_models.py.X.columns[0]
             col_list = [x]
             expected = 0 if match_index_attr == "valid_colum" else expected
@@ -981,21 +976,10 @@ class TestBaseModelMethods:
         """
         test function - get_params
         """
-        model_params_map = get_model_params(model_class)
+        expected_model_params = get_model_params(model_class)
+        actual_model_params = get_models.vpy.model.get_params()
 
-        if model_class == "Ridge":
-            model_params_map["C"] = 1
-        elif model_class == "Lasso":
-            model_params_map["C"] = 1
-            model_params_map["solver"] = "cgd"
-        elif model_class == "ElasticNet":
-            model_params_map["C"] = 1
-            model_params_map["solver"] = "cgd"
-            model_params_map["l1_ratio"] = 0.5
-
-        assert get_models.vpy.model.get_params() == pytest.approx(
-            model_params_map, rel=REL_TOLERANCE
-        )
+        assert expected_model_params == pytest.approx(actual_model_params)
 
     def test_get_plotting_lib(self, get_models):
         """
@@ -1019,14 +1003,6 @@ class TestBaseModelMethods:
 
         attr_map = get_vertica_model_attributes(model_class)
         expected = attr_map[attributes]
-        if model_class == "XGBRegressor":
-            attr_map["attr_name"].append("initial_prediction")
-            attr_map["attr_fields"].append("initial_prediction")
-            attr_map["#_of_rows"].append(1)
-        elif model_class == "XGBClassifier":
-            attr_map["attr_name"].append("initial_prediction")
-            attr_map["attr_fields"].append("response_label, value")
-            attr_map["#_of_rows"].append(2)
 
         assert model_attributes[attributes] == expected
 
@@ -1050,7 +1026,9 @@ class TestBaseModelMethods:
             )
             obj.model.drop()
             assert VerticaModel.import_models(
-                path=f"{export_path}/vpy_model_{model_class}/", schema=schema_loader, kind=kind
+                path=f"{export_path}/vpy_model_{model_class}/",
+                schema=schema_loader,
+                kind=kind,
             )
             obj.model.drop()
         except QueryError:
@@ -1145,7 +1123,7 @@ class TestBaseModelMethods:
         """
         test function - to_mmmodel
         """
-        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+        if model_class in TIMESERIES_MODELS:
             pytest.skip(
                 f"to_memmodel function is not available for {model_class} model"
             )
@@ -1181,7 +1159,7 @@ class TestBaseModelMethods:
         """
         test function - to_python
         """
-        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+        if model_class in TIMESERIES_MODELS:
             pytest.skip(f"to_python function is not available for {model_class} model")
 
         pdf = get_models.py.X
@@ -1210,6 +1188,7 @@ class TestBaseModelMethods:
             else prediction[1]
         )
 
+    @pytest.mark.skip("Only applicable for tensorflow models")
     def test_to_tf(self, get_models):
         """
         test function - to_tf
@@ -1382,8 +1361,10 @@ def get_train_function(model_class):
         **dict.fromkeys(["AR"], "AUTOREGRESSOR"),
         **dict.fromkeys(["MA"], "MOVING_AVERAGE"),
         **dict.fromkeys(["ARMA", "ARIMA"], "ARIMA"),
-        # **dict.fromkeys(["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
-        #                 "PREDICT_LINEAR_REG"),
+        **dict.fromkeys(
+            ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
+            ["LINEAR_REG", "LINEAR_REGRESSION"],
+        ),
         **dict.fromkeys(["KMeans"], "KMEANS"),
     }
 
@@ -1407,8 +1388,10 @@ def get_predict_function(model_class):
         **dict.fromkeys(["AR"], "PREDICT_AUTOREGRESSOR"),
         **dict.fromkeys(["MA"], "PREDICT_MOVING_AVERAGE"),
         **dict.fromkeys(["ARMA", "ARIMA"], "PREDICT_ARIMA"),
-        # **dict.fromkeys(["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
-        #                 "PREDICT_LINEAR_REG"),
+        **dict.fromkeys(
+            ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
+            "PREDICT_LINEAR_REG",
+        ),
         **dict.fromkeys(["KMeans"], "APPLY_KMEANS"),
     }
 
@@ -1490,6 +1473,41 @@ def get_model_attributes(model_class):
 
 def get_model_params(model_class):
     params_map = {
+        **dict.fromkeys(
+            ["LinearRegression"],
+            {"tol": 1e-06, "max_iter": 100, "solver": "newton", "fit_intercept": True},
+        ),
+        **dict.fromkeys(
+            ["Ridge"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "newton",
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["Lasso"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "cgd",
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["ElasticNet"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "cgd",
+                "l1_ratio": 0.5,
+                "fit_intercept": True,
+            },
+        ),
         **dict.fromkeys(
             ["RandomForestRegressor", "RandomForestClassifier"],
             {
@@ -1594,7 +1612,7 @@ def get_model_params(model_class):
     }
     return params_map.get(
         model_class,
-        {"tol": 1e-06, "max_iter": 100, "solver": "newton", "fit_intercept": True},
+        None,
     )
 
 
@@ -1783,6 +1801,17 @@ def get_vertica_model_attributes(model_class):
             },
         ),
     }
+    if model_class == "XGBRegressor":
+        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
+        vertica_attributes_map[model_class]["attr_fields"].append("initial_prediction")
+        vertica_attributes_map[model_class]["#_of_rows"].append(1)
+    elif model_class == "XGBClassifier":
+        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
+        vertica_attributes_map[model_class]["attr_fields"].append(
+            "response_label, value"
+        )
+        vertica_attributes_map[model_class]["#_of_rows"].append(2)
+
     return vertica_attributes_map.get(
         model_class,
         {
@@ -1893,65 +1922,18 @@ def get_to_sql(model_class, get_models):
     yield to_sql_map.get(model_class, None)
 
 
-# @pytest.mark.parametrize('model_class', REGRESSION_MODELS)
-# class TestBaseRegressionModelMethods:
-#     def test_predict(self, get_models, model_class):
-#         vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy().mean()
-#         py_res = get_models.py.pred.mean()
-#
-#         _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
-#         print(
-#             f"Model_class: {model_class}, Metric_name: prediction, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
-#         )
-#
-#         assert vpy_res == pytest.approx(
-#             py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
-#         )
-#
-#     def test_to_sql(self, model_class, get_models):
-#         """
-#         test function - to_sql
-#         """
-#         pred_func = get_predict_function(model_class)
-#
-#         pred_sql = f"SELECT {pred_func}(3.0, 11.0, 93.0 USING PARAMETERS model_name = '{get_models.vpy.model.model_name}', match_by_pos=True)::float, {get_models.vpy.model.to_sql([3.0, 11.0, 93.0])}::float"
-#
-#         current_cursor().execute(pred_sql)
-#         prediction = current_cursor().fetchone()
-#         assert prediction[0] == pytest.approx(
-#             np.exp(prediction[1])
-#             if model_class == "PoissonRegressor"
-#             else prediction[1]
-#         )
-#
-#
-# @pytest.mark.parametrize('model_class', CLASSIFICATION_MODELS)
-# class TestBaseClassificationModelMethods:
-#     def test_predict(self, get_models, model_class):
-#         vpy_res = get_models.vpy.pred_vdf[["survived_pred"]].to_numpy().ravel().sum()
-#         py_res = get_models.py.pred.sum()
-#
-#         _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
-#         print(
-#             f"Model_class: {model_class}, Metric_name: prediction, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
-#         )
-#
-#         assert vpy_res == pytest.approx(
-#             py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
-#         )
-#
-#     def test_to_sql(self, model_class, get_models):
-#         """
-#         test function - to_sql
-#         """
-#         pred_func = get_predict_function(model_class)
-#
-#         pred_sql = f"SELECT {pred_func}(* USING PARAMETERS model_name = '{get_models.vpy.model.model_name}', match_by_pos=True)::int, {get_models.vpy.model.to_sql()}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"
-#
-#         current_cursor().execute(pred_sql)
-#         prediction = current_cursor().fetchone()
-#         assert prediction[0] == pytest.approx(
-#             np.exp(prediction[1])
-#             if model_class == "PoissonRegressor"
-#             else prediction[1]
-#         )
+def _get_deploysql(model_class):
+    """
+    test function - deploySQL
+    """
+    deploysql_map = {
+        **dict.fromkeys(
+            REGRESSION_MODELS + CLASSIFICATION_MODELS + CLUSTER_MODELS,
+            """{pred_fun_name}({columns} USING PARAMETERS model_name = '{schema_name}.{model_name}', match_by_pos = 'true')""",
+        ),
+        **dict.fromkeys(
+            TIMESERIES_MODELS,
+            """{pred_fun_name}( USING PARAMETERS model_name = '{schema_name}.{model_name}', add_mean = True, npredictions = 10 ) OVER ()""",
+        ),
+    }
+    return deploysql_map.get(model_class, None)

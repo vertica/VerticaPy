@@ -41,6 +41,12 @@ from verticapy.connection import current_cursor
 from verticapy.tests_new.machine_learning.metrics.test_classification_metrics import (
     python_metrics,
 )
+from verticapy.tests_new.machine_learning.vertica import (
+    REGRESSION_MODELS,
+    CLASSIFICATION_MODELS,
+    TIMESERIES_MODELS,
+    CLUSTER_MODELS,
+)
 
 import verticapy.machine_learning.vertica.cluster as vpy_cluster
 import sklearn.cluster as skl_cluster
@@ -49,6 +55,169 @@ if sys.version_info < (3, 12):
     import tensorflow as tf
 
 le = LabelEncoder()
+
+
+def get_xy(model_class):
+    xy_map = {
+        **dict.fromkeys(REGRESSION_MODELS, {'X': ["citric_acid", "residual_sugar", "alcohol"], 'y': "quality"}),
+        **dict.fromkeys(CLASSIFICATION_MODELS, {'X': ["age", "fare", "sex"], 'y': "survived"}),
+        **dict.fromkeys(TIMESERIES_MODELS, {'X': "date", 'y': "passengers"}),
+        **dict.fromkeys(CLUSTER_MODELS, {'X': ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"], 'y':  None}),
+    }
+    return xy_map.get(model_class, None)
+
+
+class DataSetUp:
+    def __init__(self, schema_name):
+        self.schema_name = schema_name
+
+    def tree_regressor(self):
+        # adding id column to winequality. id column is needed for seed parm for tree based model
+        current_cursor().execute(
+            f"ALTER TABLE {self.schema_name}.winequality ADD COLUMN IF NOT EXISTS id int"
+        )
+        seq_sql = f"CREATE SEQUENCE IF NOT EXISTS {self.schema_name}.sequence_auto_increment START 1"
+        print(f"Sequence SQL: {seq_sql}")
+        current_cursor().execute(seq_sql)
+        current_cursor().execute(
+            f"CREATE TABLE {self.schema_name}.winequality1 as select * from {self.schema_name}.winequality limit 0"
+        )
+        current_cursor().execute(
+            f"insert into {self.schema_name}.winequality1 select fixed_acidity,volatile_acidity,citric_acid,residual_sugar,chlorides,free_sulfur_dioxide,total_sulfur_dioxide,density,pH,sulphates,alcohol,quality,good,color, NEXTVAL('{self.schema_name}.sequence_auto_increment') from {self.schema_name}.winequality"
+        )
+        current_cursor().execute(f"DROP TABLE {self.schema_name}.winequality")
+        current_cursor().execute(
+            f"ALTER TABLE {self.schema_name}.winequality1 RENAME TO winequality"
+        )
+
+    def tree_classifier(self):
+        delete_sql = f"DELETE FROM {self.schema_name}.titanic WHERE AGE IS NULL OR FARE IS NULL OR SEX IS NULL OR SURVIVED IS NULL"
+        print(f"Delete SQL: {delete_sql}")
+        current_cursor().execute(delete_sql)
+
+        # added to remove duplicate record with same name
+        delete_name_sql = f"delete from {self.schema_name}.titanic where name in ('Kelly, Mr. James', 'Connolly, Miss. Kate')"
+        print(f"Delete Name SQL: {delete_name_sql}")
+        current_cursor().execute(delete_name_sql)
+
+
+class RandomForestInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.ntree = kwargs.get("n_estimators", 10)
+        self.mtry = kwargs.get("max_features", 2)
+        self.max_breadth = kwargs.get("max_leaf_nodes", 10)
+        self.sampling_size = kwargs.get("sample", 0.632)
+        self.max_depth = kwargs.get("max_depth", 10)
+        self.min_leaf_size = kwargs.get("min_samples_leaf", 1)
+        self.min_info_gain = kwargs.get("min_info_gain", 0.0)
+        self.nbins = kwargs.get("nbins", 32),
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_tree, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            n_estimators=self.ntree,
+            max_features=self.mtry,
+            max_leaf_nodes=self.max_breadth,
+            sample=self.sampling_size,
+            max_depth=self.max_depth,
+            min_samples_leaf=self.min_leaf_size,
+            min_info_gain=self.min_info_gain,
+            nbins=self.nbins
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class TrainModel:
+    def __init__(self, model, schema_name, model_class):
+        self.model = model
+        self.schema_name = schema_name
+        self.model_class = model_class
+        self.X = get_xy(self.model_class)['X']
+        self.y = get_xy(self.model_class)['y']
+
+    def train_rf_regressor(self):
+        rf_reg = RandomForestInitializer(self.model_class, self.schema_name)
+        predictor_columns = ",".join(self.X)
+        _X = [f'"{i}"' for i in self.X]
+
+        if self.model_class == "XGBRegressor":
+            train_sql = f"SELECT xgb_regressor('{self.schema_name}.{self.model_name}', '{self.schema_name}.winequality', '{self.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={tree_param_map['max_ntree']}, max_depth={tree_param_map['max_depth']}, nbins={tree_param_map['nbins']}, split_proposal_method={tree_param_map['split_proposal_method']}, tol={tree_param_map['tol']}, learning_rate={tree_param_map['learning_rate']}, min_split_loss={tree_param_map['min_split_loss']}, weight_reg={tree_param_map['weight_reg']}, sample={tree_param_map['sample']}, col_sample_by_tree={tree_param_map['col_sample_by_tree']}, col_sample_by_node={tree_param_map['col_sample_by_node']}, seed=1, id_column='id')"
+        else:
+            train_sql = f"SELECT rf_regressor('{self.schema_name}.{self.model_name}', '{self.schema_name}.winequality', '{self.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={rf_reg.ntree}, mtry={rf_reg.mtry}, max_breadth={rf_reg.max_breadth}, sampling_size={rf_reg.sampling_size}, max_depth={rf_reg.max_depth}, min_leaf_size={rf_reg.min_leaf_size}, nbins={rf_reg.nbins}, seed=1, id_column='id')"
+        print(f"Tree Regressor Train SQL: {train_sql}")
+        current_cursor().execute(train_sql)
+
+        self.model.input_relation = f"{self.schema_name}.winequality"
+        self.model.test_relation = self.model.input_relation
+        self.model.X = _X
+        self.model.y = f'"{self.y}"'
+        self.model._compute_attributes()
+
+    def train_timeseries(self):
+        return self.model.fit(
+            f"{self.schema_name}.airline",
+            self.X,
+            f"{self.y}",
+        )
+
+    def train_linear(self):
+        return self.model.fit(
+            f"{self.schema_name}.winequality",
+            self.X,
+            f"{self.y}")
+
+
+class PredictModel:
+    def __init__(self, model, schema_name, model_class):
+        self.model = model
+        self.schema_name = schema_name
+        self.model_class = model_class
+        self.X = get_xy(self.model_class)['X']
+        self.y = get_xy(self.model_class)['y']
+
+    def predict_tree(self):
+        pass
+
+    def predict_timeseries(self):
+        row_cnt = airline_vd_fun.describe()["count"][0]
+        if self.model_class == "AR":
+            p_val = kwargs.get("p", 3)
+        elif self.model_class == "MA":
+            p_val = kwargs.get("q", 1)
+        elif self.model_class == "ARMA":
+            p_val = kwargs.get("order", (2, 1))[0]
+        elif self.model_class == "ARIMA":
+            p_val = kwargs.get("order", (2, 1, 1))[0]
+        else:
+            p_val = 3
+
+        pred_vdf = self.model.predict(
+            f"{self.schema_name}.airline",
+            self.X,
+            self.y,
+            start=p_val,
+            npredictions=kwargs.get("npredictions", row_cnt),
+            output_estimated_ts=True,
+        )
+        pred_prob_vdf = None
+
+        return pred_vdf, pred_prob_vdf
+
+    def predict_linear(self):
+        pred_vdf = self.model.predict(f"{self.schema_name}.winequality", name=f"{self.y}_pred")
+        pred_prob_vdf = None
+
+        return pred_vdf, pred_prob_vdf
 
 
 @pytest.fixture(autouse=True)
@@ -66,6 +235,9 @@ def get_vpy_model_fixture(
 
     def _get_vpy_model(model_class, X=None, y=None, **kwargs):
         schema_name, model_name = schema_loader, f"vpy_model_{model_class}"
+
+        X = get_xy(model_class)['X'] if X is None else X
+        y = get_xy(model_class)['y'] if y is None else y
 
         tree_param_map = {}
 
@@ -355,19 +527,21 @@ def get_vpy_model_fixture(
                 "XGBClassifier",
             ]:
                 # model.drop()
-                delete_sql = f"DELETE FROM {schema_name}.titanic WHERE AGE IS NULL OR FARE IS NULL OR SEX IS NULL OR SURVIVED IS NULL"
-                print(f"Delete SQL: {delete_sql}")
-                current_cursor().execute(delete_sql)
+                # delete_sql = f"DELETE FROM {schema_name}.titanic WHERE AGE IS NULL OR FARE IS NULL OR SEX IS NULL OR SURVIVED IS NULL"
+                # print(f"Delete SQL: {delete_sql}")
+                # current_cursor().execute(delete_sql)
+                #
+                # # added to remove duplicate record with same name
+                # delete_name_sql = f"delete from {schema_name}.titanic where name in ('Kelly, Mr. James', 'Connolly, Miss. Kate')"
+                # print(f"Delete Name SQL: {delete_name_sql}")
+                # current_cursor().execute(delete_name_sql)
 
-                # added to remove duplicate record with same name
-                delete_name_sql = f"delete from {schema_name}.titanic where name in ('Kelly, Mr. James', 'Connolly, Miss. Kate')"
-                print(f"Delete Name SQL: {delete_name_sql}")
-                current_cursor().execute(delete_name_sql)
+                # if X is None:
+                #     X = ["age", "fare", "sex"]
+                # if y is None:
+                #     y = "survived"
 
-                if X is None:
-                    X = ["age", "fare", "sex"]
-                if y is None:
-                    y = "survived"
+                DataSetUp(schema_name).tree_classifier()
 
                 predictor_columns = ",".join(X)
                 _X = [f'"{i}"' for i in X]
@@ -402,29 +576,31 @@ def get_vpy_model_fixture(
                 "DummyTreeRegressor",
                 "XGBRegressor",
             ]:
-                # model.drop()
-                # adding id column to winequality. id column is needed for seed parm for tree based model
-                current_cursor().execute(
-                    f"ALTER TABLE {schema_name}.winequality ADD COLUMN IF NOT EXISTS id int"
-                )
-                seq_sql = f"CREATE SEQUENCE IF NOT EXISTS {schema_name}.sequence_auto_increment START 1"
-                print(f"Sequence SQL: {seq_sql}")
-                current_cursor().execute(seq_sql)
-                current_cursor().execute(
-                    f"CREATE TABLE {schema_name}.winequality1 as select * from {schema_name}.winequality limit 0"
-                )
-                current_cursor().execute(
-                    f"insert into {schema_name}.winequality1 select fixed_acidity,volatile_acidity,citric_acid,residual_sugar,chlorides,free_sulfur_dioxide,total_sulfur_dioxide,density,pH,sulphates,alcohol,quality,good,color, NEXTVAL('{schema_name}.sequence_auto_increment') from {schema_name}.winequality"
-                )
-                current_cursor().execute(f"DROP TABLE {schema_name}.winequality")
-                current_cursor().execute(
-                    f"ALTER TABLE {schema_name}.winequality1 RENAME TO winequality"
-                )
+                # # model.drop()
+                # # adding id column to winequality. id column is needed for seed parm for tree based model
+                # current_cursor().execute(
+                #     f"ALTER TABLE {schema_name}.winequality ADD COLUMN IF NOT EXISTS id int"
+                # )
+                # seq_sql = f"CREATE SEQUENCE IF NOT EXISTS {schema_name}.sequence_auto_increment START 1"
+                # print(f"Sequence SQL: {seq_sql}")
+                # current_cursor().execute(seq_sql)
+                # current_cursor().execute(
+                #     f"CREATE TABLE {schema_name}.winequality1 as select * from {schema_name}.winequality limit 0"
+                # )
+                # current_cursor().execute(
+                #     f"insert into {schema_name}.winequality1 select fixed_acidity,volatile_acidity,citric_acid,residual_sugar,chlorides,free_sulfur_dioxide,total_sulfur_dioxide,density,pH,sulphates,alcohol,quality,good,color, NEXTVAL('{schema_name}.sequence_auto_increment') from {schema_name}.winequality"
+                # )
+                # current_cursor().execute(f"DROP TABLE {schema_name}.winequality")
+                # current_cursor().execute(
+                #     f"ALTER TABLE {schema_name}.winequality1 RENAME TO winequality"
+                # )
 
-                if X is None:
-                    X = ["citric_acid", "residual_sugar", "alcohol"]
-                if y is None:
-                    y = "quality"
+                # if X is None:
+                #     X = ["citric_acid", "residual_sugar", "alcohol"]
+                # if y is None:
+                #     y = "quality"
+
+                DataSetUp(schema_name).tree_regressor()
 
                 predictor_columns = ",".join(X)
                 _X = [f'"{i}"' for i in X]
@@ -465,10 +641,10 @@ def get_vpy_model_fixture(
                 else:
                     p_val = 3
 
-                if X is None:
-                    X = "date"
-                if y is None:
-                    y = "passengers"
+                # if X is None:
+                #     X = "date"
+                # if y is None:
+                #     y = "passengers"
 
                 model.fit(
                     f"{schema_name}.airline",
@@ -485,18 +661,21 @@ def get_vpy_model_fixture(
                 )
                 pred_prob_vdf = None
             else:
-                if X is None:
-                    X = ["citric_acid", "residual_sugar", "alcohol"]
-                if y is None:
-                    y = "quality"
+                # if X is None:
+                #     X = ["citric_acid", "residual_sugar", "alcohol"]
+                # if y is None:
+                #     y = "quality"
 
-                model.fit(
-                    f"{schema_name}.winequality",
-                    X,
-                    f"{y}",
-                )
-                pred_vdf = model.predict(f"{schema_name}.winequality", name=f"{y}_pred")
-                pred_prob_vdf = None
+                # model.fit(
+                #     f"{schema_name}.winequality",
+                #     X,
+                #     f"{y}",
+                # )
+                # pred_vdf = model.predict(f"{schema_name}.winequality", name=f"{y}_pred")
+                # pred_prob_vdf = None
+
+                model = TrainModel(model, schema_name, model_class).train_linear()
+                pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_linear()
 
             return model, pred_vdf, pred_prob_vdf, schema_name, model_name
 
@@ -510,8 +689,8 @@ def get_vpy_model_fixture(
                 tol=kwargs.get("tol") if kwargs.get("tol") else 1e-4
             )
 
-            if X is None:
-                X = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
+            # if X is None:
+            #     X = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
 
             print(f"VerticaPy Training Parameters: {model.get_params()}")
             model.drop()
@@ -805,9 +984,9 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, ir
 
             # fit linear regression model
             # sm_model = sm.OLS(y, X_sm).fit()
-            return X, None, None, pred, pred_prob, model
+            return X, y, None, pred, pred_prob, model
 
-        def get_py_cluster_model(model_class, **kwargs):
+        def get_py_cluster_model(model_class, py_fit_intercept=None, py_tol=None, **kwargs):
             model = getattr(skl_cluster, model_class)(
                 n_clusters=kwargs.get("n_cluster") if kwargs.get("n_cluster") else 8,
                 init=kwargs.get("init") if kwargs.get("init") else "k-means++",
@@ -825,11 +1004,11 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, ir
 
         func_map = {
             'KMeans': get_py_cluster_model,
-            'LinearRegression': get_py_linear_model,
+            # 'LinearRegression': get_py_linear_model,
         }
 
         func = func_map.get(model_class, get_py_linear_model)
-        X, y, sm_model, pred, pred_prob, model = func(model_class)
+        X, y, sm_model, pred, pred_prob, model = func(model_class, py_fit_intercept=py_fit_intercept, py_tol=py_tol, **kwargs)
 
         py = namedtuple(
             "python_models", ["X", "y", "sm_model", "pred", "pred_prob", "model"]
@@ -1024,114 +1203,3 @@ def calculate_classification_metrics(get_py_model):
 
     return _calculate_classification_metrics
 
-
-# @pytest.fixture(name="get_vpy_cluster_model", scope="function")
-# def get_vpy_cluster_model_fixture(iris_vd_fun, winequality_vpy_fun, schema_loader):
-#     """
-#     getter function for vertica cluster models
-#     """
-#
-#     def _get_vpy_cluster_model(model_class, X=None, **kwargs):
-#         schema_name, model_name = schema_loader, "vpy_model"
-#
-#         def get_kmeans_model(model_class, X=None, **kwargs):
-#             model = getattr(vpy_cluster, model_class)(
-#                 name=f"{schema_name}.{model_name}",
-#                 overwrite_model=kwargs.get("overwrite_model") if kwargs.get("overwrite_model") else False,
-#                 n_cluster=kwargs.get("n_cluster") if kwargs.get("n_cluster") else 8,
-#                 init=kwargs.get("init") if kwargs.get("init") else "kmeanspp",
-#                 max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 300,
-#                 tol=kwargs.get("tol") if kwargs.get("tol") else 1e-4
-#             )
-#
-#             if X is None:
-#                 X = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
-#
-#             print(f"VerticaPy Training Parameters: {model.get_params()}")
-#             model.drop()
-#
-#             model.fit(
-#                 f"{schema_name}.iris",
-#                 X
-#             )
-#             pred_vdf = model.predict(iris_vd_fun, X=X, name=f"{model_class}_cluster_ids")
-#             pred_prob_vdf = None
-#
-#             return model, pred_vdf, pred_prob_vdf, schema_name, model_name
-#
-#         def get_linear_regression_model(model_class, X=None, y=None, **kwargs):
-#             model = getattr(vpy_linear_model, model_class)(
-#                 f"{schema_name}.{model_name}",
-#                 overwrite_model=kwargs.get("overwrite_model")
-#                 if kwargs.get("overwrite_model")
-#                 else False,
-#                 tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
-#                 C=kwargs.get("c") if kwargs.get("c") else 1.0,
-#                 max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-#                 solver='newton',
-#                 fit_intercept=kwargs.get("fit_intercept")
-#                 if kwargs.get("fit_intercept")
-#                 else True,
-#             )
-#
-#             if X is None:
-#                 X = ["citric_acid", "residual_sugar", "alcohol"]
-#             if y is None:
-#                 y = "quality"
-#
-#             model.fit(
-#                 f"{schema_name}.winequality",
-#                 X,
-#                 f"{y}",
-#             )
-#             pred_vdf = model.predict(winequality_vpy_fun, name=f"{y}_pred")
-#             pred_prob_vdf = None
-#
-#             return model, pred_vdf, pred_prob_vdf, schema_name, model_name
-#
-#         func_map = {
-#             'KMeans': get_kmeans_model,
-#             'LinearRegression': get_linear_regression_model,
-#         }
-#
-#         func = func_map.get(model_class, get_kmeans_model)
-#         model, pred_vdf, pred_prob_vdf, schema_name, model_name = func(model_class)
-#
-#         vpy = namedtuple(
-#             "vertica_models",
-#             ["model", "pred_vdf", "pred_prob_vdf", "schema_name", "model_name"],
-#         )(model, pred_vdf, pred_prob_vdf, schema_name, model_name)
-#
-#         return vpy
-#
-#     return _get_vpy_cluster_model
-
-
-# @pytest.fixture(name="get_py_cluster_model", scope="function")
-# def get_py_cluster_model_fixture(iris_vd_fun):
-#     """
-#     getter function for python cluster models
-#     """
-#
-#     def _get_py_cluster_model(model_class, **kwargs):
-#         if model_class == "KMeans":
-#             model = getattr(skl_cluster, model_class)(
-#                 n_clusters=kwargs.get("n_cluster") if kwargs.get("n_cluster") else 8,
-#                 init=kwargs.get("init") if kwargs.get("init") else "k-means++",
-#                 max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 300,
-#                 tol=kwargs.get("tol") if kwargs.get("tol") else 1e-4
-#             )
-#             iris_pdf = iris_vd_fun.to_pandas()
-#
-#             X = iris_pdf[["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]]
-#
-#             model.fit(X)
-#             pred = model.predict(X)
-#
-#             py = namedtuple(
-#                 "python_models", ["X", "pred", "pred_prob", "model"]
-#             )(X, pred, None, model)
-#
-#         return py
-#
-#     yield _get_py_cluster_model

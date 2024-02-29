@@ -25,6 +25,33 @@ class TestCluster:
     """
     test class - TestCluster
     """
+
+    @pytest.mark.parametrize("return_report", [True, False])
+    def test_fit(
+        self,
+        get_vpy_model,
+        get_py_model,
+        model_class,
+        iris_vd_fun,
+        return_report,
+    ):
+        """
+        test function - fit
+        """
+        vpy_model_obj, py_model_obj = get_vpy_model(model_class), get_py_model(
+            model_class
+        )
+        vpy_model_obj.model.drop()
+        vpy_res = vpy_model_obj.model.fit(
+            iris_vd_fun, py_model_obj.X, return_report=return_report
+        )
+
+        assert (
+            isinstance(vpy_res, str)
+            if return_report
+            else isinstance(vpy_res, type(None))
+        )
+
     def test_plot_voronoi(self, model_class, get_vpy_model, get_py_model):
         """
         test function - plot_voronoi
