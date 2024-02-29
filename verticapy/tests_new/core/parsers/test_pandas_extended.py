@@ -35,13 +35,6 @@ from verticapy.core.parsers.pandas import read_pandas
 from verticapy.datasets import load_titanic
 
 
-@pytest.fixture(scope="module")
-def titanic_vd():
-    titanic = load_titanic()
-    yield titanic
-    drop(name="public.titanic")
-
-
 class TestPandasExtended:
     def test_read_pandas_abort_on_error(self, titanic_vd):
         """
@@ -56,7 +49,7 @@ class TestPandasExtended:
         try:
             current_cursor().execute(
                 f"create table public.{random_name} like"
-                " public.titanic excluding projections"
+                f" {titanic_vd} excluding projections"
             ).fetchall()
             current_cursor().execute(
                 f'alter table public.{random_name} drop column "survived"'
