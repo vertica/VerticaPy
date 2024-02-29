@@ -114,6 +114,32 @@ class QprofUtility:
         ]
 
     @staticmethod
+    def _get_metrics_name(metric: str, inv: bool = False) -> str:
+        look_up_table = {
+            "cost": "Query plan cost",
+            "rows": "Estimated row count",
+            "exec_time_ms": "Execution time in ms",
+            "est_rows": "Estimated row count",
+            "proc_rows": "Processed row count",
+            "prod_rows": "Produced row count",
+            "rle_prod_rows": "Produced RLE row count",
+            "clock_time_us": "Clock time in us",
+            "cstall_us": "Network consumer stall time in us",
+            "pstall_us": "Network producer stall time in us",
+            "mem_res_mb": "Reserved memory size in MB",
+            "mem_all_mb": "Allocated memory size in MB",
+        }
+        if inv:
+            look_up_table_inv = {}
+            for metric in look_up_table:
+                m_name = look_up_table[metric]
+                look_up_table_inv[m_name] = metric
+            look_up_table = look_up_table_inv
+        if metric in look_up_table:
+            return look_up_table[metric]
+        return metric
+
+    @staticmethod
     def _get_categoryorder() -> list:
         """
         ...
