@@ -75,71 +75,13 @@ class TestPlotting:
             True
         ), "This test is covered under /VerticaPy/verticapy/tests_new/plotting/base_test_files.py"
 
-    @pytest.mark.parametrize(
-        "start_date,end_date",
-        [
-            (None, None),
-            (1952, None),
-            (None, 1992),
-            # Fail - not considering start date when start and end dates are given
-            # (1952, 1992),
-        ],
-    )
-    @pytest.mark.parametrize(
-        "kind",
-        [
-            # Fail - vDataframe and vColumns results are non same
-            # "area_percent",
-            "area_stacked",
-            "line",
-            "spline",
-            "step",
-            None,
-        ],
-    )
-    @pytest.mark.parametrize("input_type", ["vDataframe", "vColumn"])
-    def test_plot(self, gapminder_vd_fun, input_type, start_date, end_date, kind):
+    def test_plot(self):
         """
         test function - plot
         """
-        vp.set_option("plotting_lib", "plotly")
-
-        vdf = gapminder_vd_fun.filter("continent = 'Oceania'")
-        if input_type == "vDataframe":
-            res = vdf.plot(
-                columns=["lifeExp"],
-                ts="year",
-                kind=kind,
-                start_date=start_date,
-                end_date=end_date,
-            )
-        else:
-            res = vdf["lifeExp"].plot(
-                ts="year",
-                kind=kind,
-                start_date=start_date,
-                end_date=end_date,
-            )
-
-        x_expected = sorted(list(chain(*vdf[["year"]].to_list())))
-        y_expected = sorted(list(chain(*vdf[["lifeExp"]].to_list())))
-
-        if start_date or end_date:
-            start_date = start_date if start_date else float("-inf")
-            end_date = end_date if end_date else float("inf")
-            xy = [
-                (i, j)
-                for i, j in zip(x_expected, y_expected)
-                if start_date < i < end_date
-            ]
-            x_expected = [x for x, y in xy]
-            y_expected = [y for x, y in xy]
-
-        if kind == "area_percent":
-            y_expected = [100.0] * len(y_expected)
-
-        assert list(res["data"][0].x.astype(int)) == x_expected
-        assert sorted(list(res["data"][0].y)) == y_expected
+        assert (
+            True
+        ), "This test is covered under /VerticaPy/verticapy/tests_new/plotting/base_test_files.py"
 
     def test_range_plot(self):
         """

@@ -17,9 +17,9 @@ permissions and limitations under the License.
 import pytest
 
 
-class TestSys:
+class TestVDFSys:
     """
-    test class for sys functions test
+    test class for sys functions test for vDataframe class
     """
 
     def test_current_relation(self, titanic_vd_fun):
@@ -110,6 +110,18 @@ class TestSys:
             res["fare"].drop_outliers()
             assert res.info().startswith("The vDataFrame was modified many times")
 
+    @pytest.mark.skip("Test is not stable")
+    @pytest.mark.parametrize(
+        "column, expected",
+        [(None, 1039)],
+    )
+    def test_memory_usage(self, amazon_vd, column, expected):
+        """
+        test function - memory_usage
+        """
+        # values are not stable
+        assert amazon_vd.memory_usage()["value"][0] == pytest.approx(expected, 1e-01)
+
     @pytest.mark.parametrize(
         "col1, col2, expected",
         [
@@ -148,6 +160,12 @@ class TestSys:
 
         assert expected == swap_columns
 
+
+class TestVDCSys:
+    """
+    test class for sys functions test for vColumn class
+    """
+
     def test_add_copy(self, titanic_vd_fun):
         """
         test function - add_copy
@@ -158,20 +176,15 @@ class TestSys:
 
     @pytest.mark.skip("Test is not stable")
     @pytest.mark.parametrize(
-        "input_type, column, expected",
-        [("vcolumn", "number", 1724), ("vDataFrame", None, 1039)],
+        "column, expected",
+        [("number", 1724)],
     )
-    def test_memory_usage(self, amazon_vd, input_type, column, expected):
+    def test_memory_usage(self, amazon_vd, column, expected):
         """
         test function - memory_usage
         """
         # values are not stable
-        if input_type == "vcolumn":
-            assert amazon_vd[column].memory_usage() == pytest.approx(expected, 1e-01)
-        else:
-            assert amazon_vd.memory_usage()["value"][0] == pytest.approx(
-                expected, 1e-01
-            )
+        assert amazon_vd[column].memory_usage() == pytest.approx(expected, 1e-01)
 
     def test_store_usage(self, titanic_vd):
         """

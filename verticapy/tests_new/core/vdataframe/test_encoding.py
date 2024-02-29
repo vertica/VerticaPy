@@ -22,9 +22,9 @@ import pytest
 from sklearn.preprocessing import LabelEncoder
 
 
-class TestEncoding:
+class TestVDFEncoding:
     """
-    test class for encoding function test
+    test class for encoding function test for vDataFrame class
     """
 
     def test_case_when(self, titanic_vd_fun):
@@ -51,6 +51,85 @@ class TestEncoding:
             "teenagers",
             "young adults",
         ]
+
+    @pytest.mark.parametrize(
+        "encode_column, prefix_sep, drop_first, use_numbers_as_suffix",
+        [
+            ("Species", "_", False, False),
+            ("Species", "_", True, False),
+            ("Species", "_", False, True),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "columns, prefix",
+        [
+            (None, None),
+            ("Species", None),
+        ],
+    )
+    @pytest.mark.parametrize("method", ["one_hot_encode", "get_dummies"])
+    def test_one_hot_encode(
+        self,
+        iris_vd_fun,
+        columns,
+        prefix,
+        encode_column,
+        prefix_sep,
+        drop_first,
+        use_numbers_as_suffix,
+        method,
+    ):
+        """
+        test function - one_hot_encode
+        """
+        iris_pdf = iris_vd_fun.to_pandas()
+        unique_val = iris_pdf[encode_column].unique()
+
+        idx = -(len(unique_val) - 1) if drop_first else -len(unique_val)
+
+        _vpy_res = getattr(iris_vd_fun, method)(
+            columns=columns,
+            prefix_sep=prefix_sep,
+            drop_first=drop_first,
+            use_numbers_as_suffix=use_numbers_as_suffix,
+        ).get_columns()[idx:]
+
+        vpy_res = [v.replace('"', "") for v in _vpy_res]
+
+        py_res = pd.get_dummies(
+            iris_pdf,
+            columns=[encode_column],
+            prefix=prefix,
+            prefix_sep=prefix_sep,
+            drop_first=drop_first,
+        ).columns.to_list()[idx:]
+
+        if use_numbers_as_suffix:
+            _py_res = []
+            number_map = dict(zip(unique_val, range(len(unique_val))))
+
+            for _res in py_res:
+                for _k, _v in number_map.items():
+                    if _res.endswith(_k):
+                        _py_res.append(_res.replace(_k, str(_v)))
+
+            py_res = _py_res
+
+        if drop_first:
+            _vpy_res, _py_res = [], []
+            for _vpy, _py in zip(vpy_res, py_res):
+                if _vpy.startswith(encode_column) and _py.startswith(encode_column):
+                    _vpy_res.append(encode_column)
+                    _py_res.append(encode_column)
+            vpy_res, py_res = _vpy_res, _py_res
+
+        assert vpy_res == pytest.approx(py_res)
+
+
+class TestVDCEncoding:
+    """
+    test class for encoding function test for vDataColumn class
+    """
 
     @pytest.mark.parametrize(
         "column, breaks, labels, include_lowest, right",
@@ -203,19 +282,16 @@ class TestEncoding:
         ],
     )
     @pytest.mark.parametrize(
-        "function_type, columns, prefix",
+        "columns, prefix",
         [
-            ("vDataFrame", None, None),
-            ("vDataFrame_with_column", "Species", None),
-            ("vcolumn", "Species", None),
-            ("vcolumn", "Species", "dummy"),
+            ("Species", None),
+            ("Species", "dummy"),
         ],
     )
     @pytest.mark.parametrize("method", ["one_hot_encode", "get_dummies"])
     def test_one_hot_encode(
         self,
         iris_vd_fun,
-        function_type,
         columns,
         prefix,
         encode_column,
@@ -232,20 +308,12 @@ class TestEncoding:
 
         idx = -(len(unique_val) - 1) if drop_first else -len(unique_val)
 
-        if function_type in ["vDataFrame", "vDataFrame_with_column"]:
-            _vpy_res = getattr(iris_vd_fun, method)(
-                columns=columns,
-                prefix_sep=prefix_sep,
-                drop_first=drop_first,
-                use_numbers_as_suffix=use_numbers_as_suffix,
-            ).get_columns()[idx:]
-        else:
-            _vpy_res = getattr(iris_vd_fun[columns], method)(
-                prefix=prefix,
-                prefix_sep=prefix_sep,
-                drop_first=drop_first,
-                use_numbers_as_suffix=use_numbers_as_suffix,
-            ).get_columns()[idx:]
+        _vpy_res = getattr(iris_vd_fun[columns], method)(
+            prefix=prefix,
+            prefix_sep=prefix_sep,
+            drop_first=drop_first,
+            use_numbers_as_suffix=use_numbers_as_suffix,
+        ).get_columns()[idx:]
         vpy_res = [v.replace('"', "") for v in _vpy_res]
 
         py_res = pd.get_dummies(
@@ -266,10 +334,6 @@ class TestEncoding:
                         _py_res.append(_res.replace(_k, str(_v)))
 
             py_res = _py_res
-
-        print(
-            f"function_type: {function_type} \nVerticaPy Result: {vpy_res} \nPython Result :{py_res}\n"
-        )
 
         if drop_first:
             _vpy_res, _py_res = [], []

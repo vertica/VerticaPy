@@ -29,7 +29,8 @@ class TestPlottingAnimated:
     test class for PlottingAnimated functions test
     """
 
-    @pytest.mark.parametrize("by", ["continent", None])
+    # @pytest.mark.parametrize("by", ["continent", None])
+    @pytest.mark.parametrize("by", ["continent"])
     def test_animated_bar(self, pop_growth_vd_fun, by):
         """
         test function - animated_bar

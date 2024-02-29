@@ -24,14 +24,14 @@ from verticapy.errors import ConversionError
 from verticapy.utilities import read_json, TableSample
 
 
-class TestTyping:
+class TestVDFTyping:
     """
-    test class for Typing functions test
+    test class for Typing functions test for vDataFrame class
     """
 
     def test_astype(self, titanic_vd_fun):
         """
-        test function - astype for vDataframe and vColumn
+        test function - astype for vDataframe
         """
         # Testing vDataFrame.astype
         titanic_vd_fun.astype({"fare": "int", "cabin": "varchar(1)"})
@@ -39,6 +39,87 @@ class TestTyping:
         assert titanic_vd_fun["fare"].dtype() == "int"
         assert titanic_vd_fun["cabin"].dtype() == "varchar(1)"
 
+    def test_bool_to_int(self, titanic_vd_fun):
+        """
+        test function - bool_to_int
+        """
+        titanic_vd_fun["survived"].astype("bool")
+        assert titanic_vd_fun["survived"].dtype() == "bool"
+
+        titanic_vd_fun.bool_to_int()
+        assert titanic_vd_fun["survived"].dtype() == "int"
+
+    def test_catcol(self, titanic_vd_fun):
+        """
+        test function - catcol
+        """
+        assert titanic_vd_fun.catcol(max_cardinality=6) == [
+            '"pclass"',
+            '"survived"',
+            '"name"',
+            '"sex"',
+            '"ticket"',
+            '"cabin"',
+            '"embarked"',
+            '"boat"',
+            '"home.dest"',
+        ]
+
+    def test_datecol(self, amazon_vd):
+        """
+        test function - datecol
+        """
+        assert amazon_vd.datecol()[0] == '"date"'
+
+    def test_dtypes(self, amazon_vd):
+        """
+        test function - dtypes
+        """
+        assert list(chain(*amazon_vd.dtypes().to_list())) == [
+            "date",
+            "varchar(32)",
+            "int",
+        ]
+
+    @pytest.mark.parametrize(
+        "exclude_columns, expected",
+        [
+            (
+                [],
+                [
+                    '"age"',
+                    '"body"',
+                    '"fare"',
+                    '"parch"',
+                    '"pclass"',
+                    '"sibsp"',
+                    '"survived"',
+                ],
+            ),
+            (
+                ["survived", "body"],
+                ['"fare"', '"pclass"', '"age"', '"parch"', '"sibsp"'],
+            ),
+        ],
+    )
+    def test_numcol(self, titanic_vd_fun, exclude_columns, expected):
+        """
+        test function - numcol
+        """
+        assert sorted(titanic_vd_fun.numcol(exclude_columns=exclude_columns)) == sorted(
+            expected
+        )
+
+
+class TestVDCTyping:
+    """
+    test class for Typing functions test for vColumn class
+    """
+
+    def test_astype(self, titanic_vd_fun):
+        """
+        test function - astype for vColumn
+        """
         # Testing vDataFrame[].astype
         # expected exception
         with pytest.raises(ConversionError) as exception_info:
@@ -119,90 +200,6 @@ class TestTyping:
             == '{\n\t"information": {\n\t\t"age": "29",\n\t\t"numero": {\n\t\t\t"0": "0",\n\t\t\t"1": "6",\n\t\t\t"2": "3"\n\t\t}\n\t},\n\t"name": "Sam"\n}'
         )
 
-    def test_bool_to_int(self, titanic_vd_fun):
-        """
-        test function - bool_to_int
-        """
-        titanic_vd_fun["survived"].astype("bool")
-        assert titanic_vd_fun["survived"].dtype() == "bool"
-
-        titanic_vd_fun.bool_to_int()
-        assert titanic_vd_fun["survived"].dtype() == "int"
-
-    def test_catcol(self, titanic_vd_fun):
-        """
-        test function - catcol
-        """
-        assert titanic_vd_fun.catcol(max_cardinality=6) == [
-            '"pclass"',
-            '"survived"',
-            '"name"',
-            '"sex"',
-            '"ticket"',
-            '"cabin"',
-            '"embarked"',
-            '"boat"',
-            '"home.dest"',
-        ]
-
-    def test_datecol(self, amazon_vd):
-        """
-        test function - datecol
-        """
-        assert amazon_vd.datecol()[0] == '"date"'
-
-    def test_dtypes(self, amazon_vd):
-        """
-        test function - dtypes
-        """
-        assert list(chain(*amazon_vd.dtypes().to_list())) == [
-            "date",
-            "varchar(32)",
-            "int",
-        ]
-
-    def test_dtype(self, amazon_vd):
-        """
-        test function - dtypes
-        """
-        assert amazon_vd["state"].dtype() == "varchar(32)"
-
-    @pytest.mark.parametrize(
-        "exclude_columns, expected",
-        [
-            (
-                [],
-                [
-                    '"age"',
-                    '"body"',
-                    '"fare"',
-                    '"parch"',
-                    '"pclass"',
-                    '"sibsp"',
-                    '"survived"',
-                ],
-            ),
-            (
-                ["survived", "body"],
-                ['"fare"', '"pclass"', '"age"', '"parch"', '"sibsp"'],
-            ),
-        ],
-    )
-    def test_numcol(self, titanic_vd_fun, exclude_columns, expected):
-        """
-        test function - numcol
-        """
-        assert sorted(titanic_vd_fun.numcol(exclude_columns=exclude_columns)) == sorted(
-            expected
-        )
-
-    def test_astype_vcol(self, laliga_vd):
-        """
-        test function - astype
-        """
-        laliga_vd.astype({"match_id": "varchar"})
-        assert laliga_vd["match_id"].ctype() == "varchar"
-
     def test_category(self, laliga_vd):
         """
         test function - category
@@ -248,3 +245,9 @@ class TestTyping:
             os.path.dirname(vp.__file__) + "/datasets/data/laliga/*.json"
         )
         assert laliga["away_team.managers"].isvmap() is True
+
+    def test_dtype(self, amazon_vd):
+        """
+        test function - dtypes
+        """
+        assert amazon_vd["state"].dtype() == "varchar(32)"

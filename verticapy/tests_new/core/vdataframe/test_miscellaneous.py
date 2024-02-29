@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from math import ceil, floor
 
 import numpy as np
+import pandas as pd
 
 import verticapy as vp
 import verticapy.sql.functions as vpf
@@ -171,10 +172,13 @@ class TestVDFCreate:
         """
         test create vDataFrame using pandas dataframe
         """
-        df = vp.vDataFrame(input_relation=f"{schema_loader}.titanic").to_pandas()
-        vdf = vp.vDataFrame(df)
+        pdf = pd.DataFrame(
+            [[1, "first1", "last1"], [2, "first2", "last2"]],
+            columns=["id", "fname", "lname"],
+        )
+        vdf = vp.vDataFrame(pdf)
 
-        assert vdf["survived"].count() == 1234
+        assert vdf["id"].count() == 2
 
     def test_using_list(self):
         """
