@@ -59,40 +59,38 @@ le = LabelEncoder()
 
 def get_xy(model_class):
     xy_map = {
-        **dict.fromkeys(REGRESSION_MODELS, {'X': ["citric_acid", "residual_sugar", "alcohol"], 'y': "quality"}),
-        **dict.fromkeys(CLASSIFICATION_MODELS, {'X': ["age", "fare", "sex"], 'y': "survived"}),
-        **dict.fromkeys(TIMESERIES_MODELS, {'X': "date", 'y': "passengers"}),
+        **dict.fromkeys(REGRESSION_MODELS, {'X': ["citric_acid", "residual_sugar", "alcohol"], 'y': "quality", 'dataset': 'winequality'}),
+        **dict.fromkeys(CLASSIFICATION_MODELS, {'X': ["age", "fare", "sex"], 'y': "survived", 'dataset': 'titanic'}),
+        **dict.fromkeys(TIMESERIES_MODELS, {'X': "date", 'y': "passengers", 'dataset': 'passengers'}),
         **dict.fromkeys(CLUSTER_MODELS,
-                        {'X': ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"], 'y': None}),
+                        {'X': ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"], 'y': None, 'dataset': 'iris'}),
     }
     return xy_map.get(model_class, None)
 
 
 def get_train_sql(model_class, schema_name, model_instance, X, y):
-    rf_init = model_instance #RandomForestInitializer(model_class, schema_name)
-    xgb_init = XGBInitializer(model_class, schema_name)
-
-    # initializer_class = get_model_initializer(model_class).get(model_class, None)(model_class, schema_name, **kwargs)
-    # model = initializer_class(model_class, schema_name, **kwargs).initializer()
-
     model_name = f"vpy_model_{model_class}"
     predictor_columns = ",".join(X)
 
-    train_sql_map = {
-        'XGBRegressor': f"SELECT xgb_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={xgb_init.max_ntree}, max_depth={xgb_init.max_depth}, nbins={xgb_init.nbins}, split_proposal_method={xgb_init.split_proposal_method}, tol={xgb_init.tol}, learning_rate={xgb_init.learning_rate}, min_split_loss={xgb_init.min_split_loss}, weight_reg={xgb_init.weight_reg}, sample={xgb_init.sample}, col_sample_by_tree={xgb_init.col_sample_by_tree}, col_sample_by_node={xgb_init.col_sample_by_node}, seed=1, id_column='id')",
-        **dict.fromkeys(["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"],
-                        f"SELECT rf_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={rf_init.ntree}, mtry={rf_init.mtry}, max_breadth={rf_init.max_breadth}, sampling_size={rf_init.sampling_size}, max_depth={rf_init.max_depth}, min_leaf_size={rf_init.min_leaf_size}, nbins={rf_init.nbins}, seed=1, id_column='id')"),
-        # 'XGBClassifier': f"SELECT xgb_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', max_ntree={model_obj.max_ntree}, max_depth={model_obj.max_depth}, nbins={model_obj.nbins}, split_proposal_method={model_obj.split_proposal_method}, tol={model_obj.tol}, learning_rate={model_obj.learning_rate}, min_split_loss={model_obj.min_split_loss}, weight_reg={model_obj.weight_reg}, sample={model_obj.sample}, col_sample_by_tree={model_obj.col_sample_by_tree}, col_sample_by_node={model_obj.col_sample_by_node}, seed=1, id_column='name')",
-        # **dict.fromkeys(["RandomForestClassifier", "DecisionTreeClassifier", "DummyTreeClassifier", ],
-        #                 f"SELECT rf_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', ntree={model_obj.ntree}, mtry={model_obj.mtry}, max_breadth={model_obj.max_breadth}, sampling_size={model_obj.sampling_size}, max_depth={model_obj.max_depth}, min_leaf_size={model_obj.min_leaf_size}, nbins={model_obj.nbins}, seed=1, id_column='name')")
+    if model_class == "XGBRegressor":
+        train_sql = f"SELECT xgb_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={model_instance.max_ntree}, max_depth={model_instance.max_depth}, nbins={model_instance.nbins}, split_proposal_method={model_instance.split_proposal_method}, tol={model_instance.tol}, learning_rate={model_instance.learning_rate}, min_split_loss={model_instance.min_split_loss}, weight_reg={model_instance.weight_reg}, sample={model_instance.sample}, col_sample_by_tree={model_instance.col_sample_by_tree}, col_sample_by_node={model_instance.col_sample_by_node}, seed=1, id_column='id')"
+    elif model_class in ["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"]:
+        train_sql = f"SELECT rf_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={model_instance.ntree}, mtry={model_instance.mtry}, max_breadth={model_instance.max_breadth}, sampling_size={model_instance.sampling_size}, max_depth={model_instance.max_depth}, min_leaf_size={model_instance.min_leaf_size}, nbins={model_instance.nbins}, seed=1, id_column='id')"
+    elif model_class in 'XGBClassifier':
+        train_sql = f"SELECT xgb_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', max_ntree={model_instance.max_ntree}, max_depth={model_instance.max_depth}, nbins={model_instance.nbins}, split_proposal_method={model_instance.split_proposal_method}, tol={model_instance.tol}, learning_rate={model_instance.learning_rate}, min_split_loss={model_instance.min_split_loss}, weight_reg={model_instance.weight_reg}, sample={model_instance.sample}, col_sample_by_tree={model_instance.col_sample_by_tree}, col_sample_by_node={model_instance.col_sample_by_node}, seed=1, id_column='name')"
+    elif model_class in ["RandomForestClassifier", "DecisionTreeClassifier", "DummyTreeClassifier"]:
+        train_sql = f"SELECT rf_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', ntree={model_instance.ntree}, mtry={model_instance.mtry}, max_breadth={model_instance.max_breadth}, sampling_size={model_instance.sampling_size}, max_depth={model_instance.max_depth}, min_leaf_size={model_instance.min_leaf_size}, nbins={model_instance.nbins}, seed=1, id_column='name')"
 
-    }
-
-    return train_sql_map[model_class]
+    return train_sql
 
 
 def get_model_class(model_class):
     model_class_map = {
+        **dict.fromkeys(["LinearRegression"], LinearRegressionInitializer),
+        **dict.fromkeys(["LinearSVR"], LinearSVRInitializer),
+        **dict.fromkeys(["LinearSVR"], RidgeInitializer),
+        **dict.fromkeys(["LinearSVR"], LinearSVRInitializer),
+        **dict.fromkeys(["LinearSVR"], LinearSVRInitializer),
         **dict.fromkeys(["XGBRegressor", "XGBClassifier"], XGBInitializer),
         **dict.fromkeys(["RandomForestRegressor", "RandomForestClassifier"], RandomForestInitializer),
         **dict.fromkeys(["DecisionTreeRegressor", "DecisionTreeClassifier"], DecisionTreeInitializer),
@@ -144,7 +142,7 @@ class RandomForestInitializer:
         self.max_depth = kwargs.get("max_depth", 10)
         self.min_leaf_size = kwargs.get("min_samples_leaf", 1)
         self.min_info_gain = kwargs.get("min_info_gain", 0.0)
-        self.nbins = kwargs.get("nbins", 32)
+        self.nbins = kwargs.get("nbins") if kwargs.get("nbins") else 32
         self.model_class = model_class
         self.schema_name = schema_name
         self.model_name = f"vpy_model_{self.model_class}"
@@ -581,6 +579,7 @@ class TrainModel:
         self.model_instance = model_instance
         self.X = get_xy(self.model_class)['X']
         self.y = get_xy(self.model_class)['y']
+        self.dataset = get_xy(self.model_class)['dataset']
 
     def train_tree(self):
         # rf_reg = RandomForestInitializer(self.model_class, self.schema_name)
@@ -595,7 +594,7 @@ class TrainModel:
         print(f"Tree Regressor Train SQL: {train_sql}")
         current_cursor().execute(train_sql)
 
-        self.model.input_relation = f"{self.schema_name}.winequality"
+        self.model.input_relation = f"{self.schema_name}.{self.dataset}"
         self.model.test_relation = self.model.input_relation
         self.model.X = _X
         self.model.y = f'"{self.y}"'
@@ -1026,9 +1025,15 @@ def get_vpy_model_fixture(
                 # for i in y_class:
                 #     pred_prob_vdf[f"{y}_pred_{i}"].astype("float")
 
+                # DataSetUp(schema_name).tree_classifier()
+                # model = XGBInitializer(model_class, schema_name).initializer()
+                # model = TrainModel(model, schema_name, model_class).train_tree()
+                # pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_tree_classifier()
+
                 DataSetUp(schema_name).tree_classifier()
-                model = XGBInitializer(model_class, schema_name).initializer()
-                model = TrainModel(model, schema_name, model_class).train_tree()
+                model_instance = get_model_class(model_class)(model_class, schema_name, **kwargs)
+                model = model_instance.initializer()
+                model = TrainModel(model, schema_name, model_class, model_instance).train_tree()
                 pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_tree_classifier()
 
             elif model_class in [
@@ -1083,15 +1088,8 @@ def get_vpy_model_fixture(
                 #     f"DROP SEQUENCE IF EXISTS {schema_name}.sequence_auto_increment"
                 # )
                 DataSetUp(schema_name).tree_regressor()
-                # initializer_map = {
-                #     **dict.fromkeys(["XGBRegressor", "XGBClassifier"], XGBInitializer),
-                #     **dict.fromkeys(["RandomForestRegressor", "RandomForestClassifier"], RandomForestInitializer),
-                #     **dict.fromkeys(["DecisionTreeRegressor", "DecisionTreeClassifier"], DecisionTreeInitializer),
-                # }
-
                 model_instance = get_model_class(model_class)(model_class, schema_name, **kwargs)
                 model = model_instance.initializer()
-                # model = XGBInitializer(model_class, schema_name).initializer() if model_class=='XGBRegressor' else RandomForestInitializer(model_class, schema_name).initializer()
                 model = TrainModel(model, schema_name, model_class, model_instance).train_tree()
                 pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_tree_regressor()
 
@@ -1146,8 +1144,13 @@ def get_vpy_model_fixture(
                 # pred_vdf = model.predict(f"{schema_name}.winequality", name=f"{y}_pred")
                 # pred_prob_vdf = None
 
-                model = TrainModel(model, schema_name, model_class).train_linear()
+                model_instance = get_model_class(model_class)(model_class, schema_name, **kwargs)
+                model = model_instance.initializer()
+                model = TrainModel(model, schema_name, model_class, model_instance).train_linear()
                 pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_linear()
+
+                # model = TrainModel(model, schema_name, model_class).train_linear()
+                # pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_linear()
 
             return model, pred_vdf, pred_prob_vdf, schema_name, model_name
 

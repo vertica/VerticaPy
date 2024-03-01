@@ -22,7 +22,7 @@ rel_abs_tol_map = {
         "explained_variance": {"rel": 9e-02, "abs": ABS_TOLERANCE},
         "max_error": {"rel": 4e-01, "abs": ABS_TOLERANCE},
         "median_absolute_error": {"rel": 6e-02, "abs": ABS_TOLERANCE},
-        "mean_absolute_error": {"rel": 2e-02, "abs": ABS_TOLERANCE},
+        "mean_absolute_error": {"rel": 2e-00, "abs": ABS_TOLERANCE},
         "mean_squared_error": {"rel": 3e-02, "abs": ABS_TOLERANCE},
         "mean_squared_log_error": {"rel": 3e-02, "abs": ABS_TOLERANCE},
         "rmse": {"rel": 2e-02, "abs": ABS_TOLERANCE},

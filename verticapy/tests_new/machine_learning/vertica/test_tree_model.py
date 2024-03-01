@@ -136,8 +136,8 @@ class TestBaseTreeModel:
     "model_class",
     [
         "RandomForestRegressor",
-        # "DecisionTreeRegressor",
-        # "XGBRegressor",
+        "DecisionTreeRegressor",
+        "XGBRegressor",
         # "DummyTreeRegressor"
     ],
 )
