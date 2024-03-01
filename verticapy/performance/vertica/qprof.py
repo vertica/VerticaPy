@@ -958,19 +958,38 @@ class QueryProfiler:
                     WHERE session_id = (SELECT current_session())
                       AND is_executing='f'
                     ORDER BY start_timestamp DESC LIMIT 1;"""
-                transaction_id, statement_id = _executeSQL(
+                res = _executeSQL(
                     query,
                     title="Getting transaction_id, statement_id.",
                     method="fetchrow",
                 )
-                self.transactions += [(transaction_id, statement_id)]
+                if not isinstance(res, NoneType):
+                    transaction_id, statement_id = res[0], res[1]
+                    self.transactions += [(transaction_id, statement_id)]
+                else:
+                    warning_message = (
+                        f"No transaction linked to query: {request}."
+                        "\nIt might be still running. This transaction"
+                        " will be skipped."
+                    )
+                    warnings.warn(warning_message, Warning)
 
         if len(self.transactions) == 0 and isinstance(key_id, NoneType):
             raise ValueError("No transactions found.")
 
         elif len(self.transactions) != 0:
-            self.transaction_id = self.transactions[0][0]
-            self.statement_id = self.transactions[0][1]
+            if (len(self.transactions[0]) > 0) and isinstance(
+                self.transactions[0][0], int
+            ):
+                self.transaction_id = self.transactions[0][0]
+            else:
+                self.transaction_id = 1
+            if (len(self.transactions[0]) > 1) and isinstance(
+                self.transactions[0][1], int
+            ):
+                self.statement_id = self.transactions[0][1]
+            else:
+                self.statement_id = 1
 
         # BUILDING THE target_schema.
         if target_schema == "v_temp_schema":
@@ -1816,7 +1835,12 @@ class QueryProfiler:
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
         )
         if return_html:
-            return res[1]
+            return format_query(
+                query=self.request,
+                indent_sql=indent_sql,
+                print_sql=print_sql,
+                only_html=True,
+            )
         return res[0]
 
     # Step 2: Query duration
@@ -2122,21 +2146,25 @@ class QueryProfiler:
         path_id: Optional[int] = None,
         path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
-        metric: Literal[
-            None,
-            "cost",
-            "rows",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            "cstall_us",
-            "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
-        ] = "rows",
+        metric: Union[
+            Literal[
+                None,
+                "cost",
+                "rows",
+                "exec_time_ms",
+                "est_rows",
+                "proc_rows",
+                "prod_rows",
+                "rle_prod_rows",
+                "clock_time_us",
+                "cstall_us",
+                "pstall_us",
+                "mem_res_mb",
+                "mem_all_mb",
+            ],
+            list,
+            tuple,
+        ] = ["exec_time_ms", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
         **tree_style,
@@ -2196,6 +2224,7 @@ class QueryProfiler:
                 and two metrics are
                 used, two legends will
                 be drawn.
+                Default: True
             - color_low:
                 Color used as the lower
                 bound of the gradient.
@@ -2248,6 +2277,10 @@ class QueryProfiler:
                 Information box font
                 size.
                 Default: 8
+            - storage_access:
+                Maximum number of chars of
+                the storage access box.
+                Default: 9
             - network_edge:
                 If set to ``True`` the
                 network edges will all

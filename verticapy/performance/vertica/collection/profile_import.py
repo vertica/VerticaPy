@@ -25,10 +25,14 @@ import pandas as pd
 
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
+from verticapy.core.parsers.pandas import read_pandas
+
+# from verticapy.sql import insert_into
 
 from verticapy.performance.vertica.collection.collection_tables import (
-    getAllCollectionTables,
+    AllTableTypes,
     BundleVersion,
+    getAllCollectionTables,
 )
 
 
@@ -158,10 +162,13 @@ class ProfileImport:
         self._create_schema_if_not_exists()
         self._create_tables_if_not_exists()
 
-    def load_file(self) -> None:
+    def _load_file(self) -> None:
         self.check_file()
         self._load_vdataframes(self.unpack_dir, self.bundle_version)
-        # Future PR: copy the file into the database
+
+    def check_schema_and_load_file(self) -> None:
+        self.check_schema()
+        self._load_file()
 
     def _schema_exists_or_raise(self) -> None:
         result = _executeSQL(
@@ -323,6 +330,4 @@ class ProfileImport:
                 self.logger.info(f"Skipping missing file {expected_file_path}")
                 continue
             pd_dataframe = pd.read_parquet(expected_file_path)
-            cols = list(pd_dataframe.columns)
-            self.logger.info(f"File {expected_file_path} has columns {cols}")
-            # Next PR: load the vdataframe into the database
+            ctable.copy_from_pandas_dataframe(pd_dataframe)

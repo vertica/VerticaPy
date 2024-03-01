@@ -585,7 +585,10 @@ def _format_keys(
 
 
 def format_query(
-    query: SQLExpression, indent_sql: bool = True, print_sql: bool = True
+    query: SQLExpression,
+    indent_sql: bool = True,
+    print_sql: bool = True,
+    only_html: bool = False,
 ) -> SQLExpression:
     """
     Query Formatter. It is used
@@ -639,28 +642,25 @@ def format_query(
     """
     display_success = print_sql and conf.get_import_success("IPython")
     res = clean_query(query)
-    if display_success:
-        html_res = res
-    else:
-        html_res = None
+    html_res = res
+
     # STRINGS
-    if display_success:
-        html_res = re.sub(
-            r"(\"(.)+\")",
-            COL_TAG_L + r" \1 " + COL_TAG_R,
-            html_res,
-        )
-        html_res = re.sub(
-            r"(\'(.)+\')",
-            STRING_TAG_L + r" \1 " + STRING_TAG_R,
-            html_res,
-        )
-        html_res = re.sub(
-            r"(--.+(\n|\Z))", COMMENT_TAG_L + r" \1 " + COMMENT_TAG_R, html_res
-        )
-        html_res = re.sub(
-            r"(/\*(.+?)\*/)", COMMENT_TAG_L + r" \1 " + COMMENT_TAG_R, html_res
-        )
+    html_res = re.sub(
+        r"(\"(.)+\")",
+        COL_TAG_L + r" \1 " + COL_TAG_R,
+        html_res,
+    )
+    html_res = re.sub(
+        r"(\'(.)+\')",
+        STRING_TAG_L + r" \1 " + STRING_TAG_R,
+        html_res,
+    )
+    html_res = re.sub(
+        r"(--.+(\n|\Z))", COMMENT_TAG_L + r" \1 " + COMMENT_TAG_R, html_res
+    )
+    html_res = re.sub(
+        r"(/\*(.+?)\*/)", COMMENT_TAG_L + r" \1 " + COMMENT_TAG_R, html_res
+    )
     # SQL KEY WORDS
     res, html_res = _format_keys(
         SQL_KEYWORDS, res, html_res, KEYWORDS_TAG_L, KEYWORDS_TAG_R
@@ -682,27 +682,30 @@ def format_query(
         OPERATORS, res, html_res, OPERATOR_TAG_L, OPERATOR_TAG_R
     )
     # DIGITS
-    if display_success:
-        html_res = re.sub(
-            r"(\s|\+|\-|\\|\*|\/)(\d+)(\s|\+|\-|\\|\*|\/|$)",
-            r"\1" + DIGIT_TAG_L + r" \2 " + DIGIT_TAG_R + r"\3",
-            html_res,
-        )
 
+    html_res = re.sub(
+        r"(\s|\+|\-|\\|\*|\/)(\d+)(\s|\+|\-|\\|\*|\/|$)",
+        r"\1" + DIGIT_TAG_L + r" \2 " + DIGIT_TAG_R + r"\3",
+        html_res,
+    )
+    html_res = html_res.replace("*", "&ast;")
+    if indent_sql:
+        html_res = (
+            indent_vpy_sql(html_res.strip())
+            .replace("\n", "<br>")
+            .replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;")
+        )
+    if display_success:
+        display(Markdown(html_res))
     if indent_sql:
         res = indent_vpy_sql(res)
-    if display_success:
-        html_res = html_res.replace("*", "&ast;")
-        if indent_sql:
-            html_res = (
-                indent_vpy_sql(html_res.strip())
-                .replace("\n", "<br>")
-                .replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;")
-            )
-        display(Markdown(html_res))
-    elif print_sql:
+    if print_sql:
         print(res)
-    return res, html_res
+    if only_html:
+        return html_res
+    elif display_success:
+        return res, html_res
+    return res, None
 
 
 """
