@@ -62,9 +62,42 @@ def get_xy(model_class):
         **dict.fromkeys(REGRESSION_MODELS, {'X': ["citric_acid", "residual_sugar", "alcohol"], 'y': "quality"}),
         **dict.fromkeys(CLASSIFICATION_MODELS, {'X': ["age", "fare", "sex"], 'y': "survived"}),
         **dict.fromkeys(TIMESERIES_MODELS, {'X': "date", 'y': "passengers"}),
-        **dict.fromkeys(CLUSTER_MODELS, {'X': ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"], 'y':  None}),
+        **dict.fromkeys(CLUSTER_MODELS,
+                        {'X': ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"], 'y': None}),
     }
     return xy_map.get(model_class, None)
+
+
+def get_train_sql(model_class, schema_name, model_instance, X, y):
+    rf_init = model_instance #RandomForestInitializer(model_class, schema_name)
+    xgb_init = XGBInitializer(model_class, schema_name)
+
+    # initializer_class = get_model_initializer(model_class).get(model_class, None)(model_class, schema_name, **kwargs)
+    # model = initializer_class(model_class, schema_name, **kwargs).initializer()
+
+    model_name = f"vpy_model_{model_class}"
+    predictor_columns = ",".join(X)
+
+    train_sql_map = {
+        'XGBRegressor': f"SELECT xgb_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={xgb_init.max_ntree}, max_depth={xgb_init.max_depth}, nbins={xgb_init.nbins}, split_proposal_method={xgb_init.split_proposal_method}, tol={xgb_init.tol}, learning_rate={xgb_init.learning_rate}, min_split_loss={xgb_init.min_split_loss}, weight_reg={xgb_init.weight_reg}, sample={xgb_init.sample}, col_sample_by_tree={xgb_init.col_sample_by_tree}, col_sample_by_node={xgb_init.col_sample_by_node}, seed=1, id_column='id')",
+        **dict.fromkeys(["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"],
+                        f"SELECT rf_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={rf_init.ntree}, mtry={rf_init.mtry}, max_breadth={rf_init.max_breadth}, sampling_size={rf_init.sampling_size}, max_depth={rf_init.max_depth}, min_leaf_size={rf_init.min_leaf_size}, nbins={rf_init.nbins}, seed=1, id_column='id')"),
+        # 'XGBClassifier': f"SELECT xgb_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', max_ntree={model_obj.max_ntree}, max_depth={model_obj.max_depth}, nbins={model_obj.nbins}, split_proposal_method={model_obj.split_proposal_method}, tol={model_obj.tol}, learning_rate={model_obj.learning_rate}, min_split_loss={model_obj.min_split_loss}, weight_reg={model_obj.weight_reg}, sample={model_obj.sample}, col_sample_by_tree={model_obj.col_sample_by_tree}, col_sample_by_node={model_obj.col_sample_by_node}, seed=1, id_column='name')",
+        # **dict.fromkeys(["RandomForestClassifier", "DecisionTreeClassifier", "DummyTreeClassifier", ],
+        #                 f"SELECT rf_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', ntree={model_obj.ntree}, mtry={model_obj.mtry}, max_breadth={model_obj.max_breadth}, sampling_size={model_obj.sampling_size}, max_depth={model_obj.max_depth}, min_leaf_size={model_obj.min_leaf_size}, nbins={model_obj.nbins}, seed=1, id_column='name')")
+
+    }
+
+    return train_sql_map[model_class]
+
+
+def get_model_class(model_class):
+    model_class_map = {
+        **dict.fromkeys(["XGBRegressor", "XGBClassifier"], XGBInitializer),
+        **dict.fromkeys(["RandomForestRegressor", "RandomForestClassifier"], RandomForestInitializer),
+        **dict.fromkeys(["DecisionTreeRegressor", "DecisionTreeClassifier"], DecisionTreeInitializer),
+    }
+    return model_class_map[model_class]
 
 
 class DataSetUp:
@@ -111,7 +144,7 @@ class RandomForestInitializer:
         self.max_depth = kwargs.get("max_depth", 10)
         self.min_leaf_size = kwargs.get("min_samples_leaf", 1)
         self.min_info_gain = kwargs.get("min_info_gain", 0.0)
-        self.nbins = kwargs.get("nbins", 32),
+        self.nbins = kwargs.get("nbins", 32)
         self.model_class = model_class
         self.schema_name = schema_name
         self.model_name = f"vpy_model_{self.model_class}"
@@ -137,23 +170,428 @@ class RandomForestInitializer:
         return model
 
 
+class DecisionTreeInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.ntree = 1
+        self.mtry = kwargs.get("max_features", 2)
+        self.max_breadth = kwargs.get("max_leaf_nodes", 10)
+        self.max_depth = kwargs.get("max_depth", 10)
+        self.min_leaf_size = self.sampling_size = kwargs.get("min_samples_leaf", 1)
+        self.min_info_gain = kwargs.get("min_info_gain") if kwargs.get("min_info_gain") else 0.0
+        self.nbins = kwargs.get("nbins") if kwargs.get("nbins") else 32
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_tree, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            max_features=self.mtry,
+            max_leaf_nodes=self.max_breadth,
+            max_depth=self.max_depth,
+            min_samples_leaf=self.min_leaf_size,
+            min_info_gain=self.min_info_gain,
+            nbins=self.nbins
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class DummyTreeInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_tree, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class XGBInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.max_ntree = kwargs.get("max_ntree", 10)
+        self.max_depth = kwargs.get("max_depth", 10)
+        self.nbins = kwargs.get("nbins", 150)
+        self.split_proposal_method = kwargs.get("split_proposal_method", "'global'")
+        self.tol = kwargs.get("tol", 0.001)
+        self.learning_rate = kwargs.get("learning_rate", 0.1)
+        self.min_split_loss = kwargs.get("min_split_loss", 0.0)
+        self.weight_reg = kwargs.get("weight_reg", 0.0)
+        self.sample = kwargs.get("sample", 1.0)
+        self.col_sample_by_tree = kwargs.get("col_sample_by_tree", 1.0)
+        self.col_sample_by_node = kwargs.get("col_sample_by_node", 1.0)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_ensemble, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            max_ntree=self.max_ntree,
+            max_depth=self.max_depth,
+            nbins=self.nbins,
+            split_proposal_method=self.split_proposal_method,
+            tol=self.tol,
+            learning_rate=self.learning_rate,
+            min_split_loss=self.min_split_loss,
+            weight_reg=self.weight_reg,
+            sample=self.sample,
+            col_sample_by_tree=self.col_sample_by_tree,
+            col_sample_by_node=self.col_sample_by_node
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class LinearRegressionInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.tol = kwargs.get("tol", 1e-6)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.solver = kwargs.get("newton", 150)
+        self.fit_intercept = kwargs.get("fit_intercept", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            tol=self.tol,
+            max_iter=self.max_iter,
+            solver=self.solver,
+            fit_intercept=self.fit_intercept
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class LinearSVRInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.tol = kwargs.get("tol", 1e-4)
+        self.C = kwargs.get("c", 1.0)
+        self.intercept_scaling = kwargs.get("intercept_scaling", 1.0)
+        self.intercept_mode = kwargs.get("intercept_mode", "regularized")
+        self.acceptable_error_margin = kwargs.get("acceptable_error_margin", 0.1)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_svm, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            tol=self.tol,
+            C=self.C,
+            intercept_scaling=self.intercept_scaling,
+            intercept_mode=self.intercept_mode,
+            acceptable_error_margin=self.acceptable_error_margin,
+            max_iter=self.max_iter,
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class RidgeInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.tol = kwargs.get("tol", 1e-6)
+        self.C = kwargs.get("c", 1.0)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.solver = kwargs.get("solver", "newton")
+        self.fit_intercept = kwargs.get("fit_intercept", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            tol=self.tol,
+            C=self.C,
+            max_iter=self.max_iter,
+            solver=self.solver,
+            fit_intercept=self.fit_intercept,
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class LassoInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.tol = kwargs.get("tol", 1e-6)
+        self.C = kwargs.get("c", 1.0)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.solver = kwargs.get("solver", "cgd")
+        self.fit_intercept = kwargs.get("fit_intercept", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            tol=self.tol,
+            C=self.C,
+            max_iter=self.max_iter,
+            solver=self.solver,
+            fit_intercept=self.fit_intercept,
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class ElasticNetInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.tol = kwargs.get("tol", 1e-6)
+        self.C = kwargs.get("c", 1.0)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.solver = kwargs.get("solver", "cgd")
+        self.l1_ratio = kwargs.get("l1_ratio", 0.5)
+        self.fit_intercept = kwargs.get("fit_intercept", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            tol=self.tol,
+            C=self.C,
+            max_iter=self.max_iter,
+            solver=self.solver,
+            l1_ratio=self.l1_ratio,
+            fit_intercept=self.fit_intercept,
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class PoissonRegressorInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.penalty = kwargs.get("penalty", 'l2')
+        self.tol = kwargs.get("tol", 1e-6)
+        self.C = kwargs.get("c", 1.0)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.solver = kwargs.get("solver", "newton")
+        self.fit_intercept = kwargs.get("fit_intercept", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            penalty=self.penalty,
+            tol=self.tol,
+            C=self.C,
+            max_iter=self.max_iter,
+            solver=self.solver,
+            fit_intercept=self.fit_intercept,
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class ARInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.p = kwargs.get("p", 3)
+        self.method = kwargs.get("method", 'ols')
+        self.penalty = kwargs.get("", "none")
+        self.C = kwargs.get("C", 1.0)
+        self.missing = kwargs.get("missing", "linear_interpolation")
+        # self.compute_mse = kwargs.get("compute_mse", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            p=self.p,
+            method=self.method,
+            penalty=self.penalty,
+            C=self.C,
+            missing=self.missing,
+            # compute_mse=self.compute_mse,
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+class MAInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.q = kwargs.get("q", 1)
+        self.method = kwargs.get("method", 'ols')
+        self.penalty = kwargs.get("penalty", "none")
+        self.C = kwargs.get("C", 1.0)
+        self.missing = kwargs.get("missing", "linear_interpolation")
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            q=self.q,
+            method=self.method,
+            penalty=self.penalty,
+            C=self.C,
+            missing=self.missing,
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+class ARMAInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.order = kwargs.get("order", (2, 1))
+        self.tol = kwargs.get("tol", 1e-06)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.init = kwargs.get("init", "zero")
+        self.missing = kwargs.get("missing", "linear_interpolation")
+        # self.compute_mse = kwargs.get("compute_mse", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            order=self.order,
+            tol=self.tol,
+            max_iter=self.max_iter,
+            init=self.init,
+            missing=self.missing,
+            # compute_mse=self.compute_mse
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
+class ARIMAInitializer:
+    def __init__(self, model_class, schema_name, **kwargs):
+        self.overwrite_model = kwargs.get("overwrite_model", False)
+        self.order = kwargs.get("order", (2, 1, 1))
+        self.tol = kwargs.get("tol", 1e-06)
+        self.max_iter = kwargs.get("max_iter", 100)
+        self.init = kwargs.get("init", "zero")
+        self.missing = kwargs.get("missing", "linear_interpolation")
+        # self.compute_mse = kwargs.get("compute_mse", True)
+        self.model_class = model_class
+        self.schema_name = schema_name
+        self.model_name = f"vpy_model_{self.model_class}"
+
+    def initializer(self):
+        model = getattr(vpy_linear_model, self.model_class)(
+            name=f"{self.schema_name}.{self.model_name}",
+            overwrite_model=self.overwrite_model,
+            order=self.order,
+            tol=self.tol,
+            max_iter=self.max_iter,
+            init=self.init,
+            missing=self.missing,
+            # compute_mse=self.compute_mse
+        )
+        print(f"VerticaPy Training Parameters: {model.get_params()}")
+
+        # drop if model exists with same name
+        model.drop()
+
+        return model
+
+
 class TrainModel:
-    def __init__(self, model, schema_name, model_class):
+    def __init__(self, model, schema_name, model_class, model_instance):
         self.model = model
         self.schema_name = schema_name
         self.model_class = model_class
+        self.model_instance = model_instance
         self.X = get_xy(self.model_class)['X']
         self.y = get_xy(self.model_class)['y']
 
-    def train_rf_regressor(self):
-        rf_reg = RandomForestInitializer(self.model_class, self.schema_name)
-        predictor_columns = ",".join(self.X)
+    def train_tree(self):
+        # rf_reg = RandomForestInitializer(self.model_class, self.schema_name)
+        # predictor_columns = ",".join(self.X)
         _X = [f'"{i}"' for i in self.X]
 
-        if self.model_class == "XGBRegressor":
-            train_sql = f"SELECT xgb_regressor('{self.schema_name}.{self.model_name}', '{self.schema_name}.winequality', '{self.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={tree_param_map['max_ntree']}, max_depth={tree_param_map['max_depth']}, nbins={tree_param_map['nbins']}, split_proposal_method={tree_param_map['split_proposal_method']}, tol={tree_param_map['tol']}, learning_rate={tree_param_map['learning_rate']}, min_split_loss={tree_param_map['min_split_loss']}, weight_reg={tree_param_map['weight_reg']}, sample={tree_param_map['sample']}, col_sample_by_tree={tree_param_map['col_sample_by_tree']}, col_sample_by_node={tree_param_map['col_sample_by_node']}, seed=1, id_column='id')"
-        else:
-            train_sql = f"SELECT rf_regressor('{self.schema_name}.{self.model_name}', '{self.schema_name}.winequality', '{self.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={rf_reg.ntree}, mtry={rf_reg.mtry}, max_breadth={rf_reg.max_breadth}, sampling_size={rf_reg.sampling_size}, max_depth={rf_reg.max_depth}, min_leaf_size={rf_reg.min_leaf_size}, nbins={rf_reg.nbins}, seed=1, id_column='id')"
+        # if self.model_class == "XGBRegressor":
+        #     train_sql = f"SELECT xgb_regressor('{self.schema_name}.{self.model_name}', '{self.schema_name}.winequality', '{self.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={tree_param_map['max_ntree']}, max_depth={tree_param_map['max_depth']}, nbins={tree_param_map['nbins']}, split_proposal_method={tree_param_map['split_proposal_method']}, tol={tree_param_map['tol']}, learning_rate={tree_param_map['learning_rate']}, min_split_loss={tree_param_map['min_split_loss']}, weight_reg={tree_param_map['weight_reg']}, sample={tree_param_map['sample']}, col_sample_by_tree={tree_param_map['col_sample_by_tree']}, col_sample_by_node={tree_param_map['col_sample_by_node']}, seed=1, id_column='id')"
+        # else:
+        #     train_sql = f"SELECT rf_regressor('{self.schema_name}.{self.model_name}', '{self.schema_name}.winequality', '{self.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={rf_reg.ntree}, mtry={rf_reg.mtry}, max_breadth={rf_reg.max_breadth}, sampling_size={rf_reg.sampling_size}, max_depth={rf_reg.max_depth}, min_leaf_size={rf_reg.min_leaf_size}, nbins={rf_reg.nbins}, seed=1, id_column='id')"
+        train_sql = get_train_sql(self.model_class, self.schema_name, self.model_instance, self.X, self.y)
         print(f"Tree Regressor Train SQL: {train_sql}")
         current_cursor().execute(train_sql)
 
@@ -162,6 +600,8 @@ class TrainModel:
         self.model.X = _X
         self.model.y = f'"{self.y}"'
         self.model._compute_attributes()
+
+        return self.model
 
     def train_timeseries(self):
         return self.model.fit(
@@ -185,8 +625,26 @@ class PredictModel:
         self.X = get_xy(self.model_class)['X']
         self.y = get_xy(self.model_class)['y']
 
-    def predict_tree(self):
-        pass
+    def predict_tree_regressor(self):
+        pred_vdf = self.model.predict(f"{self.schema_name}.winequality", name=f"{self.y}_pred")
+        pred_prob_vdf = None
+        current_cursor().execute(
+            f"DROP SEQUENCE IF EXISTS {self.schema_name}.sequence_auto_increment"
+        )
+        return pred_vdf, pred_prob_vdf
+
+    def predict_tree_classifier(self):
+        pred_vdf = self.model.predict(f"{self.schema_name}.titanic", name=f"{self.y}_pred")[f"{self.y}_pred"].astype("int")
+
+        pred_prob_vdf = self.model.predict_proba(f"{self.schema_name}.titanic", name=f"{self.y}_pred")
+
+        # y_class = titanic_vd_fun[y].distinct()
+        y_class = current_cursor().execute(f"select distinct {self.y} from {self.schema_name}.titanic").fetchall()[0]
+        # pred_prob_vdf[f"{y}_pred"].astype("int")
+        for i in y_class:
+            pred_prob_vdf[f"{self.y}_pred_{i}"].astype("float")
+
+        return pred_vdf, pred_prob_vdf
 
     def predict_timeseries(self):
         row_cnt = airline_vd_fun.describe()["count"][0]
@@ -239,286 +697,286 @@ def get_vpy_model_fixture(
         X = get_xy(model_class)['X'] if X is None else X
         y = get_xy(model_class)['y'] if y is None else y
 
-        tree_param_map = {}
-
-        rf_params_map = {
-            "ntree": 10,
-            "mtry": 2,
-            "max_breadth": 10,
-            "sampling_size": 0.632,
-            "max_depth": 10,
-            "min_leaf_size": 1,
-            "nbins": 32,
-        }
-
-        decision_params_map = {
-            "ntree": 1,
-            "mtry": 2,
-            "max_breadth": 10,
-            "sampling_size": 1,
-            "max_depth": 10,
-            "min_leaf_size": 1,
-            "nbins": 32,
-        }
-
-        dummy_params_map = {
-            "ntree": 1,
-            "mtry": 2,
-            "max_breadth": 1000000000,
-            "sampling_size": 1,
-            "max_depth": 100,
-            "min_leaf_size": 1,
-            "nbins": 1000,
-        }
-
-        xgb_params_map = {
-            "max_ntree": 10,
-            "max_depth": 10,
-            "nbins": 150,
-            "split_proposal_method": "'global'",
-            "tol": 0.001,
-            "learning_rate": 0.1,
-            "min_split_loss": 0.0,
-            "weight_reg": 0.0,
-            "sample": 1.0,
-            "col_sample_by_tree": 1.0,
-            "col_sample_by_node": 1.0,
-        }
-
-        if kwargs.get("solver"):
-            solver = kwargs.get("solver")
-        else:
-            if model_class in ["Lasso", "ElasticNet"]:
-                solver = "cgd"
-            else:
-                solver = "newton"
+        # tree_param_map = {}
+        #
+        # rf_params_map = {
+        #     "ntree": 10,
+        #     "mtry": 2,
+        #     "max_breadth": 10,
+        #     "sampling_size": 0.632,
+        #     "max_depth": 10,
+        #     "min_leaf_size": 1,
+        #     "nbins": 32,
+        # }
+        #
+        # decision_params_map = {
+        #     "ntree": 1,
+        #     "mtry": 2,
+        #     "max_breadth": 10,
+        #     "sampling_size": 1,
+        #     "max_depth": 10,
+        #     "min_leaf_size": 1,
+        #     "nbins": 32,
+        # }
+        #
+        # dummy_params_map = {
+        #     "ntree": 1,
+        #     "mtry": 2,
+        #     "max_breadth": 1000000000,
+        #     "sampling_size": 1,
+        #     "max_depth": 100,
+        #     "min_leaf_size": 1,
+        #     "nbins": 1000,
+        # }
+        #
+        # xgb_params_map = {
+        #     "max_ntree": 10,
+        #     "max_depth": 10,
+        #     "nbins": 150,
+        #     "split_proposal_method": "'global'",
+        #     "tol": 0.001,
+        #     "learning_rate": 0.1,
+        #     "min_split_loss": 0.0,
+        #     "weight_reg": 0.0,
+        #     "sample": 1.0,
+        #     "col_sample_by_tree": 1.0,
+        #     "col_sample_by_node": 1.0,
+        # }
+        #
+        # if kwargs.get("solver"):
+        #     solver = kwargs.get("solver")
+        # else:
+        #     if model_class in ["Lasso", "ElasticNet"]:
+        #         solver = "cgd"
+        #     else:
+        #         solver = "newton"
 
         def get_vpy_linear_model(model_class, X=None, y=None, **kwargs):
-            if model_class in ["RandomForestRegressor", "RandomForestClassifier"]:
-                model = getattr(vpy_tree, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    n_estimators=kwargs.get("n_estimators")
-                    if kwargs.get("n_estimators")
-                    else 10,
-                    max_features=kwargs.get("max_features")
-                    if kwargs.get("max_features")
-                    else 2,
-                    max_leaf_nodes=kwargs.get("max_leaf_nodes")
-                    if kwargs.get("max_leaf_nodes")
-                    else 10,
-                    sample=kwargs.get("sample") if kwargs.get("sample") else 0.632,
-                    max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
-                    min_samples_leaf=kwargs.get("min_samples_leaf")
-                    if kwargs.get("min_samples_leaf")
-                    else 1,
-                    min_info_gain=kwargs.get("min_info_gain")
-                    if kwargs.get("min_info_gain")
-                    else 0.0,
-                    nbins=kwargs.get("nbins") if kwargs.get("nbins") else 32,
-                )
-                tree_param_map = rf_params_map
-            elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
-                model = getattr(vpy_tree, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    max_features=kwargs.get("max_features")
-                    if kwargs.get("max_features")
-                    else 2,
-                    max_leaf_nodes=kwargs.get("max_leaf_nodes")
-                    if kwargs.get("max_leaf_nodes")
-                    else 10,
-                    max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
-                    min_samples_leaf=kwargs.get("min_samples_leaf")
-                    if kwargs.get("min_samples_leaf")
-                    else 1,
-                    min_info_gain=kwargs.get("min_info_gain")
-                    if kwargs.get("min_info_gain")
-                    else 0.0,
-                    nbins=kwargs.get("nbins") if kwargs.get("nbins") else 32,
-                )
-                tree_param_map = decision_params_map
-            elif model_class in ["XGBRegressor", "XGBClassifier"]:
-                model = getattr(vpy_ensemble, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    max_ntree=kwargs.get("max_ntree") if kwargs.get("max_ntree") else 10,
-                    max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
-                    nbins=kwargs.get("nbins") if kwargs.get("nbins") else 150,
-                    split_proposal_method=kwargs.get("split_proposal_method")
-                    if kwargs.get("split_proposal_method")
-                    else "global",
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 0.001,
-                    learning_rate=kwargs.get("learning_rate")
-                    if kwargs.get("learning_rate")
-                    else 0.1,
-                    min_split_loss=kwargs.get("min_split_loss")
-                    if kwargs.get("min_split_loss")
-                    else 0.0,
-                    weight_reg=kwargs.get("weight_reg")
-                    if kwargs.get("weight_reg")
-                    else 0.0,
-                    sample=kwargs.get("sample") if kwargs.get("sample") else 1.0,
-                    col_sample_by_tree=kwargs.get("col_sample_by_tree")
-                    if kwargs.get("col_sample_by_tree")
-                    else 1.0,
-                    col_sample_by_node=kwargs.get("col_sample_by_node")
-                    if kwargs.get("col_sample_by_node")
-                    else 1.0,
-                )
-                tree_param_map = xgb_params_map
-            elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
-                model = getattr(vpy_tree, model_class)(f"{schema_name}.{model_name}")
-                tree_param_map = dummy_params_map
-            elif model_class == "LinearSVR":
-                model = getattr(vpy_svm, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 1e-4,
-                    C=kwargs.get("c") if kwargs.get("c") else 1.0,
-                    intercept_scaling=kwargs.get("intercept_scaling")
-                    if kwargs.get("intercept_scaling")
-                    else 1.0,
-                    intercept_mode=kwargs.get("intercept_mode")
-                    if kwargs.get("intercept_mode")
-                    else "regularized",
-                    acceptable_error_margin=kwargs.get("acceptable_error_margin")
-                    if kwargs.get("acceptable_error_margin")
-                    else 0.1,
-                    max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-                )
-            elif model_class == "LinearRegression":
-                model = getattr(vpy_linear_model, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
-                    max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-                    solver=solver,
-                    fit_intercept=kwargs.get("fit_intercept")
-                    if kwargs.get("fit_intercept")
-                    else True,
-                )
-            elif model_class == "ElasticNet":
-                model = getattr(vpy_linear_model, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
-                    C=kwargs.get("c") if kwargs.get("c") else 1.0,
-                    max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-                    solver=solver,
-                    l1_ratio=kwargs.get("l1_ratio") if kwargs.get("l1_ratio") else 0.5,
-                    fit_intercept=kwargs.get("fit_intercept")
-                    if kwargs.get("fit_intercept")
-                    else True,
-                )
-            elif model_class == "PoissonRegressor":
-                model = getattr(vpy_linear_model, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    penalty=kwargs.get("penalty") if kwargs.get("penalty") else "l2",
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
-                    C=kwargs.get("c") if kwargs.get("c") else 1.0,
-                    max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-                    solver=solver,
-                    fit_intercept=kwargs.get("fit_intercept")
-                    if kwargs.get("fit_intercept")
-                    else True,
-                )
-            elif model_class == "AR":
-                model = getattr(vpy_tsa, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    p=kwargs.get("p") if kwargs.get("p") else 3,
-                    method=kwargs.get("method") if kwargs.get("method") else "ols",
-                    penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
-                    C=kwargs.get("c") if kwargs.get("c") else 1.0,
-                    missing=kwargs.get("missing")
-                    if kwargs.get("missing")
-                    else "linear_interpolation",
-                    # compute_mse=kwargs.get("compute_mse")
-                    # if kwargs.get("compute_mse")
-                    # else True,
-                )
-            elif model_class == "MA":
-                model = getattr(vpy_tsa, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    q=kwargs.get("q") if kwargs.get("q") else 1,
-                    penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
-                    C=kwargs.get("c") if kwargs.get("c") else 1.0,
-                    missing=kwargs.get("missing")
-                    if kwargs.get("missing")
-                    else "linear_interpolation",
-                )
-            elif model_class == "ARMA":
-                model = getattr(vpy_tsa, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    order=kwargs.get("order") if kwargs.get("order") else (2, 1),
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
-                    max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-                    init=kwargs.get("init") if kwargs.get("init") else "zero",
-                    missing=kwargs.get("missing")
-                    if kwargs.get("missing")
-                    else "linear_interpolation",
-                    # compute_mse=kwargs.get("compute_mse")
-                    # if kwargs.get("compute_mse")
-                    # else True,
-                )
-            elif model_class == "ARIMA":
-                model = getattr(vpy_tsa, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    order=kwargs.get("order") if kwargs.get("order") else (2, 1, 1),
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
-                    max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-                    init=kwargs.get("init") if kwargs.get("init") else "zero",
-                    missing=kwargs.get("missing")
-                    if kwargs.get("missing")
-                    else "linear_interpolation",
-                    # compute_mse=kwargs.get("compute_mse")
-                    # if kwargs.get("compute_mse")
-                    # else True,
-                )
-            else:
-                model = getattr(vpy_linear_model, model_class)(
-                    f"{schema_name}.{model_name}",
-                    overwrite_model=kwargs.get("overwrite_model")
-                    if kwargs.get("overwrite_model")
-                    else False,
-                    tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
-                    C=kwargs.get("c") if kwargs.get("c") else 1.0,
-                    max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
-                    solver=solver,
-                    fit_intercept=kwargs.get("fit_intercept")
-                    if kwargs.get("fit_intercept")
-                    else True,
-                )
-
-            print(f"VerticaPy Training Parameters: {model.get_params()}")
-            model.drop()
+            # if model_class in ["RandomForestRegressor", "RandomForestClassifier"]:
+            #     model = getattr(vpy_tree, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         n_estimators=kwargs.get("n_estimators")
+            #         if kwargs.get("n_estimators")
+            #         else 10,
+            #         max_features=kwargs.get("max_features")
+            #         if kwargs.get("max_features")
+            #         else 2,
+            #         max_leaf_nodes=kwargs.get("max_leaf_nodes")
+            #         if kwargs.get("max_leaf_nodes")
+            #         else 10,
+            #         sample=kwargs.get("sample") if kwargs.get("sample") else 0.632,
+            #         max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
+            #         min_samples_leaf=kwargs.get("min_samples_leaf")
+            #         if kwargs.get("min_samples_leaf")
+            #         else 1,
+            #         min_info_gain=kwargs.get("min_info_gain")
+            #         if kwargs.get("min_info_gain")
+            #         else 0.0,
+            #         nbins=kwargs.get("nbins") if kwargs.get("nbins") else 32,
+            #     )
+            #     tree_param_map = rf_params_map
+            # elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
+            #     model = getattr(vpy_tree, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         max_features=kwargs.get("max_features")
+            #         if kwargs.get("max_features")
+            #         else 2,
+            #         max_leaf_nodes=kwargs.get("max_leaf_nodes")
+            #         if kwargs.get("max_leaf_nodes")
+            #         else 10,
+            #         max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
+            #         min_samples_leaf=kwargs.get("min_samples_leaf")
+            #         if kwargs.get("min_samples_leaf")
+            #         else 1,
+            #         min_info_gain=kwargs.get("min_info_gain")
+            #         if kwargs.get("min_info_gain")
+            #         else 0.0,
+            #         nbins=kwargs.get("nbins") if kwargs.get("nbins") else 32,
+            #     )
+            #     tree_param_map = decision_params_map
+            # elif model_class in ["XGBRegressor", "XGBClassifier"]:
+            #     model = getattr(vpy_ensemble, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         max_ntree=kwargs.get("max_ntree") if kwargs.get("max_ntree") else 10,
+            #         max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
+            #         nbins=kwargs.get("nbins") if kwargs.get("nbins") else 150,
+            #         split_proposal_method=kwargs.get("split_proposal_method")
+            #         if kwargs.get("split_proposal_method")
+            #         else "global",
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 0.001,
+            #         learning_rate=kwargs.get("learning_rate")
+            #         if kwargs.get("learning_rate")
+            #         else 0.1,
+            #         min_split_loss=kwargs.get("min_split_loss")
+            #         if kwargs.get("min_split_loss")
+            #         else 0.0,
+            #         weight_reg=kwargs.get("weight_reg")
+            #         if kwargs.get("weight_reg")
+            #         else 0.0,
+            #         sample=kwargs.get("sample") if kwargs.get("sample") else 1.0,
+            #         col_sample_by_tree=kwargs.get("col_sample_by_tree")
+            #         if kwargs.get("col_sample_by_tree")
+            #         else 1.0,
+            #         col_sample_by_node=kwargs.get("col_sample_by_node")
+            #         if kwargs.get("col_sample_by_node")
+            #         else 1.0,
+            #     )
+            #     tree_param_map = xgb_params_map
+            # elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
+            #     model = getattr(vpy_tree, model_class)(f"{schema_name}.{model_name}")
+            #     tree_param_map = dummy_params_map
+            # elif model_class == "LinearSVR":
+            #     model = getattr(vpy_svm, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 1e-4,
+            #         C=kwargs.get("c") if kwargs.get("c") else 1.0,
+            #         intercept_scaling=kwargs.get("intercept_scaling")
+            #         if kwargs.get("intercept_scaling")
+            #         else 1.0,
+            #         intercept_mode=kwargs.get("intercept_mode")
+            #         if kwargs.get("intercept_mode")
+            #         else "regularized",
+            #         acceptable_error_margin=kwargs.get("acceptable_error_margin")
+            #         if kwargs.get("acceptable_error_margin")
+            #         else 0.1,
+            #         max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+            #     )
+            # elif model_class == "LinearRegression":
+            #     model = getattr(vpy_linear_model, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
+            #         max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+            #         solver=solver,
+            #         fit_intercept=kwargs.get("fit_intercept")
+            #         if kwargs.get("fit_intercept")
+            #         else True,
+            #     )
+            # elif model_class == "ElasticNet":
+            #     model = getattr(vpy_linear_model, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
+            #         C=kwargs.get("c") if kwargs.get("c") else 1.0,
+            #         max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+            #         solver=solver,
+            #         l1_ratio=kwargs.get("l1_ratio") if kwargs.get("l1_ratio") else 0.5,
+            #         fit_intercept=kwargs.get("fit_intercept")
+            #         if kwargs.get("fit_intercept")
+            #         else True,
+            #     )
+            # elif model_class == "PoissonRegressor":
+            #     model = getattr(vpy_linear_model, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         penalty=kwargs.get("penalty") if kwargs.get("penalty") else "l2",
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
+            #         C=kwargs.get("c") if kwargs.get("c") else 1.0,
+            #         max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+            #         solver=solver,
+            #         fit_intercept=kwargs.get("fit_intercept")
+            #         if kwargs.get("fit_intercept")
+            #         else True,
+            #     )
+            # elif model_class == "AR":
+            #     model = getattr(vpy_tsa, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         p=kwargs.get("p") if kwargs.get("p") else 3,
+            #         method=kwargs.get("method") if kwargs.get("method") else "ols",
+            #         penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
+            #         C=kwargs.get("c") if kwargs.get("c") else 1.0,
+            #         missing=kwargs.get("missing")
+            #         if kwargs.get("missing")
+            #         else "linear_interpolation",
+            #         # compute_mse=kwargs.get("compute_mse")
+            #         # if kwargs.get("compute_mse")
+            #         # else True,
+            #     )
+            # elif model_class == "MA":
+            #     model = getattr(vpy_tsa, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         q=kwargs.get("q") if kwargs.get("q") else 1,
+            #         penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
+            #         C=kwargs.get("c") if kwargs.get("c") else 1.0,
+            #         missing=kwargs.get("missing")
+            #         if kwargs.get("missing")
+            #         else "linear_interpolation",
+            #     )
+            # elif model_class == "ARMA":
+            #     model = getattr(vpy_tsa, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         order=kwargs.get("order") if kwargs.get("order") else (2, 1),
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
+            #         max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+            #         init=kwargs.get("init") if kwargs.get("init") else "zero",
+            #         missing=kwargs.get("missing")
+            #         if kwargs.get("missing")
+            #         else "linear_interpolation",
+            #         # compute_mse=kwargs.get("compute_mse")
+            #         # if kwargs.get("compute_mse")
+            #         # else True,
+            #     )
+            # elif model_class == "ARIMA":
+            #     model = getattr(vpy_tsa, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         order=kwargs.get("order") if kwargs.get("order") else (2, 1, 1),
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
+            #         max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+            #         init=kwargs.get("init") if kwargs.get("init") else "zero",
+            #         missing=kwargs.get("missing")
+            #         if kwargs.get("missing")
+            #         else "linear_interpolation",
+            #         # compute_mse=kwargs.get("compute_mse")
+            #         # if kwargs.get("compute_mse")
+            #         # else True,
+            #     )
+            # else:
+            #     model = getattr(vpy_linear_model, model_class)(
+            #         f"{schema_name}.{model_name}",
+            #         overwrite_model=kwargs.get("overwrite_model")
+            #         if kwargs.get("overwrite_model")
+            #         else False,
+            #         tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
+            #         C=kwargs.get("c") if kwargs.get("c") else 1.0,
+            #         max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+            #         solver=solver,
+            #         fit_intercept=kwargs.get("fit_intercept")
+            #         if kwargs.get("fit_intercept")
+            #         else True,
+            #     )
+            #
+            # print(f"VerticaPy Training Parameters: {model.get_params()}")
+            # model.drop()
 
             if model_class in [
                 "RandomForestClassifier",
@@ -541,34 +999,37 @@ def get_vpy_model_fixture(
                 # if y is None:
                 #     y = "survived"
 
+                # predictor_columns = ",".join(X)
+                # _X = [f'"{i}"' for i in X]
+
+                # if model_class == "XGBClassifier":
+                #     train_sql = f"SELECT xgb_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', max_ntree={tree_param_map['max_ntree']}, max_depth={tree_param_map['max_depth']}, nbins={tree_param_map['nbins']}, split_proposal_method={tree_param_map['split_proposal_method']}, tol={tree_param_map['tol']}, learning_rate={tree_param_map['learning_rate']}, min_split_loss={tree_param_map['min_split_loss']}, weight_reg={tree_param_map['weight_reg']}, sample={tree_param_map['sample']}, col_sample_by_tree={tree_param_map['col_sample_by_tree']}, col_sample_by_node={tree_param_map['col_sample_by_node']}, seed=1, id_column='name')"
+                # else:
+                #     train_sql = f"SELECT rf_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', ntree={tree_param_map['ntree']}, mtry={tree_param_map['mtry']}, max_breadth={tree_param_map['max_breadth']}, sampling_size={tree_param_map['sampling_size']}, max_depth={tree_param_map['max_depth']}, min_leaf_size={tree_param_map['min_leaf_size']}, nbins={tree_param_map['nbins']}, seed=1, id_column='name')"
+                # print(f"Tree Classifier Train SQL: {train_sql}")
+                # current_cursor().execute(train_sql)
+
+                # model.input_relation = f"{schema_name}.titanic"
+                # model.test_relation = model.input_relation
+                # model.X = _X
+                # model.y = f'"{y}"'
+                # model._compute_attributes()
+
+                # pred_vdf = model.predict(f"{schema_name}.titanic", name=f"{y}_pred")[
+                #     f"{y}_pred"
+                # ].astype("int")
+                #
+                # pred_prob_vdf = model.predict_proba(f"{schema_name}.titanic", name=f"{y}_pred")
+                #
+                # y_class = titanic_vd_fun[y].distinct()
+                # # pred_prob_vdf[f"{y}_pred"].astype("int")
+                # for i in y_class:
+                #     pred_prob_vdf[f"{y}_pred_{i}"].astype("float")
+
                 DataSetUp(schema_name).tree_classifier()
-
-                predictor_columns = ",".join(X)
-                _X = [f'"{i}"' for i in X]
-
-                if model_class == "XGBClassifier":
-                    train_sql = f"SELECT xgb_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', max_ntree={tree_param_map['max_ntree']}, max_depth={tree_param_map['max_depth']}, nbins={tree_param_map['nbins']}, split_proposal_method={tree_param_map['split_proposal_method']}, tol={tree_param_map['tol']}, learning_rate={tree_param_map['learning_rate']}, min_split_loss={tree_param_map['min_split_loss']}, weight_reg={tree_param_map['weight_reg']}, sample={tree_param_map['sample']}, col_sample_by_tree={tree_param_map['col_sample_by_tree']}, col_sample_by_node={tree_param_map['col_sample_by_node']}, seed=1, id_column='name')"
-                else:
-                    train_sql = f"SELECT rf_classifier('{schema_name}.{model_name}', '{schema_name}.titanic', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', ntree={tree_param_map['ntree']}, mtry={tree_param_map['mtry']}, max_breadth={tree_param_map['max_breadth']}, sampling_size={tree_param_map['sampling_size']}, max_depth={tree_param_map['max_depth']}, min_leaf_size={tree_param_map['min_leaf_size']}, nbins={tree_param_map['nbins']}, seed=1, id_column='name')"
-                print(f"Tree Classifier Train SQL: {train_sql}")
-                current_cursor().execute(train_sql)
-
-                model.input_relation = f"{schema_name}.titanic"
-                model.test_relation = model.input_relation
-                model.X = _X
-                model.y = f'"{y}"'
-                model._compute_attributes()
-
-                pred_vdf = model.predict(f"{schema_name}.titanic", name=f"{y}_pred")[
-                    f"{y}_pred"
-                ].astype("int")
-
-                pred_prob_vdf = model.predict_proba(f"{schema_name}.titanic", name=f"{y}_pred")
-
-                y_class = titanic_vd_fun[y].distinct()
-                # pred_prob_vdf[f"{y}_pred"].astype("int")
-                for i in y_class:
-                    pred_prob_vdf[f"{y}_pred_{i}"].astype("float")
+                model = XGBInitializer(model_class, schema_name).initializer()
+                model = TrainModel(model, schema_name, model_class).train_tree()
+                pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_tree_classifier()
 
             elif model_class in [
                 "RandomForestRegressor",
@@ -600,29 +1061,40 @@ def get_vpy_model_fixture(
                 # if y is None:
                 #     y = "quality"
 
+                # predictor_columns = ",".join(X)
+                # _X = [f'"{i}"' for i in X]
+                #
+                # if model_class == "XGBRegressor":
+                #     train_sql = f"SELECT xgb_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={tree_param_map['max_ntree']}, max_depth={tree_param_map['max_depth']}, nbins={tree_param_map['nbins']}, split_proposal_method={tree_param_map['split_proposal_method']}, tol={tree_param_map['tol']}, learning_rate={tree_param_map['learning_rate']}, min_split_loss={tree_param_map['min_split_loss']}, weight_reg={tree_param_map['weight_reg']}, sample={tree_param_map['sample']}, col_sample_by_tree={tree_param_map['col_sample_by_tree']}, col_sample_by_node={tree_param_map['col_sample_by_node']}, seed=1, id_column='id')"
+                # else:
+                #     train_sql = f"SELECT rf_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={tree_param_map['ntree']}, mtry={tree_param_map['mtry']}, max_breadth={tree_param_map['max_breadth']}, sampling_size={tree_param_map['sampling_size']}, max_depth={tree_param_map['max_depth']}, min_leaf_size={tree_param_map['min_leaf_size']}, nbins={tree_param_map['nbins']}, seed=1, id_column='id')"
+                # print(f"Tree Regressor Train SQL: {train_sql}")
+                # current_cursor().execute(train_sql)
+                #
+                # model.input_relation = f"{schema_name}.winequality"
+                # model.test_relation = model.input_relation
+                # model.X = _X
+                # model.y = f'"{y}"'
+                # model._compute_attributes()
+                #
+                # pred_vdf = model.predict(f"{schema_name}.winequality", name=f"{y}_pred")
+                # pred_prob_vdf = None
+                # current_cursor().execute(
+                #     f"DROP SEQUENCE IF EXISTS {schema_name}.sequence_auto_increment"
+                # )
                 DataSetUp(schema_name).tree_regressor()
+                # initializer_map = {
+                #     **dict.fromkeys(["XGBRegressor", "XGBClassifier"], XGBInitializer),
+                #     **dict.fromkeys(["RandomForestRegressor", "RandomForestClassifier"], RandomForestInitializer),
+                #     **dict.fromkeys(["DecisionTreeRegressor", "DecisionTreeClassifier"], DecisionTreeInitializer),
+                # }
 
-                predictor_columns = ",".join(X)
-                _X = [f'"{i}"' for i in X]
+                model_instance = get_model_class(model_class)(model_class, schema_name, **kwargs)
+                model = model_instance.initializer()
+                # model = XGBInitializer(model_class, schema_name).initializer() if model_class=='XGBRegressor' else RandomForestInitializer(model_class, schema_name).initializer()
+                model = TrainModel(model, schema_name, model_class, model_instance).train_tree()
+                pred_vdf, pred_prob_vdf = PredictModel(model, schema_name, model_class).predict_tree_regressor()
 
-                if model_class == "XGBRegressor":
-                    train_sql = f"SELECT xgb_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={tree_param_map['max_ntree']}, max_depth={tree_param_map['max_depth']}, nbins={tree_param_map['nbins']}, split_proposal_method={tree_param_map['split_proposal_method']}, tol={tree_param_map['tol']}, learning_rate={tree_param_map['learning_rate']}, min_split_loss={tree_param_map['min_split_loss']}, weight_reg={tree_param_map['weight_reg']}, sample={tree_param_map['sample']}, col_sample_by_tree={tree_param_map['col_sample_by_tree']}, col_sample_by_node={tree_param_map['col_sample_by_node']}, seed=1, id_column='id')"
-                else:
-                    train_sql = f"SELECT rf_regressor('{schema_name}.{model_name}', '{schema_name}.winequality', '{y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={tree_param_map['ntree']}, mtry={tree_param_map['mtry']}, max_breadth={tree_param_map['max_breadth']}, sampling_size={tree_param_map['sampling_size']}, max_depth={tree_param_map['max_depth']}, min_leaf_size={tree_param_map['min_leaf_size']}, nbins={tree_param_map['nbins']}, seed=1, id_column='id')"
-                print(f"Tree Regressor Train SQL: {train_sql}")
-                current_cursor().execute(train_sql)
-
-                model.input_relation = f"{schema_name}.winequality"
-                model.test_relation = model.input_relation
-                model.X = _X
-                model.y = f'"{y}"'
-                model._compute_attributes()
-
-                pred_vdf = model.predict(f"{schema_name}.winequality", name=f"{y}_pred")
-                pred_prob_vdf = None
-                current_cursor().execute(
-                    f"DROP SEQUENCE IF EXISTS {schema_name}.sequence_auto_increment"
-                )
             elif model_class in [
                 "AR",
                 "MA",
@@ -1008,7 +1480,8 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, ir
         }
 
         func = func_map.get(model_class, get_py_linear_model)
-        X, y, sm_model, pred, pred_prob, model = func(model_class, py_fit_intercept=py_fit_intercept, py_tol=py_tol, **kwargs)
+        X, y, sm_model, pred, pred_prob, model = func(model_class, py_fit_intercept=py_fit_intercept, py_tol=py_tol,
+                                                      **kwargs)
 
         py = namedtuple(
             "python_models", ["X", "y", "sm_model", "pred", "pred_prob", "model"]
@@ -1202,4 +1675,3 @@ def calculate_classification_metrics(get_py_model):
         return classification_metrics_map
 
     return _calculate_classification_metrics
-
