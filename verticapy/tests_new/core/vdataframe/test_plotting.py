@@ -138,15 +138,20 @@ class TestPlotting:
         "columns, max_nb_points",
         [(["SepalLengthCm", "SepalWidthCm", "PetalWidthCm"], 5)],
     )
-    def test_scatter_matrix(self, iris_vd, columns, max_nb_points):
+    def test_scatter_matrix(self, iris_vd, columns, max_nb_points, load_matplotlib):
         """
         test function - scatter_matrix
         """
-        vp.set_option("plotting_lib", "plotly")
-        print(vp.get_option("plotting_lib"))
-
         res = iris_vd.scatter_matrix(columns=columns, max_nb_points=max_nb_points)
-        assert len(res) == len(columns)
+
+        # Check if the axes_array is an instance of numpy ndarray
+        assert isinstance(res, np.ndarray), "An ndarray not created for scatter matrix."
+
+        # Check if all elements inside the axes_array are instances of Axes
+        for ax in res.flat:
+            assert isinstance(
+                ax, plt.Axes
+            ), "Incorrect object created for scatter matrix."
 
     def test_outliers_plot(self):
         """
