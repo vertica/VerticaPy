@@ -115,6 +115,7 @@ class TestQueryProfilerSimple:
         # Assert that the tables exist?
 
         outfile = tmp_path / "qprof_test_001.tar"
+        logging.info(f"Writing to file: {outfile}")
         qp.export_profile(filename=outfile)
-
+        logging.info(f"Files in tmpdir: {','.join([x for x in tmp_path.iterdir()])}")
         assert os.path.exists("qprof_test_001.tar")

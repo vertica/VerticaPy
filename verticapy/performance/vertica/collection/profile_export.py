@@ -80,6 +80,8 @@ class ProfileExport:
         Export the tables in  ``self.schema`` with ``self.key`` into ``self.filename``
         """
         self._tables_exist_or_raise()
+        self._save_tables()
+        self._bundle_tables()
 
     def _tables_exist_or_raise(self) -> None:
         tables_in_schema = self._get_set_of_tables_in_schema()
@@ -136,4 +138,18 @@ class ProfileExport:
         for row in result:
             existing_tables.add(row[0])
         return existing_tables
-        
+    
+    def _save_tables(self):
+        """
+        """
+        all_tables = self._get_modified_collection_tables()
+        tmp_path = self.filename.parent
+        for ctable in all_tables.values():
+            # TODO: The query needs to change for some tables where 
+            # we have interval values
+            vdf = vDataFrame(f"select * from {ctable.get_import_name_fq()}")
+            #TODO: does the line below put the whole table in memory?
+            pandas_dataframe = vdf.to_pandas()
+            file_name = tmp_path / f"{ctable.name}.parquet"
+            pandas_dataframe.to_parquet(path=file_name,
+                                        compression="gzip")
