@@ -16,7 +16,12 @@ permissions and limitations under the License.
 """
 from abc import abstractmethod
 from enum import Enum
+import logging
 from typing import Mapping
+
+import pandas as pd
+
+from verticapy.core.parsers.pandas import read_pandas
 
 
 class AllTableTypes(Enum):
@@ -71,6 +76,7 @@ class CollectionTable:
         self.import_prefix = "qprof_"
         self.import_suffix = f"_{key}"
         self.staging_suffix = "_staging"
+        self.logger = logging.getLogger(self.name)
 
     def get_import_name_fq(self) -> str:
         return self._get_import_name(fully_qualified=True)
@@ -102,6 +108,10 @@ class CollectionTable:
     # Recall: abstract methods won't raise by default
     @abstractmethod
     def get_create_table_sql(self) -> str:
+        """
+        Returns a string containing a valid SQL statement to create a table
+        in the database.
+        """
         raise NotImplementedError(
             f"get_create_table_sql is not implemented in the base class CollectionTable."
             f" Current table name = {self.name} schema {self.schema}"
@@ -109,6 +119,10 @@ class CollectionTable:
 
     @abstractmethod
     def get_create_projection_sql(self) -> str:
+        """
+        Returns a string containing a valid SQL statement to create a projection
+        for a table created by ``get_create_table_sql()``
+        """
         raise NotImplementedError(
             f"get_create_projection_sql is not implemented in the base class CollectionTable"
             f" Current table name = {self.name} schema {self.schema}"
@@ -121,14 +135,67 @@ class CollectionTable:
             f" Current table name = {self.name} schema {self.schema}"
         )
 
-    @abstractmethod
-    def copy_from_local_file(self, filename: str) -> str:
-        # This method will generate and run the copy statement
-        # It will copy to a staging table when necessary
-        raise NotImplementedError(
-            f"copy_from_local_file is not implemented in base class CollectionTable"
-            f"Current table name = {self.name} and schema {self.schema}"
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        """
+        Returns a dictionary that maps columns to new pandas datatypes.
+        Subclasses should provide an implementation for their column
+        datatype overrides.
+
+        Used by ``copy_from_pandas_dataframe()`` to adjust column
+        types before they are serialized to load into the database.
+
+        Returns
+        --------
+        A dictionary ``{"column_name" : "pandas_data_type_name", ...}``.
+        The dictionary is suitable to use as inpput to the
+        ``pandas.DataFrame.astype()`` method.
+
+        """
+        # Subclasses should provide an implementation of this
+        # method that sets nullable integer columns to Int64.
+        #
+        # Parquet stores int nulls as NaN, which is a float
+        # That means exported integer columns will be float64 type
+        # verticapy's data loading process converts the data to csv
+        # first, and float strings won't parse as integers.
+        # Int64 is a nullable integer type defined by pandas.
+        return {}
+
+    def copy_from_pandas_dataframe(self, dataframe: pd.DataFrame) -> int:
+        """
+        Copies a dataframe into the the table described by this
+        CollectionTable. Returns the number of rows inserted.
+        Raises a ``vertica_python.errors.CopyRejected``
+        exception and rolls back the transaction if any rows are rejected due to improperly formatted
+        data.
+
+        Parameters
+        ---------------
+        dataframe: pandas.DataFrame
+            A pandas dataframe
+
+        Returns
+        --------------
+        An integer representing the number of rows loaded into the database.
+        """
+        adjustments = self.get_pandas_column_type_adjustments()
+        if len(adjustments) != 0:
+            # copies the dataframe. in-place update is deprecated according
+            # to the pandas docs
+            dataframe = dataframe.astype(adjustments)
+        self.logger.info(f"Begin copy to table {self.get_import_name()}")
+        vdf = read_pandas(
+            df=dataframe,
+            name=self.get_import_name(),
+            schema=self.schema,
+            insert=True,
+            abort_on_error=True,
         )
+        self.logger.info(
+            f"End copy to table  {self.get_import_name()}."
+            f" Loaded (rows, columns) {vdf.shape()}"
+        )
+        return vdf.shape()[0]
 
 
 def getAllCollectionTables(
@@ -445,6 +512,12 @@ class DCExplainPlansTable(CollectionTable):
         ALL NODES;
         """
 
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "path_id": "Int64",
+            "path_line_index": "Int64",
+        }
+
 
 ################ dc_query_executions ###################
 class DCQueryExecutionsTable(CollectionTable):
@@ -623,6 +696,9 @@ class DCRequestsIssuedTable(CollectionTable):
         ALL NODES;
         """
 
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {"query_start_epoch": "Int64", "digest": "Int64"}
+
 
 ################ execution_engine_profiles ###################
 class ExecutionEngineProfilesTable(CollectionTable):
@@ -725,6 +801,18 @@ class ExecutionEngineProfilesTable(CollectionTable):
             {import_name}.localplan_id) 
         ALL NODES;
         """
+
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "plan_id": "Int64",
+            "operator_id": "Int64",
+            "baseplan_id": "Int64",
+            "path_id": "Int64",
+            "localplan_id": "Int64",
+            "activity_id": "Int64",
+            "resource_id": "Int64",
+            "counter_value": "Int64",
+        }
 
 
 ################ export_events ###################
@@ -1013,6 +1101,23 @@ class QueryConsumptionTable(CollectionTable):
         ALL NODES;
         """
 
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "cpu_cycles_us": "Int64",
+            "network_bytes_received": "Int64",
+            "network_bytes_sent": "Int64",
+            "data_bytes_read": "Int64",
+            "data_bytes_written": "Int64",
+            "data_bytes_loaded": "Int64",
+            "bytes_spilled": "Int64",
+            "input_rows": "Int64",
+            "input_rows_processed": "Int64",
+            "peak_memory_kb": "Int64",
+            "thread_count": "Int64",
+            "duration_ms": "Int64",
+            "output_rows": "Int64",
+        }
+
 
 ################ query_plan_profiles ###################
 class QueryPlanProfilesTable(CollectionTable):
@@ -1106,6 +1211,16 @@ class QueryPlanProfilesTable(CollectionTable):
                 {import_name}.running_time) 
         ALL NODES;
         """
+
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "path_id": "Int64",
+            "path_line_index": "Int64",
+            "memory_allocated_bytes": "Int64",
+            "read_from_disk_bytes": "Int64",
+            "received_bytes": "Int64",
+            "sent_bytes": "Int64",
+        }
 
 
 ################ query_profiles ###################
@@ -1211,6 +1326,13 @@ class QueryProfilesTable(CollectionTable):
         ALL NODES;
 
         """
+
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "error_code": "Int64",
+            "processed_row_count": "Int64",
+            "reserved_extra_memory_b": "Int64",
+        }
 
 
 ################ resource_pool_status ###################
@@ -1348,3 +1470,22 @@ class ResourcePoolStatusTable(CollectionTable):
                     {import_name}.max_memory_size_kb) 
         ALL NODES;
         """
+
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {
+            "memory_size_kb": "Int64",
+            "memory_size_actual_kb": "Int64",
+            "memory_inuse_kb": "Int64",
+            "general_memory_borrowed_kb": "Int64",
+            "queueing_threshold_kb": "Int64",
+            "max_memory_size_kb": "Int64",
+            "max_query_memory_size_kb": "Int64",
+            "running_query_count": "Int64",
+            "planned_concurrency": "Int64",
+            "max_concurrency": "Int64",
+            "queue_timeout_in_seconds": "Int64",
+            "priority": "Int64",
+            "runtime_priority_threshold": "Int64",
+            "runtimecap_in_seconds": "Int64",
+            "query_budget_kb": "Int64",
+        }

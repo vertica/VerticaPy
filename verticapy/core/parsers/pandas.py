@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import csv
+import logging
 import os
 from typing import Optional
 
@@ -41,6 +42,7 @@ def read_pandas(
     parse_nrows: int = 10000,
     temp_path: Optional[str] = None,
     insert: bool = False,
+    abort_on_error: bool = False,
 ) -> vDataFrame:
     """
     Ingests a ``pandas.DataFrame`` into
@@ -104,6 +106,11 @@ def read_pandas(
         names of your table and the
         ``pandas.DataFrame`` must
         match.
+    abort_on_error: bool, optional
+        If set to ``True``, any parser
+        error that would reject a row
+        will cause the copy statement
+        to fail and rollback.
 
     Returns
     -------
@@ -348,17 +355,20 @@ def read_pandas(
             clear = True
         else:
             tmp_df = df
+
         tmp_df.to_csv(
             path,
             index=False,
             quoting=csv.QUOTE_NONE,
-            quotechar="",
             escapechar="\027",
+            sep="\001",
+            lineterminator="\002",
         )
 
         if len(str_cols) > 0 or len(null_columns) > 0:
             # to_csv is adding an undesired special character
             # we remove it
+            logging.debug(f"Replacing undesired characters in" f" csv file {path}")
             with open(path, "r", encoding="utf-8") as f:
                 filedata = f.read()
             filedata = filedata.replace(",", ",").replace('""', "")
@@ -369,16 +379,21 @@ def read_pandas(
             tmp_df_columns_str = ", ".join(
                 ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
             )
-            _executeSQL(
-                query=f"""
+            abort_str = "ABORT ON ERROR" if abort_on_error else ""
+            sql_string = f"""
                     COPY {input_relation}
                     ({tmp_df_columns_str}) 
                     FROM LOCAL '{path}' 
-                    DELIMITER ',' 
+                    DELIMITER '\001' 
                     NULL ''
                     ENCLOSED BY '\"' 
                     ESCAPE AS '\\' 
-                    SKIP 1;""",
+                    SKIP 1
+                    RECORD TERMINATOR '\002'
+                    {abort_str};"""
+            logging.debug(f"Copy statement is: {sql_string}")
+            _executeSQL(
+                query=sql_string,
                 title="Inserting the pandas.DataFrame.",
             )
             vdf = vDataFrame(name, schema=schema)
@@ -389,6 +404,8 @@ def read_pandas(
                 dtype=dtype,
                 temporary_local_table=True,
                 parse_nrows=parse_nrows,
+                sep="\001",
+                record_terminator="\002",
                 escape="\027",
             )
         else:
@@ -399,6 +416,8 @@ def read_pandas(
                 schema=schema,
                 temporary_local_table=False,
                 parse_nrows=parse_nrows,
+                sep="\001",
+                record_terminator="\002",
                 escape="\027",
             )
     finally:
