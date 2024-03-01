@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from itertools import chain
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
@@ -195,12 +196,20 @@ class TestPlotting:
             True
         ), "This test is covered under /VerticaPy/verticapy/tests_new/plotting/highcharts/test_highcharts_candlestick.py"
 
-    def test_geo_plot(self, world_vd):
+    def test_geo_plot_type(self, world_vd, load_matplotlib):
         """
         test function - geo_plot
         """
-        vp.set_option("plotting_lib", "matplotlib")
+        africa = world_vd[world_vd["continent"] == "Africa"]
 
+        result = africa["geometry"].geo_plot()
+
+        isinstance(result, plt.Axes)
+
+    def test_geo_plot_number_of_elements(self, world_vd, load_matplotlib):
+        """
+        test function - geo_plot
+        """
         africa = world_vd[world_vd["continent"] == "Africa"]
 
         assert len(
