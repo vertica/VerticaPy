@@ -21,9 +21,6 @@ import pytest
 # Standard Python Modules
 import os, pickle
 from math import ceil, floor
-import time
-
-from vertica_python.errors import CopyRejected
 
 # Other Modules
 import pandas
@@ -38,7 +35,6 @@ from verticapy import (
     read_json,
 )
 from verticapy.connection import current_cursor
-from verticapy.core.parsers.pandas import read_pandas
 import verticapy.stats as st
 from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
 from verticapy.sql.sys import current_session, username
