@@ -1107,7 +1107,9 @@ class VDCLinePlot(BasicPlotTests):
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
-    @pytest.mark.parametrize("kind", ["spline", "area", "step"])
+    @pytest.mark.parametrize(
+        "kind", ["area_percent", "area_stacked", "line", "spline", "step"]
+    )
     @pytest.mark.parametrize("start_date", ["1930"])
     def test_properties_output_type_for_all_options(
         self, dummy_line_data_vd, plotting_library_object, start_date, kind

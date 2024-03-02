@@ -40,6 +40,10 @@ from verticapy.datasets import (
     load_smart_meters,
     load_laliga,
     load_airline_passengers,
+    load_pop_growth,
+    load_gapminder,
+    load_cities,
+    load_world,
 )
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -523,3 +527,63 @@ def airline_vd_fun(schema_loader):
     airline = load_airline_passengers(schema_loader, "airline")
     yield airline
     drop(name=f"{schema_loader}.airline")
+
+
+@pytest.fixture(scope="module")
+def pop_growth_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for load_pop_growth dataset
+    """
+    pop_growth = load_pop_growth(schema_loader, "pop_growth")
+    yield pop_growth
+    drop(name=f"{schema_loader}.pop_growth")
+
+
+@pytest.fixture(scope="function")
+def pop_growth_vd_fun(schema_loader):
+    """
+    Create a dummy vDataFrame for load_pop_growth dataset
+    """
+    pop_growth = load_pop_growth(schema_loader, "pop_growth")
+    yield pop_growth
+    drop(name=f"{schema_loader}.pop_growth")
+
+
+@pytest.fixture(scope="module")
+def gapminder_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for load_gapminder dataset
+    """
+    gapminder = load_gapminder(schema_loader, "gapminder")
+    yield gapminder
+    drop(name=f"{schema_loader}.gapminder")
+
+
+@pytest.fixture(scope="function")
+def gapminder_vd_fun(schema_loader):
+    """
+    Create a dummy vDataFrame for load_gapminder dataset
+    """
+    gapminder = load_gapminder(schema_loader, "gapminder")
+    yield gapminder
+    drop(name=f"{schema_loader}.gapminder")
+
+
+@pytest.fixture(scope="module")
+def world_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for load_world dataset
+    """
+    world = load_world(schema_loader, "world")
+    yield world
+    drop(name=f"{schema_loader}.world")
+
+
+@pytest.fixture(scope="module")
+def cities_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for load_cities dataset
+    """
+    cities = load_cities(schema_loader, "cities")
+    yield cities
+    drop(name=f"{schema_loader}.cities")
