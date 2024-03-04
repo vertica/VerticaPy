@@ -23,6 +23,8 @@ from typing import Set, List, Mapping
 
 import pandas as pd
 
+
+
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.core.parsers.pandas import read_pandas
@@ -31,6 +33,7 @@ from verticapy.performance.vertica.collection.collection_tables import (
     AllTableTypes,
     BundleVersion,
     CollectionTable,
+    ExportMetadata,
     getAllCollectionTables,
 )
 
@@ -55,6 +58,8 @@ class ProfileExport:
         self.key = key
         self.filename = filename
         self.logger = logging.getLogger("ProfileExport")
+
+        # Usually the version of export will be "LATEST"
         self.bundle_version = BundleVersion.LATEST
 
         self.tmp_path = os.getcwd()
@@ -80,15 +85,17 @@ class ProfileExport:
         Export the tables in  ``self.schema`` with ``self.key`` into ``self.filename``
         """
         self._tables_exist_or_raise()
-        self._save_tables()
-        self._bundle_tables()
+        export_metadata = self._save_tables()
+        self._bundle_tables(export_metadata)
 
     def _tables_exist_or_raise(self) -> None:
         tables_in_schema = self._get_set_of_tables_in_schema()
        
         missing_tables = []
         
-        all_tables = self._get_modified_collection_tables()
+        all_tables = getAllCollectionTables(self.target_schema, 
+                                            self.key, 
+                                            self.bundle_version)
         for ctable in all_tables.values():
             search_name = ctable.get_import_name()
             if search_name not in tables_in_schema:
@@ -104,27 +111,6 @@ class ProfileExport:
             f" Missing: [ {','.join(missing_tables)} ]"
         )
     
-    def _get_modified_collection_tables(self) -> Mapping[str, CollectionTable]:
-        """
-        Returns a mapping of names to CollectionTable instances.
-        Filters out some tables that do not current exist because they
-        are not created during collection
-        """
-        all_tables = getAllCollectionTables(
-            target_schema=self.target_schema, 
-            key=self.key, 
-            version=self.bundle_version
-        )
-        result = {}
-        for ctable in all_tables.values():
-            if (ctable.table_type == AllTableTypes.COLLECTION_INFO
-                or ctable.table_type == AllTableTypes.COLLECTION_EVENTS
-                or ctable.table_type == AllTableTypes.EXPORT_EVENTS):
-                continue
-            result[ctable.table_type.name] = ctable
-        return result
-
-    
     def _get_set_of_tables_in_schema(self) -> Set[str]:
         result = _executeSQL(
             f"""SELECT table_name FROM v_catalog.tables 
@@ -139,17 +125,43 @@ class ProfileExport:
             existing_tables.add(row[0])
         return existing_tables
     
-    def _save_tables(self):
+    def _save_tables(self) -> ExportMetadata:
         """
         """
-        all_tables = self._get_modified_collection_tables()
+        all_tables = getAllCollectionTables(self.target_schema,
+                                            self.key,
+                                            self.bundle_version)
         tmp_path = self.filename.parent
+        all_table_metadata = []
         for ctable in all_tables.values():
-            # TODO: The query needs to change for some tables where 
-            # we have interval values
-            vdf = vDataFrame(f"select * from {ctable.get_import_name_fq()}")
-            #TODO: does the line below put the whole table in memory?
-            pandas_dataframe = vdf.to_pandas()
-            file_name = tmp_path / f"{ctable.name}.parquet"
-            pandas_dataframe.to_parquet(path=file_name,
-                                        compression="gzip")
+            exported_meta = ctable.export_table(tmp_path)
+            all_table_metadata.append(exported_meta)
+
+        metadata_file = tmp_path / "metadata.json"
+        export_metadata = ExportMetadata(metadata_file,
+                                         self.bundle_version,
+                                         all_table_metadata)
+        
+        export_metadata.write_to_file()
+
+        return export_metadata
+
+    def _bundle_tables(self, export_metadata: ExportMetadata):
+        """
+        """
+        
+        self.tarfile_obj = tarfile.open(self.filename, 'w')
+        for t in export_metadata.tables:
+            self.tarfile_obj.add(t.file_name, 
+                                 arcname=t.file_name.name)
+        self.tarfile_obj.add(export_metadata.file_name,
+                             arcname=export_metadata.file_name.name)
+        self.tarfile_obj.close()
+        for t in export_metadata.tables:
+            os.remove(t.file_name)
+        
+        # Everything went ok, clean it up
+        os.remove(export_metadata.file_name)
+
+
+        

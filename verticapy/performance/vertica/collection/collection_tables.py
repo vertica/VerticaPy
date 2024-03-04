@@ -16,12 +16,15 @@ permissions and limitations under the License.
 """
 from abc import abstractmethod
 from enum import Enum
+import json
 import logging
-from typing import Mapping
+from pathlib import Path
+from typing import Mapping, List
 
 import pandas as pd
 
 from verticapy.core.parsers.pandas import read_pandas
+from verticapy.core.vdataframe import vDataFrame
 
 
 class AllTableTypes(Enum):
@@ -54,8 +57,34 @@ class BundleVersion(Enum):
     """
 
     V1 = 1
-    LATEST = V1
+    V2 = 2
+    LATEST = V2
 
+class TableMetadata:
+    def __init__(self, file_name: Path, table_type: AllTableTypes):
+        self.file_name = file_name
+        self.table_type = table_type
+
+    def to_json(self):
+        return {"table_type_name": str(self.table_type.name),
+                "table_type_value": str(self.table_type.value),
+                "file_name": str(self.file_name)}
+
+class ExportMetadata:
+    def __init__(self, file_name: Path,
+                 version: BundleVersion, 
+                 tables: List[TableMetadata]):
+        self.file_name = file_name
+        self.version = version
+        self.tables = tables
+
+    def to_json(self):
+        return {"version": str(self.version.value),
+                "tables": [x.to_json() for x in self.tables]}
+
+    def write_to_file(self):
+        with open(self.file_name, 'w') as mdf:
+            json.dump(self.to_json(), mdf)
 
 class CollectionTable:
     """
@@ -196,6 +225,23 @@ class CollectionTable:
             f" Loaded (rows, columns) {vdf.shape()}"
         )
         return vdf.shape()[0]
+    
+    def get_export_sql(self):
+        return f"select * from {self.get_import_name_fq()}"
+    
+    def export_table(self, tmp_path: Path) -> ExportMetadata:
+        """
+        """
+        file_name = tmp_path / f"{self.name}.parquet"
+        export_sql = self.get_export_sql()
+        vdf = vDataFrame(export_sql)
+        pandas_dataframe = vdf.to_pandas()
+        self.logger.info(f"Exporting table {self.name} from {self.get_import_name_fq()}")
+        pandas_dataframe.to_parquet(path=file_name,
+                                    compression="gzip")
+        return TableMetadata(file_name=file_name, 
+                             table_type=self.table_type)
+        
 
 
 def getAllCollectionTables(
@@ -222,6 +268,9 @@ def getAllCollectionTables(
     """
     if version == BundleVersion.V1:
         return _getAllTables_v1(target_schema, key)
+    
+    if version == BundleVersion.V2:
+        return _getAllTables_v2(target_schema, key)
 
     raise ValueError(f"Unrecognized bundle version {version}")
 
@@ -249,6 +298,21 @@ ALL_TABLES_V1 = [
     AllTableTypes.RESOURCE_POOL_STATUS,
 ]
 
+ALL_TABLES_V2 = [
+    AllTableTypes.DC_EXPLAIN_PLANS,
+    AllTableTypes.DC_QUERY_EXECUTIONS,
+    AllTableTypes.DC_REQUESTS_ISSUED,
+    AllTableTypes.EXECUTION_ENGINE_PROFILES,
+    # Host resources lacks txn_id, stmt_id
+    AllTableTypes.HOST_RESOURCES,
+    AllTableTypes.QUERY_CONSUMPTION,
+    AllTableTypes.QUERY_PLAN_PROFILES,
+    AllTableTypes.QUERY_PROFILES,
+
+    # Resource pool status lacks txn_id, stmt_id
+    AllTableTypes.RESOURCE_POOL_STATUS,
+]
+
 
 def _getAllTables_v1(target_schema: str, key: str) -> Mapping[str, CollectionTable]:
     """
@@ -258,6 +322,19 @@ def _getAllTables_v1(target_schema: str, key: str) -> Mapping[str, CollectionTab
     result = {}
 
     for name in ALL_TABLES_V1:
+        c = collectionTableFactory(name, target_schema, key)
+        result[name.name] = c
+
+    return result
+
+def _getAllTables_v2(target_schema: str, key: str) -> Mapping[str, CollectionTable]:
+    """
+    Produces a map with one of each kind of CollectionTable subclass
+    available for version V2 of the profile bundle.
+    """
+    result = {}
+
+    for name in ALL_TABLES_V2:
         c = collectionTableFactory(name, target_schema, key)
         result[name.name] = c
 
@@ -1222,6 +1299,25 @@ class QueryPlanProfilesTable(CollectionTable):
             "sent_bytes": "Int64",
         }
 
+    def get_export_sql(self):
+        return f"""SELECT
+        transaction_id,
+        statement_id,
+        path_id,
+        path_line_index,
+        path_is_started,
+        path_is_completed,
+        is_executing,
+        extract(epoch from running_time)::float as running_time,
+        memory_allocated_bytes,
+        read_from_disk_bytes,
+        received_bytes,
+        sent_bytes,
+        path_line
+        /*query_name*/
+        FROM {self.get_import_name_fq()}
+        """
+
 
 ################ query_profiles ###################
 class QueryProfilesTable(CollectionTable):
@@ -1489,3 +1585,46 @@ class ResourcePoolStatusTable(CollectionTable):
             "runtimecap_in_seconds": "Int64",
             "query_budget_kb": "Int64",
         }
+    
+    def get_export_sql(self):
+        return f"""SELECT
+            node_name,
+            pool_oid,
+            pool_name,
+            is_internal,
+            memory_size_kb,
+            memory_size_actual_kb,
+            memory_inuse_kb,
+            general_memory_borrowed_kb,
+            queueing_threshold_kb,
+            max_memory_size_kb,
+            max_query_memory_size_kb,
+            running_query_count,
+            planned_concurrency,
+            max_concurrency,
+            is_standalone,
+            -- queue timeout is really an interval
+            queue_timeout_in_seconds as queue_timeout,
+            queue_timeout_in_seconds,
+            execution_parallelism,
+            priority,
+            runtime_priority,
+            runtime_priority_threshold,
+            runtimecap_in_seconds,
+            single_initiator,
+            query_budget_kb,
+            cpu_affinity_set,
+            cpu_affinity_mask,
+            cpu_affinity_mode
+            /* 
+            The follow columns do not exist in the current table 
+            capturing. But perhaps we should change the table capture
+            to include them.
+
+            transaction_id,
+            statement_id
+            query_name
+            */
+        FROM
+            {self.get_import_name_fq()}
+        """
