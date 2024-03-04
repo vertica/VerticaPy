@@ -18,11 +18,11 @@ permissions and limitations under the License.
 from typing import Optional
 
 import vertica_python
-from vertica_python.errors import OAuthTokenRefreshError, ConnectionError
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
 
 import verticapy._config.config as conf
+from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
 from verticapy.connection.global_connection import (
     get_global_connection,
     GlobalConnection,
@@ -34,7 +34,6 @@ from verticapy.connection.write import new_connection
 """
 Connecting to the DB.
 """
-
 
 def auto_connect() -> None:
     """

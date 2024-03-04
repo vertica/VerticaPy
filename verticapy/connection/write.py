@@ -19,10 +19,11 @@ from getpass import getpass
 import warnings
 
 import vertica_python
-from vertica_python.errors import OAuthTokenRefreshError, ConnectionError
 
 import verticapy._config.config as conf
+from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
 from verticapy.connection.global_connection import get_global_connection
+from verticapy.connection.oauth_manager import OAuthManager
 from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
 
@@ -305,23 +306,28 @@ def new_connection(
     confparser.add_section(name)
     if prompt:
         oauth_access_token = getpass("Input OAuth Access Token:")
+        doPrintInfo = conf.get_option("print_info")
         if oauth_access_token == "":
-            if conf.get_option("print_info"):
+            if doPrintInfo:
                 print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_access_token"] = oauth_access_token
         oath_refresh_token = getpass("Input OAuth Refresh Token:")
         if oath_refresh_token == "":
-            if conf.get_option("print_info"):
+            if doPrintInfo:
                 print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
         client_secret = getpass("Input OAuth Client Secret:")
         if client_secret == "":
-            if conf.get_option("print_info"):
+            if doPrintInfo:
                 print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
+
+    oauth_manager = OAuthManager(conn_info.get("oauth_refresh_token", ""))
+    oauth_manager.set_config(conn_info.get("oauth_config", {}))
+
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
 
@@ -339,7 +345,14 @@ def new_connection(
             gb_conn.set_connection(
                 vertica_python.connect(**read_dsn(name, path)), name, path
             )
-        except (ConnectionError, OAuthTokenRefreshError):
+        except (ConnectionError, OAuthTokenRefreshError) as e:
+            # Server error should be something like "token introspection failed" in which case we need
+            # to attempt token refresh. It may be something along these lines
+            # if "token introspection failed" in str(e)
+            #     if len(oauth_refresh_token) != 0 and oauth_manager and not oauth_manager.refresh_attempted:
+            #         oauth_access_token = oauth_manager.do_token_refresh()
+            # Then we need to update the access token in what is used when we try and connect.It looks like we use recursion 
+            # so I suppose we need to update the access token in the conn_info that is passed in the recursive call to new_connection
             print("Access Denied: Your authentication credentials are incorrect or have expired. Please retry")
             new_connection(
                 conn_info=read_dsn(name, path), prompt=True, connect_attempt=False
