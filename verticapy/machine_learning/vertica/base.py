@@ -225,6 +225,41 @@ class VerticaModel(PlottingUtils):
         """
         return f"<{self._model_type}>"
 
+    def _is_already_stored(
+        self,
+        raise_error: bool = False,
+        return_model_type: bool = False,
+    ) -> Union[bool, str]:
+        """
+        Checks whether the
+        model is stored in
+        the Vertica database.
+
+        Parameters
+        ----------
+        raise_error: bool, optional
+            If set to ``True`` and
+            an error occurs, raises
+            the error.
+        return_model_type: bool, optional
+            If set to ``True``,
+            returns a tuple with
+            the model category and
+            type.
+
+        Returns
+        -------
+        bool
+            ``True`` if the model is
+            stored in the Vertica
+            database.
+        """
+        return self.does_model_exists(
+            name=self.model_name,
+            raise_error=raise_error,
+            return_model_type=return_model_type,
+        )
+
     def drop(self) -> bool:
         """
         Drops the model from
@@ -328,41 +363,6 @@ class VerticaModel(PlottingUtils):
             please refer to that particular class.
         """
         return drop(self.model_name, method="model")
-
-    def _is_already_stored(
-        self,
-        raise_error: bool = False,
-        return_model_type: bool = False,
-    ) -> Union[bool, str]:
-        """
-        Checks whether the
-        model is stored in
-        the Vertica database.
-
-        Parameters
-        ----------
-        raise_error: bool, optional
-            If set to ``True`` and
-            an error occurs, raises
-            the error.
-        return_model_type: bool, optional
-            If set to ``True``,
-            returns a tuple with
-            the model category and
-            type.
-
-        Returns
-        -------
-        bool
-            ``True`` if the model is
-            stored in the Vertica
-            database.
-        """
-        return self.does_model_exists(
-            name=self.model_name,
-            raise_error=raise_error,
-            return_model_type=return_model_type,
-        )
 
     @staticmethod
     def does_model_exists(
@@ -2427,7 +2427,8 @@ class Supervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            print(report)
+            if conf.get_option("print_info"):
+                print(report)
         return None
 
 
@@ -7994,5 +7995,6 @@ class Unsupervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            print(report)
+            if conf.get_option("print_info"):
+                print(report)
         return None
