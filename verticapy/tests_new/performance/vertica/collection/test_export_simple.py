@@ -28,9 +28,9 @@ from verticapy.performance.vertica.collection.profile_import import (
 
 class TestQueryProfilerSimple:
     """
-    Test Base Class.
+    Contains tests related to creating bundles of parquet data
     """
-    @pytest.mark.skip()
+
     def test_profile_export(self, amazon_vd, schema_loader, tmp_path):
 
         logging.info(f"Amazon vd is {amazon_vd}")
@@ -55,7 +55,7 @@ class TestQueryProfilerSimple:
 
         tf = tarfile.open(outfile)
 
-        tarfile_contents = set(tf.getnames)
+        tarfile_contents = set(tf.getnames())
 
         expected_files = set(["dc_explain_plans.parquet",
             "dc_query_executions.parquet",
