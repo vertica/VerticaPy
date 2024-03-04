@@ -137,7 +137,7 @@ class ProfileExport:
             exported_meta = ctable.export_table(tmp_path)
             all_table_metadata.append(exported_meta)
 
-        metadata_file = tmp_path / "metadata.json"
+        metadata_file = tmp_path / "profile_metadata.json"
         export_metadata = ExportMetadata(metadata_file,
                                          self.bundle_version,
                                          all_table_metadata)

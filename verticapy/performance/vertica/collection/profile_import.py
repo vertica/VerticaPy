@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime
+import json
 import logging
 import os
 from pathlib import Path
@@ -268,10 +269,12 @@ class ProfileImport:
         """
         metadata_file = unpack_dir / "profile_metadata.json"
         if not metadata_file.exists():
-            self.logger.info(f"Did not find metadata file {metadata_file}")
+            self.logger.info(f"Did not find metadata file {metadata_file}, so using version {BundleVersion.V1}")
             return BundleVersion.V1
-
-        return BundleVersion.LATEST
+        
+        with open(metadata_file) as mdf:
+            obj = json.load(mdf)
+            return BundleVersion(int(obj["version"]))
 
     def _check_for_missing_files(
         self, unpack_dir: Path, version: BundleVersion

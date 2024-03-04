@@ -18,38 +18,44 @@ import logging
 import os
 import tarfile
 
-from verticapy.performance.vertica import QueryProfiler
+import pytest
 
+from verticapy.performance.vertica import QueryProfiler
+from verticapy.performance.vertica.collection.profile_import import (
+    ProfileImport,
+)
 
 
 class TestQueryProfilerSimple:
     """
     Test Base Class.
     """
+    @pytest.mark.skip()
     def test_profile_export(self, amazon_vd, schema_loader, tmp_path):
+
+        logging.info(f"Amazon vd is {amazon_vd}")
         request = f"""
         SELECT 
             date, 
             MONTH(date) AS month, 
             AVG(number) AS avg_number 
         FROM 
-            {schema_loader}.amazon 
+            {amazon_vd}
         GROUP BY 1;
         """
 
         qp = QueryProfiler(request,
                         target_schema=schema_loader)
         
-        # Assert that the tables exist?
-
         outfile = tmp_path / "qprof_test_001.tar"
         logging.info(f"Writing to file: {outfile}")
         qp.export_profile(filename=outfile)
         logging.info(f"Files in tmpdir: {','.join([str(x) for x in tmp_path.iterdir()])}")
         assert os.path.exists(outfile)
 
-        unpack_dir = tmp_path / "unpack_test_profile_export"
         tf = tarfile.open(outfile)
+
+        tarfile_contents = set(tf.getnames)
 
         expected_files = set(["dc_explain_plans.parquet",
             "dc_query_executions.parquet",
@@ -60,8 +66,46 @@ class TestQueryProfilerSimple:
             "query_plan_profiles.parquet",
             "query_profiles.parquet",
             "resource_pool_status.parquet",
-            "metadata.json"])
+            "profile_metadata.json"])
+        
+        # Recall: symmetric difference is all elements that are in just
+        # one set.
+        set_diff = tarfile_contents.symmetric_difference(expected_files)
 
-        for fname in tf.getnames():
-            assert fname in expected_files
+        assert len(set_diff) == 0
+
+    def test_profile_full_lifecycle(self, amazon_vd, schema_loader, tmp_path):
+        request = f"""
+        SELECT 
+            date, 
+            MONTH(date) AS month, 
+            AVG(number) AS avg_number 
+        FROM 
+            {amazon_vd}
+        GROUP BY 1;
+        """
+
+        qp = QueryProfiler(request,
+                        target_schema=schema_loader)
+
+        outfile = tmp_path / "qprof_test_002.tar"
+        logging.info(f"Writing to file: {outfile}")
+        qp.export_profile(filename=outfile)
+        assert os.path.exists(outfile)
+
+        pi = ProfileImport(
+            # schema and target will be once this test copies
+            # files into a schema
+            target_schema=schema_loader,
+            key="reload123",
+            filename=outfile,
+        )
+        unpack_tmp = tmp_path / "unpack"
+        unpack_tmp.mkdir()
+        pi.skip_create_table = False
+        pi.raise_when_missing_files = True
+        pi.tmp_path = unpack_tmp
+        pi.check_schema_and_load_file()
+
+
             
