@@ -24,7 +24,6 @@ from typing import Set, List, Mapping
 import pandas as pd
 
 
-
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.core.parsers.pandas import read_pandas
@@ -53,7 +52,9 @@ class ProfileExport:
         Store common parameters for profile export
         """
         if not isinstance(target_schema, str):
-            raise TypeError(f"Expected target_schema to have type str but found type {type(target_schema)}")
+            raise TypeError(
+                f"Expected target_schema to have type str but found type {type(target_schema)}"
+            )
         self.target_schema = target_schema
         self.key = key
         self.filename = filename if isinstance(filename, Path) else Path(filename)
@@ -90,12 +91,12 @@ class ProfileExport:
 
     def _tables_exist_or_raise(self) -> None:
         tables_in_schema = self._get_set_of_tables_in_schema()
-       
+
         missing_tables = []
-        
-        all_tables = getAllCollectionTables(self.target_schema, 
-                                            self.key, 
-                                            self.bundle_version)
+
+        all_tables = getAllCollectionTables(
+            self.target_schema, self.key, self.bundle_version
+        )
         for ctable in all_tables.values():
             search_name = ctable.get_import_name()
             if search_name not in tables_in_schema:
@@ -110,7 +111,7 @@ class ProfileExport:
             f" in schema {self.target_schema}."
             f" Missing: [ {','.join(missing_tables)} ]"
         )
-    
+
     def _get_set_of_tables_in_schema(self) -> Set[str]:
         result = _executeSQL(
             f"""SELECT table_name FROM v_catalog.tables 
@@ -124,13 +125,12 @@ class ProfileExport:
         for row in result:
             existing_tables.add(row[0])
         return existing_tables
-    
+
     def _save_tables(self) -> ExportMetadata:
-        """
-        """
-        all_tables = getAllCollectionTables(self.target_schema,
-                                            self.key,
-                                            self.bundle_version)
+        """ """
+        all_tables = getAllCollectionTables(
+            self.target_schema, self.key, self.bundle_version
+        )
         tmp_path = self.filename.parent
         all_table_metadata = []
         for ctable in all_tables.values():
@@ -138,30 +138,26 @@ class ProfileExport:
             all_table_metadata.append(exported_meta)
 
         metadata_file = tmp_path / "profile_metadata.json"
-        export_metadata = ExportMetadata(metadata_file,
-                                         self.bundle_version,
-                                         all_table_metadata)
-        
+        export_metadata = ExportMetadata(
+            metadata_file, self.bundle_version, all_table_metadata
+        )
+
         export_metadata.write_to_file()
 
         return export_metadata
 
     def _bundle_tables(self, export_metadata: ExportMetadata):
-        """
-        """
-        
-        self.tarfile_obj = tarfile.open(self.filename, 'w')
+        """ """
+
+        self.tarfile_obj = tarfile.open(self.filename, "w")
         for t in export_metadata.tables:
-            self.tarfile_obj.add(t.file_name, 
-                                 arcname=t.file_name.name)
-        self.tarfile_obj.add(export_metadata.file_name,
-                             arcname=export_metadata.file_name.name)
+            self.tarfile_obj.add(t.file_name, arcname=t.file_name.name)
+        self.tarfile_obj.add(
+            export_metadata.file_name, arcname=export_metadata.file_name.name
+        )
         self.tarfile_obj.close()
         for t in export_metadata.tables:
             os.remove(t.file_name)
-        
+
         # Everything went ok, clean it up
         os.remove(export_metadata.file_name)
-
-
-        

@@ -32,7 +32,6 @@ class TestQueryProfilerSimple:
     """
 
     def test_profile_export(self, amazon_vd, schema_loader, tmp_path):
-
         logging.info(f"Amazon vd is {amazon_vd}")
         request = f"""
         SELECT 
@@ -44,30 +43,35 @@ class TestQueryProfilerSimple:
         GROUP BY 1;
         """
 
-        qp = QueryProfiler(request,
-                        target_schema=schema_loader)
-        
+        qp = QueryProfiler(request, target_schema=schema_loader)
+
         outfile = tmp_path / "qprof_test_001.tar"
         logging.info(f"Writing to file: {outfile}")
         qp.export_profile(filename=outfile)
-        logging.info(f"Files in tmpdir: {','.join([str(x) for x in tmp_path.iterdir()])}")
+        logging.info(
+            f"Files in tmpdir: {','.join([str(x) for x in tmp_path.iterdir()])}"
+        )
         assert os.path.exists(outfile)
 
         tf = tarfile.open(outfile)
 
         tarfile_contents = set(tf.getnames())
 
-        expected_files = set(["dc_explain_plans.parquet",
-            "dc_query_executions.parquet",
-            "dc_requests_issued.parquet",
-            "execution_engine_profiles.parquet",
-            "host_resources.parquet",
-            "query_consumption.parquet",
-            "query_plan_profiles.parquet",
-            "query_profiles.parquet",
-            "resource_pool_status.parquet",
-            "profile_metadata.json"])
-        
+        expected_files = set(
+            [
+                "dc_explain_plans.parquet",
+                "dc_query_executions.parquet",
+                "dc_requests_issued.parquet",
+                "execution_engine_profiles.parquet",
+                "host_resources.parquet",
+                "query_consumption.parquet",
+                "query_plan_profiles.parquet",
+                "query_profiles.parquet",
+                "resource_pool_status.parquet",
+                "profile_metadata.json",
+            ]
+        )
+
         # Recall: symmetric difference is all elements that are in just
         # one set.
         set_diff = tarfile_contents.symmetric_difference(expected_files)
@@ -85,8 +89,7 @@ class TestQueryProfilerSimple:
         GROUP BY 1;
         """
 
-        qp = QueryProfiler(request,
-                        target_schema=schema_loader)
+        qp = QueryProfiler(request, target_schema=schema_loader)
 
         outfile = tmp_path / "qprof_test_002.tar"
         logging.info(f"Writing to file: {outfile}")
@@ -114,23 +117,21 @@ class TestQueryProfilerSimple:
         GROUP BY 1;
         """
 
-        qp = QueryProfiler(request,
-                        target_schema=schema_loader)
+        qp = QueryProfiler(request, target_schema=schema_loader)
 
         outfile = tmp_path / "qprof_test_002.tar"
         logging.info(f"Writing to file: {outfile}")
         qp.export_profile(filename=outfile)
         assert os.path.exists(outfile)
 
-        new_qp = QueryProfiler.import_profile(target_schema=schema_loader,
-                                              key_id="reload789",
-                                              filename=outfile,
-                                              tmp_dir=tmp_path)
-        
+        new_qp = QueryProfiler.import_profile(
+            target_schema=schema_loader,
+            key_id="reload789",
+            filename=outfile,
+            tmp_dir=tmp_path,
+        )
+
         assert new_qp is not None
-        # We don't validate the qplan tree in this test. We just want to ensure that it is 
+        # We don't validate the qplan tree in this test. We just want to ensure that it is
         # produced.
         new_qp.get_qplan_tree()
-
-
-            

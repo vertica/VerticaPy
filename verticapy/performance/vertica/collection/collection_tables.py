@@ -60,31 +60,38 @@ class BundleVersion(Enum):
     V2 = 2
     LATEST = V2
 
+
 class TableMetadata:
     def __init__(self, file_name: Path, table_type: AllTableTypes):
         self.file_name = file_name
         self.table_type = table_type
 
     def to_json(self):
-        return {"table_type_name": str(self.table_type.name),
-                "table_type_value": str(self.table_type.value),
-                "file_name": str(self.file_name)}
+        return {
+            "table_type_name": str(self.table_type.name),
+            "table_type_value": str(self.table_type.value),
+            "file_name": str(self.file_name),
+        }
+
 
 class ExportMetadata:
-    def __init__(self, file_name: Path,
-                 version: BundleVersion, 
-                 tables: List[TableMetadata]):
+    def __init__(
+        self, file_name: Path, version: BundleVersion, tables: List[TableMetadata]
+    ):
         self.file_name = file_name
         self.version = version
         self.tables = tables
 
     def to_json(self):
-        return {"version": str(self.version.value),
-                "tables": [x.to_json() for x in self.tables]}
+        return {
+            "version": str(self.version.value),
+            "tables": [x.to_json() for x in self.tables],
+        }
 
     def write_to_file(self):
-        with open(self.file_name, 'w') as mdf:
+        with open(self.file_name, "w") as mdf:
             json.dump(self.to_json(), mdf)
+
 
 class CollectionTable:
     """
@@ -225,23 +232,21 @@ class CollectionTable:
             f" Loaded (rows, columns) {vdf.shape()}"
         )
         return vdf.shape()[0]
-    
+
     def get_export_sql(self):
         return f"select * from {self.get_import_name_fq()}"
-    
+
     def export_table(self, tmp_path: Path) -> ExportMetadata:
-        """
-        """
+        """ """
         file_name = tmp_path / f"{self.name}.parquet"
         export_sql = self.get_export_sql()
         vdf = vDataFrame(export_sql)
         pandas_dataframe = vdf.to_pandas()
-        self.logger.info(f"Exporting table {self.name} from {self.get_import_name_fq()}")
-        pandas_dataframe.to_parquet(path=file_name,
-                                    compression="gzip")
-        return TableMetadata(file_name=file_name, 
-                             table_type=self.table_type)
-        
+        self.logger.info(
+            f"Exporting table {self.name} from {self.get_import_name_fq()}"
+        )
+        pandas_dataframe.to_parquet(path=file_name, compression="gzip")
+        return TableMetadata(file_name=file_name, table_type=self.table_type)
 
 
 def getAllCollectionTables(
@@ -268,7 +273,7 @@ def getAllCollectionTables(
     """
     if version == BundleVersion.V1:
         return _getAllTables_v1(target_schema, key)
-    
+
     if version == BundleVersion.V2:
         return _getAllTables_v2(target_schema, key)
 
@@ -308,7 +313,6 @@ ALL_TABLES_V2 = [
     AllTableTypes.QUERY_CONSUMPTION,
     AllTableTypes.QUERY_PLAN_PROFILES,
     AllTableTypes.QUERY_PROFILES,
-
     # Resource pool status lacks txn_id, stmt_id
     AllTableTypes.RESOURCE_POOL_STATUS,
 ]
@@ -326,6 +330,7 @@ def _getAllTables_v1(target_schema: str, key: str) -> Mapping[str, CollectionTab
         result[name.name] = c
 
     return result
+
 
 def _getAllTables_v2(target_schema: str, key: str) -> Mapping[str, CollectionTable]:
     """
@@ -1585,7 +1590,7 @@ class ResourcePoolStatusTable(CollectionTable):
             "runtimecap_in_seconds": "Int64",
             "query_budget_kb": "Int64",
         }
-    
+
     def get_export_sql(self):
         return f"""SELECT
             node_name,

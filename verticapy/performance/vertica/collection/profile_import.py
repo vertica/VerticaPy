@@ -269,9 +269,11 @@ class ProfileImport:
         """
         metadata_file = unpack_dir / "profile_metadata.json"
         if not metadata_file.exists():
-            self.logger.info(f"Did not find metadata file {metadata_file}, so using version {BundleVersion.V1}")
+            self.logger.info(
+                f"Did not find metadata file {metadata_file}, so using version {BundleVersion.V1}"
+            )
             return BundleVersion.V1
-        
+
         with open(metadata_file) as mdf:
             obj = json.load(mdf)
             return BundleVersion(int(obj["version"]))

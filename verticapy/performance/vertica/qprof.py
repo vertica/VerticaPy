@@ -3290,41 +3290,45 @@ class QueryProfiler:
 
     def export_profile(self, filename: os.PathLike) -> None:
         """
-        Creates a tar file containing parquet files of the replica tables used while 
-        profiling a query. 
+        Creates a tar file containing parquet files of the replica tables used while
+        profiling a query.
 
         Parameters
         -----------------
         filename: os.PathLike
            The name of the output file to produce. The output file
            will be a tarball containing parquet files.
-            
+
         """
 
         if self.target_schema is None or len(self.target_schema) == 0:
-            raise ValueError(f"Export requires that target_schema is set."
-                             f" Current value of target_schema: {self.target_schema}")
+            raise ValueError(
+                f"Export requires that target_schema is set."
+                f" Current value of target_schema: {self.target_schema}"
+            )
 
         # Target schema is a dictionary of values
         unique_schemas = set([x for x in self.target_schema.values()])
         if len(unique_schemas) != 1:
             raise ValueError(f"Expected one unique schema, but found {unique_schemas}")
         actual_schema = unique_schemas.pop()
-        exp = ProfileExport(target_schema=actual_schema,
-                            key=self.key_id,
-                            filename=filename)
-        
+        exp = ProfileExport(
+            target_schema=actual_schema, key=self.key_id, filename=filename
+        )
+
         exp.export()
 
     @staticmethod
-    def import_profile(target_schema: str, 
-                       key_id: str, 
-                       filename: os.PathLike, 
-                       tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp")):
+    def import_profile(
+        target_schema: str,
+        key_id: str,
+        filename: os.PathLike,
+        tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp"),
+    ):
         """
         Import the query profile in filename into the database schema ``target_schema`` with tables
-        suffixed by key_id. Then create query profiler object that refers to the tables in 
-        ``target_schema``,  the profile in filename. 
+        suffixed by key_id. Then create query profiler object that refers to the tables in
+        ``target_schema``,  the profile in filename.
 
         Returns
         ----------
@@ -3341,7 +3345,7 @@ class QueryProfiler:
         tmp_dir: os.PathLike
             The directory to use for temporary storage of unpacked
             files.
-           
+
         """
         pi = ProfileImport(
             # schema and target will be once this test copies
@@ -3352,8 +3356,6 @@ class QueryProfiler:
         )
         pi.tmp_path = tmp_dir if isinstance(tmp_dir, Path) else Path(tmp_dir)
         pi.check_schema_and_load_file()
-        qp = QueryProfiler(target_schema=target_schema,
-                           key_id=key_id)
-        
-        return qp
+        qp = QueryProfiler(target_schema=target_schema, key_id=key_id)
 
+        return qp
