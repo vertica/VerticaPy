@@ -31,6 +31,7 @@ This document will guide you through the contribution process. For code contribu
 
   cicd
   contribution_guidelines_code
+  tolerance
 
 
 Some other options are:

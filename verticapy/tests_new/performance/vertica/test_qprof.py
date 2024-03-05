@@ -29,7 +29,7 @@ from verticapy.connection import current_cursor
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.datasets import load_titanic
 from verticapy.performance.vertica import QueryProfiler
-
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 from verticapy.tests_new.performance.vertica import QPROF_SQL1, QPROF_SQL2
 
 pd.set_option("display.max_columns", None)
@@ -940,11 +940,10 @@ class TestQueryProfiler:
             "prod_rows",
             "rle_prod_rows",
             "clock_time_us",
-            # "cstall_us",  # ZeroDivisionError
-            # "pstall_us",  # ZeroDivisionError
+            # "cstall_us", # ZeroDivisionError
+            # "pstall_us", # ZeroDivisionError
             "mem_res_mb",
             # "mem_all_mb",  # ZeroDivisionError
-            # ["cost", "proc_rows"],
         ],
     )
     def test_get_qplan_tree(
@@ -1002,26 +1001,21 @@ class TestQueryProfiler:
             if "tooltip" in obj.keys():
                 _ss1 = ""
                 for s in obj["tooltip"].split("\n"):
+                    print(
+                        "THIS IS WHAT WE GET:", QprofUtility._get_metrics_name(metric)
+                    )
                     if s != "" and not s.startswith(
-                        (
-                            "cost",
-                            "rows",
-                            "exec_time_ms",
-                            "est_rows",
-                            "proc_rows",
-                            "prod_rows",
-                            "rle_prod_rows",
-                            "clock_time_us",
-                            "cstall_us",
-                            "pstall_us",
-                            "mem_res_mb",
-                            "mem_all_mb",
-                        )
+                        QprofUtility._get_metrics_name(metric)
                     ):
                         _ss1 += s + ""
                     # for return_graphviz = True
-                    if return_graphviz and metric in s:
-                        _ss1 = re.search(rf".+{metric}", s).group(0).replace(metric, "")
+                    if return_graphviz and QprofUtility._get_metrics_name(metric) in s:
+                        # remove metric info from the string i.e. 'Query plan cost'
+                        _ss1 = (
+                            re.search(rf".+{QprofUtility._get_metrics_name(metric)}", s)
+                            .group(0)
+                            .replace(QprofUtility._get_metrics_name(metric), "")
+                        )
                 ss1 += _ss1.strip().replace('"', "'") + " "
         logger.info("<<<<<<<<<<<<<<<<<<< Actual result >>>>>>>>>>>>>>>>>>>>>>")
         logger.info(f"Actual Result: {ss1}")
