@@ -35,9 +35,9 @@ from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
-from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.performance.vertica.collection.profile_export import ProfileExport
 from verticapy.performance.vertica.collection.profile_import import ProfileImport
+from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.sql.dtypes import get_data_types
 
@@ -3290,8 +3290,8 @@ class QueryProfiler:
 
     def export_profile(self, filename: os.PathLike) -> None:
         """
-        Creates a tar file containing parquet files of the replica tables used while
-        profiling a query.
+        Creates a tar file containing parquet files of the 
+        replica tables used while profiling a query.
 
         Parameters
         -----------------
@@ -3299,9 +3299,25 @@ class QueryProfiler:
            The name of the output file to produce. The output file
            will be a tarball containing parquet files.
 
+        Example
+        -------------------
+
+        ..code-block():: python
+
+            from verticapy.performance.vertica import QueryProfiler
+            # The target_schema argument tells the QueryProfiler
+            # to create a set of replica tables.
+            qprof = QueryProfiler("SELECT date, MONTH(date) AS month,"
+                                  " AVG(number) AS avg_number"
+                                  " FROM public.amazonGROUP BY 1;",
+                                  target_schema="monday123")
+
+            # Write out to a file in the current working directory
+            qprof.export_profile(filename="qprof_test_123.tar")
+
         """
 
-        if self.target_schema is None or len(self.target_schema) == 0:
+        if isinstance(self.target_schema, NoneType) or len(self.target_schema) == 0:
             raise ValueError(
                 f"Export requires that target_schema is set."
                 f" Current value of target_schema: {self.target_schema}"
@@ -3326,9 +3342,10 @@ class QueryProfiler:
         tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp"),
     ):
         """
-        Import the query profile in filename into the database schema ``target_schema`` with tables
-        suffixed by key_id. Then create query profiler object that refers to the tables in
-        ``target_schema``,  the profile in filename.
+        Import the query profile in filename into the database schema 
+        ``target_schema`` with tables suffixed by key_id. Then create 
+        query profiler object that refers to the tables in ``target_schema``,  
+        the profile in filename.
 
         Returns
         ----------
@@ -3346,6 +3363,18 @@ class QueryProfiler:
             The directory to use for temporary storage of unpacked
             files.
 
+        Example
+        -------------------
+
+        ..code-block():: python
+        
+            from verticapy.performance.vertica import QueryProfiler
+            imported_profile = QueryProfiler.import_profile(
+                target_schema="import_monday",
+                key_id="test345",
+                filename=export_file)
+            imported_profile.get_qplan_tree()
+            
         """
         pi = ProfileImport(
             # schema and target will be once this test copies
