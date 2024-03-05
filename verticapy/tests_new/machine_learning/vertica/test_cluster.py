@@ -14,8 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import types
+
 import pytest
-from matplotlib.axes._axes import Axes
 
 import verticapy._config.config as conf
 
@@ -58,12 +59,7 @@ class TestCluster:
         """
         conf.set_option("plotting_lib", "matplotlib")
         X = list(get_py_model(model_class).X.columns)
-        # print(X)
-        # print(get_vpy_model(model_class, X=X[:2])[0].plot_voronoi())
-
         vpy_res = get_vpy_model(model_class, X=X[:2])[0].plot_voronoi()
 
-        print(vpy_res.__dict__.keys())
-        assert isinstance(vpy_res, Axes)
-        # assert isinstance(vpy_res, plotly.graph_objs.Figure)
-        # assert isinstance(vpy_res, Highchart)
+        assert isinstance(vpy_res, types.ModuleType), "Wrong object created"
+        assert vpy_res.__name__ == "matplotlib.pyplot", "Not a matplotlib pyplot object"

@@ -16,17 +16,17 @@ permissions and limitations under the License.
 """
 from collections import namedtuple
 from decimal import Decimal
-import shutil
 import os
+import shutil
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import plotly
 from scipy import stats
-import matplotlib.pyplot as plt
 
+import verticapy as vp
 from verticapy.connection import current_cursor
-from vertica_python.errors import QueryError
 from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
     rel_abs_tol_map,
@@ -35,8 +35,14 @@ from verticapy.tests_new.machine_learning.vertica import (
     TIMESERIES_MODELS,
     CLUSTER_MODELS,
 )
-from vertica_highcharts.highcharts.highcharts import Highchart
+from verticapy.tests_new.machine_learning.vertica.model_utils import (
+    get_model_attributes,
+    get_train_function,
+    get_predict_function,
+)
 from verticapy.machine_learning.vertica.base import VerticaModel
+from vertica_highcharts.highcharts.highcharts import Highchart
+from vertica_python.errors import QueryError
 
 details_report_args = (
     "metric, expected",
@@ -119,7 +125,7 @@ def model_params(model_class):
             "n_estimators, max_features, max_leaf_nodes, sample, max_depth, min_samples_leaf, min_info_gain, nbins",
             [
                 # (None, None, None, None, None, None, None, None),  # accuracy does not mach with default parameters
-                (10, 1, 10, 0.632, 5, 1, None, None),
+                (10, 2, 10, 0.632, 10, 1, None, None),
                 # (5, 'max', 1e6, 0.42, 6, 8, 0.3, 20),
             ],
         ),
@@ -240,6 +246,9 @@ def model_params(model_class):
 
 
 def calculate_tolerance(vpy_score, py_score):
+    """
+    function to calculate tolerance for a given model
+    """
     if isinstance(vpy_score, (list, np.ndarray)):
         vpy_score, py_score = vpy_score[0], py_score[0]
 
@@ -783,6 +792,492 @@ def model_score(
     return vpy_score, py_score
 
 
+def get_model_params(model_class):
+    """
+    getter function to get vertica model parameters
+    """
+    params_map = {
+        **dict.fromkeys(
+            ["LinearRegression"],
+            {"tol": 1e-06, "max_iter": 100, "solver": "newton", "fit_intercept": True},
+        ),
+        **dict.fromkeys(
+            ["Ridge"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "newton",
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["Lasso"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "cgd",
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["ElasticNet"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "cgd",
+                "l1_ratio": 0.5,
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["RandomForestRegressor", "RandomForestClassifier"],
+            {
+                "n_estimators": 10,
+                "max_features": 2,
+                "max_leaf_nodes": 10,
+                "sample": 0.632,
+                "max_depth": 10,
+                "min_samples_leaf": 1,
+                "min_info_gain": 0.0,
+                "nbins": 32,
+            },
+        ),
+        **dict.fromkeys(
+            ["DecisionTreeRegressor", "DecisionTreeClassifier"],
+            {
+                "max_features": 2,
+                "max_leaf_nodes": 10,
+                "max_depth": 10,
+                "min_samples_leaf": 1,
+                "min_info_gain": 0.0,
+                "nbins": 32,
+            },
+        ),
+        **dict.fromkeys(
+            ["XGBRegressor", "XGBClassifier"],
+            {
+                "max_ntree": 10,
+                "max_depth": 10,
+                "nbins": 150,
+                "split_proposal_method": "'global'",
+                "tol": 0.001,
+                "learning_rate": 0.1,
+                "min_split_loss": 0.0,
+                "weight_reg": 0.0,
+                "sample": 1.0,
+                "col_sample_by_tree": 1.0,
+                "col_sample_by_node": 1.0,
+            },
+        ),
+        **dict.fromkeys(["DummyTreeRegressor", "DummyTreeClassifier"], {}),
+        **dict.fromkeys(
+            ["LinearSVR"],
+            {
+                "tol": 1e-04,
+                "C": 1.0,
+                "intercept_scaling": 1.0,
+                "intercept_mode": "regularized",
+                "acceptable_error_margin": 0.1,
+                "max_iter": 100,
+            },
+        ),
+        **dict.fromkeys(
+            ["PoissonRegressor"],
+            {
+                "penalty": "l2",
+                "tol": 1e-06,
+                "C": 1,
+                "max_iter": 100,
+                "solver": "newton",
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["AR"],
+            {
+                "p": 3,
+                "method": "ols",
+                "penalty": "none",
+                "C": 1.0,
+                "missing": "linear_interpolation",
+            },
+        ),
+        **dict.fromkeys(
+            ["MA"],
+            {"q": 1, "penalty": "none", "C": 1.0, "missing": "linear_interpolation"},
+        ),
+        **dict.fromkeys(
+            ["ARMA"],
+            {
+                "order": (2, 1),
+                "tol": 1e-06,
+                "max_iter": 100,
+                "init": "zero",
+                "missing": "linear_interpolation",
+            },
+        ),
+        **dict.fromkeys(
+            ["ARIMA"],
+            {
+                "order": (2, 1, 1),
+                "tol": 1e-06,
+                "max_iter": 100,
+                "init": "zero",
+                "missing": "linear_interpolation",
+            },
+        ),
+        **dict.fromkeys(
+            ["KMeans"],
+            {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 0.0001},
+        ),
+    }
+    return params_map.get(
+        model_class,
+        None,
+    )
+
+
+def get_vertica_model_attributes(model_class):
+    """
+    getter function to get vertica model attributes
+    """
+    vertica_attributes_map = {
+        **dict.fromkeys(
+            [
+                "RandomForestRegressor",
+                "RandomForestClassifier",
+                "DecisionTreeRegressor",
+                "DecisionTreeClassifier",
+                "DummyTreeRegressor",
+                "DummyTreeClassifier",
+                "XGBRegressor",
+                "XGBClassifier",
+            ],
+            {
+                "attr_name": [
+                    "tree_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                    "details",
+                ],
+                "attr_fields": [
+                    "tree_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                    "predictor, type",
+                ],
+                "#_of_rows": [1, 1, 1, 1, 3],
+            },
+        ),
+        **dict.fromkeys(
+            ["LinearSVR"],
+            {
+                "attr_name": [
+                    "details",
+                    "accepted_row_count",
+                    "rejected_row_count",
+                    "iteration_count",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "predictor, coefficient",
+                    "accepted_row_count",
+                    "rejected_row_count",
+                    "iteration_count",
+                    "call_string",
+                ],
+                "#_of_rows": [4, 1, 1, 1, 1],
+            },
+        ),
+        **dict.fromkeys(
+            ["PoissonRegressor"],
+            {
+                "attr_name": [
+                    "details",
+                    "regularization",
+                    "iteration_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "predictor, coefficient, std_err, z_value, p_value",
+                    "type, lambda",
+                    "iteration_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                ],
+                "#_of_rows": [4, 1, 1, 1, 1, 1],
+            },
+        ),
+        **dict.fromkeys(
+            ["AR"],
+            {
+                "attr_name": [
+                    "coefficients",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "parameter, value",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            },
+        ),
+        **dict.fromkeys(
+            ["MA"],
+            {
+                "attr_name": [
+                    "coefficients",
+                    "mean",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "parameter, value",
+                    "mean",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "#_of_rows": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            },
+        ),
+        **dict.fromkeys(
+            ["ARMA", "ARIMA"],
+            {
+                "attr_name": [
+                    "coefficients",
+                    "p",
+                    "d",
+                    "q",
+                    "mean",
+                    "regularization",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "parameter, value",
+                    "p",
+                    "d",
+                    "q",
+                    "mean",
+                    "regularization",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "#_of_rows": [3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            },
+        ),
+        **dict.fromkeys(
+            ["KMeans"],
+            {
+                "attr_name": ["centers", "metrics"],
+                "attr_fields": [
+                    "sepallengthcm, sepalwidthcm, petallengthcm, petalwidthcm",
+                    "metrics",
+                ],
+                "#_of_rows": [8, 1],
+            },
+        ),
+    }
+    if model_class == "XGBRegressor":
+        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
+        vertica_attributes_map[model_class]["attr_fields"].append("initial_prediction")
+        vertica_attributes_map[model_class]["#_of_rows"].append(1)
+    elif model_class == "XGBClassifier":
+        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
+        vertica_attributes_map[model_class]["attr_fields"].append(
+            "response_label, value"
+        )
+        vertica_attributes_map[model_class]["#_of_rows"].append(2)
+
+    return vertica_attributes_map.get(
+        model_class,
+        {
+            "attr_name": [
+                "details",
+                "regularization",
+                "iteration_count",
+                "rejected_row_count",
+                "accepted_row_count",
+                "call_string",
+            ],
+            "attr_fields": [
+                "predictor, coefficient, std_err, t_value, p_value",
+                "type, lambda",
+                "iteration_count",
+                "rejected_row_count",
+                "accepted_row_count",
+                "call_string",
+            ],
+            "#_of_rows": [4, 1, 1, 1, 1, 1],
+        },
+    )
+
+
+def get_set_params(model_class):
+    """
+    getter function to get vertica params attributes
+    """
+    set_params_map = {
+        **dict.fromkeys(
+            ["RandomForestRegressor", "RandomForestClassifier"],
+            {"n_estimators": 100, "max_depth": 50, "nbins": 100},
+        ),
+        **dict.fromkeys(
+            ["DecisionTreeRegressor", "DecisionTreeClassifier"],
+            {"max_depth": 50, "nbins": 100},
+        ),
+        **dict.fromkeys(
+            ["XGBRegressor", "XGBClassifier"], {"max_depth": 50, "nbins": 100}
+        ),
+        **dict.fromkeys(["DummyTreeRegressor", "DummyTreeClassifier"], {}),
+        **dict.fromkeys(
+            ["LinearSVR"], {"intercept_mode": "unregularized", "max_iter": 500}
+        ),
+        **dict.fromkeys(
+            ["ElasticNet"],
+            {"l1_ratio": 0.01, "C": 0.12, "solver": "newton", "max_iter": 500},
+        ),
+        **dict.fromkeys(
+            ["AR"], {"p": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
+        ),
+        **dict.fromkeys(
+            ["MA"], {"q": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
+        ),
+        **dict.fromkeys(
+            ["ARMA"], {"order": (2, 4, 2), "tol": 1, "init": "hr", "missing": "drop"}
+        ),
+        **dict.fromkeys(
+            ["ARIMA"], {"order": (2, 2), "tol": 1, "init": "hr", "missing": "drop"}
+        ),
+        **dict.fromkeys(["KMeans"], {"n_cluster": 5, "init": "random", "tol": 1}),
+    }
+    return set_params_map.get(model_class, {"solver": "cgd", "max_iter": 500})
+
+
+@pytest.fixture(name="get_pred_column")
+def get_pred_column_fixture(model_class):
+    """
+    getter fixture to get prediction column
+    """
+    pred_col_map = {
+        **dict.fromkeys(REGRESSION_MODELS, "quality_pred"),
+        **dict.fromkeys(CLASSIFICATION_MODELS, "survived_pred"),
+        **dict.fromkeys(TIMESERIES_MODELS, "prediction"),
+        **dict.fromkeys(["KMeans"], f"{model_class}_cluster_ids"),
+    }
+    return pred_col_map.get(model_class, None)
+
+
+@pytest.fixture(name="get_predictors")
+def get_predictors_fixture(model_class, get_py_model):
+    """
+    getter fixture to get predictors
+    """
+    return list(get_py_model(model_class).X.columns)
+
+
+@pytest.fixture(name="get_to_sql")
+def get_to_sql_fixture(model_class, get_models):
+    """
+    getter fixture to get sql function for a model
+    """
+    if model_class in TIMESERIES_MODELS:
+        pytest.skip(f"to_sql function is not available for {model_class} model")
+
+    pred_func = get_predict_function(model_class)
+    model_name = get_models.vpy.model.model_name
+    to_sql_func = get_models.vpy.model.to_sql
+
+    to_sql_map = {
+        **dict.fromkeys(
+            REGRESSION_MODELS,
+            f"SELECT {pred_func}(3.0, 11.0, 93.0 USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::float, {to_sql_func([3.0, 11.0, 93.0])}::float"
+            if model_class in REGRESSION_MODELS
+            else None,
+        ),
+        **dict.fromkeys(
+            CLASSIFICATION_MODELS,
+            f"""SELECT {pred_func}(* USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::int, {to_sql_func()}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"""
+            if model_class in CLASSIFICATION_MODELS
+            else None,
+        ),
+        **dict.fromkeys(
+            ["KMeans"],
+            f"SELECT {pred_func}(3.0, 11.0, 93.0, 0.244 USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::float, {to_sql_func([3.0, 11.0, 93.0, 0.244])}::float"
+            if model_class == "KMeans"
+            else None,
+        ),
+    }
+    yield to_sql_map.get(model_class, None)
+
+
+def _get_deploysql(model_class):
+    """
+    test function - deploySQL
+    """
+    deploysql_map = {
+        **dict.fromkeys(
+            REGRESSION_MODELS + CLASSIFICATION_MODELS + CLUSTER_MODELS,
+            """{pred_fun_name}({columns} USING PARAMETERS model_name = '{schema_name}.{model_name}', match_by_pos = 'true')""",
+        ),
+        **dict.fromkeys(
+            TIMESERIES_MODELS,
+            """{pred_fun_name}( USING PARAMETERS model_name = '{schema_name}.{model_name}', add_mean = True, npredictions = 10 ) OVER ()""",
+        ),
+    }
+    return deploysql_map.get(model_class, None)
+
+
 pytestmark = pytest.mark.parametrize(
     "model_class",
     [
@@ -810,8 +1305,8 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-@pytest.fixture
-def get_models(model_class, get_vpy_model, get_py_model):
+@pytest.fixture(name="get_models")
+def get_models_fixture(model_class, get_vpy_model, get_py_model):
     """
     test function - get_models
     """
@@ -1046,6 +1541,9 @@ class TestBaseModelMethods:
 
     @pytest.mark.parametrize("overwrite", [True, False])
     def test_overwrite(self, model_class, get_vpy_model, overwrite):
+        """
+        test function - overwrite existing model
+        """
         obj = get_vpy_model(model_class)
         try:
             get_vpy_model(model_class, overwrite_model=overwrite)
@@ -1055,10 +1553,19 @@ class TestBaseModelMethods:
             assert exception_info.match(f"The model '{obj.model_name}' already exists!")
         obj.model.drop()
 
-    def test_plot(self, model_class, get_vpy_model, get_predictors):
+    @pytest.mark.parametrize(
+        "plotting_library",
+        [
+            # "plotly",
+            # "highcharts",
+            "matplotlib",
+        ],
+    )
+    def test_plot(self, model_class, get_vpy_model, get_predictors, plotting_library):
         """
         test function - plot
         """
+        vp.set_option("plotting_lib", plotting_library)
         try:
             vpy_res = get_vpy_model(
                 model_class,
@@ -1071,7 +1578,13 @@ class TestBaseModelMethods:
                 f"plot function is not implemented for {model_class} model class - NotImplementedError"
             )
 
-        assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
+        if plotting_library == "matplotlib":
+            assert isinstance(vpy_res, plt.Axes)
+        elif plotting_library == "plotly":
+            assert isinstance(vpy_res, plotly.graph_objs.Figure)
+        else:
+            assert isinstance(vpy_res, Highchart)
+        # assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
 
     def test_predict(self, get_models, model_class, get_pred_column):
         """
@@ -1176,7 +1689,7 @@ class TestBaseModelMethods:
             py_res, rel=rel_abs_tol_map[model_class]["to_python"]["rel"]
         )
 
-    def test_to_sql(self, get_models, model_class, get_to_sql):
+    def test_to_sql(self, model_class, get_to_sql):
         """
         test function - to_sql
         """
@@ -1195,7 +1708,8 @@ class TestBaseModelMethods:
         """
         # Need to check on this. should be applicable to tf models only?
         tf_model = get_models.vpy.model.to_tf(path="/tmp/")
-        # print(tf_model)
+
+        assert tf_model
 
     @pytest.mark.parametrize(
         "key_name",
@@ -1341,599 +1855,3 @@ class TestBaseModelMethods:
         assert features_importance_map[key_name] == pytest.approx(
             f_imp[key_name], rel=1e-0
         )
-
-
-def get_train_function(model_class):
-    train_func_map = {
-        **dict.fromkeys(
-            ["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"],
-            "RF_REGRESSOR",
-        ),
-        **dict.fromkeys(
-            ["RandomForestClassifier", "DecisionTreeClassifier", "DummyTreeClassifier"],
-            "RF_CLASSIFIER",
-        ),
-        **dict.fromkeys(["XGBRegressor"], "XGB_REGRESSOR"),
-        **dict.fromkeys(["XGBClassifier"], "XGB_CLASSIFIER"),
-        **dict.fromkeys(["LinearSVR"], "SVM_REGRESSOR"),
-        **dict.fromkeys(["LinearSVR"], "SVM_CLASSIFIER"),
-        **dict.fromkeys(["PoissonRegressor"], "POISSON_REGRESSION"),
-        **dict.fromkeys(["AR"], "AUTOREGRESSOR"),
-        **dict.fromkeys(["MA"], "MOVING_AVERAGE"),
-        **dict.fromkeys(["ARMA", "ARIMA"], "ARIMA"),
-        **dict.fromkeys(
-            ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
-            ["LINEAR_REG", "LINEAR_REGRESSION"],
-        ),
-        **dict.fromkeys(["KMeans"], "KMEANS"),
-    }
-
-    return train_func_map.get(model_class, None)
-
-
-def get_predict_function(model_class):
-    pred_func_map = {
-        **dict.fromkeys(
-            ["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"],
-            "PREDICT_RF_REGRESSOR",
-        ),
-        **dict.fromkeys(
-            ["RandomForestClassifier", "DecisionTreeClassifier", "DummyTreeClassifier"],
-            "PREDICT_RF_CLASSIFIER",
-        ),
-        **dict.fromkeys(["XGBRegressor"], "PREDICT_XGB_REGRESSOR"),
-        **dict.fromkeys(["XGBClassifier"], "PREDICT_XGB_CLASSIFIER"),
-        **dict.fromkeys(["LinearSVR"], "PREDICT_SVM_REGRESSOR"),
-        **dict.fromkeys(["PoissonRegressor"], "PREDICT_POISSON_REG"),
-        **dict.fromkeys(["AR"], "PREDICT_AUTOREGRESSOR"),
-        **dict.fromkeys(["MA"], "PREDICT_MOVING_AVERAGE"),
-        **dict.fromkeys(["ARMA", "ARIMA"], "PREDICT_ARIMA"),
-        **dict.fromkeys(
-            ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
-            "PREDICT_LINEAR_REG",
-        ),
-        **dict.fromkeys(["KMeans"], "APPLY_KMEANS"),
-    }
-
-    return pred_func_map.get(model_class, "PREDICT_LINEAR_REG")
-
-
-def get_model_attributes(model_class):
-    attributes_map = {
-        **dict.fromkeys(
-            ["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"],
-            [
-                "n_estimators_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ],
-        ),
-        **dict.fromkeys(
-            ["XGBRegressor"],
-            [
-                "n_estimators_",
-                "eta_",
-                "mean_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ],
-        ),
-        **dict.fromkeys(
-            ["RandomForestClassifier", "DecisionTreeClassifier", "DummyTreeClassifier"],
-            [
-                "n_estimators_",
-                "classes_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ],
-        ),
-        **dict.fromkeys(
-            ["XGBClassifier"],
-            [
-                "n_estimators_",
-                "classes_",
-                "eta_",
-                "logodds_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ],
-        ),
-        **dict.fromkeys(
-            ["AR"], ["phi_", "intercept_", "features_importance_", "mse_", "n_"]
-        ),
-        **dict.fromkeys(["MA"], ["theta_", "mu_", "mean_", "mse_", "n_"]),
-        **dict.fromkeys(
-            ["ARMA"], ["phi_", "theta_", "mean_", "features_importance_", "mse_", "n_"]
-        ),
-        **dict.fromkeys(
-            ["ARIMA"], ["phi_", "theta_", "mean_", "features_importance_", "mse_", "n_"]
-        ),
-        **dict.fromkeys(
-            ["KMeans"],
-            [
-                "clusters_",
-                "p_",
-                "between_cluster_ss_",
-                "total_ss_",
-                "total_within_cluster_ss_",
-                "elbow_score_",
-                "converged_",
-            ],
-        ),
-    }
-
-    return attributes_map.get(
-        model_class, ["coef_", "intercept_", "features_importance_"]
-    )
-
-
-def get_model_params(model_class):
-    params_map = {
-        **dict.fromkeys(
-            ["LinearRegression"],
-            {"tol": 1e-06, "max_iter": 100, "solver": "newton", "fit_intercept": True},
-        ),
-        **dict.fromkeys(
-            ["Ridge"],
-            {
-                "tol": 1e-06,
-                "C": 1.0,
-                "max_iter": 100,
-                "solver": "newton",
-                "fit_intercept": True,
-            },
-        ),
-        **dict.fromkeys(
-            ["Lasso"],
-            {
-                "tol": 1e-06,
-                "C": 1.0,
-                "max_iter": 100,
-                "solver": "cgd",
-                "fit_intercept": True,
-            },
-        ),
-        **dict.fromkeys(
-            ["ElasticNet"],
-            {
-                "tol": 1e-06,
-                "C": 1.0,
-                "max_iter": 100,
-                "solver": "cgd",
-                "l1_ratio": 0.5,
-                "fit_intercept": True,
-            },
-        ),
-        **dict.fromkeys(
-            ["RandomForestRegressor", "RandomForestClassifier"],
-            {
-                "n_estimators": 10,
-                "max_features": 2,
-                "max_leaf_nodes": 10,
-                "sample": 0.632,
-                "max_depth": 10,
-                "min_samples_leaf": 1,
-                "min_info_gain": 0.0,
-                "nbins": 32,
-            },
-        ),
-        **dict.fromkeys(
-            ["DecisionTreeRegressor", "DecisionTreeClassifier"],
-            {
-                "max_features": 2,
-                "max_leaf_nodes": 10,
-                "max_depth": 10,
-                "min_samples_leaf": 1,
-                "min_info_gain": 0.0,
-                "nbins": 32,
-            },
-        ),
-        **dict.fromkeys(
-            ["XGBRegressor", "XGBClassifier"],
-            {
-                "max_ntree": 10,
-                "max_depth": 10,
-                "nbins": 150,
-                "split_proposal_method": "global",
-                "tol": 0.001,
-                "learning_rate": 0.1,
-                "min_split_loss": 0.0,
-                "weight_reg": 0.0,
-                "sample": 1.0,
-                "col_sample_by_tree": 1.0,
-                "col_sample_by_node": 1.0,
-            },
-        ),
-        **dict.fromkeys(["DummyTreeRegressor", "DummyTreeClassifier"], {}),
-        **dict.fromkeys(
-            ["LinearSVR"],
-            {
-                "tol": 1e-04,
-                "C": 1.0,
-                "intercept_scaling": 1.0,
-                "intercept_mode": "regularized",
-                "acceptable_error_margin": 0.1,
-                "max_iter": 100,
-            },
-        ),
-        **dict.fromkeys(
-            ["PoissonRegressor"],
-            {
-                "penalty": "l2",
-                "tol": 1e-06,
-                "C": 1,
-                "max_iter": 100,
-                "solver": "newton",
-                "fit_intercept": True,
-            },
-        ),
-        **dict.fromkeys(
-            ["AR"],
-            {
-                "p": 3,
-                "method": "ols",
-                "penalty": "none",
-                "C": 1.0,
-                "missing": "linear_interpolation",
-            },
-        ),
-        **dict.fromkeys(
-            ["MA"],
-            {"q": 1, "penalty": "none", "C": 1.0, "missing": "linear_interpolation"},
-        ),
-        **dict.fromkeys(
-            ["ARMA"],
-            {
-                "order": (2, 1),
-                "tol": 1e-06,
-                "max_iter": 100,
-                "init": "zero",
-                "missing": "linear_interpolation",
-            },
-        ),
-        **dict.fromkeys(
-            ["ARIMA"],
-            {
-                "order": (2, 1, 1),
-                "tol": 1e-06,
-                "max_iter": 100,
-                "init": "zero",
-                "missing": "linear_interpolation",
-            },
-        ),
-        **dict.fromkeys(
-            ["KMeans"],
-            {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 0.0001},
-        ),
-    }
-    return params_map.get(
-        model_class,
-        None,
-    )
-
-
-def get_vertica_model_attributes(model_class):
-    vertica_attributes_map = {
-        **dict.fromkeys(
-            [
-                "RandomForestRegressor",
-                "RandomForestClassifier",
-                "DecisionTreeRegressor",
-                "DecisionTreeClassifier",
-                "DummyTreeRegressor",
-                "DummyTreeClassifier",
-                "XGBRegressor",
-                "XGBClassifier",
-            ],
-            {
-                "attr_name": [
-                    "tree_count",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "call_string",
-                    "details",
-                ],
-                "attr_fields": [
-                    "tree_count",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "call_string",
-                    "predictor, type",
-                ],
-                "#_of_rows": [1, 1, 1, 1, 3],
-            },
-        ),
-        **dict.fromkeys(
-            ["LinearSVR"],
-            {
-                "attr_name": [
-                    "details",
-                    "accepted_row_count",
-                    "rejected_row_count",
-                    "iteration_count",
-                    "call_string",
-                ],
-                "attr_fields": [
-                    "predictor, coefficient",
-                    "accepted_row_count",
-                    "rejected_row_count",
-                    "iteration_count",
-                    "call_string",
-                ],
-                "#_of_rows": [4, 1, 1, 1, 1],
-            },
-        ),
-        **dict.fromkeys(
-            ["PoissonRegressor"],
-            {
-                "attr_name": [
-                    "details",
-                    "regularization",
-                    "iteration_count",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "call_string",
-                ],
-                "attr_fields": [
-                    "predictor, coefficient, std_err, z_value, p_value",
-                    "type, lambda",
-                    "iteration_count",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "call_string",
-                ],
-                "#_of_rows": [4, 1, 1, 1, 1, 1],
-            },
-        ),
-        **dict.fromkeys(
-            ["AR"],
-            {
-                "attr_name": [
-                    "coefficients",
-                    "lag_order",
-                    "lambda",
-                    "mean_squared_error",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
-                    "missing_method",
-                    "call_string",
-                ],
-                "attr_fields": [
-                    "parameter, value",
-                    "lag_order",
-                    "lambda",
-                    "mean_squared_error",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
-                    "missing_method",
-                    "call_string",
-                ],
-                "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            },
-        ),
-        **dict.fromkeys(
-            ["MA"],
-            {
-                "attr_name": [
-                    "coefficients",
-                    "mean",
-                    "lag_order",
-                    "lambda",
-                    "mean_squared_error",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
-                    "missing_method",
-                    "call_string",
-                ],
-                "attr_fields": [
-                    "parameter, value",
-                    "mean",
-                    "lag_order",
-                    "lambda",
-                    "mean_squared_error",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
-                    "missing_method",
-                    "call_string",
-                ],
-                "#_of_rows": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            },
-        ),
-        **dict.fromkeys(
-            ["ARMA", "ARIMA"],
-            {
-                "attr_name": [
-                    "coefficients",
-                    "p",
-                    "d",
-                    "q",
-                    "mean",
-                    "regularization",
-                    "lambda",
-                    "mean_squared_error",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
-                    "missing_method",
-                    "call_string",
-                ],
-                "attr_fields": [
-                    "parameter, value",
-                    "p",
-                    "d",
-                    "q",
-                    "mean",
-                    "regularization",
-                    "lambda",
-                    "mean_squared_error",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
-                    "missing_method",
-                    "call_string",
-                ],
-                "#_of_rows": [3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            },
-        ),
-        **dict.fromkeys(
-            ["KMeans"],
-            {
-                "attr_name": ["centers", "metrics"],
-                "attr_fields": [
-                    "sepallengthcm, sepalwidthcm, petallengthcm, petalwidthcm",
-                    "metrics",
-                ],
-                "#_of_rows": [8, 1],
-            },
-        ),
-    }
-    if model_class == "XGBRegressor":
-        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
-        vertica_attributes_map[model_class]["attr_fields"].append("initial_prediction")
-        vertica_attributes_map[model_class]["#_of_rows"].append(1)
-    elif model_class == "XGBClassifier":
-        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
-        vertica_attributes_map[model_class]["attr_fields"].append(
-            "response_label, value"
-        )
-        vertica_attributes_map[model_class]["#_of_rows"].append(2)
-
-    return vertica_attributes_map.get(
-        model_class,
-        {
-            "attr_name": [
-                "details",
-                "regularization",
-                "iteration_count",
-                "rejected_row_count",
-                "accepted_row_count",
-                "call_string",
-            ],
-            "attr_fields": [
-                "predictor, coefficient, std_err, t_value, p_value",
-                "type, lambda",
-                "iteration_count",
-                "rejected_row_count",
-                "accepted_row_count",
-                "call_string",
-            ],
-            "#_of_rows": [4, 1, 1, 1, 1, 1],
-        },
-    )
-
-
-def get_set_params(model_class):
-    set_params_map = {
-        **dict.fromkeys(
-            ["RandomForestRegressor", "RandomForestClassifier"],
-            {"n_estimators": 100, "max_depth": 50, "nbins": 100},
-        ),
-        **dict.fromkeys(
-            ["DecisionTreeRegressor", "DecisionTreeClassifier"],
-            {"max_depth": 50, "nbins": 100},
-        ),
-        **dict.fromkeys(
-            ["XGBRegressor", "XGBClassifier"], {"max_depth": 50, "nbins": 100}
-        ),
-        **dict.fromkeys(["DummyTreeRegressor", "DummyTreeClassifier"], {}),
-        **dict.fromkeys(
-            ["LinearSVR"], {"intercept_mode": "unregularized", "max_iter": 500}
-        ),
-        **dict.fromkeys(
-            ["ElasticNet"],
-            {"l1_ratio": 0.01, "C": 0.12, "solver": "newton", "max_iter": 500},
-        ),
-        **dict.fromkeys(
-            ["AR"], {"p": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
-        ),
-        **dict.fromkeys(
-            ["MA"], {"q": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
-        ),
-        **dict.fromkeys(
-            ["ARMA"], {"order": (2, 4, 2), "tol": 1, "init": "hr", "missing": "drop"}
-        ),
-        **dict.fromkeys(
-            ["ARIMA"], {"order": (2, 2), "tol": 1, "init": "hr", "missing": "drop"}
-        ),
-        **dict.fromkeys(["KMeans"], {"n_cluster": 5, "init": "random", "tol": 1}),
-    }
-    return set_params_map.get(model_class, {"solver": "cgd", "max_iter": 500})
-
-
-@pytest.fixture
-def get_pred_column(model_class):
-    pred_col_map = {
-        **dict.fromkeys(REGRESSION_MODELS, "quality_pred"),
-        **dict.fromkeys(CLASSIFICATION_MODELS, "survived_pred"),
-        **dict.fromkeys(TIMESERIES_MODELS, "prediction"),
-        **dict.fromkeys(["KMeans"], f"{model_class}_cluster_ids"),
-    }
-    return pred_col_map.get(model_class, None)
-
-
-@pytest.fixture
-def get_predictors(model_class, get_py_model):
-    return list(get_py_model(model_class).X.columns)
-
-
-@pytest.fixture
-def get_to_sql(model_class, get_models):
-    if model_class in TIMESERIES_MODELS:
-        pytest.skip(f"to_sql function is not available for {model_class} model")
-
-    pred_func = get_predict_function(model_class)
-    model_name = get_models.vpy.model.model_name
-    to_sql_func = get_models.vpy.model.to_sql
-
-    to_sql_map = {
-        **dict.fromkeys(
-            REGRESSION_MODELS,
-            f"SELECT {pred_func}(3.0, 11.0, 93.0 USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::float, {to_sql_func([3.0, 11.0, 93.0])}::float"
-            if model_class in REGRESSION_MODELS
-            else None,
-        ),
-        **dict.fromkeys(
-            CLASSIFICATION_MODELS,
-            f"""SELECT {pred_func}(* USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::int, {to_sql_func()}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"""
-            if model_class in CLASSIFICATION_MODELS
-            else None,
-        ),
-        **dict.fromkeys(
-            ["KMeans"],
-            f"SELECT {pred_func}(3.0, 11.0, 93.0, 0.244 USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::float, {to_sql_func([3.0, 11.0, 93.0, 0.244])}::float"
-            if model_class == "KMeans"
-            else None,
-        ),
-    }
-    yield to_sql_map.get(model_class, None)
-
-
-def _get_deploysql(model_class):
-    """
-    test function - deploySQL
-    """
-    deploysql_map = {
-        **dict.fromkeys(
-            REGRESSION_MODELS + CLASSIFICATION_MODELS + CLUSTER_MODELS,
-            """{pred_fun_name}({columns} USING PARAMETERS model_name = '{schema_name}.{model_name}', match_by_pos = 'true')""",
-        ),
-        **dict.fromkeys(
-            TIMESERIES_MODELS,
-            """{pred_fun_name}( USING PARAMETERS model_name = '{schema_name}.{model_name}', add_mean = True, npredictions = 10 ) OVER ()""",
-        ),
-    }
-    return deploysql_map.get(model_class, None)
