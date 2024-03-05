@@ -94,18 +94,43 @@ class TestQueryProfilerSimple:
         assert os.path.exists(outfile)
 
         pi = ProfileImport(
-            # schema and target will be once this test copies
-            # files into a schema
             target_schema=schema_loader,
             key="reload123",
             filename=outfile,
         )
         unpack_tmp = tmp_path / "unpack"
         unpack_tmp.mkdir()
-        pi.skip_create_table = False
-        pi.raise_when_missing_files = True
         pi.tmp_path = unpack_tmp
         pi.check_schema_and_load_file()
+
+    def test_high_level_import_export(self, amazon_vd, schema_loader, tmp_path):
+        request = f"""
+        SELECT 
+            date, 
+            MONTH(date) AS month, 
+            AVG(number) AS avg_number 
+        FROM 
+            {amazon_vd}
+        GROUP BY 1;
+        """
+
+        qp = QueryProfiler(request,
+                        target_schema=schema_loader)
+
+        outfile = tmp_path / "qprof_test_002.tar"
+        logging.info(f"Writing to file: {outfile}")
+        qp.export_profile(filename=outfile)
+        assert os.path.exists(outfile)
+
+        new_qp = QueryProfiler.import_profile(target_schema=schema_loader,
+                                              key_id="reload789",
+                                              filename=outfile,
+                                              tmp_dir=tmp_path)
+        
+        assert new_qp is not None
+        # We don't validate the qplan tree in this test. We just want to ensure that it is 
+        # produced.
+        new_qp.get_qplan_tree()
 
 
             

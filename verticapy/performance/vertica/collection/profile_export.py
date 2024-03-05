@@ -56,7 +56,7 @@ class ProfileExport:
             raise TypeError(f"Expected target_schema to have type str but found type {type(target_schema)}")
         self.target_schema = target_schema
         self.key = key
-        self.filename = filename
+        self.filename = filename if isinstance(filename, Path) else Path(filename)
         self.logger = logging.getLogger("ProfileExport")
 
         # Usually the version of export will be "LATEST"
