@@ -3290,7 +3290,7 @@ class QueryProfiler:
 
     def export_profile(self, filename: os.PathLike) -> None:
         """
-        Creates a tar file containing parquet files of the 
+        Creates a tar file containing parquet files of the
         replica tables used while profiling a query.
 
         Parameters
@@ -3342,9 +3342,9 @@ class QueryProfiler:
         tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp"),
     ):
         """
-        Import the query profile in filename into the database schema 
-        ``target_schema`` with tables suffixed by key_id. Then create 
-        query profiler object that refers to the tables in ``target_schema``,  
+        Import the query profile in filename into the database schema
+        ``target_schema`` with tables suffixed by key_id. Then create
+        query profiler object that refers to the tables in ``target_schema``,
         the profile in filename.
 
         Returns
@@ -3367,14 +3367,14 @@ class QueryProfiler:
         -------------------
 
         ..code-block():: python
-        
+
             from verticapy.performance.vertica import QueryProfiler
             imported_profile = QueryProfiler.import_profile(
                 target_schema="import_monday",
                 key_id="test345",
                 filename=export_file)
             imported_profile.get_qplan_tree()
-            
+
         """
         pi = ProfileImport(
             # schema and target will be once this test copies
