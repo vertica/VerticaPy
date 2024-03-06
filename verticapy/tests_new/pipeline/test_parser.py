@@ -16,38 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.pipeline import parser
 
-from verticapy.tests_new.pipeline.conftest import pipeline_exists
-
-
-def build_pipeline(pipeline_name: str):
-    steps = {
-        "schema": "public",
-        "pipeline": pipeline_name,
-        "table": "public.winequality",
-        "steps": {
-            "transform": {
-                "col1": {"sql": "fixed_acidity"},
-                "col2": {
-                    "sql": "volatile_acidity",
-                },
-                "col3": {
-                    "sql": "citric_acid",
-                },
-            },
-            "train": {
-                "train_test_split": {"test_size": 0.34},
-                "method": {
-                    "name": "LinearRegression",
-                    "target": "quality",
-                },
-                "schedule": "* * * * *",
-            },
-            "test": {
-                "metric1": {"name": "r2", "y_true": "quality", "y_score": "prediction"}
-            },
-        },
-    }
-    parser.parse_yaml(steps)
+from verticapy.tests_new.pipeline.conftest import build_pipeline, pipeline_exists
 
 
 def test_parser():

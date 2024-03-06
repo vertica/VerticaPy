@@ -18,6 +18,7 @@ import pytest
 
 import verticapy.sql.sys as sys
 
+from verticapy.pipeline import parser
 from verticapy.pipeline._helper import setup
 
 
@@ -52,3 +53,38 @@ def pipeline_not_exists(pipeline_name: str, check_metric=False, model=None):
     )
     assert model == None or not model.does_model_exists(f"public.{pipeline_name}_MODEL")
     return True
+
+
+def build_pipeline(pipeline_name: str):
+    """
+    helper function to build identical pipelines
+    with different names.
+    """
+    steps = {
+        "schema": "public",
+        "pipeline": pipeline_name,
+        "table": "public.winequality",
+        "steps": {
+            "transform": {
+                "col1": {"sql": "fixed_acidity"},
+                "col2": {
+                    "sql": "volatile_acidity",
+                },
+                "col3": {
+                    "sql": "citric_acid",
+                },
+            },
+            "train": {
+                "train_test_split": {"test_size": 0.34},
+                "method": {
+                    "name": "LinearRegression",
+                    "target": "quality",
+                },
+                "schedule": "* * * * *",
+            },
+            "test": {
+                "metric1": {"name": "r2", "y_true": "quality", "y_score": "prediction"}
+            },
+        },
+    }
+    parser.parse_yaml(steps)

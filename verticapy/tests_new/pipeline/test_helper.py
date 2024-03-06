@@ -18,9 +18,13 @@ import pytest
 
 from verticapy._utils._sql._sys import _executeSQL
 
-from verticapy.pipeline import parser, _helper
+from verticapy.pipeline import _helper
 
-from verticapy.tests_new.pipeline.conftest import pipeline_exists, pipeline_not_exists
+from verticapy.tests_new.pipeline.conftest import (
+    build_pipeline, 
+    pipeline_exists, 
+    pipeline_not_exists
+)
 
 
 @pytest.mark.parametrize(
@@ -92,20 +96,19 @@ def test_execute_and_return():
     sql = "SELECT 1;"
     assert _helper.execute_and_return(sql) == "SELECT 1;\n"
 
-
-def test_remove_comments():
+@pytest.mark.parametrize(
+    "input_string,intended_string",
+    [
+        ("SELECT 1;", "SELECT 1;"),
+        ("SELECT 1; /* THIS IS A COMMENT */ ", "SELECT 1;  "),
+        ("SELECT 1; /* THIS IS A COMMENT */ /* THIS IS ALSO A COMMENT */", "SELECT 1;  ")
+    ]
+)
+def test_remove_comments(input_string, intended_string):
     """
     test function remove_comments
     """
-    input_string = "SELECT 1;"
-    assert _helper.remove_comments(input_string) == input_string
-
-    input_string = "SELECT 1; /* THIS IS A COMMENT */ "
-    assert _helper.remove_comments(input_string) == "SELECT 1;  "
-
-    input_string = "SELECT 1; /* THIS IS A COMMENT */ /* THIS IS ALSO A COMMENT */"
-    assert _helper.remove_comments(input_string) == "SELECT 1;  "
-
+    assert _helper.remove_comments(input_string) == intended_string
 
 def test_to_sql():
     """
@@ -118,39 +121,6 @@ def test_to_sql():
     assert _helper.to_sql(dummy_sql) == dummy_string
 
 
-def build_pipeline(pipeline_name: str):
-    """
-    helper function to build identical pipelines
-    with different names.
-    """
-    steps = {
-        "schema": "public",
-        "pipeline": pipeline_name,
-        "table": "public.winequality",
-        "steps": {
-            "transform": {
-                "col1": {"sql": "fixed_acidity"},
-                "col2": {
-                    "sql": "volatile_acidity",
-                },
-                "col3": {
-                    "sql": "citric_acid",
-                },
-            },
-            "train": {
-                "train_test_split": {"test_size": 0.34},
-                "method": {
-                    "name": "LinearRegression",
-                    "target": "quality",
-                },
-                "schedule": "* * * * *",
-            },
-            "test": {
-                "metric1": {"name": "r2", "y_true": "quality", "y_score": "prediction"}
-            },
-        },
-    }
-    parser.parse_yaml(steps)
 
 
 def test_setup():
