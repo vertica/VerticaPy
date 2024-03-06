@@ -467,7 +467,7 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
         :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
         n = len(self.models_)
-        if 0 <= idx < n:
+        if not (0 <= idx < n):
             raise IndexError(
                 "Index out of range: You should use "
                 f"an index value between 0 and {n-1}."
@@ -1155,7 +1155,7 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
         :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
         n = len(self.models_)
-        if 0 <= idx < n:
+        if not (0 <= idx < n):
             raise IndexError(
                 "Index out of range: You should use "
                 f"an index value between 0 and {n-1}."
