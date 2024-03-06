@@ -120,9 +120,18 @@ class TestProfileImport:
         pi.tmp_path = tmp_path_with_test_bundles
         # check_file was configured to log warnings instead of printing errors
         pi.check_file()
-        pi.raise_when_missing_files = True
+        
+        # Now test that we raise appropriately
+        pi2 = ProfileImport(
+            target_schema="schema_not_used",
+            key="no_such_key",
+            filename=fname,
+        )
+        pi2.skip_create_table = True
+        pi2.tmp_path = tmp_path_with_test_bundles
+        pi2.raise_when_missing_files = True
         with pytest.raises(ProfileImportError, match=f"Bundle .* lacks [0-9]+ files"):
-            pi.check_file()
+            pi2.check_file()
 
     def test_create_tables_copy_data(self, schema_loader, tmp_path_with_test_bundles):
         fname = tmp_path_with_test_bundles / "feb20_demo_djr_v03.tar"
@@ -175,14 +184,13 @@ class TestProfileImport:
         # creates tables if they don't exist
         pi.check_schema()
 
+        # The list below test checks the latest version of the tables
+        # is created.
         should_be_created = [
-            "qprof_collection_events_aaa",
-            "qprof_collection_info_aaa",
             "qprof_dc_explain_plans_aaa",
             "qprof_dc_query_executions_aaa",
             "qprof_dc_requests_issued_aaa",
             "qprof_execution_engine_profiles_aaa",
-            "qprof_export_events_aaa",
             "qprof_host_resources_aaa",
             "qprof_query_consumption_aaa",
             "qprof_query_plan_profiles_aaa",

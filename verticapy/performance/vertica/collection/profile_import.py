@@ -83,6 +83,7 @@ class ProfileImport:
         self.skip_create_table = False
         self.tmp_path = os.getcwd()
         self.unpack_dir = None
+        self._file_check_complete = False
 
     @property
     def skip_create_table(self) -> bool:
@@ -147,9 +148,14 @@ class ProfileImport:
         if not os.path.exists(self.filename):
             raise FileNotFoundError(f"File {self.filename} does not exist")
 
+        if self._file_check_complete:
+            self.logger.info("File check complete, not repeating check_file()")
+            return
+        
         self.unpack_dir = self._unpack_bundle()
         self.bundle_version = self._calculate_bundle_version(self.unpack_dir)
         self._check_for_missing_files(self.unpack_dir, self.bundle_version)
+        self._file_check_complete = True
 
     def check_schema(self) -> None:
         """
@@ -168,6 +174,9 @@ class ProfileImport:
         self._load_vdataframes(self.unpack_dir, self.bundle_version)
 
     def check_schema_and_load_file(self) -> None:
+        # Check file to get metadata version before
+        # creating tables
+        self.check_file()
         self.check_schema()
         self._load_file()
 
