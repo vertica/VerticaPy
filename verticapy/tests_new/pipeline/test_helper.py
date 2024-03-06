@@ -20,31 +20,66 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.pipeline import parser, _helper
 
-import verticapy.sql.sys as sys
+from verticapy.tests_new.pipeline.conftest import pipeline_exists, pipeline_not_exists
 
-
-def test_required_keywords():
+@pytest.mark.parametrize(
+    "yaml,keywords",
+    [
+        ({"key1": 1, "key2": 2, "key3": 3}, ["key1", "key2", "key3"]),
+        ({}, []),
+        ({"key1": 1}, [])
+    ]
+)
+def test_required_keywords(yaml, keywords):
     """
     test function required_keywords.
     """
-    yaml = {"key1": 1, "key2": 2, "key3": 3}
-    keywords = ["key1", "key2", "key3"]
-    assert _helper.required_keywords(yaml, keywords) == True
+    assert _helper.required_keywords(yaml, keywords)
 
-    yaml = {"key1": 1, "key3": 3}
-    keywords = ["key1", "key2", "key3"]
+@pytest.mark.parametrize(
+    "yaml,keywords,error_keyword",
+    [
+        ({"key1": 1, "key3": 3}, ["key1", "key2", "key3"], 'key2'),
+        ({}, ["key1", "key2", "key3"], 'key1'),
+        ({"key1":1}, ["key1", "key2", "key3"], 'key2'),
+        ({"key1": 1, "key2": 2}, ["key1", "key2", "key3"], 'key3'),
+    ]
+)
+def test_required_keywords_negative(yaml, keywords, error_keyword):
+    """
+    test function required_keywords.
+    """
     with pytest.raises(KeyError) as error_info:
         _helper.required_keywords(yaml, keywords)
-    assert "key2" in str(error_info.value)
+    assert error_keyword in str(error_info.value)
 
-    yaml = {}
-    keywords = []
-    assert _helper.required_keywords(yaml, keywords) == True
 
-    yaml = {"key1": 1}
-    keywords = []
-    assert _helper.required_keywords(yaml, keywords) == True
+@pytest.mark.parametrize(
+    "delimiter",
+    [
+        ',',
+        ' ',
+        'a',
+    ]
+)
+def test_is_valid_delimiter(delimiter):
+    """
+    test function is_valid_delimiter
+    """
+    assert _helper.is_valid_delimiter(delimiter)
 
+@pytest.mark.parametrize(
+    "delimiter",
+    [
+        'ú',
+        'ð',
+    ]
+)
+def test_is_valid_delimiter_negative(delimiter):
+    """
+    test function is_valid_delimiter
+    """
+    assert not _helper.is_valid_delimiter(delimiter)
 
 def test_execute_and_return():
     """
@@ -133,40 +168,19 @@ def test_setup():
     build_pipeline("test_pipeline2")
     build_pipeline("test_pipeline_2")
 
-    assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-    assert sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
-    assert sys.does_table_exist("test_pipeline_METRIC_TABLE", "public")
-
-    assert sys.does_view_exist("test_pipeline2_TRAIN_VIEW", "public")
-    assert sys.does_view_exist("test_pipeline2_TEST_VIEW", "public")
-    assert sys.does_table_exist("test_pipeline2_METRIC_TABLE", "public")
-
-    assert sys.does_view_exist("test_pipeline_2_TRAIN_VIEW", "public")
-    assert sys.does_view_exist("test_pipeline_2_TEST_VIEW", "public")
-    assert sys.does_table_exist("test_pipeline_2_METRIC_TABLE", "public")
+    assert pipeline_exists('test_pipeline')
+    assert pipeline_exists('test_pipeline2')
+    assert pipeline_exists('test_pipeline_2')
 
     # Drop 'test_pipeline'
     _executeSQL("CALL drop_pipeline('public', 'test_pipeline')")
 
-    assert not sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-    assert not sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
-    assert not sys.does_table_exist("test_pipeline_METRIC_TABLE", "public")
-
-    assert sys.does_view_exist("test_pipeline2_TRAIN_VIEW", "public")
-    assert sys.does_view_exist("test_pipeline2_TEST_VIEW", "public")
-    assert sys.does_table_exist("test_pipeline2_METRIC_TABLE", "public")
-
-    assert sys.does_view_exist("test_pipeline_2_TRAIN_VIEW", "public")
-    assert sys.does_view_exist("test_pipeline_2_TEST_VIEW", "public")
-    assert sys.does_table_exist("test_pipeline_2_METRIC_TABLE", "public")
+    assert pipeline_not_exists('test_pipeline')
+    assert pipeline_exists('test_pipeline2')
+    assert pipeline_exists('test_pipeline_2')
 
     _executeSQL("CALL drop_pipeline('public', 'test_pipeline2')")
     _executeSQL("CALL drop_pipeline('public', 'test_pipeline_2')")
-
-    assert not sys.does_view_exist("test_pipeline2_TRAIN_VIEW", "public")
-    assert not sys.does_view_exist("test_pipeline2_TEST_VIEW", "public")
-    assert not sys.does_table_exist("test_pipeline2_METRIC_TABLE", "public")
-
-    assert not sys.does_view_exist("test_pipeline_2_TRAIN_VIEW", "public")
-    assert not sys.does_view_exist("test_pipeline_2_TEST_VIEW", "public")
-    assert not sys.does_table_exist("test_pipeline_2_METRIC_TABLE", "public")
+    
+    assert pipeline_not_exists('test_pipeline2')
+    assert pipeline_not_exists('test_pipeline_2')
