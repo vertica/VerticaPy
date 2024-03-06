@@ -26,6 +26,7 @@ from verticapy.performance.vertica.collection.profile_import import (
 )
 from verticapy._utils._sql._sys import _executeSQL
 
+
 class TestQueryProfilerSimple:
     """
     Contains tests related to creating bundles of parquet data
@@ -96,7 +97,7 @@ class TestQueryProfilerSimple:
         qp.export_profile(filename=outfile)
         assert os.path.exists(outfile)
 
-        key="reload123"
+        key = "reload123"
         pi = ProfileImport(
             target_schema=schema_loader,
             key=key,
@@ -107,8 +108,7 @@ class TestQueryProfilerSimple:
         pi.tmp_path = unpack_tmp
         pi.check_schema_and_load_file()
 
-        loaded_tables = self._get_set_of_tables_in_schema(schema_loader, 
-                                                          key)
+        loaded_tables = self._get_set_of_tables_in_schema(schema_loader, key)
 
         expected_tables = [
             f"qprof_dc_explain_plans_{key}",
@@ -124,8 +124,9 @@ class TestQueryProfilerSimple:
 
         for t in expected_tables:
             assert t in loaded_tables
-            result = _executeSQL(f"select count(*) from {schema_loader}.{t}",
-                                 method="fetchall")
+            result = _executeSQL(
+                f"select count(*) from {schema_loader}.{t}", method="fetchall"
+            )
             assert result[0][0] > 0
 
     def _get_set_of_tables_in_schema(self, target_schema, key):

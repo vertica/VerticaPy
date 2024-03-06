@@ -67,11 +67,10 @@ class TableMetadata:
     that represents a table. It can be serialized to JSON
     and read back later.
     """
+
     # TODO: someday this class should also be able to
     # de-serialize data.
-    def __init__(self, file_name: Path,
-                 table_type: AllTableTypes,
-                 exported_rows: int):
+    def __init__(self, file_name: Path, table_type: AllTableTypes, exported_rows: int):
         self.file_name = file_name
         self.table_type = table_type
         self.exported_rows = exported_rows
@@ -87,17 +86,15 @@ class TableMetadata:
 
 class ExportMetadata:
     """
-    ``ExportMetadata`` contains all of the metadata for a export 
+    ``ExportMetadata`` contains all of the metadata for a export
     bundle of parquet files. It has methods to write the metadata
     to a file.
     """
+
     # TODO: someday this class should also be able to de-serialize
     # data from a json file.
     def __init__(
-        self, 
-        file_name: Path, 
-        version: BundleVersion, 
-        tables: List[TableMetadata]
+        self, file_name: Path, version: BundleVersion, tables: List[TableMetadata]
     ):
         self.file_name = file_name
         self.version = version
@@ -111,7 +108,7 @@ class ExportMetadata:
 
     def write_to_file(self):
         """
-        Writes 
+        Writes
         """
         with open(self.file_name, "w") as mdf:
             json.dump(self.to_json(), mdf)
@@ -274,9 +271,9 @@ class CollectionTable:
             f" with rows {pdf_rows} and columns {pdf_columns}"
         )
         pandas_dataframe.to_parquet(path=file_name, compression="gzip")
-        return TableMetadata(file_name=file_name, 
-                             table_type=self.table_type,
-                             exported_rows=pdf_rows)
+        return TableMetadata(
+            file_name=file_name, table_type=self.table_type, exported_rows=pdf_rows
+        )
 
 
 def getAllCollectionTables(
