@@ -35,13 +35,13 @@ class TestValidate:
     @pytest.mark.parametrize(
         "name",
         [
-                "aic",
-                "bic",
-                "max_error",
-                'mean_absolute_error',
-                'mean_squared_error',
-                'mean_squared_log_error',
-                'r2',
+            "aic",
+            "bic",
+            "max_error",
+            "mean_absolute_error",
+            "mean_squared_error",
+            "mean_squared_log_error",
+            "r2",
         ],
     )
     def test_regression(
@@ -68,13 +68,12 @@ class TestValidate:
 
         cols = ["fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar"]
 
-
         metric = {
-                    "metric": {
-                        "name": name,
-                        "y_true": "quality",
-                        "y_score": "prediction",
-                    }
+            "metric": {
+                "name": name,
+                "y_true": "quality",
+                "y_score": "prediction",
+            }
         }
 
         # Part 1: Train a Model
@@ -82,22 +81,26 @@ class TestValidate:
 
         # Part 2: Run the Metrics
         _, metric_sql = testing(metric, model, pipeline_name, cols)
-        
+
         assert model
         assert pipeline_exists(pipeline_name, check_metric=True, model=model)
 
         # Check the main functions of the metric_table sql script are included
-        assert 'DROP TABLE' in metric_sql
-        assert 'CREATE TABLE' in metric_sql
-        assert f'{pipeline_name}_PREDICT_VIEW' in metric_sql
-        assert 'COMMIT;' in metric_sql
+        assert "DROP TABLE" in metric_sql
+        assert "CREATE TABLE" in metric_sql
+        assert f"{pipeline_name}_PREDICT_VIEW" in metric_sql
+        assert "COMMIT;" in metric_sql
 
-        # Check the created metric_table with one created with metric_sql 
+        # Check the created metric_table with one created with metric_sql
         # (these should be identical)
-        res = _executeSQL(f'SELECT * FROM {pipeline_name}_METRIC_TABLE;', method='fetchrow')
-        
+        res = _executeSQL(
+            f"SELECT * FROM {pipeline_name}_METRIC_TABLE;", method="fetchrow"
+        )
+
         _executeSQL(metric_sql)
-        res_from_sql = _executeSQL(f'SELECT * FROM {pipeline_name}_METRIC_TABLE;', method='fetchrow')
+        res_from_sql = _executeSQL(
+            f"SELECT * FROM {pipeline_name}_METRIC_TABLE;", method="fetchrow"
+        )
 
         assert res == res_from_sql
         assert name in res

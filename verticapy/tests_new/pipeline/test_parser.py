@@ -14,8 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.pipeline import parser
-
 from verticapy.tests_new.pipeline.conftest import build_pipeline, pipeline_exists
 
 

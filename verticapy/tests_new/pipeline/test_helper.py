@@ -21,9 +21,9 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.pipeline import _helper
 
 from verticapy.tests_new.pipeline.conftest import (
-    build_pipeline, 
-    pipeline_exists, 
-    pipeline_not_exists
+    build_pipeline,
+    pipeline_exists,
+    pipeline_not_exists,
 )
 
 
@@ -96,19 +96,24 @@ def test_execute_and_return():
     sql = "SELECT 1;"
     assert _helper.execute_and_return(sql) == "SELECT 1;\n"
 
+
 @pytest.mark.parametrize(
     "input_string,intended_string",
     [
         ("SELECT 1;", "SELECT 1;"),
         ("SELECT 1; /* THIS IS A COMMENT */ ", "SELECT 1;  "),
-        ("SELECT 1; /* THIS IS A COMMENT */ /* THIS IS ALSO A COMMENT */", "SELECT 1;  ")
-    ]
+        (
+            "SELECT 1; /* THIS IS A COMMENT */ /* THIS IS ALSO A COMMENT */",
+            "SELECT 1;  ",
+        ),
+    ],
 )
 def test_remove_comments(input_string, intended_string):
     """
     test function remove_comments
     """
     assert _helper.remove_comments(input_string) == intended_string
+
 
 def test_to_sql():
     """
@@ -119,8 +124,6 @@ def test_to_sql():
     )
     dummy_string = """SELECT model(' || QUOTE_LITERAL('model_name') || ', ' || QUOTE_LITERAL('table_name') || ', ' || QUOTE_LITERAL('target_column') || ', ' || QUOTE_LITERAL('"col1, col2"') || '';"""
     assert _helper.to_sql(dummy_sql) == dummy_string
-
-
 
 
 def test_setup():
