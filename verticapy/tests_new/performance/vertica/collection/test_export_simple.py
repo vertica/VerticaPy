@@ -160,10 +160,10 @@ class TestQueryProfilerSimple:
         logging.info(f"Writing to file: {outfile}")
         qp.export_profile(filename=outfile)
         assert os.path.exists(outfile)
-
+        key = "reload789"
         new_qp = QueryProfiler.import_profile(
             target_schema=schema_loader,
-            key_id="reload789",
+            key_id=key,
             filename=outfile,
             tmp_dir=tmp_path,
         )
@@ -172,3 +172,23 @@ class TestQueryProfilerSimple:
         # We don't validate the qplan tree in this test. We just want to ensure that it is
         # produced.
         new_qp.get_qplan_tree()
+
+        # Also check that the tables were created ok
+        loaded_tables = self._get_set_of_tables_in_schema(schema_loader, key)
+        expected_tables = [
+            f"qprof_dc_explain_plans_{key}",
+            f"qprof_dc_query_executions_{key}",
+            f"qprof_dc_requests_issued_{key}",
+            f"qprof_execution_engine_profiles_{key}",
+            f"qprof_host_resources_{key}",
+            f"qprof_query_consumption_{key}",
+            f"qprof_query_plan_profiles_{key}",
+            f"qprof_query_profiles_{key}",
+            f"qprof_resource_pool_status_{key}",
+        ]
+        for t in expected_tables:
+            assert t in loaded_tables
+            result = _executeSQL(
+                f"select count(*) from {schema_loader}.{t}", method="fetchall"
+            )
+            assert result[0][0] > 0
