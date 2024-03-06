@@ -24,7 +24,7 @@ from verticapy.performance.vertica import QueryProfiler
 from verticapy.performance.vertica.collection.profile_import import (
     ProfileImport,
 )
-
+from verticapy._utils._sql._sys import _executeSQL
 
 class TestQueryProfilerSimple:
     """
@@ -96,15 +96,51 @@ class TestQueryProfilerSimple:
         qp.export_profile(filename=outfile)
         assert os.path.exists(outfile)
 
+        key="reload123"
         pi = ProfileImport(
             target_schema=schema_loader,
-            key="reload123",
+            key=key,
             filename=outfile,
         )
         unpack_tmp = tmp_path / "unpack"
         unpack_tmp.mkdir()
         pi.tmp_path = unpack_tmp
         pi.check_schema_and_load_file()
+
+        loaded_tables = self._get_set_of_tables_in_schema(schema_loader, 
+                                                          key)
+
+        expected_tables = [
+            f"qprof_dc_explain_plans_{key}",
+            f"qprof_dc_query_executions_{key}",
+            f"qprof_dc_requests_issued_{key}",
+            f"qprof_execution_engine_profiles_{key}",
+            f"qprof_host_resources_{key}",
+            f"qprof_query_consumption_{key}",
+            f"qprof_query_plan_profiles_{key}",
+            f"qprof_query_profiles_{key}",
+            f"qprof_resource_pool_status_{key}",
+        ]
+
+        for t in expected_tables:
+            assert t in loaded_tables
+            result = _executeSQL(f"select count(*) from {schema_loader}.{t}",
+                                 method="fetchall")
+            assert result[0][0] > 0
+
+    def _get_set_of_tables_in_schema(self, target_schema, key):
+        result = _executeSQL(
+            f"""SELECT table_name FROM v_catalog.tables 
+                    WHERE 
+                        table_schema = '{target_schema}'
+                        and table_name ilike '%_{key}';
+                    """,
+            method="fetchall",
+        )
+        existing_tables = set()
+        for row in result:
+            existing_tables.add(row[0])
+        return existing_tables
 
     def test_high_level_import_export(self, amazon_vd, schema_loader, tmp_path):
         request = f"""
