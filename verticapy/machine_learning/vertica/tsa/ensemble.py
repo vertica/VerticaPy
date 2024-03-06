@@ -15,16 +15,17 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import NoneType, SQLColumns, SQLRelation
+from verticapy._typing import NoneType, PlottingObject, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import extract_subquery, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.errors import ModelError
-from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.core.vdataframe.base import TableSample, vDataFrame
+import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.tsa.arima import ARIMA
 from verticapy.machine_learning.vertica.tsa.base import TimeSeriesModelBase
 
