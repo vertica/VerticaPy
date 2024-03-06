@@ -3313,13 +3313,15 @@ class QueryProfiler:
                                   target_schema="monday123")
 
             # Write out to a file in the current working directory
+            # that contains parquet files for all of the replica
+            # tables in target_schema
             qprof.export_profile(filename="qprof_test_123.tar")
 
         """
 
         if isinstance(self.target_schema, NoneType) or len(self.target_schema) == 0:
             raise ValueError(
-                f"Export requires that target_schema is set."
+                "Export requires that target_schema is set."
                 f" Current value of target_schema: {self.target_schema}"
             )
 
@@ -3369,10 +3371,20 @@ class QueryProfiler:
         ..code-block():: python
 
             from verticapy.performance.vertica import QueryProfiler
+
+            # Load the information from the tarball into a group
+            # of tables in `target_schema` that can be recognized
+            # by the QueryProfiler object. Then return a QueryProfiler
+            # object that has been configured to use the newly
+            # loaded tables.
+
             imported_profile = QueryProfiler.import_profile(
                 target_schema="import_monday",
                 key_id="test345",
-                filename=export_file)
+                filename="qprof_test_123.tar")
+
+            # `imported_profile` is ready to be used for
+            # profile analysis
             imported_profile.get_qplan_tree()
 
         """

@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import logging
-import os
 
 import verticapy as vp
 
@@ -95,4 +94,3 @@ class TestQueryProfilerSimple:
         qp = QueryProfiler(request)
         self.check_version(qp)
         self.check_request(qp, "avg(number) AS avg_number")
-        # TODO: check query events?
