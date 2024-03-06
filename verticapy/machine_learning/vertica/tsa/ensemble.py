@@ -15,16 +15,17 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import NoneType, SQLColumns, SQLRelation
+from verticapy._typing import NoneType, PlottingObject, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import extract_subquery, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.errors import ModelError
-from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.core.vdataframe.base import TableSample, vDataFrame
+import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.tsa.arima import ARIMA
 from verticapy.machine_learning.vertica.tsa.base import TimeSeriesModelBase
 
@@ -36,7 +37,16 @@ General Classes.
 
 
 class TimeSeriesByCategory(TimeSeriesModelBase):
-    """ """
+    """
+    This model is built based on multiple base models.
+    You should look at the source models to see entire
+    examples.
+
+    :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+    :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+    :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+    :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
+    """
 
     # Properties.
 
@@ -169,6 +179,17 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
         -------
         str
             model's summary.
+
+        Examples
+        --------
+        This model is built based on multiple base models.
+        You should look at the source models to see entire
+        examples.
+
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
         # Initialization
         if self.overwrite_model:
@@ -210,6 +231,250 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
         if conf.get_option("print_info"):
             print(report)
         return None
+
+    # I/O Methods.
+
+    def deploySQL(
+        self,
+        vdf: Optional[SQLRelation] = None,
+        ts: Optional[str] = None,
+        y: Optional[str] = None,
+        start: Optional[int] = None,
+        npredictions: int = 10,
+        freq: Literal[None, "m", "months", "y", "year", "infer"] = "infer",
+        filter_step: Optional[int] = None,
+        method: Literal["auto", "forecast"] = "auto",
+    ) -> str:
+        """
+        Returns the SQL code
+        needed to deploy the
+        model.
+
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object used to run the prediction.
+            You can also specify a customized
+            relation, but you must enclose it
+            with an alias. For example,
+            ``(SELECT 1) x`` is valid, whereas
+            ``(SELECT 1)`` and ``SELECT 1``
+            are invalid.
+        ts: str
+            TS (Time Series) :py:class`vDataColumn`
+            used to order the data. The
+            :py:class`vDataColumn` type must be
+            ``date`` (``date``, ``datetime``,
+            ``timestamp``...) or numerical.
+        y: str, optional
+            Response column.
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (``ts``):
+
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
+
+            Default:
+
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
+        npredictions: int, optional
+            ``integer`` greater or equal to ``1``,
+            the number of predicted timesteps.
+        freq: str, optional
+            How to compute the delta.
+
+            - m/month:
+                We assume that the data
+                is organized on a monthly
+                basis.
+            - y/year:
+                We assume that the data
+                is organized on a yearly
+                basis.
+            - infer:
+                When making inferences, the
+                system will attempt to identify
+                the best option, which may
+                involve more computational
+                resources.
+            - None:
+                The inference is based on the
+                average of the difference
+                between ``ts`` and its lag.
+
+        filter_step: int, optional
+            Integer parameter that determines
+            the frequency of predictions. You
+            can adjust it according to your
+            specific requirements, such as
+            setting it to ``3`` for predictions
+            every third step.
+
+            .. note::
+
+                It is only utilized when
+                ``output_estimated_ts=True``.
+        method: str, optional
+            Forecasting method. One of the following:
+
+            - auto:
+                the model initially utilizes the true
+                values at each step for forecasting.
+                However, when it reaches a point where
+                it can no longer rely on true values,
+                it transitions to using its own
+                predictions for further forecasting.
+                This method is often referred to as
+                "one step ahead" forecasting.
+            - forecast:
+                the model initiates forecasting from
+                an initial value and entirely disregards
+                any subsequent true values. This approach
+                involves forecasting based solely on the
+                model's own predictions and does not
+                consider actual observations after the
+                start point.
+
+        Returns
+        -------
+        str
+            the SQL code needed
+            to deploy the model.
+
+        Examples
+        --------
+        This model is built based on multiple base models.
+        You should look at the source models to see entire
+        examples.
+
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
+        """
+        n = len(self.models_)
+        if n == 0:
+            raise ModelError("No model is yet created.")
+        all_predictions = []
+        for idx, model in enumerate(self.models_):
+            category = str(self.distinct[idx]).replace("'", "''")
+            all_predictions += [
+                extract_subquery(
+                    model.predict(
+                        vdf=None
+                        if isinstance(vdf, NoneType)
+                        else vdf.search(f"{self.by} = '{category}'"),
+                        ts=ts,
+                        y=y,
+                        start=start,
+                        npredictions=npredictions,
+                        freq=freq,
+                        output_estimated_ts=True,
+                    ).current_relation()
+                )
+            ]
+        all_predictions = [
+            f"({table}) t{idx}" for idx, table in enumerate(all_predictions)
+        ]
+        all_predictions = [
+            table if idx == 0 else f"{table} USING ({self.ts})"
+            for idx, table in enumerate(all_predictions)
+        ]
+        sql = "SELECT t0.date, " + ", ".join(
+            [f"t{i}.prediction AS prediction{i}" for i in range(n)]
+        )
+        sql += " FROM " + " INNER JOIN ".join(all_predictions)
+        return sql
+
+    # Features Importance Methods.
+
+    def features_importance(
+        self,
+        idx: int = 0,
+        show: bool = True,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Computes the input submodel's
+        features importance.
+
+        Parameters
+        ----------
+        idx: int, optional
+            As the ``TimeSeriesByCategory``
+            model generates multiple models,
+            the importance of features varies
+            for each submodel. The ``idx``
+            parameter corresponds to the
+            submodel index.
+        show: bool, optional
+            If set to ``True``, draw the
+            feature's importance.
+        chart: PlottingObject, optional
+            The chart object to plot on.
+        **style_kwargs
+            Any optional parameter to pass
+            to the Plotting functions.
+
+        Returns
+        -------
+        obj
+            features importance.
+
+        Examples
+        --------
+        This model is built based on multiple base models.
+        You should look at the source models to see entire
+        examples.
+
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
+        """
+        n = len(self.models_)
+        if not (0 <= idx < n):
+            raise IndexError(
+                "Index out of range: You should use "
+                f"an index value between 0 and {n-1}."
+            )
+        return self.models_[idx].features_importance(
+            show=show, chart=chart, **style_kwargs
+        )
 
     # Prediction / Transformation Methods.
 
@@ -349,37 +614,559 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
         -------
         vDataFrame
             a new object.
+
+        Examples
+        --------
+        This model is built based on multiple base models.
+        You should look at the source models to see entire
+        examples.
+
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
+        """
+        sql = self.deploySQL(
+            vdf=vdf,
+            ts=ts,
+            y=y,
+            start=start,
+            npredictions=npredictions,
+            freq=freq,
+            filter_step=filter_step,
+            method=method,
+        )
+        return vDataFrame(sql)
+
+    # Model Evaluation Methods.
+
+    def regression_report(
+        self,
+        metrics: Union[
+            str,
+            Literal[None, "anova", "details"],
+            list[Literal[tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)]],
+        ] = None,
+        start: Optional[int] = None,
+        npredictions: Optional[int] = None,
+        method: Literal["auto", "forecast"] = "auto",
+    ) -> Union[float, TableSample]:
+        """
+        Computes a regression report
+        using multiple metrics to
+        evaluate the model (``r2``,
+        ``mse``, ``max error``...).
+
+        Parameters
+        ----------
+        metrics: str | list, optional
+            The metrics used to compute
+            the regression report.
+
+             - None:
+                Computes the model different metrics.
+             - anova:
+                Computes the model ANOVA table.
+             - details:
+                Computes the model details.
+
+            It can also be a ``list`` of the
+            metrics used to compute the final
+            report.
+
+            - aic:
+                Akaike's Information Criterion
+
+                .. math::
+
+                    AIC = 2k - 2\ln(\hat{L})
+
+            - bic:
+                Bayesian Information Criterion
+
+                .. math::
+
+                    BIC = -2\ln(\hat{L}) + k \ln(n)
+
+            - max:
+                Max Error.
+
+                .. math::
+
+                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mae:
+                Mean Absolute Error.
+
+                .. math::
+
+                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - median:
+                Median Absolute Error.
+
+                .. math::
+
+                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mse:
+                Mean Squared Error.
+
+                .. math::
+
+                    MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+            - msle:
+                Mean Squared Log Error.
+
+                .. math::
+
+                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+            - r2:
+                R squared coefficient.
+
+                .. math::
+
+                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+            - r2a:
+                R2 adjusted
+
+                .. math::
+
+                    \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+            - qe:
+                quantile error, the quantile must be
+                included in the name. Example:
+                qe50.1% will  return the quantile
+                error using q=0.501.
+
+            - rmse:
+                Root-mean-squared error
+
+                .. math::
+
+                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
+            - var:
+                Explained Variance
+
+                .. math::
+
+                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (``ts``):
+
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
+
+            Default:
+
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
+        npredictions: int, optional
+            ``integer`` greater or equal to ``1``,
+            the number of predicted timesteps.
+        method: str, optional
+            Forecasting method. One of the following:
+
+            - auto:
+                the model initially utilizes the true
+                values at each step for forecasting.
+                However, when it reaches a point where
+                it can no longer rely on true values,
+                it transitions to using its own
+                predictions for further forecasting.
+                This method is often referred to as
+                "one step ahead" forecasting.
+             - forecast:
+                the model initiates forecasting from
+                an initial value and entirely disregards
+                any subsequent true values. This approach
+                involves forecasting based solely on the
+                model's own predictions and does not
+                consider actual observations after the
+                start point.
+
+        Returns
+        -------
+        TableSample
+            report.
+
+        Examples
+        --------
+        This model is built based on multiple base models.
+        You should look at the source models to see entire
+        examples.
+
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
+        """
+        raise NotImplementedError
+
+    report = regression_report
+
+    def score(
+        self,
+        metric: Literal[
+            tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)
+            + ("r2a", "r2_adj", "rsquared_adj", "r2adj", "r2adjusted", "rmse")
+        ] = "r2",
+        start: Optional[int] = None,
+        npredictions: Optional[int] = None,
+        method: Literal["auto", "forecast"] = "auto",
+    ) -> float:
+        """
+        Computes the model score.
+
+        Parameters
+        ----------
+        metric: str, optional
+            The metric used to compute the score.
+
+            - aic:
+                Akaike's Information Criterion
+
+                .. math::
+
+                    AIC = 2k - 2\ln(\hat{L})
+
+            - bic:
+                Bayesian Information Criterion
+
+                .. math::
+
+                    BIC = -2\ln(\hat{L}) + k \ln(n)
+
+            - max:
+                Max Error.
+
+                .. math::
+
+                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mae:
+                Mean Absolute Error.
+
+                .. math::
+
+                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - median:
+                Median Absolute Error.
+
+                .. math::
+
+                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+            - mse:
+                Mean Squared Error.
+
+                .. math::
+
+                    MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
+            - msle:
+                Mean Squared Log Error.
+
+                .. math::
+
+                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
+            - r2:
+                R squared coefficient.
+
+                .. math::
+
+                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
+            - r2a:
+                R2 adjusted
+
+                .. math::
+
+                    \\text{Adjusted } R^2 = 1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+            - qe:
+                quantile error, the quantile must be
+                included in the name. Example:
+                qe50.1% will  return the quantile
+                error using q=0.501.
+
+            - rmse:
+                Root-mean-squared error
+
+                .. math::
+
+                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+
+            - var:
+                Explained Variance
+
+                .. math::
+
+                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (``ts``):
+
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
+
+            Default:
+
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
+        npredictions: int, optional
+            ``integer`` greater or equal to ``1``,
+            the number of predicted timesteps.
+        method: str, optional
+            Forecasting method. One of the following:
+
+            - auto:
+                the model initially utilizes the true
+                values at each step for forecasting.
+                However, when it reaches a point where
+                it can no longer rely on true values,
+                it transitions to using its own
+                predictions for further forecasting.
+                This method is often referred to as
+                "one step ahead" forecasting.
+            - forecast:
+                the model initiates forecasting from
+                an initial value and entirely disregards
+                any subsequent true values. This approach
+                involves forecasting based solely on the
+                model's own predictions and does not
+                consider actual observations after the
+                start point.
+
+        Returns
+        -------
+        float
+            score.
+
+        Examples
+        --------
+        This model is built based on multiple base models.
+        You should look at the source models to see entire
+        examples.
+
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
+        """
+        raise NotImplementedError
+
+    # Plotting Methods.
+
+    def plot(
+        self,
+        idx: int = 0,
+        vdf: Optional[SQLRelation] = None,
+        ts: Optional[str] = None,
+        y: Optional[str] = None,
+        start: Optional[int] = None,
+        npredictions: int = 10,
+        method: Literal["auto", "forecast"] = "auto",
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the input submodel.
+
+        Parameters
+        ----------
+        idx: int, optional
+            As the ``TimeSeriesByCategory``
+            model generates multiple models,
+            the final plot varies for each
+            submodel. The ``idx`` parameter
+            corresponds to the submodel index.
+        vdf: SQLRelation, optional
+            Object used to run the prediction.
+            You can also specify a customized
+            relation, but you must enclose it
+            with an alias. For example,
+            ``(SELECT 1) x`` is valid, whereas
+            ``(SELECT 1)`` and ``SELECT 1``
+            are invalid.
+        ts: str, optional
+            TS (Time Series) :py:class`vDataColumn`
+            used to order the data. The
+            :py:class`vDataColumn` type must be
+            ``date`` (``date``, ``datetime``,
+            ``timestamp``...) or numerical.
+        y: str, optional
+            Response column.
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (``ts``):
+
+            - No provided timeseries-column:
+                ``start`` must be an integer
+                greater or equal to 0, where
+                zero indicates to start
+                prediction at the end of the
+                in-sample data. If ``start``
+                is a positive value, the function
+                predicts the values between the
+                end of the in-sample data and
+                the start index, and then uses
+                the predicted values as time
+                series inputs for the subsequent
+                ``npredictions``.
+            - timeseries-column provided:
+                ``start`` must be an ``integer``
+                greater or equal to ``1`` and
+                identifies the index (row) of
+                the timeseries-column at which
+                to begin prediction. If the
+                ``start`` index is greater than
+                the number of rows, ``N``, in the
+                input data, the function predicts
+                the values between ``N`` and
+                ``start`` and uses the predicted
+                values as time series inputs for
+                the subsequent npredictions.
+
+            Default:
+
+            - No provided timeseries-column:
+                prediction begins from the
+                end of the in-sample data.
+            - timeseries-column provided:
+                prediction begins from the
+                end of the provided input
+                data.
+
+        npredictions: int, optional
+            ``integer`` greater or equal to ``1``,
+            the number of predicted timesteps.
+        method: str, optional
+            Forecasting method. One of the following:
+
+            - auto:
+                the model initially utilizes the true
+                values at each step for forecasting.
+                However, when it reaches a point where
+                it can no longer rely on true values,
+                it transitions to using its own
+                predictions for further forecasting.
+                This method is often referred to as
+                "one step ahead" forecasting.
+            - forecast:
+                the model initiates forecasting from
+                an initial value and entirely disregards
+                any subsequent true values. This approach
+                involves forecasting based solely on the
+                model's own predictions and does not
+                consider actual observations after the
+                start point.
+        chart: PlottingObject, optional
+            The chart object to plot on.
+        **style_kwargs
+            Any optional parameter to
+            pass to the Plotting functions.
+
+        Returns
+        -------
+        object
+            Plotting Object.
+
+        Examples
+        --------
+        This model is built based on multiple base models.
+        You should look at the source models to see entire
+        examples.
+
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
+        :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
         n = len(self.models_)
-        if n == 0:
-            raise ModelError("No model is yet created.")
-        all_predictions = []
-        for idx, model in enumerate(self.models_):
-            category = str(self.distinct[idx]).replace("'", "''")
-            all_predictions += [
-                extract_subquery(
-                    model.predict(
-                        vdf=None
-                        if isinstance(vdf, NoneType)
-                        else vdf.search(f"{self.by} = '{category}'"),
-                        ts=ts,
-                        y=y,
-                        start=start,
-                        npredictions=npredictions,
-                        freq=freq,
-                        output_estimated_ts=True,
-                    ).current_relation()
-                )
-            ]
-        all_predictions = [
-            f"({table}) t{idx}" for idx, table in enumerate(all_predictions)
-        ]
-        all_predictions = [
-            table if idx == 0 else f"{table} USING ({self.ts})"
-            for idx, table in enumerate(all_predictions)
-        ]
-        sql = "SELECT t0.date, " + ", ".join(
-            [f"t{i}.prediction AS prediction{i}" for i in range(n)]
+        if not (0 <= idx < n):
+            raise IndexError(
+                "Index out of range: You should use "
+                f"an index value between 0 and {n-1}."
+            )
+        return self.models_[idx].plot(
+            vdf=vdf,
+            ts=ts,
+            y=y,
+            start=start,
+            npredictions=npredictions,
+            method=method,
+            chart=chart,
+            **style_kwargs,
         )
-        sql += " FROM " + " INNER JOIN ".join(all_predictions)
-        return vDataFrame(sql)
