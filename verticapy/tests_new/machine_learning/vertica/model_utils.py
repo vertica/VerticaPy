@@ -300,28 +300,28 @@ def get_xy(model_class):
             REGRESSION_MODELS,
             {
                 "X": ["citric_acid", "residual_sugar", "alcohol"],
-                "y": "quality",
+                "y": ["quality"],
                 "dataset_name": "winequality",
             },
         ),
         **dict.fromkeys(
             CLASSIFICATION_MODELS,
-            {"X": ["age", "fare", "sex"], "y": "survived", "dataset_name": "titanic"},
+            {"X": ["age", "fare", "sex"], "y": ["survived"], "dataset_name": "titanic"},
         ),
         **dict.fromkeys(
             TIMESERIES_MODELS,
-            {"X": "date", "y": "passengers", "dataset_name": "airline"},
+            {"X": ["date"], "y": ["passengers"], "dataset_name": "airline"},
         ),
         **dict.fromkeys(
             CLUSTER_MODELS,
             {
                 "X": ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-                "y": None,
+                "y": [None],
                 "dataset_name": "iris",
             },
         ),
         **dict.fromkeys(
-            ["TENSORFLOW", "TF"], {"X": "NA", "y": "NA", "dataset_name": "NA"}
+            ["TENSORFLOW", "TF"], {"X": ["NA"], "y": ["NA"], "dataset_name": "NA"}
         ),
     }
     return xy_map.get(model_class, None)
@@ -1150,7 +1150,7 @@ class DataSetUp:
         Data setup function for python regression model(s)
         """
         winequality_pdf = vp.vDataFrame(
-            f"select * from {self.dataset_name}"
+            f"select * from {self.schema_name}.{self.dataset_name}"
         ).to_pandas()
         winequality_pdf["citric_acid"] = winequality_pdf["citric_acid"].astype(float)
         winequality_pdf["residual_sugar"] = winequality_pdf["residual_sugar"].astype(
@@ -1163,7 +1163,9 @@ class DataSetUp:
         """
         Data setup function for python classification model(s)
         """
-        titanic_pdf = vp.vDataFrame(f"select * from {self.dataset_name}").to_pandas()
+        titanic_pdf = vp.vDataFrame(
+            f"select * from {self.schema_name}.{self.dataset_name}"
+        ).to_pandas()
         titanic_pdf.dropna(subset=["age", "fare", "sex", "survived"], inplace=True)
         titanic_pdf.drop(
             titanic_pdf[
@@ -1183,7 +1185,9 @@ class DataSetUp:
         """
         Data setup function for python timeseries model(s)
         """
-        airline_pdf = vp.vDataFrame(f"select * from {self.dataset_name}").to_pandas()
+        airline_pdf = vp.vDataFrame(
+            f"select * from {self.schema_name}.{self.dataset_name}"
+        ).to_pandas()
         airline_pdf_ts = airline_pdf.set_index("date")
 
         self.py_dataset = airline_pdf_ts
@@ -1192,7 +1196,9 @@ class DataSetUp:
         """
         Data setup function for python clustering model(s)
         """
-        iris_pdf = vp.vDataFrame(f"select * from {self.dataset_name}").to_pandas()
+        iris_pdf = vp.vDataFrame(
+            f"select * from {self.schema_name}.{self.dataset_name}"
+        ).to_pandas()
 
         self.py_dataset = iris_pdf
 
@@ -1262,9 +1268,9 @@ class TrainModel:
         predictor_columns = ",".join(self.datasetup_instance.X)
 
         if self.datasetup_instance.model_class == "XGBRegressor":
-            train_sql = f"SELECT xgb_regressor('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={self.model_instance.max_ntree}, max_depth={self.model_instance.max_depth}, nbins={self.model_instance.nbins}, split_proposal_method={self.model_instance.split_proposal_method}, tol={self.model_instance.tol}, learning_rate={self.model_instance.learning_rate}, min_split_loss={self.model_instance.min_split_loss}, weight_reg={self.model_instance.weight_reg}, sample={self.model_instance.sample}, col_sample_by_tree={self.model_instance.col_sample_by_tree}, col_sample_by_node={self.model_instance.col_sample_by_node}, seed=1, id_column='id')"
+            train_sql = f"SELECT xgb_regressor('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y[0]}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', max_ntree={self.model_instance.max_ntree}, max_depth={self.model_instance.max_depth}, nbins={self.model_instance.nbins}, split_proposal_method={self.model_instance.split_proposal_method}, tol={self.model_instance.tol}, learning_rate={self.model_instance.learning_rate}, min_split_loss={self.model_instance.min_split_loss}, weight_reg={self.model_instance.weight_reg}, sample={self.model_instance.sample}, col_sample_by_tree={self.model_instance.col_sample_by_tree}, col_sample_by_node={self.model_instance.col_sample_by_node}, seed=1, id_column='id')"
         else:
-            train_sql = f"SELECT rf_regressor('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={self.model_instance.ntree}, mtry={self.model_instance.mtry}, max_breadth={self.model_instance.max_breadth}, sampling_size={self.model_instance.sampling_size}, max_depth={self.model_instance.max_depth}, min_leaf_size={self.model_instance.min_leaf_size}, nbins={self.model_instance.nbins}, seed=1, id_column='id')"
+            train_sql = f"SELECT rf_regressor('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y[0]}', '{predictor_columns}' USING PARAMETERS exclude_columns='id', ntree={self.model_instance.ntree}, mtry={self.model_instance.mtry}, max_breadth={self.model_instance.max_breadth}, sampling_size={self.model_instance.sampling_size}, max_depth={self.model_instance.max_depth}, min_leaf_size={self.model_instance.min_leaf_size}, nbins={self.model_instance.nbins}, seed=1, id_column='id')"
 
         print(f"Tree Regressor Train SQL: {train_sql}")
         current_cursor().execute(train_sql)
@@ -1272,7 +1278,7 @@ class TrainModel:
         self.model.input_relation = f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}"
         self.model.test_relation = self.model.input_relation
         self.model.X = _X
-        self.model.y = f'"{self.datasetup_instance.y}"'
+        self.model.y = f'"{self.datasetup_instance.y[0]}"'
         self.model._compute_attributes()
 
         return self.model
@@ -1285,9 +1291,9 @@ class TrainModel:
         predictor_columns = ",".join(self.datasetup_instance.X)
 
         if self.datasetup_instance.model_class == "XGBClassifier":
-            train_sql = f"SELECT xgb_classifier('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', max_ntree={self.model_instance.max_ntree}, max_depth={self.model_instance.max_depth}, nbins={self.model_instance.nbins}, split_proposal_method={self.model_instance.split_proposal_method}, tol={self.model_instance.tol}, learning_rate={self.model_instance.learning_rate}, min_split_loss={self.model_instance.min_split_loss}, weight_reg={self.model_instance.weight_reg}, sample={self.model_instance.sample}, col_sample_by_tree={self.model_instance.col_sample_by_tree}, col_sample_by_node={self.model_instance.col_sample_by_node}, seed=1, id_column='name')"
+            train_sql = f"SELECT xgb_classifier('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y[0]}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', max_ntree={self.model_instance.max_ntree}, max_depth={self.model_instance.max_depth}, nbins={self.model_instance.nbins}, split_proposal_method={self.model_instance.split_proposal_method}, tol={self.model_instance.tol}, learning_rate={self.model_instance.learning_rate}, min_split_loss={self.model_instance.min_split_loss}, weight_reg={self.model_instance.weight_reg}, sample={self.model_instance.sample}, col_sample_by_tree={self.model_instance.col_sample_by_tree}, col_sample_by_node={self.model_instance.col_sample_by_node}, seed=1, id_column='name')"
         else:
-            train_sql = f"SELECT rf_classifier('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', ntree={self.model_instance.ntree}, mtry={self.model_instance.mtry}, max_breadth={self.model_instance.max_breadth}, sampling_size={self.model_instance.sampling_size}, max_depth={self.model_instance.max_depth}, min_leaf_size={self.model_instance.min_leaf_size}, nbins={self.model_instance.nbins}, seed=1, id_column='name')"
+            train_sql = f"SELECT rf_classifier('{self.datasetup_instance.schema_name}.{self.datasetup_instance.model_name}', '{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}', '{self.datasetup_instance.y[0]}', '{predictor_columns}' USING PARAMETERS exclude_columns='name', ntree={self.model_instance.ntree}, mtry={self.model_instance.mtry}, max_breadth={self.model_instance.max_breadth}, sampling_size={self.model_instance.sampling_size}, max_depth={self.model_instance.max_depth}, min_leaf_size={self.model_instance.min_leaf_size}, nbins={self.model_instance.nbins}, seed=1, id_column='name')"
 
         print(f"Tree Regressor Train SQL: {train_sql}")
         current_cursor().execute(train_sql)
@@ -1295,7 +1301,7 @@ class TrainModel:
         self.model.input_relation = f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}"
         self.model.test_relation = self.model.input_relation
         self.model.X = _X
-        self.model.y = f'"{self.datasetup_instance.y}"'
+        self.model.y = f'"{self.datasetup_instance.y[0]}"'
         self.model._compute_attributes()
 
         return self.model
@@ -1307,7 +1313,7 @@ class TrainModel:
         self.model.fit(
             f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}",
             self.datasetup_instance.X,
-            f"{self.datasetup_instance.y}",
+            f"{self.datasetup_instance.y[0]}",
         )
         return self.model
 
@@ -1317,8 +1323,8 @@ class TrainModel:
         """
         self.model.fit(
             f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}",
-            self.datasetup_instance.X,
-            f"{self.datasetup_instance.y}",
+            self.datasetup_instance.X[0],
+            f"{self.datasetup_instance.y[0]}",
         )
         return self.model
 
@@ -1338,7 +1344,7 @@ class TrainModel:
         """
         dataset = self.datasetup_instance.py_dataset
         self.model.fit(
-            dataset[self.datasetup_instance.X], dataset[self.datasetup_instance.y]
+            dataset[self.datasetup_instance.X], dataset[self.datasetup_instance.y[0]]
         )
         return self.model
 
@@ -1408,7 +1414,7 @@ class PredictModel:
         """
         pred_vdf = self.model.predict(
             f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}",
-            name=f"{self.datasetup_instance.y}_pred",
+            name=f"{self.datasetup_instance.y[0]}_pred",
         )
         pred_prob_vdf = None
         current_cursor().execute(
@@ -1422,18 +1428,18 @@ class PredictModel:
         """
         pred_vdf = self.model.predict(
             f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}",
-            name=f"{self.datasetup_instance.y}_pred",
-        )[f"{self.datasetup_instance.y}_pred"].astype("int")
+            name=f"{self.datasetup_instance.y[0]}_pred",
+        )[f"{self.datasetup_instance.y[0]}_pred"].astype("int")
         pred_prob_vdf = self.model.predict_proba(
             f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}",
-            name=f"{self.datasetup_instance.y}_pred",
+            name=f"{self.datasetup_instance.y[0]}_pred",
         )
 
         # y_class = titanic_vd_fun[y].distinct()
         y_class = (
             current_cursor()
             .execute(
-                f"select distinct {self.datasetup_instance.y} from {self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}"
+                f"select distinct {self.datasetup_instance.y[0]} from {self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}"
             )
             .fetchall()
         )
@@ -1441,7 +1447,7 @@ class PredictModel:
 
         # pred_prob_vdf[f"{y}_pred"].astype("int")
         for i in y_class:
-            pred_prob_vdf[f"{self.datasetup_instance.y}_pred_{i}"].astype("float")
+            pred_prob_vdf[f"{self.datasetup_instance.y[0]}_pred_{i}"].astype("float")
 
         return pred_vdf, pred_prob_vdf
 
@@ -1451,7 +1457,7 @@ class PredictModel:
         """
         pred_vdf = self.model.predict(
             f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}",
-            name=f"{self.datasetup_instance.y}_pred",
+            name=f"{self.datasetup_instance.y[0]}_pred",
         )
         pred_prob_vdf = None
 
@@ -1472,8 +1478,8 @@ class PredictModel:
 
         pred_vdf = self.model.predict(
             f"{self.datasetup_instance.schema_name}.{self.datasetup_instance.dataset_name}",
-            self.datasetup_instance.X,
-            self.datasetup_instance.y,
+            self.datasetup_instance.X[0],
+            self.datasetup_instance.y[0],
             start=self.get_pvalue(),
             npredictions=npredictions if npredictions else row_cnt,
             output_estimated_ts=True,

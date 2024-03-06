@@ -39,6 +39,7 @@ from verticapy.tests_new.machine_learning.vertica.model_utils import (
     get_model_attributes,
     get_train_function,
     get_predict_function,
+    get_xy,
 )
 from verticapy.machine_learning.vertica.base import VerticaModel
 from vertica_highcharts.highcharts.highcharts import Highchart
@@ -1218,14 +1219,6 @@ def get_pred_column_fixture(model_class):
     return pred_col_map.get(model_class, None)
 
 
-@pytest.fixture(name="get_predictors")
-def get_predictors_fixture(model_class, get_py_model):
-    """
-    getter fixture to get predictors
-    """
-    return list(get_py_model(model_class).X.columns)
-
-
 @pytest.fixture(name="get_to_sql")
 def get_to_sql_fixture(model_class, get_models):
     """
@@ -1322,10 +1315,11 @@ class TestBaseModelMethods:
     test class for linear models
     """
 
-    def test_contour(self, model_class, get_vpy_model, get_predictors):
+    def test_contour(self, model_class, get_vpy_model):
         """
         test function - contour
         """
+        X = get_xy(model_class)["X"]
         if model_class in [
             "AR",
             "MA",
@@ -1336,7 +1330,7 @@ class TestBaseModelMethods:
 
         vpy_res = get_vpy_model(
             model_class,
-            X=get_predictors[:2],
+            X=X[:2],
         ).model.contour()
 
         assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
@@ -1561,17 +1555,16 @@ class TestBaseModelMethods:
             "matplotlib",
         ],
     )
-    def test_plot(self, model_class, get_vpy_model, get_predictors, plotting_library):
+    def test_plot(self, model_class, get_vpy_model, plotting_library):
         """
         test function - plot
         """
         vp.set_option("plotting_lib", plotting_library)
+        X = get_xy(model_class)["X"]
         try:
             vpy_res = get_vpy_model(
                 model_class,
-                X=get_predictors[0]
-                if model_class in TIMESERIES_MODELS
-                else get_predictors[:2],
+                X=X if model_class in TIMESERIES_MODELS else X[:2],
             )[0].plot()
         except NotImplementedError:
             pytest.skip(

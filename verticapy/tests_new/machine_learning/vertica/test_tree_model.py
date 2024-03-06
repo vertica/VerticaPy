@@ -648,7 +648,7 @@ class TestXGBModel:
 
         if model_class == "XGBClassifier":
             X = ["survived", "age", "fare"]
-            y = "pclass"
+            y = ["pclass"]
             return_proba = True
             pred_method = "predict_proba"
             vpy_model_obj = get_vpy_model(model_class, X=X, y=y)

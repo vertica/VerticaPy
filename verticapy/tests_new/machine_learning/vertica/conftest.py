@@ -95,7 +95,7 @@ def get_vpy_model_fixture(
 
 @pytest.fixture(name="get_py_model", scope="function")
 def get_py_model_fixture(
-    winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, iris_vd_fun
+    winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, iris_vd_fun, schema_loader
 ):
     """
     getter function for python model
@@ -105,7 +105,7 @@ def get_py_model_fixture(
         data, train, pred = get_function_name(model_class)["py"]
 
         # Data preparation
-        datasetup_instance = DataSetUp(None, None, model_class, None, None)
+        datasetup_instance = DataSetUp(schema_loader, None, model_class, None, None)
         getattr(datasetup_instance, data)()
 
         # Model initialization
@@ -128,7 +128,7 @@ def get_py_model_fixture(
             )
 
             dataset = datasetup_instance.py_dataset.reset_index()
-            X, y = dataset[[datasetup_instance.X]], dataset[datasetup_instance.y]
+            X, y = dataset[[datasetup_instance.X[0]]], dataset[datasetup_instance.y[0]]
             y = y[pred_instance.get_pvalue() : npred + 1 if npred else npred].values
         elif model_class in ["TENSORFLOW", "TF"]:
             dataset = datasetup_instance.py_dataset
@@ -139,7 +139,7 @@ def get_py_model_fixture(
                 dataset[datasetup_instance.X],
                 None
                 if model_class in CLUSTER_MODELS
-                else dataset[datasetup_instance.y],
+                else dataset[datasetup_instance.y[0]],
             )
 
         py = namedtuple(
