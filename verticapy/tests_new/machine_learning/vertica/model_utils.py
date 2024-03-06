@@ -53,6 +53,8 @@ if sys.version_info < (3, 12):
 @pytest.fixture(autouse=True)
 def set_plotting_lib():
     vp.set_option("plotting_lib", "matplotlib")
+    yield
+    vp.set_option("plotting_lib", "plotly")
 
 
 def get_model_attributes(model_class):

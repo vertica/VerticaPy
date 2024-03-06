@@ -50,6 +50,8 @@ le = LabelEncoder()
 @pytest.fixture(autouse=True)
 def set_plotting_lib():
     vp.set_option("plotting_lib", "matplotlib")
+    yield
+    vp.set_option("plotting_lib", "plotly")
 
 
 @pytest.fixture(name="get_vpy_model", scope="function")
