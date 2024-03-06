@@ -134,8 +134,10 @@ class QueryProfilerInterface(QueryProfiler):
         self.use_javascript = use_javascript
         # widget for choosing the metrics
         tags = widgets.TagsInput(
-            value=["rows"],
-            allowed_tags=QprofUtility._get_metrics(),
+            value=["Estimated row count"],
+            allowed_tags=[
+                QprofUtility._get_metrics_name(i) for i in QprofUtility._get_metrics()
+            ],
             allow_duplicates=False,
         )
 
@@ -213,6 +215,7 @@ class QueryProfilerInterface(QueryProfiler):
         """
         Callback function that displays the Query Plan Tree.
         """
+        metric = [QprofUtility._get_metrics_name(i, inv=True) for i in metric]
         if len(metric) == 0:
             metric = ["rows"]
         graph_id = "g" + str(uuid.uuid4())

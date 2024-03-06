@@ -14,3 +14,23 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Pytest
+import pytest
+
+# Standard Python Modules
+
+# VerticaPy
+import verticapy._config.config as conf
+
+# Other Modules
+import matplotlib.pyplot as plt
+
+
+@pytest.fixture(scope="module", autouse=False)
+def load_matplotlib():
+    """
+    Set default plotting library to matplotlib
+    """
+    conf.set_option("plotting_lib", "matplotlib")
+    yield
+    conf.set_option("plotting_lib", "plotly")
