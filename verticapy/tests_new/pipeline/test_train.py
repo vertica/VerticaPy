@@ -71,8 +71,6 @@ from verticapy.machine_learning.vertica.tsa import ARIMA, ARMA, AR, MA
 
 from verticapy.pipeline._train import training
 
-import verticapy.sql.sys as sys
-
 from verticapy.tests_new.pipeline.conftest import pipeline_exists, pipeline_not_exists
 
 SUPPORTED_FUNCTIONS = [
@@ -488,12 +486,12 @@ class TestTrain:
         _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
-        assert pipeline_exists('test_pipeline', model=model)
+        assert pipeline_exists("test_pipeline", model=model)
 
         # drop pipeline
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
 
-        assert pipeline_not_exists('test_pipeline', model=model)
+        assert pipeline_not_exists("test_pipeline", model=model)
 
         drop("public.winequality")
 
@@ -536,11 +534,11 @@ class TestTrain:
         _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
-        assert pipeline_exists('test_pipeline', model=model)
+        assert pipeline_exists("test_pipeline", model=model)
         # drop pipeline
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
 
-        assert pipeline_not_exists('test_pipeline', model=model)
+        assert pipeline_not_exists("test_pipeline", model=model)
 
         drop("public.iris")
 
@@ -583,9 +581,9 @@ class TestTrain:
         _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
-        assert pipeline_exists('test_pipeline', model=model)
+        assert pipeline_exists("test_pipeline", model=model)
         # drop pipeline
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
-        assert pipeline_not_exists('test_pipeline', model=model)
+        assert pipeline_not_exists("test_pipeline", model=model)
 
         drop("public.airline_passengers")

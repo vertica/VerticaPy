@@ -28,8 +28,8 @@ from verticapy.tests_new.pipeline.conftest import pipeline_exists, pipeline_not_
     [
         ({"key1": 1, "key2": 2, "key3": 3}, ["key1", "key2", "key3"]),
         ({}, []),
-        ({"key1": 1}, [])
-    ]
+        ({"key1": 1}, []),
+    ],
 )
 def test_required_keywords(yaml, keywords):
     """
@@ -41,11 +41,11 @@ def test_required_keywords(yaml, keywords):
 @pytest.mark.parametrize(
     "yaml,keywords,error_keyword",
     [
-        ({"key1": 1, "key3": 3}, ["key1", "key2", "key3"], 'key2'),
-        ({}, ["key1", "key2", "key3"], 'key1'),
-        ({"key1":1}, ["key1", "key2", "key3"], 'key2'),
-        ({"key1": 1, "key2": 2}, ["key1", "key2", "key3"], 'key3'),
-    ]
+        ({"key1": 1, "key3": 3}, ["key1", "key2", "key3"], "key2"),
+        ({}, ["key1", "key2", "key3"], "key1"),
+        ({"key1": 1}, ["key1", "key2", "key3"], "key2"),
+        ({"key1": 1, "key2": 2}, ["key1", "key2", "key3"], "key3"),
+    ],
 )
 def test_required_keywords_negative(yaml, keywords, error_keyword):
     """
@@ -59,10 +59,10 @@ def test_required_keywords_negative(yaml, keywords, error_keyword):
 @pytest.mark.parametrize(
     "delimiter",
     [
-        ',',
-        ' ',
-        'a',
-    ]
+        ",",
+        " ",
+        "a",
+    ],
 )
 def test_is_valid_delimiter(delimiter):
     """
@@ -74,9 +74,9 @@ def test_is_valid_delimiter(delimiter):
 @pytest.mark.parametrize(
     "delimiter",
     [
-        'ú',
-        'ð',
-    ]
+        "ú",
+        "ð",
+    ],
 )
 def test_is_valid_delimiter_negative(delimiter):
     """
@@ -172,19 +172,19 @@ def test_setup():
     build_pipeline("test_pipeline2")
     build_pipeline("test_pipeline_2")
 
-    assert pipeline_exists('test_pipeline', check_metric=True)
-    assert pipeline_exists('test_pipeline2', check_metric=True)
-    assert pipeline_exists('test_pipeline_2', check_metric=True)
+    assert pipeline_exists("test_pipeline", check_metric=True)
+    assert pipeline_exists("test_pipeline2", check_metric=True)
+    assert pipeline_exists("test_pipeline_2", check_metric=True)
 
     # Drop 'test_pipeline'
     _executeSQL("CALL drop_pipeline('public', 'test_pipeline')")
 
-    assert pipeline_not_exists('test_pipeline', check_metric=True)
-    assert pipeline_exists('test_pipeline2', check_metric=True)
-    assert pipeline_exists('test_pipeline_2', check_metric=True)
+    assert pipeline_not_exists("test_pipeline", check_metric=True)
+    assert pipeline_exists("test_pipeline2", check_metric=True)
+    assert pipeline_exists("test_pipeline_2", check_metric=True)
 
     _executeSQL("CALL drop_pipeline('public', 'test_pipeline2')")
     _executeSQL("CALL drop_pipeline('public', 'test_pipeline_2')")
-    
-    assert pipeline_not_exists('test_pipeline2', check_metric=True)
-    assert pipeline_not_exists('test_pipeline_2', check_metric=True)
+
+    assert pipeline_not_exists("test_pipeline2", check_metric=True)
+    assert pipeline_not_exists("test_pipeline_2", check_metric=True)

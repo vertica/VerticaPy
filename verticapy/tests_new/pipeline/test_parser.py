@@ -16,8 +16,6 @@ permissions and limitations under the License.
 """
 from verticapy.pipeline import parser
 
-import verticapy.sql.sys as sys
-
 from verticapy.tests_new.pipeline.conftest import pipeline_exists
 
 
@@ -57,5 +55,5 @@ def test_parser():
     build_pipeline("test_pipeline")  # Purposely test duplicates
     build_pipeline("test_pipeline_2")
 
-    assert pipeline_exists('test_pipeline', check_metric=True)
-    assert pipeline_exists('test_pipeline_2', check_metric=True)
+    assert pipeline_exists("test_pipeline", check_metric=True)
+    assert pipeline_exists("test_pipeline_2", check_metric=True)

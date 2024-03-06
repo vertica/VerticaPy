@@ -22,8 +22,6 @@ from verticapy.pipeline._validate import testing
 from verticapy.pipeline._schedule import scheduler
 from verticapy.pipeline._train import training
 
-import verticapy.sql.sys as sys
-
 from verticapy.tests_new.pipeline.conftest import pipeline_exists
 
 

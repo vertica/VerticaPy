@@ -23,9 +23,7 @@ from verticapy.datasets import load_winequality
 from verticapy.pipeline._validate import testing
 from verticapy.pipeline._train import training
 
-import verticapy.sql.sys as sys
-
-from verticapy.tests_new.pipeline.conftest import pipeline_exists, pipeline_not_exists
+from verticapy.tests_new.pipeline.conftest import pipeline_exists
 
 
 class TestValidate:
