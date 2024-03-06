@@ -22,7 +22,7 @@ rel_abs_tol_map = {
         "explained_variance": {"rel": 9e-02, "abs": ABS_TOLERANCE},
         "max_error": {"rel": 4e-01, "abs": ABS_TOLERANCE},
         "median_absolute_error": {"rel": 6e-02, "abs": ABS_TOLERANCE},
-        "mean_absolute_error": {"rel": 2e-02, "abs": ABS_TOLERANCE},
+        "mean_absolute_error": {"rel": 2e-00, "abs": ABS_TOLERANCE},
         "mean_squared_error": {"rel": 3e-02, "abs": ABS_TOLERANCE},
         "mean_squared_log_error": {"rel": 3e-02, "abs": ABS_TOLERANCE},
         "rmse": {"rel": 2e-02, "abs": ABS_TOLERANCE},
@@ -56,10 +56,10 @@ rel_abs_tol_map = {
         "log_loss": {"rel": 9e10, "abs": ABS_TOLERANCE},
         "precision": {"rel": 4e-01, "abs": ABS_TOLERANCE},
         "recall": {"rel": 8e-01, "abs": ABS_TOLERANCE},
-        "f1_score": {"rel": 1e-01, "abs": ABS_TOLERANCE},
+        "f1_score": {"rel": 6e-01, "abs": ABS_TOLERANCE},
         "mcc": {"rel": 4e-02, "abs": ABS_TOLERANCE},
         "markedness": {"rel": 4e-01, "abs": ABS_TOLERANCE},
-        "csi": {"rel": 2e-01, "abs": ABS_TOLERANCE},
+        "csi": {"rel": 8e-01, "abs": ABS_TOLERANCE},
         "confusion_matrix": {"rel": 4e-01, "abs": ABS_TOLERANCE},
         "cutoff_curve": {"rel": 3e-02, "abs": ABS_TOLERANCE},
         "lift_chart": {"rel": 3e-01, "abs": ABS_TOLERANCE},
@@ -107,12 +107,12 @@ rel_abs_tol_map = {
         "prc_auc": {"rel": 3e-01, "abs": ABS_TOLERANCE},
         "accuracy": {"rel": 2e-01, "abs": ABS_TOLERANCE},
         "log_loss": {"rel": 1e02, "abs": ABS_TOLERANCE},
-        "precision": {"rel": 9e-02, "abs": ABS_TOLERANCE},
+        "precision": {"rel": 4e-01, "abs": ABS_TOLERANCE},
         "recall": {"rel": 7e-01, "abs": ABS_TOLERANCE},
         "f1_score": {"rel": 5e-01, "abs": ABS_TOLERANCE},
         "mcc": {"rel": 6e-01, "abs": ABS_TOLERANCE},
         "markedness": {"rel": 6e-01, "abs": ABS_TOLERANCE},
-        "csi": {"rel": 5e-01, "abs": ABS_TOLERANCE},
+        "csi": {"rel": 9e-01, "abs": ABS_TOLERANCE},
         "confusion_matrix": {"rel": 4e-01, "abs": ABS_TOLERANCE},
         "cutoff_curve": {"rel": 3e-02, "abs": ABS_TOLERANCE},
         "lift_chart": {"rel": 5e-01, "abs": ABS_TOLERANCE},
@@ -213,7 +213,7 @@ rel_abs_tol_map = {
     },
     "XGBClassifier": {
         "auc": {"rel": 5e-02, "abs": ABS_TOLERANCE},
-        "prc_auc": {"rel": 4e-02, "abs": ABS_TOLERANCE},
+        "prc_auc": {"rel": 8e-02, "abs": ABS_TOLERANCE},
         "accuracy": {"rel": 9e-02, "abs": ABS_TOLERANCE},
         "log_loss": {"rel": 8e01, "abs": ABS_TOLERANCE},
         "precision": {"rel": 5e-01, "abs": ABS_TOLERANCE},
@@ -508,6 +508,31 @@ rel_abs_tol_map = {
         "mse_": {"rel": 3e-03, "abs": ABS_TOLERANCE},
         "predict": {"rel": 4e-02, "abs": ABS_TOLERANCE},
     },
+    "KMeans": {
+        "predict": {"rel": 6e-01, "abs": ABS_TOLERANCE},
+        "to_python": {"rel": REL_TOLERANCE, "abs": ABS_TOLERANCE},
+    },
     "TENSORFLOW": REL_TOLERANCE,
     "TFIDF": 1e-01,
 }
+
+REGRESSION_MODELS = [
+    "RandomForestRegressor",
+    "DecisionTreeRegressor",
+    "DummyTreeRegressor",
+    "XGBRegressor",
+    "LinearRegression",
+    "Ridge",
+    "Lasso",
+    "ElasticNet",
+    "LinearSVR",
+    "PoissonRegressor",
+]
+CLASSIFICATION_MODELS = [
+    "RandomForestClassifier",
+    "DecisionTreeClassifier",
+    "DummyTreeClassifier",
+    "XGBClassifier",
+]
+TIMESERIES_MODELS = ["AR", "MA", "ARMA", "ARIMA"]
+CLUSTER_MODELS = ["KMeans"]

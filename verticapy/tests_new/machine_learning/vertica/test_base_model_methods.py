@@ -16,20 +16,34 @@ permissions and limitations under the License.
 """
 from collections import namedtuple
 from decimal import Decimal
+import os
+import shutil
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import plotly
 from scipy import stats
-import matplotlib.pyplot as plt
 
+import verticapy as vp
 from verticapy.connection import current_cursor
 from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
     rel_abs_tol_map,
+    REGRESSION_MODELS,
+    CLASSIFICATION_MODELS,
+    TIMESERIES_MODELS,
+    CLUSTER_MODELS,
 )
+from verticapy.tests_new.machine_learning.vertica.model_utils import (
+    get_model_attributes,
+    get_train_function,
+    get_predict_function,
+    get_xy,
+)
+from verticapy.machine_learning.vertica.base import VerticaModel
 from vertica_highcharts.highcharts.highcharts import Highchart
-
+from vertica_python.errors import QueryError
 
 details_report_args = (
     "metric, expected",
@@ -112,7 +126,7 @@ def model_params(model_class):
             "n_estimators, max_features, max_leaf_nodes, sample, max_depth, min_samples_leaf, min_info_gain, nbins",
             [
                 # (None, None, None, None, None, None, None, None),  # accuracy does not mach with default parameters
-                (10, 1, 10, 0.632, 5, 1, None, None),
+                (10, 2, 10, 0.632, 10, 1, None, None),
                 # (5, 'max', 1e6, 0.42, 6, 8, 0.3, 20),
             ],
         ),
@@ -233,6 +247,9 @@ def model_params(model_class):
 
 
 def calculate_tolerance(vpy_score, py_score):
+    """
+    function to calculate tolerance for a given model
+    """
     if isinstance(vpy_score, (list, np.ndarray)):
         vpy_score, py_score = vpy_score[0], py_score[0]
 
@@ -266,7 +283,7 @@ def regression_report_none(
     )
     vpy_model_obj = get_vpy_model(model_class)
 
-    if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+    if model_class in TIMESERIES_MODELS:
         if model_class == "AR":
             p_val = _model_class_tuple.p
         elif model_class == "MA":
@@ -776,260 +793,49 @@ def model_score(
     return vpy_score, py_score
 
 
-@pytest.mark.parametrize(
-    "model_class",
-    [
-        "RandomForestRegressor",
-        "RandomForestClassifier",
-        "DecisionTreeRegressor",
-        "DecisionTreeClassifier",
-        # "DummyTreeRegressor",
-        # "DummyTreeClassifier",
-        "XGBRegressor",
-        "XGBClassifier",
-        "Ridge",
-        "Lasso",
-        "ElasticNet",
-        "LinearRegression",
-        # "LinearSVR",
-        "PoissonRegressor",
-        "AR",
-        "MA",
-        "ARMA",
-        "ARIMA",
-    ],
-)
-# @pytest.mark.parametrize("model_class", ["XGBClassifier"])
-class TestBaseModelMethods:
+def get_model_params(model_class):
     """
-    test class for linear models
+    getter function to get vertica model parameters
     """
-
-    @pytest.fixture
-    def get_models(self, model_class, get_vpy_model, get_py_model):
-        """
-        test function - get_models
-        """
-        _get_models = namedtuple("_get_models", ["vpy", "py"])(
-            get_vpy_model(model_class), get_py_model(model_class)
-        )
-
-        yield _get_models
-
-    def test_predict(self, get_models, model_class):
-        """
-        test function - predict
-        """
-
-        if model_class in [
-            "RandomForestClassifier",
-            "DecisionTreeClassifier",
-            "DummyTreeClassifier",
-            "XGBClassifier",
-        ]:
-            vpy_res = (
-                get_models.vpy.pred_vdf[["survived_pred"]].to_numpy().ravel().sum()
-            )
-            py_res = get_models.py.pred.sum()
-
-            assert vpy_res == pytest.approx(
-                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
-            )
-
-        elif model_class in [
-            "AR",
-            "MA",
-            "ARMA",
-            "ARIMA",
-        ]:
-            vpy_res = get_models.vpy.pred_vdf[["prediction"]].to_numpy().mean()
-            py_res = get_models.py.pred.mean()
-
-            assert vpy_res == pytest.approx(
-                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
-            )
-        else:
-            vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy().mean()
-            py_res = get_models.py.pred.mean()
-            assert vpy_res == pytest.approx(
-                py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
-            )
-
-        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
-        print(
-            f"Model_class: {model_class}, Metric_name: prediction, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
-        )
-
-    def test_contour(self, model_class, get_vpy_model):
-        """
-        test function - contour
-        """
-        if model_class in [
-            "RandomForestClassifier",
-            "DecisionTreeClassifier",
-            "DummyTreeClassifier",
-            "XGBClassifier",
-        ]:
-            vpy_res = get_vpy_model(model_class, X=["age", "fare"]).model.contour()
-        elif model_class in [
-            "AR",
-            "MA",
-            "ARMA",
-            "ARIMA",
-        ]:
-            pytest.skip(f"contour function is not available for {model_class} model")
-        else:
-            vpy_res = get_vpy_model(
-                model_class, X=["residual_sugar", "alcohol"]
-            ).model.contour()
-
-        assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
-
-    def test_deploysql(self, get_models, model_class):
-        """
-        test function - deploySQL
-        """
-        if model_class in [
-            "RandomForestRegressor",
-            "DecisionTreeRegressor",
-            "DummyTreeRegressor",
-        ]:
-            pred_fun_name = "PREDICT_RF_REGRESSOR"
-        elif model_class in [
-            "RandomForestClassifier",
-            "DecisionTreeClassifier",
-            "DummyTreeClassifier",
-        ]:
-            pred_fun_name = "PREDICT_RF_CLASSIFIER"
-        elif model_class == "XGBRegressor":
-            pred_fun_name = "PREDICT_XGB_REGRESSOR"
-        elif model_class == "XGBClassifier":
-            pred_fun_name = "PREDICT_XGB_CLASSIFIER"
-        elif model_class == "LinearSVR":
-            pred_fun_name = "PREDICT_SVM_REGRESSOR"
-        elif model_class == "PoissonRegressor":
-            pred_fun_name = "PREDICT_POISSON_REG"
-        elif model_class == "AR":
-            pred_fun_name = "PREDICT_AUTOREGRESSOR"
-        elif model_class == "MA":
-            pred_fun_name = "PREDICT_MOVING_AVERAGE"
-        elif model_class in ["ARMA", "ARIMA"]:
-            pred_fun_name = "PREDICT_ARIMA"
-        else:
-            pred_fun_name = "PREDICT_LINEAR_REG"
-
-        vpy_pred_sql = get_models.vpy.model.deploySQL()
-        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
-            pred_sql = f"""{pred_fun_name}( USING PARAMETERS model_name = '{get_models.vpy.schema_name}.{get_models.vpy.model_name}', add_mean = True, npredictions = 10 ) OVER ()"""
-        else:
-            pred_sql = f"""{pred_fun_name}("{get_models.py.X.columns[0]}", "{get_models.py.X.columns[1]}", "{get_models.py.X.columns[2]}" USING PARAMETERS model_name = '{get_models.vpy.schema_name}.{get_models.vpy.model_name}', match_by_pos = 'true')"""
-
-        assert vpy_pred_sql == pred_sql
-
-    def test_drop(self, get_models):
-        """
-        test function - drop
-        """
-        model_sql = f"SELECT model_name FROM models WHERE schema_name='{get_models.vpy.schema_name}' and model_name = '{get_models.vpy.model_name}'"
-
-        current_cursor().execute(model_sql)
-        assert current_cursor().fetchone()[0] == get_models.vpy.model_name
-
-        get_models.vpy.model.drop()
-        current_cursor().execute(model_sql)
-        assert current_cursor().fetchone() is None
-
-    def test_get_attributes(self, get_models, model_class):
-        """
-        test function - get_attributes
-        """
-        if model_class in [
-            "RandomForestRegressor",
-            "DecisionTreeRegressor",
-            "DummyTreeRegressor",
-        ]:
-            vpy_model_attributes = [
-                "n_estimators_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ]
-        elif model_class == "XGBRegressor":
-            vpy_model_attributes = [
-                "n_estimators_",
-                "eta_",
-                "mean_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ]
-        elif model_class in [
-            "RandomForestClassifier",
-            "DecisionTreeClassifier",
-            "DummyTreeClassifier",
-        ]:
-            vpy_model_attributes = [
-                "n_estimators_",
-                "classes_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ]
-        elif model_class == "XGBClassifier":
-            vpy_model_attributes = [
-                "n_estimators_",
-                "classes_",
-                "eta_",
-                "logodds_",
-                "trees_",
-                "features_importance_",
-                "features_importance_trees_",
-            ]
-        elif model_class == "AR":
-            vpy_model_attributes = [
-                "phi_",
-                "intercept_",
-                "features_importance_",
-                "mse_",
-                "n_",
-            ]
-        elif model_class == "MA":
-            vpy_model_attributes = [
-                "theta_",
-                "mu_",
-                "mean_",
-                "mse_",
-                "n_",
-            ]
-        elif model_class == "ARMA":
-            vpy_model_attributes = [
-                "phi_",
-                "theta_",
-                "mean_",
-                "features_importance_",
-                "mse_",
-                "n_",
-            ]
-        elif model_class == "ARIMA":
-            vpy_model_attributes = [
-                "phi_",
-                "theta_",
-                "mean_",
-                "features_importance_",
-                "mse_",
-                "n_",
-            ]
-        else:
-            vpy_model_attributes = ["coef_", "intercept_", "features_importance_"]
-
-        assert get_models.vpy.model.get_attributes() == vpy_model_attributes
-
-    def test_get_params(self, get_models, model_class):
-        """
-        test function - get_params
-        """
-        if model_class in ["RandomForestRegressor", "RandomForestClassifier"]:
-            model_params_map = {
+    params_map = {
+        **dict.fromkeys(
+            ["LinearRegression"],
+            {"tol": 1e-06, "max_iter": 100, "solver": "newton", "fit_intercept": True},
+        ),
+        **dict.fromkeys(
+            ["Ridge"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "newton",
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["Lasso"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "cgd",
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["ElasticNet"],
+            {
+                "tol": 1e-06,
+                "C": 1.0,
+                "max_iter": 100,
+                "solver": "cgd",
+                "l1_ratio": 0.5,
+                "fit_intercept": True,
+            },
+        ),
+        **dict.fromkeys(
+            ["RandomForestRegressor", "RandomForestClassifier"],
+            {
                 "n_estimators": 10,
                 "max_features": 2,
                 "max_leaf_nodes": 10,
@@ -1038,22 +844,26 @@ class TestBaseModelMethods:
                 "min_samples_leaf": 1,
                 "min_info_gain": 0.0,
                 "nbins": 32,
-            }
-        elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
-            model_params_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["DecisionTreeRegressor", "DecisionTreeClassifier"],
+            {
                 "max_features": 2,
                 "max_leaf_nodes": 10,
                 "max_depth": 10,
                 "min_samples_leaf": 1,
                 "min_info_gain": 0.0,
                 "nbins": 32,
-            }
-        elif model_class in ["XGBRegressor", "XGBClassifier"]:
-            model_params_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["XGBRegressor", "XGBClassifier"],
+            {
                 "max_ntree": 10,
                 "max_depth": 10,
                 "nbins": 150,
-                "split_proposal_method": "global",
+                "split_proposal_method": "'global'",
                 "tol": 0.001,
                 "learning_rate": 0.1,
                 "min_split_loss": 0.0,
@@ -1061,127 +871,93 @@ class TestBaseModelMethods:
                 "sample": 1.0,
                 "col_sample_by_tree": 1.0,
                 "col_sample_by_node": 1.0,
-            }
-        elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
-            model_params_map = {}
-        elif model_class == "LinearSVR":
-            model_params_map = {
+            },
+        ),
+        **dict.fromkeys(["DummyTreeRegressor", "DummyTreeClassifier"], {}),
+        **dict.fromkeys(
+            ["LinearSVR"],
+            {
                 "tol": 1e-04,
                 "C": 1.0,
                 "intercept_scaling": 1.0,
                 "intercept_mode": "regularized",
                 "acceptable_error_margin": 0.1,
                 "max_iter": 100,
-            }
-        elif model_class == "PoissonRegressor":
-            model_params_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["PoissonRegressor"],
+            {
                 "penalty": "l2",
                 "tol": 1e-06,
                 "C": 1,
                 "max_iter": 100,
                 "solver": "newton",
                 "fit_intercept": True,
-            }
-        elif model_class == "AR":
-            model_params_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["AR"],
+            {
                 "p": 3,
                 "method": "ols",
                 "penalty": "none",
                 "C": 1.0,
                 "missing": "linear_interpolation",
-            }
-        elif model_class == "MA":
-            model_params_map = {
-                "q": 1,
-                "penalty": "none",
-                "C": 1.0,
-                "missing": "linear_interpolation",
-            }
-        elif model_class == "ARMA":
-            model_params_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["MA"],
+            {"q": 1, "penalty": "none", "C": 1.0, "missing": "linear_interpolation"},
+        ),
+        **dict.fromkeys(
+            ["ARMA"],
+            {
                 "order": (2, 1),
                 "tol": 1e-06,
                 "max_iter": 100,
                 "init": "zero",
                 "missing": "linear_interpolation",
-            }
-        elif model_class == "ARIMA":
-            model_params_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["ARIMA"],
+            {
                 "order": (2, 1, 1),
                 "tol": 1e-06,
                 "max_iter": 100,
                 "init": "zero",
                 "missing": "linear_interpolation",
-            }
-        else:
-            model_params_map = {
-                "tol": 1e-06,
-                "max_iter": 100,
-                "solver": "newton",
-                "fit_intercept": True,
-            }
-
-        if model_class == "Ridge":
-            model_params_map["C"] = 1
-        elif model_class == "Lasso":
-            model_params_map["C"] = 1
-            model_params_map["solver"] = "cgd"
-        elif model_class == "ElasticNet":
-            model_params_map["C"] = 1
-            model_params_map["solver"] = "cgd"
-            model_params_map["l1_ratio"] = 0.5
-
-        assert get_models.vpy.model.get_params() == pytest.approx(
-            model_params_map, rel=REL_TOLERANCE
-        )
-
-    @pytest.mark.parametrize(
-        "attributes, expected",
-        [
-            (
-                "attr_name",
-                [
-                    "details",
-                    "regularization",
-                    "iteration_count",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "call_string",
-                ],
-            ),
-            (
-                "attr_fields",
-                [
-                    "predictor, coefficient, std_err, t_value, p_value",
-                    "type, lambda",
-                    "iteration_count",
-                    "rejected_row_count",
-                    "accepted_row_count",
-                    "call_string",
-                ],
-            ),
-            ("#_of_rows", [4, 1, 1, 1, 1, 1]),
-        ],
+            },
+        ),
+        **dict.fromkeys(
+            ["KMeans"],
+            {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 0.0001},
+        ),
+    }
+    return params_map.get(
+        model_class,
+        None,
     )
-    def test_get_vertica_attributes(
-        self, get_models, model_class, attributes, expected
-    ):
-        """
-        test function - get_vertica_attributes
-        """
-        model_attributes = get_models.vpy.model.get_vertica_attributes()
 
-        if model_class in [
-            "RandomForestRegressor",
-            "RandomForestClassifier",
-            "DecisionTreeRegressor",
-            "DecisionTreeClassifier",
-            "DummyTreeRegressor",
-            "DummyTreeClassifier",
-            "XGBRegressor",
-            "XGBClassifier",
-        ]:
-            attr_map = {
+
+def get_vertica_model_attributes(model_class):
+    """
+    getter function to get vertica model attributes
+    """
+    vertica_attributes_map = {
+        **dict.fromkeys(
+            [
+                "RandomForestRegressor",
+                "RandomForestClassifier",
+                "DecisionTreeRegressor",
+                "DecisionTreeClassifier",
+                "DummyTreeRegressor",
+                "DummyTreeClassifier",
+                "XGBRegressor",
+                "XGBClassifier",
+            ],
+            {
                 "attr_name": [
                     "tree_count",
                     "rejected_row_count",
@@ -1197,19 +973,11 @@ class TestBaseModelMethods:
                     "predictor, type",
                 ],
                 "#_of_rows": [1, 1, 1, 1, 3],
-            }
-            expected = attr_map[attributes]
-            if model_class == "XGBRegressor":
-                attr_map["attr_name"].append("initial_prediction")
-                attr_map["attr_fields"].append("initial_prediction")
-                attr_map["#_of_rows"].append(1)
-            elif model_class == "XGBClassifier":
-                attr_map["attr_name"].append("initial_prediction")
-                attr_map["attr_fields"].append("response_label, value")
-                attr_map["#_of_rows"].append(2)
-
-        elif model_class == "LinearSVR":
-            attr_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["LinearSVR"],
+            {
                 "attr_name": [
                     "details",
                     "accepted_row_count",
@@ -1225,10 +993,11 @@ class TestBaseModelMethods:
                     "call_string",
                 ],
                 "#_of_rows": [4, 1, 1, 1, 1],
-            }
-            expected = attr_map[attributes]
-        elif model_class == "PoissonRegressor":
-            attr_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["PoissonRegressor"],
+            {
                 "attr_name": [
                     "details",
                     "regularization",
@@ -1246,10 +1015,11 @@ class TestBaseModelMethods:
                     "call_string",
                 ],
                 "#_of_rows": [4, 1, 1, 1, 1, 1],
-            }
-            expected = attr_map[attributes]
-        elif model_class == "AR":
-            attr_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["AR"],
+            {
                 "attr_name": [
                     "coefficients",
                     "lag_order",
@@ -1275,10 +1045,11 @@ class TestBaseModelMethods:
                     "call_string",
                 ],
                 "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            }
-            expected = attr_map[attributes]
-        elif model_class == "MA":
-            attr_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["MA"],
+            {
                 "attr_name": [
                     "coefficients",
                     "mean",
@@ -1306,10 +1077,11 @@ class TestBaseModelMethods:
                     "call_string",
                 ],
                 "#_of_rows": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            }
-            expected = attr_map[attributes]
-        elif model_class in ["ARMA", "ARIMA"]:
-            attr_map = {
+            },
+        ),
+        **dict.fromkeys(
+            ["ARMA", "ARIMA"],
+            {
                 "attr_name": [
                     "coefficients",
                     "p",
@@ -1343,39 +1115,492 @@ class TestBaseModelMethods:
                     "call_string",
                 ],
                 "#_of_rows": [3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            }
-            expected = attr_map[attributes]
+            },
+        ),
+        **dict.fromkeys(
+            ["KMeans"],
+            {
+                "attr_name": ["centers", "metrics"],
+                "attr_fields": [
+                    "sepallengthcm, sepalwidthcm, petallengthcm, petalwidthcm",
+                    "metrics",
+                ],
+                "#_of_rows": [8, 1],
+            },
+        ),
+    }
+    if model_class == "XGBRegressor":
+        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
+        vertica_attributes_map[model_class]["attr_fields"].append("initial_prediction")
+        vertica_attributes_map[model_class]["#_of_rows"].append(1)
+    elif model_class == "XGBClassifier":
+        vertica_attributes_map[model_class]["attr_name"].append("initial_prediction")
+        vertica_attributes_map[model_class]["attr_fields"].append(
+            "response_label, value"
+        )
+        vertica_attributes_map[model_class]["#_of_rows"].append(2)
+
+    return vertica_attributes_map.get(
+        model_class,
+        {
+            "attr_name": [
+                "details",
+                "regularization",
+                "iteration_count",
+                "rejected_row_count",
+                "accepted_row_count",
+                "call_string",
+            ],
+            "attr_fields": [
+                "predictor, coefficient, std_err, t_value, p_value",
+                "type, lambda",
+                "iteration_count",
+                "rejected_row_count",
+                "accepted_row_count",
+                "call_string",
+            ],
+            "#_of_rows": [4, 1, 1, 1, 1, 1],
+        },
+    )
+
+
+def get_set_params(model_class):
+    """
+    getter function to get vertica params attributes
+    """
+    set_params_map = {
+        **dict.fromkeys(
+            ["RandomForestRegressor", "RandomForestClassifier"],
+            {"n_estimators": 100, "max_depth": 50, "nbins": 100},
+        ),
+        **dict.fromkeys(
+            ["DecisionTreeRegressor", "DecisionTreeClassifier"],
+            {"max_depth": 50, "nbins": 100},
+        ),
+        **dict.fromkeys(
+            ["XGBRegressor", "XGBClassifier"], {"max_depth": 50, "nbins": 100}
+        ),
+        **dict.fromkeys(["DummyTreeRegressor", "DummyTreeClassifier"], {}),
+        **dict.fromkeys(
+            ["LinearSVR"], {"intercept_mode": "unregularized", "max_iter": 500}
+        ),
+        **dict.fromkeys(
+            ["ElasticNet"],
+            {"l1_ratio": 0.01, "C": 0.12, "solver": "newton", "max_iter": 500},
+        ),
+        **dict.fromkeys(
+            ["AR"], {"p": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
+        ),
+        **dict.fromkeys(
+            ["MA"], {"q": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
+        ),
+        **dict.fromkeys(
+            ["ARMA"], {"order": (2, 4, 2), "tol": 1, "init": "hr", "missing": "drop"}
+        ),
+        **dict.fromkeys(
+            ["ARIMA"], {"order": (2, 2), "tol": 1, "init": "hr", "missing": "drop"}
+        ),
+        **dict.fromkeys(["KMeans"], {"n_cluster": 5, "init": "random", "tol": 1}),
+    }
+    return set_params_map.get(model_class, {"solver": "cgd", "max_iter": 500})
+
+
+@pytest.fixture(name="get_pred_column")
+def get_pred_column_fixture(model_class):
+    """
+    getter fixture to get prediction column
+    """
+    pred_col_map = {
+        **dict.fromkeys(REGRESSION_MODELS, "quality_pred"),
+        **dict.fromkeys(CLASSIFICATION_MODELS, "survived_pred"),
+        **dict.fromkeys(TIMESERIES_MODELS, "prediction"),
+        **dict.fromkeys(["KMeans"], f"{model_class}_cluster_ids"),
+    }
+    return pred_col_map.get(model_class, None)
+
+
+@pytest.fixture(name="get_to_sql")
+def get_to_sql_fixture(model_class, get_models):
+    """
+    getter fixture to get sql function for a model
+    """
+    if model_class in TIMESERIES_MODELS:
+        pytest.skip(f"to_sql function is not available for {model_class} model")
+
+    pred_func = get_predict_function(model_class)
+    model_name = get_models.vpy.model.model_name
+    to_sql_func = get_models.vpy.model.to_sql
+
+    to_sql_map = {
+        **dict.fromkeys(
+            REGRESSION_MODELS,
+            f"SELECT {pred_func}(3.0, 11.0, 93.0 USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::float, {to_sql_func([3.0, 11.0, 93.0])}::float"
+            if model_class in REGRESSION_MODELS
+            else None,
+        ),
+        **dict.fromkeys(
+            CLASSIFICATION_MODELS,
+            f"""SELECT {pred_func}(* USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::int, {to_sql_func()}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"""
+            if model_class in CLASSIFICATION_MODELS
+            else None,
+        ),
+        **dict.fromkeys(
+            ["KMeans"],
+            f"SELECT {pred_func}(3.0, 11.0, 93.0, 0.244 USING PARAMETERS model_name = '{model_name}', match_by_pos=True)::float, {to_sql_func([3.0, 11.0, 93.0, 0.244])}::float"
+            if model_class == "KMeans"
+            else None,
+        ),
+    }
+    yield to_sql_map.get(model_class, None)
+
+
+def _get_deploysql(model_class):
+    """
+    test function - deploySQL
+    """
+    deploysql_map = {
+        **dict.fromkeys(
+            REGRESSION_MODELS + CLASSIFICATION_MODELS + CLUSTER_MODELS,
+            """{pred_fun_name}({columns} USING PARAMETERS model_name = '{schema_name}.{model_name}', match_by_pos = 'true')""",
+        ),
+        **dict.fromkeys(
+            TIMESERIES_MODELS,
+            """{pred_fun_name}( USING PARAMETERS model_name = '{schema_name}.{model_name}', add_mean = True, npredictions = 10 ) OVER ()""",
+        ),
+    }
+    return deploysql_map.get(model_class, None)
+
+
+pytestmark = pytest.mark.parametrize(
+    "model_class",
+    [
+        "RandomForestRegressor",
+        "RandomForestClassifier",
+        "DecisionTreeRegressor",
+        "DecisionTreeClassifier",
+        # "DummyTreeRegressor",
+        # "DummyTreeClassifier",
+        "XGBRegressor",
+        "XGBClassifier",
+        "Ridge",
+        "Lasso",
+        "ElasticNet",
+        "LinearRegression",
+        # "LinearSVR",
+        "PoissonRegressor",
+        "AR",
+        "MA",
+        "ARMA",
+        "ARIMA",
+        # *****cluster models ************
+        "KMeans",
+    ],
+)
+
+
+@pytest.fixture(name="get_models")
+def get_models_fixture(model_class, get_vpy_model, get_py_model):
+    """
+    test function - get_models
+    """
+    _get_models = namedtuple("_get_models", ["vpy", "py"])(
+        get_vpy_model(model_class), get_py_model(model_class)
+    )
+
+    yield _get_models
+
+
+class TestBaseModelMethods:
+    """
+    test class for linear models
+    """
+
+    def test_contour(self, model_class, get_vpy_model):
+        """
+        test function - contour
+        """
+        X = get_xy(model_class)["X"]
+        if model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            pytest.skip(f"contour function is not available for {model_class} model")
+
+        vpy_res = get_vpy_model(
+            model_class,
+            X=X[:2],
+        ).model.contour()
+
+        assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
+
+    def test_deploysql(self, get_models, model_class):
+        """
+        test function - deploySQL
+        """
+        pred_fun_name = get_predict_function(model_class)
+        columns = ", ".join(f'"{col}"' for col in get_models.py.X.columns)
+
+        vpy_pred_sql = get_models.vpy.model.deploySQL()
+        pred_sql = _get_deploysql(model_class).format(
+            pred_fun_name=pred_fun_name,
+            columns=columns,
+            schema_name=get_models.vpy.schema_name,
+            model_name=get_models.vpy.model_name,
+        )
+
+        assert vpy_pred_sql == pred_sql
+
+    def test_does_model_exists(self, get_models, model_class):
+        """
+        test function - does_model_exists
+        """
+        model_name_with_schema = (
+            f"{get_models.vpy.schema_name}.{get_models.vpy.model_name}"
+        )
+        assert (
+            get_models.vpy.model.does_model_exists(name=model_name_with_schema) is True
+        )
+
+        try:
+            get_models.vpy.model.does_model_exists(
+                name=model_name_with_schema, raise_error=True
+            )
+        except NameError:
+            with pytest.raises(NameError) as exception_info:
+                get_models.vpy.model.does_model_exists(
+                    name=model_name_with_schema, raise_error=True
+                )
+            assert exception_info.match(
+                f"The model 'vpy_model_{model_class}' already exists!"
+            )
+
+        assert get_models.vpy.model.does_model_exists(
+            name=model_name_with_schema, return_model_type=True
+        )[1] in get_train_function(model_class)
+
+        get_models.vpy.model.drop()
+        assert (
+            get_models.vpy.model.does_model_exists(name=model_name_with_schema) is False
+        )
+
+    def test_drop(self, get_models):
+        """
+        test function - drop
+        """
+        model_sql = f"SELECT model_name FROM models WHERE schema_name='{get_models.vpy.schema_name}' and model_name = '{get_models.vpy.model_name}'"
+
+        current_cursor().execute(model_sql)
+        assert current_cursor().fetchone()[0] == get_models.vpy.model_name
+
+        get_models.vpy.model.drop()
+        current_cursor().execute(model_sql)
+        assert current_cursor().fetchone() is None
+
+    @pytest.mark.parametrize("kind", ["pmml", "vertica", "vertica_models", None])
+    def test_export_models(self, model_class, get_models, kind):
+        """
+        test function - export_models
+        """
+        export_path = f"/tmp/exports/{model_class}_{kind}"
+        obj = get_models.vpy
+
+        if os.path.isdir(export_path) and export_path.startswith("/tmp/exports/"):
+            print(f"Deleting directory {export_path}")
+            shutil.rmtree(export_path)
+
+        try:
+            assert VerticaModel.export_models(
+                name=f"{obj.schema_name}.{obj.model_name}",
+                path=export_path,
+                kind=kind,
+            )
+        except QueryError:
+            with pytest.raises(QueryError) as exception_info:
+                VerticaModel.export_models(
+                    name=f"{obj.schema_name}.{obj.model_name}",
+                    path=export_path,
+                    kind=kind,
+                )
+
+            assert (
+                f"Exporting a model of type {get_train_function(model_class)} to PMML is not yet supported"
+                in exception_info.value.message
+            )
+
+    def test_get_attributes(self, get_models, model_class):
+        """
+        test function - get_attributes
+        """
+        assert get_models.vpy.model.get_attributes() == get_model_attributes(
+            model_class
+        )
+
+    @pytest.mark.parametrize(
+        "match_index_attr, expected", [("valid_colum", 2), ("invalid_colum", None)]
+    )
+    def test_get_match_index(self, get_models, match_index_attr, expected, model_class):
+        """
+        test function - get_match_index
+        """
+        if model_class in TIMESERIES_MODELS:
+            x = get_models.py.X.columns[0]
+            col_list = [x]
+            expected = 0 if match_index_attr == "valid_colum" else expected
+        else:
+            x = get_models.py.X.columns[2]
+            col_list = get_models.py.X.columns
+
+        if match_index_attr == "valid_colum":
+            vpy_res = get_models.vpy.model.get_match_index(x=x, col_list=col_list)
+        else:
+            vpy_res = get_models.vpy.model.get_match_index(
+                x=match_index_attr, col_list=col_list
+            )
+
+        assert vpy_res == expected
+
+    def test_get_params(self, get_models, model_class):
+        """
+        test function - get_params
+        """
+        expected_model_params = get_model_params(model_class)
+        actual_model_params = get_models.vpy.model.get_params()
+
+        assert expected_model_params == pytest.approx(actual_model_params)
+
+    def test_get_plotting_lib(self, get_models):
+        """
+        test function - get_plotting_lib
+        """
+        plotting_lib = get_models.vpy.model.get_plotting_lib(
+            class_name="RegressionPlot"
+        )[0].RegressionPlot.__module__
+        assert (
+            "matplotlib" in plotting_lib
+            or "plotly" in plotting_lib
+            or "highcharts" in plotting_lib
+        )
+
+    @pytest.mark.parametrize("attributes", ["attr_name", "attr_fields", "#_of_rows"])
+    def test_get_vertica_attributes(self, get_models, model_class, attributes):
+        """
+        test function - get_vertica_attributes
+        """
+        model_attributes = get_models.vpy.model.get_vertica_attributes()
+
+        attr_map = get_vertica_model_attributes(model_class)
+        expected = attr_map[attributes]
 
         assert model_attributes[attributes] == expected
+
+    @pytest.mark.parametrize("kind", ["pmml", "vertica", "vertica_models", None])
+    def test_import_models(self, schema_loader, model_class, get_models, kind):
+        """
+        test function - import_models
+        """
+        export_path = f"/tmp/imports/{model_class}_{kind}"
+        obj = get_models.vpy
+
+        if os.path.isdir(export_path) and export_path.startswith("/tmp/imports/"):
+            print(f"Deleting directory {export_path}")
+            shutil.rmtree(export_path)
+
+        try:
+            VerticaModel.export_models(
+                name=f"{obj.schema_name}.{obj.model_name}",
+                path=export_path,
+                kind=kind,
+            )
+            obj.model.drop()
+            assert VerticaModel.import_models(
+                path=f"{export_path}/vpy_model_{model_class}/",
+                schema=schema_loader,
+                kind=kind,
+            )
+            obj.model.drop()
+        except QueryError:
+            with pytest.raises(QueryError) as exception_info:
+                VerticaModel.export_models(
+                    name=f"{obj.schema_name}.{obj.model_name}",
+                    path=export_path,
+                    kind=kind,
+                )
+
+            assert (
+                f"Exporting a model of type {get_train_function(model_class)} to PMML is not yet supported"
+                in exception_info.value.message
+            )
+
+    @pytest.mark.parametrize("overwrite", [True, False])
+    def test_overwrite(self, model_class, get_vpy_model, overwrite):
+        """
+        test function - overwrite existing model
+        """
+        obj = get_vpy_model(model_class)
+        try:
+            get_vpy_model(model_class, overwrite_model=overwrite)
+        except NameError:
+            with pytest.raises(NameError) as exception_info:
+                get_vpy_model(model_class, overwrite_model=overwrite)
+            assert exception_info.match(f"The model '{obj.model_name}' already exists!")
+        obj.model.drop()
+
+    @pytest.mark.parametrize(
+        "plotting_library",
+        [
+            # "plotly",
+            # "highcharts",
+            "matplotlib",
+        ],
+    )
+    def test_plot(self, model_class, get_vpy_model, plotting_library):
+        """
+        test function - plot
+        """
+        vp.set_option("plotting_lib", plotting_library)
+        X = get_xy(model_class)["X"]
+        try:
+            vpy_res = get_vpy_model(
+                model_class,
+                X=X if model_class in TIMESERIES_MODELS else X[:2],
+            )[0].plot()
+        except NotImplementedError:
+            pytest.skip(
+                f"plot function is not implemented for {model_class} model class - NotImplementedError"
+            )
+
+        if plotting_library == "matplotlib":
+            assert isinstance(vpy_res, plt.Axes)
+        elif plotting_library == "plotly":
+            assert isinstance(vpy_res, plotly.graph_objs.Figure)
+        else:
+            assert isinstance(vpy_res, Highchart)
+        # assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
+
+    def test_predict(self, get_models, model_class, get_pred_column):
+        """
+        test function - predict
+        """
+        vpy_res = get_models.vpy.pred_vdf[[get_pred_column]].to_numpy().mean()
+        py_res = get_models.py.pred.mean()
+
+        assert vpy_res == pytest.approx(
+            py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
+        )
+
+    def test_register(self, get_models, model_class):
+        """
+        test function - register model
+        """
+        assert get_models.vpy.model.register(f"{model_class}_app")
 
     def test_set_params(self, get_models, model_class):
         """
         test function - set_params
         """
-
-        if model_class in ["RandomForestRegressor", "RandomForestClassifier"]:
-            params = {"n_estimators": 100, "max_depth": 50, "nbins": 100}
-        elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
-            params = {"max_depth": 50, "nbins": 100}
-        elif model_class in ["XGBRegressor", "XGBClassifier"]:
-            params = {"max_depth": 50, "nbins": 100}
-        elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
-            params = {}
-        elif model_class == "LinearSVR":
-            params = {"intercept_mode": "unregularized", "max_iter": 500}
-        elif model_class == "ElasticNet":
-            params = {"l1_ratio": 0.01, "C": 0.12, "solver": "newton", "max_iter": 500}
-        elif model_class == "AR":
-            params = {"p": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
-        elif model_class == "MA":
-            params = {"q": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
-        elif model_class == "ARMA":
-            params = {"order": (2, 4, 2), "tol": 1, "init": "hr", "missing": "drop"}
-        elif model_class == "ARIMA":
-            params = {"order": (2, 2), "tol": 1, "init": "hr", "missing": "drop"}
-        else:
-            params = {"solver": "cgd", "max_iter": 500}
-
+        params = get_set_params(model_class)
         get_models.vpy.model.set_params(params)
 
         assert {
@@ -1394,85 +1619,74 @@ class TestBaseModelMethods:
 
         assert vpy_model_summary == vt_model_summary
 
-    def test_to_python(
-        self,
-        get_models,
-        model_class,
-    ):
+    def test_to_binary(self, get_models):
+        """
+        test function - to_binary
+        """
+        assert get_models.vpy.model.to_binary(path="/tmp/")
+
+    def test_to_memmodel(self, get_models, model_class):
+        """
+        test function - to_mmmodel
+        """
+        if model_class in TIMESERIES_MODELS:
+            pytest.skip(
+                f"to_memmodel function is not available for {model_class} model"
+            )
+
+        pdf = get_models.py.X
+
+        # cast Decimal.decimal datatype to float (if exists)
+        for col in pdf.columns:
+            pdf[col] = pdf[col].astype(float)
+
+        mmodel = get_models.vpy.model.to_memmodel()
+        mm_res = mmodel.predict(pdf).tolist()
+        py_res = get_models.vpy.model.to_python()(pdf).tolist()
+
+        assert mm_res == pytest.approx(py_res, rel=REL_TOLERANCE)
+
+    def test_to_pmml(self, get_models, model_class):
+        """
+        test function - to_pmml
+        """
+        try:
+            assert get_models.vpy.model.to_pmml(path="/tmp/")
+        except QueryError:
+            with pytest.raises(QueryError) as exception_info:
+                get_models.vpy.model.to_pmml(path="/tmp/")
+
+            assert (
+                f"Exporting a model of type {get_train_function(model_class)} to PMML is not yet supported"
+                in exception_info.value.message
+            )
+
+    def test_to_python(self, get_models, model_class, get_pred_column):
         """
         test function - to_python
         """
-        if model_class in [
-            "RandomForestClassifier",
-            "DecisionTreeClassifier",
-            "DummyTreeClassifier",
-            "XGBClassifier",
-        ]:
-            py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
-            vpy_res = get_models.vpy.pred_vdf[["survived_pred"]].to_numpy()[10]
-        elif model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+        if model_class in TIMESERIES_MODELS:
             pytest.skip(f"to_python function is not available for {model_class} model")
-        else:
-            py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
-            vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy()[10]
+
+        pdf = get_models.py.X
+        # cast Decimal.decimal datatype to float (if exists)
+        for col in pdf.columns:
+            pdf[col] = pdf[col].astype(float)
+
+        py_res = get_models.vpy.model.to_python()(pdf)[10]
+        vpy_res = get_models.vpy.pred_vdf[[get_pred_column]].to_numpy()[10]
 
         py_res = [np.exp(py_res) if model_class == "PoissonRegressor" else py_res]
-
-        print(f"vertica: {vpy_res}, sklearn: {py_res}")
-        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
-        print(
-            f"Model_class: {model_class}, Metric_name: to_python, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
-        )
 
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["to_python"]["rel"]
         )
 
-    def test_to_sql(self, get_models, model_class):
+    def test_to_sql(self, model_class, get_to_sql):
         """
         test function - to_sql
         """
-        pred_fun_map = {
-            **dict.fromkeys(
-                [
-                    "RandomForestRegressor",
-                    "DecisionTreeRegressor",
-                    "DummyTreeRegressor",
-                ],
-                "PREDICT_RF_REGRESSOR",
-            ),
-            **dict.fromkeys(
-                [
-                    "RandomForestClassifier",
-                    "DecisionTreeClassifier",
-                    "DummyTreeClassifier",
-                ],
-                "PREDICT_RF_CLASSIFIER",
-            ),
-            "XGBRegressor": "PREDICT_XGB_REGRESSOR",
-            "XGBClassifier": "PREDICT_XGB_CLASSIFIER",
-            "LinearSVR": "PREDICT_SVM_REGRESSOR",
-            "PoissonRegressor": "PREDICT_POISSON_REG",
-            "AR": "PREDICT_AUTOREGRESSOR",
-            **dict.fromkeys(
-                ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
-                "PREDICT_LINEAR_REG",
-            ),
-        }
-
-        if model_class in [
-            "RandomForestClassifier",
-            "DecisionTreeClassifier",
-            "DummyTreeClassifier",
-            "XGBClassifier",
-        ]:
-            pred_sql = f"SELECT {pred_fun_map[model_class]}(* USING PARAMETERS model_name = '{get_models.vpy.model.model_name}', match_by_pos=True)::int, {get_models.vpy.model.to_sql()}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"
-        elif model_class in ["AR", "MA", "ARMA", "ARIMA"]:
-            pytest.skip(f"to_sql function is not available for {model_class} model")
-        else:
-            pred_sql = f"SELECT {pred_fun_map[model_class]}(3.0, 11.0, 93.0 USING PARAMETERS model_name = '{get_models.vpy.model.model_name}', match_by_pos=True)::float, {get_models.vpy.model.to_sql([3.0, 11.0, 93.0])}::float"
-
-        current_cursor().execute(pred_sql)
+        current_cursor().execute(get_to_sql)
         prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(
             np.exp(prediction[1])
@@ -1480,80 +1694,15 @@ class TestBaseModelMethods:
             else prediction[1]
         )
 
-    def test_does_model_exists(self, get_models):
+    @pytest.mark.skip("Only applicable for tensorflow models")
+    def test_to_tf(self, get_models):
         """
-        test function - does_model_exists
+        test function - to_tf
         """
-        model_name_with_schema = (
-            f"{get_models.vpy.schema_name}.{get_models.vpy.model_name}"
-        )
-        assert (
-            get_models.vpy.model.does_model_exists(name=model_name_with_schema) is True
-        )
+        # Need to check on this. should be applicable to tf models only?
+        tf_model = get_models.vpy.model.to_tf(path="/tmp/")
 
-        try:
-            get_models.vpy.model.does_model_exists(
-                name=model_name_with_schema, raise_error=True
-            )
-        except NameError as error:
-            assert error.args[0] == "The model 'vpy_model' already exists!"
-
-        assert get_models.vpy.model.does_model_exists(
-            name=model_name_with_schema, return_model_type=True
-        )[1] in [
-            "LINEAR_REGRESSION",
-            "SVM_REGRESSOR",
-            "RF_REGRESSOR",
-            "RF_CLASSIFIER",
-            "XGB_REGRESSOR",
-            "XGB_CLASSIFIER",
-            "POISSON_REGRESSION",
-            "AUTOREGRESSOR",
-            "MOVING_AVERAGE",
-            "ARIMA",
-        ]
-
-        get_models.vpy.model.drop()
-        assert (
-            get_models.vpy.model.does_model_exists(name=model_name_with_schema) is False
-        )
-
-    @pytest.mark.parametrize(
-        "match_index_attr, expected", [("valid_colum", 2), ("invalid_colum", None)]
-    )
-    def test_get_match_index(self, get_models, match_index_attr, expected, model_class):
-        """
-        test function - get_match_index
-        """
-        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
-            x = get_models.py.X.columns[0]
-            col_list = [x]
-            expected = 0 if match_index_attr == "valid_colum" else expected
-        else:
-            x = get_models.py.X.columns[2]
-            col_list = get_models.py.X.columns
-
-        if match_index_attr == "valid_colum":
-            vpy_res = get_models.vpy.model.get_match_index(x=x, col_list=col_list)
-        else:
-            vpy_res = get_models.vpy.model.get_match_index(
-                x=match_index_attr, col_list=col_list
-            )
-
-        assert vpy_res == expected
-
-    def test_get_plotting_lib(self, get_models):
-        """
-        test function - get_plotting_lib
-        """
-        plotting_lib = get_models.vpy.model.get_plotting_lib(
-            class_name="RegressionPlot"
-        )[0].RegressionPlot.__module__
-        assert (
-            "matplotlib" in plotting_lib
-            or "plotly" in plotting_lib
-            or "highcharts" in plotting_lib
-        )
+        assert tf_model
 
     @pytest.mark.parametrize(
         "key_name",
@@ -1699,55 +1848,3 @@ class TestBaseModelMethods:
         assert features_importance_map[key_name] == pytest.approx(
             f_imp[key_name], rel=1e-0
         )
-
-    def test_plot(self, model_class, get_vpy_model):
-        """
-        test function - plot
-        """
-        try:
-            if model_class in [
-                "RandomForestClassifier",
-                "DecisionTreeClassifier",
-                "DummyTreeClassifier",
-                "XGBClassifier",
-            ]:
-                vpy_res = get_vpy_model(model_class, X=["age", "fare"])[0].plot()
-            elif model_class in [
-                "AR",
-                "MA",
-                "ARMA",
-                "ARIMA",
-            ]:
-                vpy_res = get_vpy_model(model_class, X="date")[0].plot(
-                    start=5
-                )  # need to remove start parm. once 847 issue is fixed
-            else:
-                vpy_res = get_vpy_model(model_class, X=["residual_sugar", "alcohol"])[
-                    0
-                ].plot()
-        except NotImplementedError:
-            pytest.skip(
-                f"plot function is not implemented for {model_class} model class - NotImplementedError"
-            )
-
-        assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
-
-    def test_to_memmodel(self, get_models, model_class):
-        """
-        test function - to_mmmodel
-        """
-        if model_class in [
-            "AR",
-            "MA",
-            "ARMA",
-            "ARIMA",
-        ]:
-            pytest.skip(
-                f"to_memmodel function is not available for {model_class} model"
-            )
-        else:
-            mmodel = get_models.vpy.model.to_memmodel()
-            mm_res = mmodel.predict(get_models.py.X)
-            py_res = get_models.vpy.model.to_python()(get_models.py.X)
-
-        assert mm_res == pytest.approx(py_res, rel=REL_TOLERANCE)
