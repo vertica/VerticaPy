@@ -151,7 +151,7 @@ class ProfileImport:
         if self._file_check_complete:
             self.logger.info("File check complete, not repeating check_file()")
             return
-        
+
         self.unpack_dir = self._unpack_bundle()
         self.bundle_version = self._calculate_bundle_version(self.unpack_dir)
         self._check_for_missing_files(self.unpack_dir, self.bundle_version)

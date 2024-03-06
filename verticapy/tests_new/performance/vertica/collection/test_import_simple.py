@@ -120,7 +120,7 @@ class TestProfileImport:
         pi.tmp_path = tmp_path_with_test_bundles
         # check_file was configured to log warnings instead of printing errors
         pi.check_file()
-        
+
         # Now test that we raise appropriately
         pi2 = ProfileImport(
             target_schema="schema_not_used",
