@@ -25,6 +25,8 @@ from verticapy.pipeline._train import training
 
 import verticapy.sql.sys as sys
 
+from verticapy.tests_new.pipeline.conftest import pipeline_exists, pipeline_not_exists
+
 
 class TestValidate:
     """
@@ -91,7 +93,7 @@ class TestValidate:
         test,
     ):
         pipeline_name = "test_pipeline"
-        _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
+        _executeSQL(f"CALL drop_pipeline('public', '{pipeline_name}');")
 
         # Model Setup
         table = load_winequality()
@@ -111,17 +113,14 @@ class TestValidate:
         cols = ["fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar"]
 
         # Part 1: Train a Model
-        _, model, _ = training(kwargs, table, "test_pipeline", cols)
+        _, model, _ = training(kwargs, table, pipeline_name, cols)
 
         # Part 2: Run the Metrics
         testing(test, model, pipeline_name, cols)
 
         assert model
-        assert model.does_model_exists("public.test_pipeline_MODEL")
-        assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-        assert sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
-        assert sys.does_table_exist("test_pipeline_METRIC_TABLE", "public")
+        assert pipeline_exists(pipeline_name, check_metric=True, model=model)
 
         # drop pipeline
-        _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
+        _executeSQL(f"CALL drop_pipeline('public', '{pipeline_name}');")
         drop("public.winequality")

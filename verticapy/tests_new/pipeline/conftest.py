@@ -26,24 +26,25 @@ def pipeline_setup():
     setup()
 
 
-def pipeline_exists(pipeline_name: str):
+def pipeline_exists(pipeline_name: str, check_metric = False, model = None):
     """
     helper function to test if a pipeline
     is properly created.
     """
-    return (
-            sys.does_view_exist(f"{pipeline_name}_TRAIN_VIEW", "public")
-            and sys.does_view_exist(f"{pipeline_name}_TEST_VIEW", "public")
-            and sys.does_table_exist(f"{pipeline_name}_METRIC_TABLE", "public")
-           )
+    assert sys.does_view_exist(f"{pipeline_name}_TRAIN_VIEW", "public")
+    assert sys.does_view_exist(f"{pipeline_name}_TEST_VIEW", "public")
+    assert not check_metric or sys.does_table_exist(f"{pipeline_name}_METRIC_TABLE", "public")
+    assert (model == None or model.does_model_exists(f"public.{pipeline_name}_MODEL"))
+    return True
 
-def pipeline_not_exists(pipeline_name: str):
+
+def pipeline_not_exists(pipeline_name: str, check_metric = False, model = None):
     """
     helper function to test if a pipeline
     no longer exists.
-    """
-    return (
-            not sys.does_view_exist(f"{pipeline_name}_TRAIN_VIEW", "public")
-            and not sys.does_view_exist(f"{pipeline_name}_TEST_VIEW", "public")
-            and not sys.does_table_exist(f"{pipeline_name}_METRIC_TABLE", "public")
-           )
+    """            
+    assert not sys.does_view_exist(f"{pipeline_name}_TRAIN_VIEW", "public")
+    assert not sys.does_view_exist(f"{pipeline_name}_TEST_VIEW", "public")
+    assert (not check_metric or not sys.does_table_exist(f"{pipeline_name}_METRIC_TABLE", "public"))
+    assert (model == None or not model.does_model_exists(f"public.{pipeline_name}_MODEL"))
+    return True

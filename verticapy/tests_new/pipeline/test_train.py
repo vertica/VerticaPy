@@ -73,6 +73,8 @@ from verticapy.pipeline._train import training
 
 import verticapy.sql.sys as sys
 
+from verticapy.tests_new.pipeline.conftest import pipeline_exists, pipeline_not_exists
+
 SUPPORTED_FUNCTIONS = [
     BisectingKMeans,  # Winequality
     DBSCAN,  # [Not Tested]
@@ -486,16 +488,12 @@ class TestTrain:
         _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
-        assert model.does_model_exists("public.test_pipeline_MODEL")
-        assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-        assert sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
+        assert pipeline_exists('test_pipeline', model=model)
 
         # drop pipeline
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
 
-        assert not model.does_model_exists("public.test_pipeline_MODEL")
-        assert not sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-        assert not sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
+        assert pipeline_not_exists('test_pipeline', model=model)
 
         drop("public.winequality")
 
@@ -538,16 +536,11 @@ class TestTrain:
         _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
-        assert model.does_model_exists("public.test_pipeline_MODEL")
-        assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-        assert sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
-
+        assert pipeline_exists('test_pipeline', model=model)
         # drop pipeline
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
 
-        assert not model.does_model_exists("public.test_pipeline_MODEL")
-        assert not sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-        assert not sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
+        assert pipeline_not_exists('test_pipeline', model=model)
 
         drop("public.iris")
 
@@ -590,15 +583,9 @@ class TestTrain:
         _, model, _ = training(kwargs, table, "test_pipeline", cols)
         assert model
 
-        assert model.does_model_exists("public.test_pipeline_MODEL")
-        assert sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-        assert sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
-
+        assert pipeline_exists('test_pipeline', model=model)
         # drop pipeline
         _executeSQL("CALL drop_pipeline('public', 'test_pipeline');")
-
-        assert not model.does_model_exists("public.test_pipeline_MODEL")
-        assert not sys.does_view_exist("test_pipeline_TRAIN_VIEW", "public")
-        assert not sys.does_view_exist("test_pipeline_TEST_VIEW", "public")
+        assert pipeline_not_exists('test_pipeline', model=model)
 
         drop("public.airline_passengers")
