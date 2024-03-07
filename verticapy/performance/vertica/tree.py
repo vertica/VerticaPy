@@ -1041,7 +1041,7 @@ class PerformanceTree:
 
         Parameters
         ----------
-        label: str
+        label: int / str
             The node label.
         colors: list
             A ``list`` of one or
@@ -1080,6 +1080,11 @@ class PerformanceTree:
             second_color = ""
             colspan = 3
         proj = ""
+        div = 1
+        if len(str(label)) > 2:
+            div = 1.5
+        if len(str(label)) > 3:
+            div = 2
         if self.style["display_proj"] and "Projection: " in operator:
             proj = operator.split("Projection: ")[1].split("\n")[0]
             ss = self.style["storage_access"]
@@ -1096,7 +1101,7 @@ class PerformanceTree:
         if self.style["display_operator"] and not (isinstance(operator_icon, NoneType)):
             operator_icon = (
                 f'<TD WIDTH="{width}" HEIGHT="{height}" '
-                f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
+                f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize / div}" '
                 f'COLOR="{fontcolor}">{operator_icon}</FONT></TD>'
             )
         else:
@@ -1106,7 +1111,7 @@ class PerformanceTree:
             f'cellpadding="0"><TR><TD WIDTH="{width}" '
             f'HEIGHT="{height}" BGCOLOR="{colors[0]}" ><FONT '
             f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
-            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
+            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize / div}" '
             f'COLOR="{fontcolor}">{label}</FONT></TD>{operator_icon}{second_color}'
             f"</TR>{proj}</TABLE>>"
         )
