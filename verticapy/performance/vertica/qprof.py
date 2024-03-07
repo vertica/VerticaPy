@@ -913,8 +913,7 @@ class QueryProfiler:
         ):
             raise ValueError(
                 "When 'transactions' is not defined, a 'key_id' and a "
-                "'target_schema' "
-                "must be defined to retrieve all the "
+                "'target_schema' must be defined to retrieve all the "
                 "transactions."
             )
 
@@ -930,7 +929,9 @@ class QueryProfiler:
             )
 
         # CHECKING key_id; CREATING ONE IF IT DOES NOT EXIST.
-        if isinstance(key_id, NoneType):
+        if isinstance(key_id, NoneType) or (
+            not (isinstance(transactions, NoneType)) and not (overwrite)
+        ):
             self.key_id = str(uuid.uuid1()).replace("-", "")
         else:
             if isinstance(key_id, int):
