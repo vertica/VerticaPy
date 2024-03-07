@@ -510,7 +510,7 @@ class TimeSeriesModelBase(VerticaModel):
 
         Parameters
         ----------
-        show: bool
+        show: bool, optional
             If set to ``True``, draw the
             feature's importance.
         chart: PlottingObject, optional
@@ -1586,7 +1586,7 @@ class TimeSeriesModelBase(VerticaModel):
 
         Parameters
         ----------
-        vdf: SQLRelation
+        vdf: SQLRelation, optional
             Object used to run the prediction.
             You can also specify a customized
             relation, but you must enclose it
