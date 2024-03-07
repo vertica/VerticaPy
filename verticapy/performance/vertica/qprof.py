@@ -142,8 +142,8 @@ class QueryProfiler:
 
         .. note::
 
-            This parameter is used only when ``request`` is
-            defined.
+            This parameter is used only when ``request``
+            is defined.
     check_tables: bool, optional
         If set to ``True`` all the transactions of
         the different Performance tables will be
@@ -155,6 +155,16 @@ class QueryProfiler:
             This parameter will aggregate on many
             tables using many parameters. It will
             make the process much more expensive.
+    iterchecks: bool, optional
+        If set to ``True``, the checks are done
+        iteratively instead of using a unique
+        SQL query. Usually checks are faster
+        when this parameter is set to ``False``.
+
+        .. note::
+
+            This parameter is used only when
+            ``check_tables is True``.
 
     Attributes
     ----------
@@ -855,6 +865,7 @@ class QueryProfiler:
         overwrite: bool = False,
         add_profile: bool = True,
         check_tables: bool = True,
+        iterchecks: bool = False,
     ) -> None:
         # TRANSACTIONS ARE STORED AS A LIST OF (tr_id, st_id) AND
         # AN INDEX USED TO NAVIGATE THROUGH THE DIFFERENT tuples.
@@ -1017,7 +1028,7 @@ class QueryProfiler:
 
         # WARNING MESSAGES.
         if check_tables:
-            self._check_v_table()
+            self._check_v_table(iterchecks=iterchecks)
 
     # Tools
 
@@ -1321,22 +1332,64 @@ class QueryProfiler:
                         warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
 
-    def _check_v_table(self) -> None:
+    def _check_v_table(self, iterchecks: bool = True) -> None:
         """
         Checks if all the transactions
-        exist in all the different tables.
+        exist in all the different
+        tables.
+
+        Parameters
+        ----------
+        iterchecks: bool, optional
+            If set to ``True``, the checks are done
+            iteratively instead of using a unique
+            SQL query. Usually checks are faster
+            when this parameter is set to ``False``.
+
+            .. note::
+
+                This parameter is used only when
+                ``check_tables is True``.
         """
         tables = list(self._v_table_dict().keys())
         tables_schema = self._v_table_dict()
         config_table = self._v_config_table_list()
         warning_message = ""
         loop = self.transactions
-        if conf.get_option("print_info"):
-            print("Checking all the tables consistency...")
-        if conf.get_option("tqdm"):
-            loop = tqdm(loop, total=len(loop))
-        for tr_id, st_id in loop:
-            for table_name in tables:
+        if iterchecks:
+            if conf.get_option("tqdm"):
+                loop = tqdm(loop, total=len(loop))
+            if conf.get_option("print_info"):
+                print("Checking all the tables consistency iteratively...")
+            for tr_id, st_id in loop:
+                for table_name in tables:
+                    if table_name not in config_table:
+                        if len(self.target_tables) == 0:
+                            sc, tb = tables_schema[table_name], table_name
+                        else:
+                            tb = self.target_tables[table_name]
+                            schema = tables_schema[table_name]
+                            sc = self.target_schema[schema]
+                        query = f"""
+                            SELECT
+                                transaction_id,
+                                statement_id
+                            FROM {sc}.{tb}
+                            WHERE
+                                transaction_id = {tr_id}
+                            AND statement_id = {st_id}
+                            LIMIT 1"""
+                        res = _executeSQL(
+                            query,
+                            title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
+                            method="fetchall",
+                        )
+                        if not (res):
+                            warning_message += f"({tr_id}, {st_id}) -> {sc}.{tb}\n"
+        else:
+            select = ["q0.transaction_id", "q0.statement_id"]
+            jointables, relations = [], []
+            for idx, table_name in enumerate(tables):
                 if table_name not in config_table:
                     if len(self.target_tables) == 0:
                         sc, tb = tables_schema[table_name], table_name
@@ -1344,28 +1397,57 @@ class QueryProfiler:
                         tb = self.target_tables[table_name]
                         schema = tables_schema[table_name]
                         sc = self.target_schema[schema]
-                    query = f"""
-                        SELECT
-                            transaction_id,
-                            statement_id
-                        FROM {sc}.{tb}
-                        WHERE
-                            transaction_id = {tr_id}
-                        AND statement_id = {st_id}
-                        LIMIT 1"""
-                    res = _executeSQL(
-                        query,
-                        title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
-                        method="fetchall",
+                    select += [f"q{idx}.row_count AS {tb}"]
+                    current_table = (
+                        "(SELECT transaction_id, statement_id, COUNT(*) AS"
+                        f" row_count FROM {sc}.{tb} GROUP BY 1,2) q{idx}"
                     )
-                    if not (res):
-                        warning_message += f"({tr_id}, {st_id}) -> {sc}.{tb}\n"
+                    if idx != 0:
+                        current_table += " USING (transaction_id, statement_id)"
+                    jointables += [current_table]
+                    relations += [f"{sc}.{tb}"]
+            if conf.get_option("print_info"):
+                print("Checking all the tables consistency using a single SQL query...")
+            query = (
+                "SELECT "
+                + ", ".join(select)
+                + " FROM "
+                + " FULL JOIN ".join(jointables)
+            )
+            res = _executeSQL(
+                query,
+                title=f"Checking all transactions.",
+                method="fetchall",
+            )
+            if len(res) == 0:
+                warning_message = (
+                    "No transaction found. Please check the system tables."
+                )
+            else:
+                n = len(res[0])
+                transactions_dict = {}
+                for row in res:
+                    transactions_dict[(row[0], row[1])] = {}
+                    for idx in range(2, n):
+                        transactions_dict[(row[0], row[1])][relations[idx - 2]] = row[
+                            idx
+                        ]
+                for tr_id, st_id in loop:
+                    if (tr_id, st_id) not in transactions_dict:
+                        warning_message += f"({tr_id}, {st_id}) -> all tables\n"
+                    else:
+                        for rel in relations:
+                            nb_elem = transactions_dict[(tr_id, st_id)][rel]
+                            if isinstance(nb_elem, NoneType) or nb_elem == 0:
+                                warning_message += f"({tr_id}, {st_id}) -> {rel}\n"
         if len(warning_message) > 0:
             warning_message = "\nSome transactions are missing:\n\n" + warning_message
         missing_column = ""
         inconsistent_dt = ""
         table_name_list = list(self._v_table_dict())
         n = len(self.tables_dtypes)
+        if conf.get_option("print_info"):
+            print("Checking all the tables data types...")
         for i in range(n):
             table_name = table_name_list[i]
             table_1 = self.v_tables_dtypes[i]
