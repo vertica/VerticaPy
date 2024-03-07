@@ -140,7 +140,6 @@ def transformation(transform: dict, table: str) -> vDataFrame:
         print(transformed_vdf)
     """
     vdf = vDataFrame(table)
-
     column_queue = Queue()
     for col in sorted(list(transform.keys())):
         column_queue.put((col, False))
@@ -175,7 +174,7 @@ def transformation(transform: dict, table: str) -> vDataFrame:
             for param in params:
                 temp = params[param]
                 if isinstance(temp, str):
-                    temp_str += f"{param} = '{params[param]}', "
+                    temp_str += f'{param} = "{params[param]}", '
                 else:
                     temp_str += f"{param} = {params[param]}, "
             temp_str = temp_str[:-2]
@@ -185,7 +184,10 @@ def transformation(transform: dict, table: str) -> vDataFrame:
                 if not is_created:
                     eval(f"vdf.{name}(" + temp_str + f", name='{col}')")
                 else:
-                    eval(f"vdf['{col}'].{name}({temp_str})", locals())
+                    try:
+                        eval(f"vdf['{col}'].{name}({temp_str})", locals())
+                    except Exception as e:
+                        vdf = eval(f"vdf.{name}({temp_str})", locals())
             except Exception as e:
                 error_string += f"Error creating {col} in methods: {e}\n"
                 if is_created:

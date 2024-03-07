@@ -133,6 +133,51 @@ def does_table_exist(table_name: str, schema: str) -> bool:
     return True
 
 
+def does_view_exist(view_name: str, schema: str) -> bool:
+    """
+    Checks if the specified view exists.
+
+    Parameters
+    ----------
+    view_name: str
+        The view name.
+    schema: str
+        Schema name.
+
+    Returns
+    -------
+    bool
+        False if the view doesn't exist,
+        or it exists but the user has no
+        USAGE privilege on it.
+        True otherwise.
+
+    Examples
+    --------
+    Checks if a table exist:
+
+    .. ipython:: python
+
+        from verticapy.sql import does_view_exist
+
+        does_view_exist(
+            view_name = "fake_name",
+            schema = "fake_schema",
+        )
+
+    .. note::
+
+        Checks if the view exists, but it will not raise
+        any errors; instead, it returns a boolean value,
+        True or False.
+    """
+    query = f"SELECT COUNT(*) FROM v_catalog.views WHERE table_name='{view_name:}' AND table_schema='{schema}';"
+    result = _executeSQL(query, title="Does the table exist?", method="fetchfirstelem")
+    if result == 0:
+        return False
+    return True
+
+
 def has_privileges(
     object_name: str, object_schema: str, privileges: list, raise_error: bool = False
 ) -> bool:
