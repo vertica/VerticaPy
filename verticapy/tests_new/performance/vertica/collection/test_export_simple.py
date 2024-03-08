@@ -32,13 +32,21 @@ class TestQueryProfilerSimple:
     Contains tests related to creating bundles of parquet data
     """
 
+    TEST_QUERY_TEMPLATE = """ 
+    SELECT 
+        date, 
+        MONTH(date) AS month, 
+        AVG(number) AS avg_number
+    """
+
     def test_profile_export(self, amazon_vd, schema_loader, tmp_path):
-        logging.info(f"Amazon vd is {amazon_vd}")
+        """
+        Produces a export bundle and asserts that the list of files in
+        the bundle matches the expected list of files.
+        """
+
         request = f"""
-        SELECT 
-            date, 
-            MONTH(date) AS month, 
-            AVG(number) AS avg_number 
+        {self.TEST_QUERY_TEMPLATE}
         FROM 
             {amazon_vd}
         GROUP BY 1;
@@ -79,57 +87,11 @@ class TestQueryProfilerSimple:
 
         assert len(set_diff) == 0
 
-    def test_profile_full_lifecycle(self, amazon_vd, schema_loader, tmp_path):
-        request = f"""
-        SELECT 
-            date, 
-            MONTH(date) AS month, 
-            AVG(number) AS avg_number 
-        FROM 
-            {amazon_vd}
-        GROUP BY 1;
-        """
-
-        qp = QueryProfiler(request, target_schema=schema_loader)
-
-        outfile = tmp_path / "qprof_test_002.tar"
-        logging.info(f"Writing to file: {outfile}")
-        qp.export_profile(filename=outfile)
-        assert os.path.exists(outfile)
-
-        key = "reload123"
-        pi = ProfileImport(
-            target_schema=schema_loader,
-            key=key,
-            filename=outfile,
-        )
-        unpack_tmp = tmp_path / "unpack"
-        unpack_tmp.mkdir()
-        pi.tmp_path = unpack_tmp
-        pi.check_schema_and_load_file()
-
-        loaded_tables = self._get_set_of_tables_in_schema(schema_loader, key)
-
-        expected_tables = [
-            f"qprof_dc_explain_plans_{key}",
-            f"qprof_dc_query_executions_{key}",
-            f"qprof_dc_requests_issued_{key}",
-            f"qprof_execution_engine_profiles_{key}",
-            f"qprof_host_resources_{key}",
-            f"qprof_query_consumption_{key}",
-            f"qprof_query_plan_profiles_{key}",
-            f"qprof_query_profiles_{key}",
-            f"qprof_resource_pool_status_{key}",
-        ]
-
-        for t in expected_tables:
-            assert t in loaded_tables
-            result = _executeSQL(
-                f"select count(*) from {schema_loader}.{t}", method="fetchall"
-            )
-            assert result[0][0] > 0
-
     def _get_set_of_tables_in_schema(self, target_schema, key):
+        """
+        Returns a set of table names in a schema that have the 
+        suffix key.
+        """
         result = _executeSQL(
             f"""SELECT table_name FROM v_catalog.tables 
                     WHERE 
@@ -144,11 +106,12 @@ class TestQueryProfilerSimple:
         return existing_tables
 
     def test_high_level_import_export(self, amazon_vd, schema_loader, tmp_path):
+        """
+        Produces a export bundle and then imports the bundle. Checks to see that the
+        tables are loaded.
+        """
         request = f"""
-        SELECT 
-            date, 
-            MONTH(date) AS month, 
-            AVG(number) AS avg_number 
+        {self.TEST_QUERY_TEMPLATE}
         FROM 
             {amazon_vd}
         GROUP BY 1;
