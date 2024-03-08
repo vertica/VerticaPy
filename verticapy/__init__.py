@@ -36,7 +36,7 @@ __description__: str = (
 )
 __url__: str = "https://github.com/vertica/verticapy/"
 __license__: str = "Apache License, Version 2.0"
-__version__: str = "1.0.1"
+__version__: str = "1.0.2"
 __iteration__: int = 1
 __date__: str = "03082024"
 __last_commit__: str = "7def2745ffa5bbca9c30b3b08f52dd85c7d9675f"
