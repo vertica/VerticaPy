@@ -15,6 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+import os
+from pathlib import Path
 import re
 from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
 import uuid
@@ -33,6 +35,8 @@ from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
+from verticapy.performance.vertica.collection.profile_export import ProfileExport
+from verticapy.performance.vertica.collection.profile_import import ProfileImport
 from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.sql.dtypes import get_data_types
@@ -3366,3 +3370,227 @@ class QueryProfiler:
         query = """SELECT * FROM v_monitor.host_resources;"""
         query = self._replace_schema_in_query(query)
         return vDataFrame(query)
+
+    def export_profile(self, filename: os.PathLike) -> None:
+        """
+        The ``export_profile()`` method provides a high-level
+        interface for creating an export bundle of parquet files from a
+        QueryProfiler instance.
+
+        The export bundle is a tarball. Inside the tarball there are:
+            * ``profile_meta.json``, a file with some information about
+            the other files in the tarball
+            * Several ``.parquet`` files. There is one ``.parquet`` for
+            each system table that
+            py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+            uses to analyze query performance.
+            * For example, there is a file called ``dc_requests_issued.parquet``.
+
+        Parameters
+        --------------
+        filename: os.PathLike
+            The name of the export bundle to be produced. The input type is
+            a synonym for a string or a ``pathlib.Path``.
+
+        Returns
+        -------------
+
+        Returns None. Produces ``filename``.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+            from verticapy.performance.vertica.collection.profile_export import ProfileExport
+
+        Now we can profile a query and create a set of system table replicas
+        by calling the ``QueryProfiler`` constructor:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;",
+                target_schema="replica_001",
+                key_id="example123"
+            )
+
+        The parameter ``target_schema`` tells the QueryProfiler to create a
+        set of replica tables. The parameter ``key_id`` specifies a suffix for all
+        of the replica tables associated with this profile. The replica tables are
+        a snapshot of the system tables. The replica tables are filtered to contain
+        only the information relevant to the query that we have profiled.
+
+        Now we can use ``export_profile`` to produce an export bundle.
+        We choose to name our export bundle ``"query_requests_example_001.tar"``.
+
+        .. code-block:: python
+
+            qprof.export_profile(filename="query_requests_example_001.tar")
+
+
+        After producing an export bundle, we can examine the file contents using
+        any tool that read tar-format files. For instance, we can use the tarfile
+        library to print the names of all files in the tarball
+
+        .. code-block:: python
+
+            tfile = tarfile.open("query_requests_example_001.tar")
+            for f in tfile.getnames():
+                print(f"Tarball contains path: {f}")
+
+        The output will be:
+
+        .. code-block::
+
+            Tarball contains path: dc_explain_plans.parquet,
+            Tarball contains path: dc_query_executions.parquet
+            ...
+
+        """
+
+        if isinstance(self.target_schema, NoneType) or len(self.target_schema) == 0:
+            raise ValueError(
+                "Export requires that target_schema is set."
+                f" Current value of target_schema: {self.target_schema}"
+            )
+
+        # Target schema is a dictionary of values
+        unique_schemas = set([x for x in self.target_schema.values()])
+        if len(unique_schemas) != 1:
+            raise ValueError(f"Expected one unique schema, but found {unique_schemas}")
+        actual_schema = unique_schemas.pop()
+        exp = ProfileExport(
+            target_schema=actual_schema, key=self.key_id, filename=filename
+        )
+
+        exp.export()
+
+    @staticmethod
+    def import_profile(
+        target_schema: str,
+        key_id: str,
+        filename: os.PathLike,
+        tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp"),
+    ):
+        """
+        The static method ``import_profile`` can be used to create new
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` object
+        from the contents of a export bundle.
+
+        Export bundles can be produced
+        by the method
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`.
+        The bundles contain system table data written into parquet files.
+
+        The method ``import_profile`` executes the following steps:
+            * Unpacks the profie bundle
+            * Creates tables in the in the target schema if they do not
+              exist. The tables will be suffixed by ``key_id``.
+            * Copies the data from the parquet files into the tables
+            * Creates a ``QueryProfiler`` object initialized to use
+              data from the newly created and loaded tables.
+
+        The method returns the new ``QueryProfiler`` object.
+
+        Parameters
+        ------------
+        target_schema: str
+            The name of the schema to load data into
+        key_id: str
+            The suffix for table names in the target_schema
+        filename: os.PathLike
+            The file containing exported profile data
+        tmp_dir: os.PathLike
+            The directory to use for temporary storage of unpacked
+            files.
+
+
+        Returns
+        ----------
+        A QueryProfiler object
+
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+            from verticapy.performance.vertica.collection.profile_export import ProfileExport
+
+        Now we can profile a query and create a set of system table replicas
+        by calling the ``QueryProfiler`` constructor:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;",
+                target_schema="replica_001",
+                key_id="example123"
+            )
+
+        We can use ``export_profile`` to produce an export bundle.
+        We choose to name our export bundle ``"query_requests_example_001.tar"``.
+
+        .. code-block:: python
+
+            qprof.export_profile(filename="query_requests_example_001.tar")
+
+        After producing an export bundle, we can import it into a different
+        schema using ``import_profile``. For purposes of this example, we'll
+        import the data into another schema in the same database. We expect
+        it is more common to import the bundle into another database.
+
+        Let's use the import schema name ``import_002``, which is distinct from
+        the source schema ``replica_001``.
+
+        .. code-block:: python
+
+            qprof_imported = QueryProfiler.import_profile(
+                target_schema="import_002",
+                key_id="ex9876",
+                filename="query_requests_example_001.tar"
+            )
+
+        Now we use the ``QueryProfiler`` to analyze the imported information. All
+        ``QueryProfiler`` methods are available. We'll use ``get_qduration()`` as
+        an example.
+
+        .. code-block:: python
+
+            print(f"First query duration was {qprof_imported.get_qduration()} seconds")
+
+        Let's assume the query had a duration of 3.14 seconds. The output will be:
+
+        .. code-block::
+
+            First query duration was 3.14 seconds
+
+
+        """
+        pi = ProfileImport(
+            # schema and target will be once this test copies
+            # files into a schema
+            target_schema=target_schema,
+            key=key_id,
+            filename=filename,
+        )
+        pi.tmp_path = tmp_dir if isinstance(tmp_dir, Path) else Path(tmp_dir)
+        pi.check_schema_and_load_file()
+        qp = QueryProfiler(target_schema=target_schema, key_id=key_id)
+
+        return qp

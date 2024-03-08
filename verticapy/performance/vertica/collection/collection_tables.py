@@ -16,17 +16,27 @@ permissions and limitations under the License.
 """
 from abc import abstractmethod
 from enum import Enum
+import json
 import logging
-from typing import Mapping
+from pathlib import Path
+from typing import Mapping, List, Any
 
 import pandas as pd
 
 from verticapy.core.parsers.pandas import read_pandas
+from verticapy.core.vdataframe import vDataFrame
 
 
 class AllTableTypes(Enum):
     """
     Enumeration (``Enum``) of all table types understood by profile collection.
+
+    .. note::
+        ``AllTableTypes`` is part of the internals of QueryProfiler import and export.
+        Many high-level use cases can be handled with the high-level functions
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+        and
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
 
     It is best to match table schema (col types) by comparing to this enumeration.
     Tables can have the same schema and different names.
@@ -48,13 +58,499 @@ class AllTableTypes(Enum):
 
 class BundleVersion(Enum):
     """
-    ``BundleVersion`` contains the version of ProfileExport bundles. Versions
-    differ because of the contents of the bundle. For example, a change
-    in column data type would cause the bundle version to change.
+    ``BundleVersion`` is an Enumeration (``Enum``) of all known versions
+    of ProfileExport bundles. Versions differ because of the contents of the bundle.
+    For example, a change in column data type would cause the bundle version to change.
+
+    .. note::
+        ``BundleVersion`` is part of the internals of QueryProfiler import and export.
+        Many high-level use cases can be handled with the high-level functions
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+        and
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+    The description of the bundle version differences can be found in the class comments.
     """
 
+    # Version 1 bundles are produced using
+    # profile import/export bash scripts in Jan + Feb 2024.
+    # most bundles were produced on the intel POC database.
+    # V1 profiles have not profile_metadata.json file in
+    # their contents.
     V1 = 1
-    LATEST = V1
+
+    # Version 2 bundles were produced using verticapy profile
+    # import/export. They are different from V1 bundles because
+    # they do not contain collection import/export bundles.
+    V2 = 2
+
+    # LATEST should always be an alias for the most recent version
+    # of the export bundle. New bundles should almost always use
+    # the LATEST version.
+    LATEST = V2
+
+
+class TableMetadata:
+    """
+    ``TableMetadata`` holds information about a parquet file
+    that represents a table. It has methods to serialze the data
+    as JSON.
+
+    .. note::
+        ``TableMetadata`` is part of the internals of QueryProfiler import and export.
+        Many high-level use cases can be handled with the high-level functions
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+        and
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+    Examples
+    ----------
+
+    First, let's import the ``TableMetadata`` object and the enum AllTableTypes.
+
+    .. code-block:: python
+
+        from verticapy.performance.vertica.collection.collection_tables import TableMetadata
+        from verticapy.performance.vertica.collection.collection_tables import AllTableTypes
+
+    Now we can create a new instance of ``TableMetadata``. We can choose
+    any table type defined in ``AllTableTypes``. For this example, we
+    choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
+    of exported rows. For this example choose 119 rows.
+
+    .. code-block:: python
+
+        tmd = TableMetadata(file_name="test1.parquet",
+                            table_type=AllTableTypes.DC_REQUESTS_ISSUED,
+                            exported_rows=119)
+
+    Now we can print the json representation of the ``TableMetadata``:
+
+    .. code-block:: python
+
+        print(f"JSON obj = {tmd.to_json()}")
+
+    The output will be:
+
+    .. code-block::
+
+        JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED",
+                     "table_type_value": "dc_requests_issued",
+                     "file_name": "test1.parquet",
+                     "exported_rows": 119}
+
+    """
+
+    def __init__(self, file_name: Path, table_type: AllTableTypes, exported_rows: int):
+        """
+        Initializes a ``TableMetadata`` object by assigning values to member variables.
+
+        .. note::
+            ``TableMetadata`` is part of the internals of QueryProfiler import and export.
+            Many high-level use cases can be handled with the high-level functions
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+            and
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+        Parameters
+        --------------
+        file_name: str
+            The name of the file that this object refers to
+        table_type: AllTableTypes
+            The type of the table that this object refers to
+        exported_rows: int
+            The number of rows stored in ``file_name``
+
+        Examples
+        ----------
+
+        First, let's import the ``TableMetadata`` object and the enum AllTableTypes.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica.collection.collection_tables import TableMetadata
+            from verticapy.performance.vertica.collection.collection_tables import AllTableTypes
+
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
+        of exported rows. For this example choose 119 rows.
+
+        .. code-block:: python
+
+            tmd = TableMetadata(file_name="test1.parquet",
+                                table_type=AllTableTypes.DC_REQUESTS_ISSUED,
+                                exported_rows=119)
+
+        Now we can print the json representation of the ``TableMetadata``:
+
+        .. code-block:: python
+
+            print(f"JSON obj = {tmd.to_json()}")
+
+        The output will be:
+
+        .. code-block::
+
+            JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED",
+                        "table_type_value": "dc_requests_issued",
+                        "file_name": "test1.parquet",
+                        "exported_rows": 119}
+
+        """
+        self.file_name = file_name
+        self.table_type = table_type
+        self.exported_rows = exported_rows
+
+    def to_json(self) -> str:
+        """
+        Produces
+
+        .. note::
+            ``TableMetadata`` is part of the internals of QueryProfiler import and export.
+            Many high-level use cases can be handled with the high-level functions
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+            and
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+        Parameters
+        --------------
+
+        None
+
+        Returns
+        ---------------
+
+        A dictionary whose keys are the the members of the ``TableMetadata`` instance.
+        The values in the dictionaries are the serialized values of the member varaibles.
+
+        Examples
+        ----------
+
+        First, let's import the ``TableMetadata`` object and the enum AllTableTypes.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica.collection.collection_tables import TableMetadata
+            from verticapy.performance.vertica.collection.collection_tables import AllTableTypes
+
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
+        of exported rows. For this example choose 119 rows.
+
+        .. code-block:: python
+
+            tmd = TableMetadata(file_name="test1.parquet",
+                                table_type=AllTableTypes.DC_REQUESTS_ISSUED,
+                                exported_rows=119)
+
+        Now we can print the json representation of the ``TableMetadata``:
+
+        .. code-block:: python
+
+            print(f"JSON obj = {tmd.to_json()}")
+
+        The output will be:
+
+        .. code-block::
+
+            JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED",
+                        "table_type_value": "dc_requests_issued",
+                        "file_name": "test1.parquet",
+                        "exported_rows": 119}
+
+        """
+        return json.dumps(
+            {
+                "table_type_name": str(self.table_type.name),
+                "table_type_value": str(self.table_type.value),
+                "file_name": str(self.file_name),
+                "exported_rows": self.exported_rows,
+            }
+        )
+
+
+class ExportMetadata:
+    """
+    ``ExportMetadata`` holds a collection of ``TableMetadata`` objects,
+    a version number that describes the group of objects, and a file
+    name to store serialized versions of its data.
+
+    .. note::
+        ``ExportMetadata`` is part of the internals of QueryProfiler import and export.
+        Many high-level use cases can be handled with the high-level functions
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+        and
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+    Examples
+    ----------
+
+    First, let's import the ``ExportMetadata`` object and the TableMetadata object.
+
+    .. code-block:: python
+
+        from verticapy.performance.vertica.collection.collection_tables import TableMetadata
+        from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
+        from verticapy.performance.vertica.collection.collection_tables import BundleVersion
+
+    Now we can create a new instance of ``TableMetadata``. We can choose
+    any table type defined in ``AllTableTypes``. For this example, we
+    choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
+    of exported rows. For this example choose 119 rows.
+
+    .. code-block:: python
+
+        tmd = TableMetadata(file_name="test1.parquet",
+                            table_type=AllTableTypes.DC_REQUESTS_ISSUED,
+                            exported_rows=119)
+
+    We create an instance of ``ExportMetadata``:
+
+    .. code-block:: python
+        exp_md = ExportMetadata(file_name="export_meta.json",
+                                version=BundleVersion.LATEST,
+                                tables=[tmd])
+
+    Then we print the JSON representation
+
+    .. code-block:: python
+
+        print(f"JSON obj = {exp_md.to_json()}")
+
+    The output will be:
+
+    .. code-block::
+
+        JSON obj = {"version": "V2",
+                    "tables": [
+                        {"table_type_name": "DC_REQUESTS_ISSUED",
+                         "table_type_value": "dc_requests_issued",
+                         "file_name": "test1.parquet",
+                        "exported_rows": 119}]}
+    """
+
+    def __init__(
+        self, file_name: Path, version: BundleVersion, tables: List[TableMetadata]
+    ):
+        """
+        Initializes an ``ExportMetadata`` object
+
+        .. note::
+            ``ExportMetadata`` is part of the internals of QueryProfiler import and export.
+            Many high-level use cases can be handled with the high-level functions
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+            and
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+        Parameters
+        -------------
+        file_name: str
+            String describeing the file where this ``ExportMetadata`` object will be
+            written.
+        version: BundleVersion
+            A enum value describing the version of the tables in the ``ExportMetadata``.
+        tables: List[TableMetadata]
+            A list containing ``TableMetadata`` objects.
+
+        Examples
+        ----------
+
+        First, let's import the ``ExportMetadata`` object and the TableMetadata object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica.collection.collection_tables import TableMetadata
+            from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
+            from verticapy.performance.vertica.collection.collection_tables import BundleVersion
+
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
+        of exported rows. For this example choose 119 rows.
+
+        .. code-block:: python
+
+            tmd = TableMetadata(file_name="test1.parquet",
+                                table_type=AllTableTypes.DC_REQUESTS_ISSUED,
+                                exported_rows=119)
+
+        We create an instance of ``ExportMetadata``:
+
+        .. code-block:: python
+            exp_md = ExportMetadata(file_name="export_meta.json",
+                                    version=BundleVersion.LATEST,
+                                    tables=[tmd])
+
+        Then we print the JSON representation
+
+        .. code-block:: python
+
+            print(f"JSON obj = {exp_md.to_json()}")
+
+        The output will be:
+
+        .. code-block::
+
+            JSON obj = {"version": "V2",
+                        "tables": [
+                            {"table_type_name": "DC_REQUESTS_ISSUED",
+                            "table_type_value": "dc_requests_issued",
+                            "file_name": "test1.parquet",
+                            "exported_rows": 119}]}
+        """
+        self.file_name = file_name
+        self.version = version
+        self.tables = tables
+
+    def to_json(self) -> str:
+        """
+        Serializes an ``ExportMetadata`` object to a JSON string
+
+        .. note::
+            ``ExportMetadata`` is part of the internals of QueryProfiler import and export.
+            Many high-level use cases can be handled with the high-level functions
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+            and
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+        Parameters
+        -------------
+        file_name: str
+            String describeing the file where this ``ExportMetadata`` object will be
+            written.
+        version: BundleVersion
+            A enum value describing the version of the tables in the ``ExportMetadata``.
+        tables: List[TableMetadata]
+            A list containing ``TableMetadata`` objects.
+
+        Returns
+        --------------
+        A string formated as JSON.
+
+        Examples
+        ----------
+
+        First, let's import the ``ExportMetadata`` object and the TableMetadata object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica.collection.collection_tables import TableMetadata
+            from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
+            from verticapy.performance.vertica.collection.collection_tables import BundleVersion
+
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
+        of exported rows. For this example choose 119 rows.
+
+        .. code-block:: python
+
+            tmd = TableMetadata(file_name="test1.parquet",
+                                table_type=AllTableTypes.DC_REQUESTS_ISSUED,
+                                exported_rows=119)
+
+        We create an instance of ``ExportMetadata``:
+
+        .. code-block:: python
+            exp_md = ExportMetadata(file_name="export_meta.json",
+                                    version=BundleVersion.LATEST,
+                                    tables=[tmd])
+
+        Then we print the JSON representation
+
+        .. code-block:: python
+
+            print(f"JSON obj = {exp_md.to_json()}")
+
+        The output will be:
+
+        .. code-block::
+
+            JSON obj = {"version": "V2",
+                        "tables": [
+                            {"table_type_name": "DC_REQUESTS_ISSUED",
+                            "table_type_value": "dc_requests_issued",
+                            "file_name": "test1.parquet",
+                            "exported_rows": 119}]}
+        """
+        return json.dumps(
+            {
+                "version": str(self.version.value),
+                "tables": [x.to_json() for x in self.tables],
+            }
+        )
+
+    def write_to_file(self) -> None:
+        """
+        Writes JSON-serialized ``ExportMetadata`` object to ``self.file_name``.
+
+        .. note::
+            ``ExportMetadata`` is part of the internals of QueryProfiler import and export.
+            Many high-level use cases can be handled with the high-level functions
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`
+            and
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile`
+
+        Parameters
+        -------------
+        None
+
+        Returns
+        ---------------
+        None
+
+        Examples
+        ----------
+
+        First, let's import the ``ExportMetadata`` object and the TableMetadata object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica.collection.collection_tables import TableMetadata
+            from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
+            from verticapy.performance.vertica.collection.collection_tables import BundleVersion
+
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
+        of exported rows. For this example choose 119 rows.
+
+        .. code-block:: python
+
+            tmd = TableMetadata(file_name="test1.parquet",
+                                table_type=AllTableTypes.DC_REQUESTS_ISSUED,
+                                exported_rows=119)
+
+        We create an instance of ``ExportMetadata``:
+
+        .. code-block:: python
+            exp_md = ExportMetadata(file_name="export_meta.json",
+                                    version=BundleVersion.LATEST,
+                                    tables=[tmd])
+
+        Then we write, read, and print the JSON representation
+
+        .. code-block:: python
+
+            exp_md.write_to_file()
+            with open("export_meta.json", "r") as readf:
+                print(f"JSON obj = {readf.read()}")
+
+        The output will be:
+
+        .. code-block::
+
+            JSON obj = {"version": "V2",
+                        "tables": [
+                            {"table_type_name": "DC_REQUESTS_ISSUED",
+                            "table_type_value": "dc_requests_issued",
+                            "file_name": "test1.parquet",
+                            "exported_rows": 119}]}
+        """
+        with open(self.file_name, "w") as mdf:
+            mdf.write(self.to_json())
 
 
 class CollectionTable:
@@ -197,6 +693,27 @@ class CollectionTable:
         )
         return vdf.shape()[0]
 
+    def get_export_sql(self):
+        return f"select * from {self.get_import_name_fq()}"
+
+    def export_table(self, tmp_path: Path) -> ExportMetadata:
+        """ """
+        file_name = tmp_path / f"{self.name}.parquet"
+        export_sql = self.get_export_sql()
+        vdf = vDataFrame(export_sql)
+
+        # Note: this can potentially read a large-ish table into memory
+        pandas_dataframe = vdf.to_pandas()
+        (pdf_rows, pdf_columns) = pandas_dataframe.shape
+        self.logger.info(
+            f"Exporting table {self.name} from {self.get_import_name_fq()}"
+            f" with rows {pdf_rows} and columns {pdf_columns}"
+        )
+        pandas_dataframe.to_parquet(path=file_name, compression="gzip")
+        return TableMetadata(
+            file_name=file_name, table_type=self.table_type, exported_rows=pdf_rows
+        )
+
 
 def getAllCollectionTables(
     target_schema: str, key: str, version: BundleVersion
@@ -222,6 +739,9 @@ def getAllCollectionTables(
     """
     if version == BundleVersion.V1:
         return _getAllTables_v1(target_schema, key)
+
+    if version == BundleVersion.V2:
+        return _getAllTables_v2(target_schema, key)
 
     raise ValueError(f"Unrecognized bundle version {version}")
 
@@ -249,6 +769,20 @@ ALL_TABLES_V1 = [
     AllTableTypes.RESOURCE_POOL_STATUS,
 ]
 
+ALL_TABLES_V2 = [
+    AllTableTypes.DC_EXPLAIN_PLANS,
+    AllTableTypes.DC_QUERY_EXECUTIONS,
+    AllTableTypes.DC_REQUESTS_ISSUED,
+    AllTableTypes.EXECUTION_ENGINE_PROFILES,
+    # Host resources lacks txn_id, stmt_id
+    AllTableTypes.HOST_RESOURCES,
+    AllTableTypes.QUERY_CONSUMPTION,
+    AllTableTypes.QUERY_PLAN_PROFILES,
+    AllTableTypes.QUERY_PROFILES,
+    # Resource pool status lacks txn_id, stmt_id
+    AllTableTypes.RESOURCE_POOL_STATUS,
+]
+
 
 def _getAllTables_v1(target_schema: str, key: str) -> Mapping[str, CollectionTable]:
     """
@@ -258,6 +792,20 @@ def _getAllTables_v1(target_schema: str, key: str) -> Mapping[str, CollectionTab
     result = {}
 
     for name in ALL_TABLES_V1:
+        c = collectionTableFactory(name, target_schema, key)
+        result[name.name] = c
+
+    return result
+
+
+def _getAllTables_v2(target_schema: str, key: str) -> Mapping[str, CollectionTable]:
+    """
+    Produces a map with one of each kind of CollectionTable subclass
+    available for version V2 of the profile bundle.
+    """
+    result = {}
+
+    for name in ALL_TABLES_V2:
         c = collectionTableFactory(name, target_schema, key)
         result[name.name] = c
 
@@ -1222,6 +1770,25 @@ class QueryPlanProfilesTable(CollectionTable):
             "sent_bytes": "Int64",
         }
 
+    def get_export_sql(self):
+        return f"""SELECT
+        transaction_id,
+        statement_id,
+        path_id,
+        path_line_index,
+        path_is_started,
+        path_is_completed,
+        is_executing,
+        extract(epoch from running_time)::float as running_time,
+        memory_allocated_bytes,
+        read_from_disk_bytes,
+        received_bytes,
+        sent_bytes,
+        path_line
+        /*query_name*/
+        FROM {self.get_import_name_fq()}
+        """
+
 
 ################ query_profiles ###################
 class QueryProfilesTable(CollectionTable):
@@ -1489,3 +2056,46 @@ class ResourcePoolStatusTable(CollectionTable):
             "runtimecap_in_seconds": "Int64",
             "query_budget_kb": "Int64",
         }
+
+    def get_export_sql(self):
+        return f"""SELECT
+            node_name,
+            pool_oid,
+            pool_name,
+            is_internal,
+            memory_size_kb,
+            memory_size_actual_kb,
+            memory_inuse_kb,
+            general_memory_borrowed_kb,
+            queueing_threshold_kb,
+            max_memory_size_kb,
+            max_query_memory_size_kb,
+            running_query_count,
+            planned_concurrency,
+            max_concurrency,
+            is_standalone,
+            -- queue timeout is really an interval
+            queue_timeout_in_seconds as queue_timeout,
+            queue_timeout_in_seconds,
+            execution_parallelism,
+            priority,
+            runtime_priority,
+            runtime_priority_threshold,
+            runtimecap_in_seconds,
+            single_initiator,
+            query_budget_kb,
+            cpu_affinity_set,
+            cpu_affinity_mask,
+            cpu_affinity_mode
+            /* 
+            The follow columns do not exist in the current table 
+            capturing. But perhaps we should change the table capture
+            to include them.
+
+            transaction_id,
+            statement_id
+            query_name
+            */
+        FROM
+            {self.get_import_name_fq()}
+        """
