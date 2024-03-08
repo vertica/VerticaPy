@@ -932,6 +932,18 @@ class QueryProfiler:
         if isinstance(key_id, NoneType) or (
             not (isinstance(transactions, NoneType)) and not (overwrite)
         ):
+            if not(isinstance(key_id, NoneType)) and (
+                not (isinstance(transactions, NoneType)) and not (overwrite)
+            ):
+                warning_message = (
+                    f"Parameter 'transactions' is not None, "
+                    "'key_id' is defined and parameter 'overwrite' "
+                    "is set to False. It means you are trying to "
+                    "use a potential existing key to store new "
+                    "transactions. This operation is not yet "
+                    "supported. A new key will be then generated."
+                )
+                warnings.warn(warning_message, Warning)
             self.key_id = str(uuid.uuid1()).replace("-", "")
         else:
             if isinstance(key_id, int):
