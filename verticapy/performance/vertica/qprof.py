@@ -1017,15 +1017,10 @@ class QueryProfiler:
         self.overwrite = overwrite
         self._create_copy_v_table()
 
-        # SETTING THE requests.
+        # SETTING THE requests AND queries durations.
         if conf.get_option("print_info"):
-            print("Setting the requests...")
-        self._set_request()
-
-        # SETTING THE queries durations.
-        if conf.get_option("print_info"):
-            print("Setting the queries durations...")
-        self._set_qduration()
+            print("Setting the requests and queries durations...")
+        self._set_request_qd()
 
         # WARNING MESSAGES.
         if check_tables:
@@ -1482,66 +1477,52 @@ class QueryProfiler:
             )
             warnings.warn(warning_message, Warning)
 
-    def _set_request(self):
+    def _set_request_qd(self):
         """
         Computes and sets the current
         ``transaction_id`` requests.
         """
         self.requests = []
         self.request_labels = []
-        for tr_id, st_id in self.transactions:
-            query = f"""
-                SELECT 
-                    request, label
-                FROM v_internal.dc_requests_issued 
-                WHERE transaction_id = {tr_id}
-                  AND   statement_id = {st_id};"""
-            query = self._replace_schema_in_query(query)
-            try:
-                res = _executeSQL(
-                    query,
-                    title="Getting the corresponding query",
-                    method="fetchrow",
-                )
-                self.requests += [res[0]]
-                self.request_labels += [res[1]]
-            except TypeError:
-                raise QueryError(
-                    f"No transaction with transaction_id={tr_id} "
-                    f"and statement_id={st_id} was found in the "
-                    "v_internal.dc_requests_issued table."
-                )
-        self.request = self.requests[self.transactions_idx]
-
-    def _set_qduration(self):
-        """
-        Computes and sets the current
-        ``transaction_id`` request.
-        """
         self.qdurations = []
+        query = f"""
+            SELECT 
+                q0.transaction_id, 
+                q0.statement_id, 
+                request, 
+                label, 
+                query_duration_us
+            FROM 
+            v_internal.dc_requests_issued AS q0
+            FULL JOIN
+            v_monitor.query_profiles AS q1 
+            USING (transaction_id, statement_id);"""
+        query = self._replace_schema_in_query(query)
+        res = _executeSQL(
+            query,
+            title="Getting the corresponding query",
+            method="fetchall",
+        )
+        transactions_dict = {}
+        for row in res:
+            transactions_dict[(row[0], row[1])] = {
+                "request": row[2],
+                "label": row[3],
+                "query_duration_us": row[4],
+            }
         for tr_id, st_id in self.transactions:
-            query = f"""
-                SELECT
-                    query_duration_us 
-                FROM 
-                    v_monitor.query_profiles 
-                WHERE 
-                    transaction_id={tr_id} AND 
-                    statement_id={st_id};"""
-            query = self._replace_schema_in_query(query)
-            try:
-                res = _executeSQL(
-                    query,
-                    title="Getting the corresponding query duration.",
-                    method="fetchfirstelem",
-                )
-                self.qdurations += [res]
-            except TypeError:
+            if (tr_id, st_id) not in transactions_dict:
                 raise QueryError(
                     f"No transaction with transaction_id={tr_id} "
                     f"and statement_id={st_id} was found in the "
                     "v_internal.dc_requests_issued table."
                 )
+            else:
+                info = transactions_dict[(row[0], row[1])]
+                self.requests += [info["request"]]
+                self.request_labels += [info["label"]]
+                self.qdurations += [info["query_duration_us"]]
+        self.request = self.requests[self.transactions_idx]
         self.qduration = self.qdurations[self.transactions_idx]
 
     # Navigation
