@@ -4,6 +4,60 @@
 Time Series
 ===============
 
+
+Multi-Timeseries Model
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: verticapy.machine_learning.vertica.tsa
+   
+.. autosummary::
+   :toctree: api/
+
+   ensemble.TimeSeriesByCategory
+
+.. currentmodule:: verticapy.machine_learning.vertica.tsa.ensemble
+
+**Methods:**
+
+.. autosummary::
+   :toctree: api/
+
+   TimeSeriesByCategory.contour
+   TimeSeriesByCategory.deploySQL
+   TimeSeriesByCategory.does_model_exists
+   TimeSeriesByCategory.drop
+   TimeSeriesByCategory.export_models
+   TimeSeriesByCategory.features_importance
+   TimeSeriesByCategory.fit
+   TimeSeriesByCategory.get_attributes
+   TimeSeriesByCategory.get_match_index
+   TimeSeriesByCategory.get_params
+   TimeSeriesByCategory.get_plotting_lib
+   TimeSeriesByCategory.get_vertica_attributes
+   TimeSeriesByCategory.import_models
+   TimeSeriesByCategory.plot
+   TimeSeriesByCategory.predict
+   TimeSeriesByCategory.register
+   TimeSeriesByCategory.regression_report
+   TimeSeriesByCategory.report
+   TimeSeriesByCategory.score
+   TimeSeriesByCategory.set_params
+   TimeSeriesByCategory.summarize
+   TimeSeriesByCategory.to_binary
+   TimeSeriesByCategory.to_pmml
+   TimeSeriesByCategory.to_python
+   TimeSeriesByCategory.to_sql
+   TimeSeriesByCategory.to_tf
+
+
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   TimeSeriesByCategory.object_type
+ 
+   
 ______
 
 ARIMA
