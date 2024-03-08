@@ -1530,7 +1530,7 @@ class QueryProfiler:
                     "v_internal.dc_requests_issued table."
                 )
             else:
-                info = transactions_dict[(row[0], row[1])]
+                info = transactions_dict[(tr_id, st_id)]
                 self.requests += [info["request"]]
                 self.request_labels += [info["label"]]
                 self.qdurations += [info["query_duration_us"]]
