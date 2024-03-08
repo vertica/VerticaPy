@@ -255,7 +255,7 @@ class ProfileExport:
         ``ProfileExport`` creates temporary directories in ``tmp_path``
         when packing bundles.
 
-         Examples
+        Examples
         ---------------
 
         First, let's import the ``ProfileExport`` object.
@@ -429,7 +429,26 @@ class ProfileExport:
         self._bundle_tables(export_metadata)
 
     def _tables_exist_or_raise(self) -> None:
-        """ """
+        """ 
+        Queries the database looking for an existing
+        set of tables and compares it to the expected set of tables.
+        If an expected tables does not exist, the method 
+        will raise a ``ProfileExportError``. 
+
+        .. note::
+           ``_tables_exist_or_raise`` is an internal function
+           for the ``ProfileExport`` class. It should not be used
+           by external callers.
+
+        Parameters
+        ----------------
+        None
+
+        Returns
+        ------------------
+        None
+ 
+        """
         tables_in_schema = self._get_set_of_tables_in_schema()
 
         missing_tables = []
@@ -453,7 +472,26 @@ class ProfileExport:
         )
 
     def _get_set_of_tables_in_schema(self) -> Set[str]:
-        """ """
+        """ 
+        Queries the database looking to produce an set of table
+        names in a schema.
+
+        .. note::
+           ``_get_set_of_tables_in_schema`` is an internal function
+           for the ``ProfileExport`` class. It should not be used
+           by external callers.
+
+        Parameters
+        ----------------
+        None
+
+        Returns
+        ------------------
+        A ``set`` containing table names. The table names do not 
+        fully-qualified, that is, they do not contain the database
+        name and schema name.
+ 
+        """
         result = _executeSQL(
             f"""SELECT table_name FROM v_catalog.tables 
                     WHERE 
@@ -468,7 +506,26 @@ class ProfileExport:
         return existing_tables
 
     def _save_tables(self) -> ExportMetadata:
-        """ """
+        """
+        Exports the replica tables to parquet files, retrieves the 
+        table metadata and packages it into export metadata. 
+        Calls the ``export_table`` method on  each ``CollectionTable`` 
+        object. Writes the export metadata to disk.
+
+        .. note::
+           ``_save_tables`` is an internal function
+           for the ``ProfileExport`` class. It should not be used
+           by external callers.
+
+        Parameters
+        ----------------
+        None
+
+        Returns
+        ------------------
+        A ``ExportMetadata`` instance containing export information.
+  
+        """
         all_tables = getAllCollectionTables(
             self.target_schema, self.key, self.bundle_version
         )
@@ -487,8 +544,27 @@ class ProfileExport:
 
         return export_metadata
 
-    def _bundle_tables(self, export_metadata: ExportMetadata):
-        """ """
+    def _bundle_tables(self, export_metadata: ExportMetadata) -> None:
+        """
+        Packages the parquet files and metadata file into a tarball.
+        Then removes the parquet files and metadata files.
+
+        .. note::
+           ``_bundle_tables`` is an internal function
+           for the ``ProfileExport`` class. It should not be used
+           by external callers.
+
+        Parameters
+        ----------------
+        export_metadata: ExportMetadata
+            The ExportMetadata object produced by internal function
+            ``_save_tables``
+
+        Returns
+        ------------------
+        None
+  
+        """
 
         self.tarfile_obj = tarfile.open(self.filename, "w")
         for t in export_metadata.tables:
