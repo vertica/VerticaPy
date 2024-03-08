@@ -45,6 +45,7 @@ class QueryProfilerInterface(QueryProfiler):
         overwrite: bool = False,
         add_profile: bool = True,
         check_tables: bool = True,
+        iterchecks: bool = False,
     ) -> None:
         super().__init__(
             transactions,
@@ -54,6 +55,7 @@ class QueryProfilerInterface(QueryProfiler):
             overwrite,
             add_profile,
             check_tables,
+            iterchecks,
         )
 
         self.apply_tree = widgets.Checkbox(
@@ -126,15 +128,16 @@ class QueryProfilerInterface(QueryProfiler):
 
     def get_qplan_tree(self, use_javascript=True):
         """
-        Draws an interactive Query plan tree
+        Draws an interactive Query plan tree.
 
         Args:
-            use_javascript (bool, optional): use javascript on tree. Defaults to True.
+            use_javascript (bool, optional): use javascript on tree.
+            Defaults to ``True``.
         """
         self.use_javascript = use_javascript
         # widget for choosing the metrics
         tags = widgets.TagsInput(
-            value=["Estimated row count"],
+            value=["Execution time in ms", "Produced row count"],
             allowed_tags=[
                 QprofUtility._get_metrics_name(i) for i in QprofUtility._get_metrics()
             ],

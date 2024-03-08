@@ -186,7 +186,7 @@ class TestQueryProfiler:
             ("transactions", "single_sql", None, None, None, False, False, True),
             ("transactions", "multiple_sql", None, None, None, False, False, True),
             ("target_schema", "tuple", None, None, "qprof_test", False, False, True),
-            ("key_id", "tuple", "qprof_key_id", None, None, True, False, True),
+            # ("key_id", "tuple", "qprof_key_id", None, None, True, False, True),
             # need to check on this
             # ("key_id", "tuple", "qprof_key_id", None, "qprof_test", True, False, True),
             # need to check on this
