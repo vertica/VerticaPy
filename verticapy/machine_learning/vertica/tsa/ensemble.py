@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import copy
 from typing import Literal, Optional, Union
 
@@ -42,10 +43,154 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
     You should look at the source models to see entire
     examples.
 
-    :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`;
-    :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`;
-    :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
-    :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
+
+    Parameters
+    ----------
+    name: str, optional
+        Name of the model. The  model is stored  in the
+        database.
+    overwrite_model: bool, optional
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
+        existing model.
+    base_model: TimeSeriesModelBase
+        The user should provide a base model which will
+        be used for each category. It could be
+        - :py:class:`~verticapy.machine_learning.vertica.tsa.ARIMA`
+        - :py:class:`~verticapy.machine_learning.vertica.tsa.ARMA`
+        - :py:class:`~verticapy.machine_learning.vertica.tsa.AR`
+        - :py:class:`~verticapy.machine_learning.vertica.tsa.MA'
+
+    Attributes
+    ----------
+    Many attributes are created
+    during the fitting phase.
+
+    distinct: list
+        This provides a sequential list of the categories
+        used to build the different models.
+
+    ts: str
+        The column name for time stamp.
+
+    y: str
+        The column name used for building the model.
+
+    _is_already_stored: bool
+        This tells us whether a model is stored in the Vertica
+        database.
+
+    _get_model_names: list
+        This returns the list of names of the models created.
+
+
+    Examples
+    --------
+
+    The following examples provide a
+    basic understanding of usage.
+
+    Initialization
+    ^^^^^^^^^^^^^^
+
+    For this example, we will use
+    a subset of the amazon dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        amazon_full = vpd.load_amazon()
+
+    .. raw:: html
+        :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_amazon.html
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_amazon
+        amazon_full = load_amazon()
+
+    We can reduce the number of states for the sake
+    of ease in this example:
+
+    .. ipython:: python
+
+        amazon = amazon_full[(amazon_full["state"] == "PERNAMBUCO") | (amazon_full["state"] == "SERGIPE")]
+
+    Now we can setup a base model that will be
+    created for each unique state inside the dataset.
+    For this example, we use ARIMA.
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica.tsa import ARIMA
+
+        base_model = ARIMA(order = (2, 1, 2))
+
+    Finally we can now initiate our multiple models
+    in one go:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica.tsa.ensemble import TimeSeriesByCategory
+
+        model = TimeSeriesByCategory(base_model = base_model)
+
+    Model Fitting
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(amazon, ts = "date", y = "number", by = "state")
+
+
+    .. important::
+
+        To train a model, you can directly use the
+        :py:class:`~vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
+
+
+    Plots
+    ^^^^^^
+
+    We can conveniently plot the
+    predictions on a line plot to
+    observe the efficacy of our
+    model. We need to provide the
+    ``idx`` which represents the model number.
+
+    .. code-block:: python
+
+        model.plot(idx = 0, npredictions = 5)
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(idx = 0, npredictions = 5)
+        fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_tsa_ensemble_timeseriesbycategory_1.html")
+
+    .. raw:: html
+        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_tsa_ensemble_timeseriesbycategory_1.html
+
+    .. note::
+
+        You can find out the name of the category by
+        the ``distinct`` attribute. The sequential list of
+        categories correspond to ``idx = 0, 1 ...``.
+        ``model.distinct``.
     """
 
     # Properties.
@@ -394,9 +539,11 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
             all_predictions += [
                 extract_subquery(
                     model.predict(
-                        vdf=None
-                        if isinstance(vdf, NoneType)
-                        else vdf.search(f"{self.by} = '{category}'"),
+                        vdf=(
+                            None
+                            if isinstance(vdf, NoneType)
+                            else vdf.search(f"{self.by} = '{category}'")
+                        ),
                         ts=ts,
                         y=y,
                         start=start,
