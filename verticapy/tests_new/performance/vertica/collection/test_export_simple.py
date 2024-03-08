@@ -89,7 +89,7 @@ class TestQueryProfilerSimple:
 
     def _get_set_of_tables_in_schema(self, target_schema, key):
         """
-        Returns a set of table names in a schema that have the 
+        Returns a set of table names in a schema that have the
         suffix key.
         """
         result = _executeSQL(
