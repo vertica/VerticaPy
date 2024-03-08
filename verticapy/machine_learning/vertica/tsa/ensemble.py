@@ -43,6 +43,8 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
     You should look at the source models to see entire
     examples.
 
+    .. important:: This is still Beta.
+
 
     Parameters
     ----------

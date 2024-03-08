@@ -5,8 +5,8 @@ Time Series
 ===============
 
 
-Multi-Timeseries Model
-~~~~~~~~~~~~~~~~~~~~~~~
+Multi-Timeseries Model (Beta)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica.tsa
    
