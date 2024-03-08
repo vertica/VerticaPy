@@ -932,7 +932,7 @@ class QueryProfiler:
         if isinstance(key_id, NoneType) or (
             not (isinstance(transactions, NoneType)) and not (overwrite)
         ):
-            if not(isinstance(key_id, NoneType)) and (
+            if not (isinstance(key_id, NoneType)) and (
                 not (isinstance(transactions, NoneType)) and not (overwrite)
             ):
                 warning_message = (
