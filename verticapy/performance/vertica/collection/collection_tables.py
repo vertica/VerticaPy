@@ -58,8 +58,8 @@ class AllTableTypes(Enum):
 
 class BundleVersion(Enum):
     """
-    ``BundleVersion`` is an Enumeration (``Enum``) of all known versions 
-    of ProfileExport bundles. Versions differ because of the contents of the bundle. 
+    ``BundleVersion`` is an Enumeration (``Enum``) of all known versions
+    of ProfileExport bundles. Versions differ because of the contents of the bundle.
     For example, a change in column data type would cause the bundle version to change.
 
     .. note::
@@ -113,9 +113,9 @@ class TableMetadata:
         from verticapy.performance.vertica.collection.collection_tables import TableMetadata
         from verticapy.performance.vertica.collection.collection_tables import AllTableTypes
 
-    Now we can create a new instance of ``TableMetadata``. We can choose 
-    any table type defined in ``AllTableTypes``. For this example, we 
-    choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number 
+    Now we can create a new instance of ``TableMetadata``. We can choose
+    any table type defined in ``AllTableTypes``. For this example, we
+    choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
     of exported rows. For this example choose 119 rows.
 
     .. code-block:: python
@@ -134,7 +134,7 @@ class TableMetadata:
 
     .. code-block::
 
-        JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED", 
+        JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED",
                      "table_type_value": "dc_requests_issued",
                      "file_name": "test1.parquet",
                      "exported_rows": 119}
@@ -171,9 +171,9 @@ class TableMetadata:
             from verticapy.performance.vertica.collection.collection_tables import TableMetadata
             from verticapy.performance.vertica.collection.collection_tables import AllTableTypes
 
-        Now we can create a new instance of ``TableMetadata``. We can choose 
-        any table type defined in ``AllTableTypes``. For this example, we 
-        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number 
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
         of exported rows. For this example choose 119 rows.
 
         .. code-block:: python
@@ -192,7 +192,7 @@ class TableMetadata:
 
         .. code-block::
 
-            JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED", 
+            JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED",
                         "table_type_value": "dc_requests_issued",
                         "file_name": "test1.parquet",
                         "exported_rows": 119}
@@ -204,7 +204,7 @@ class TableMetadata:
 
     def to_json(self) -> str:
         """
-        Produces 
+        Produces
 
         .. note::
             ``TableMetadata`` is part of the internals of QueryProfiler import and export.
@@ -223,7 +223,7 @@ class TableMetadata:
 
         A dictionary whose keys are the the members of the ``TableMetadata`` instance.
         The values in the dictionaries are the serialized values of the member varaibles.
-            
+
         Examples
         ----------
 
@@ -234,9 +234,9 @@ class TableMetadata:
             from verticapy.performance.vertica.collection.collection_tables import TableMetadata
             from verticapy.performance.vertica.collection.collection_tables import AllTableTypes
 
-        Now we can create a new instance of ``TableMetadata``. We can choose 
-        any table type defined in ``AllTableTypes``. For this example, we 
-        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number 
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
         of exported rows. For this example choose 119 rows.
 
         .. code-block:: python
@@ -255,18 +255,20 @@ class TableMetadata:
 
         .. code-block::
 
-            JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED", 
+            JSON obj = {"table_type_name": "DC_REQUESTS_ISSUED",
                         "table_type_value": "dc_requests_issued",
                         "file_name": "test1.parquet",
                         "exported_rows": 119}
 
         """
-        return json.dumps({
-            "table_type_name": str(self.table_type.name),
-            "table_type_value": str(self.table_type.value),
-            "file_name": str(self.file_name),
-            "exported_rows": self.exported_rows,
-        })
+        return json.dumps(
+            {
+                "table_type_name": str(self.table_type.name),
+                "table_type_value": str(self.table_type.value),
+                "file_name": str(self.file_name),
+                "exported_rows": self.exported_rows,
+            }
+        )
 
 
 class ExportMetadata:
@@ -293,9 +295,9 @@ class ExportMetadata:
         from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
         from verticapy.performance.vertica.collection.collection_tables import BundleVersion
 
-    Now we can create a new instance of ``TableMetadata``. We can choose 
-    any table type defined in ``AllTableTypes``. For this example, we 
-    choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number 
+    Now we can create a new instance of ``TableMetadata``. We can choose
+    any table type defined in ``AllTableTypes``. For this example, we
+    choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
     of exported rows. For this example choose 119 rows.
 
     .. code-block:: python
@@ -323,7 +325,7 @@ class ExportMetadata:
 
         JSON obj = {"version": "V2",
                     "tables": [
-                        {"table_type_name": "DC_REQUESTS_ISSUED", 
+                        {"table_type_name": "DC_REQUESTS_ISSUED",
                          "table_type_value": "dc_requests_issued",
                          "file_name": "test1.parquet",
                         "exported_rows": 119}]}
@@ -345,12 +347,12 @@ class ExportMetadata:
         Parameters
         -------------
         file_name: str
-            String describeing the file where this ``ExportMetadata`` object will be 
+            String describeing the file where this ``ExportMetadata`` object will be
             written.
         version: BundleVersion
             A enum value describing the version of the tables in the ``ExportMetadata``.
         tables: List[TableMetadata]
-            A list containing ``TableMetadata`` objects. 
+            A list containing ``TableMetadata`` objects.
 
         Examples
         ----------
@@ -363,9 +365,9 @@ class ExportMetadata:
             from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
             from verticapy.performance.vertica.collection.collection_tables import BundleVersion
 
-        Now we can create a new instance of ``TableMetadata``. We can choose 
-        any table type defined in ``AllTableTypes``. For this example, we 
-        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number 
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
         of exported rows. For this example choose 119 rows.
 
         .. code-block:: python
@@ -393,7 +395,7 @@ class ExportMetadata:
 
             JSON obj = {"version": "V2",
                         "tables": [
-                            {"table_type_name": "DC_REQUESTS_ISSUED", 
+                            {"table_type_name": "DC_REQUESTS_ISSUED",
                             "table_type_value": "dc_requests_issued",
                             "file_name": "test1.parquet",
                             "exported_rows": 119}]}
@@ -416,12 +418,12 @@ class ExportMetadata:
         Parameters
         -------------
         file_name: str
-            String describeing the file where this ``ExportMetadata`` object will be 
+            String describeing the file where this ``ExportMetadata`` object will be
             written.
         version: BundleVersion
             A enum value describing the version of the tables in the ``ExportMetadata``.
         tables: List[TableMetadata]
-            A list containing ``TableMetadata`` objects. 
+            A list containing ``TableMetadata`` objects.
 
         Returns
         --------------
@@ -438,9 +440,9 @@ class ExportMetadata:
             from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
             from verticapy.performance.vertica.collection.collection_tables import BundleVersion
 
-        Now we can create a new instance of ``TableMetadata``. We can choose 
-        any table type defined in ``AllTableTypes``. For this example, we 
-        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number 
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
         of exported rows. For this example choose 119 rows.
 
         .. code-block:: python
@@ -468,15 +470,17 @@ class ExportMetadata:
 
             JSON obj = {"version": "V2",
                         "tables": [
-                            {"table_type_name": "DC_REQUESTS_ISSUED", 
+                            {"table_type_name": "DC_REQUESTS_ISSUED",
                             "table_type_value": "dc_requests_issued",
                             "file_name": "test1.parquet",
                             "exported_rows": 119}]}
         """
-        return json.dumps({
-            "version": str(self.version.value),
-            "tables": [x.to_json() for x in self.tables],
-        })
+        return json.dumps(
+            {
+                "version": str(self.version.value),
+                "tables": [x.to_json() for x in self.tables],
+            }
+        )
 
     def write_to_file(self) -> None:
         """
@@ -508,9 +512,9 @@ class ExportMetadata:
             from verticapy.performance.vertica.collection.collection_tables import ExportMetadata
             from verticapy.performance.vertica.collection.collection_tables import BundleVersion
 
-        Now we can create a new instance of ``TableMetadata``. We can choose 
-        any table type defined in ``AllTableTypes``. For this example, we 
-        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number 
+        Now we can create a new instance of ``TableMetadata``. We can choose
+        any table type defined in ``AllTableTypes``. For this example, we
+        choose type ``DC_REQUESTS_ISSUED``. We can use any integer for the number
         of exported rows. For this example choose 119 rows.
 
         .. code-block:: python
@@ -529,7 +533,7 @@ class ExportMetadata:
         Then we write, read, and print the JSON representation
 
         .. code-block:: python
-            
+
             exp_md.write_to_file()
             with open("export_meta.json", "r") as readf:
                 print(f"JSON obj = {readf.read()}")
@@ -540,7 +544,7 @@ class ExportMetadata:
 
             JSON obj = {"version": "V2",
                         "tables": [
-                            {"table_type_name": "DC_REQUESTS_ISSUED", 
+                            {"table_type_name": "DC_REQUESTS_ISSUED",
                             "table_type_value": "dc_requests_issued",
                             "file_name": "test1.parquet",
                             "exported_rows": 119}]}

@@ -429,11 +429,11 @@ class ProfileExport:
         self._bundle_tables(export_metadata)
 
     def _tables_exist_or_raise(self) -> None:
-        """ 
+        """
         Queries the database looking for an existing
         set of tables and compares it to the expected set of tables.
-        If an expected tables does not exist, the method 
-        will raise a ``ProfileExportError``. 
+        If an expected tables does not exist, the method
+        will raise a ``ProfileExportError``.
 
         .. note::
            ``_tables_exist_or_raise`` is an internal function
@@ -447,7 +447,7 @@ class ProfileExport:
         Returns
         ------------------
         None
- 
+
         """
         tables_in_schema = self._get_set_of_tables_in_schema()
 
@@ -472,7 +472,7 @@ class ProfileExport:
         )
 
     def _get_set_of_tables_in_schema(self) -> Set[str]:
-        """ 
+        """
         Queries the database looking to produce an set of table
         names in a schema.
 
@@ -487,10 +487,10 @@ class ProfileExport:
 
         Returns
         ------------------
-        A ``set`` containing table names. The table names do not 
+        A ``set`` containing table names. The table names do not
         fully-qualified, that is, they do not contain the database
         name and schema name.
- 
+
         """
         result = _executeSQL(
             f"""SELECT table_name FROM v_catalog.tables 
@@ -507,9 +507,9 @@ class ProfileExport:
 
     def _save_tables(self) -> ExportMetadata:
         """
-        Exports the replica tables to parquet files, retrieves the 
-        table metadata and packages it into export metadata. 
-        Calls the ``export_table`` method on  each ``CollectionTable`` 
+        Exports the replica tables to parquet files, retrieves the
+        table metadata and packages it into export metadata.
+        Calls the ``export_table`` method on  each ``CollectionTable``
         object. Writes the export metadata to disk.
 
         .. note::
@@ -524,7 +524,7 @@ class ProfileExport:
         Returns
         ------------------
         A ``ExportMetadata`` instance containing export information.
-  
+
         """
         all_tables = getAllCollectionTables(
             self.target_schema, self.key, self.bundle_version
@@ -563,7 +563,7 @@ class ProfileExport:
         Returns
         ------------------
         None
-  
+
         """
 
         self.tarfile_obj = tarfile.open(self.filename, "w")
