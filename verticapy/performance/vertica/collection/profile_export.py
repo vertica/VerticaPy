@@ -58,10 +58,10 @@ class ProfileExportError(Exception):
                                 key="example123",
                                 filename="example_001.tar")
 
-    In our scenario, the schema ``missing_tables_schema`` lacks a replica of the 
-    ``dc_requests_issued`` system table. 
+    In our scenario, the schema ``missing_tables_schema`` lacks a replica of the
+    ``dc_requests_issued`` system table.
 
-    Next we will try to export the tables. We expect export to fail because we 
+    Next we will try to export the tables. We expect export to fail because we
     lack a system table.
 
     .. code-block:: python
@@ -74,34 +74,35 @@ class ProfileExportError(Exception):
     The output will be:
 
     .. code-block::
-    
-        Observed a ProfileExport error 
+
+        Observed a ProfileExport error
 
     """
+
     pass
 
 
 class ProfileExport:
     """
-    The profile ``ProfileExport`` class provides backend methods for 
-    creating an export bundle of parquet files. ``ProfileExport`` 
-    produces an export bundle of parquet files from a set of replica 
-    tables created by an instance of the 
+    The profile ``ProfileExport`` class provides backend methods for
+    creating an export bundle of parquet files. ``ProfileExport``
+    produces an export bundle of parquet files from a set of replica
+    tables created by an instance of the
     :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` class.
 
     The export bundle is a tarball. Inside the tarball there are:
-        * ``profile_meta.json``, a file with some information about 
+        * ``profile_meta.json``, a file with some information about
           the other files in the tarball
-        * Several ``.parquet`` files. There is one ``.parquet`` for 
-          each system table that 
-          py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` 
+        * Several ``.parquet`` files. There is one ``.parquet`` for
+          each system table that
+          py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
           uses to analyze query performance.
           * For example, there is a file called ``dc_requests_issued.parquet``.
 
     .. note::
         Many high-level export use cases can be addressed with the method
         :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile()`.
-        In particular, ``export_profile()`` is suitable for many cases that do not require 
+        In particular, ``export_profile()`` is suitable for many cases that do not require
         fine-grained access to the behavior of the export process.
 
     Examples
@@ -118,7 +119,7 @@ class ProfileExport:
 
     Now we can profile a query and create a set of system table replicas
     by calling the ``QueryProfiler`` constructor:
-    
+
     .. code-block:: python
 
         qprof = QueryProfiler(
@@ -129,17 +130,17 @@ class ProfileExport:
             key_id="example123"
         )
 
-    The parameter ``target_schema`` tells the QueryProfiler to create a 
-    set of replica tables. The parameter ``key_id`` specifies a suffix for all 
+    The parameter ``target_schema`` tells the QueryProfiler to create a
+    set of replica tables. The parameter ``key_id`` specifies a suffix for all
     of the replica tables associated with this profile. The replica tables are
     a snapshot of the system tables. The replica tables are filtered to contain
-    only the information relevant to the query that we have profiled. 
+    only the information relevant to the query that we have profiled.
 
-    Now we can use ``ProfileExport`` to produce an export bundle. We need to 
+    Now we can use ``ProfileExport`` to produce an export bundle. We need to
     specify which replica tables to export by providing the ``target_schema``
-    and ``key_id`` parameters. We choose to name our export bundle 
+    and ``key_id`` parameters. We choose to name our export bundle
     ``"query_requests_example_001.tar"``.
-    
+
     .. code-block:: python
 
         exporter = ProfileExport(target_schema="replica_001",
@@ -153,11 +154,11 @@ class ProfileExport:
     library to print the names of all files in the tarball
 
     .. code-block:: python
-        
+
         tfile = tarfile.open("query_requests_example_001.tar")
         for f in tfile.getnames():
             print(f"Tarball contains path: {f}")
-    
+
     The output will be:
 
     .. code-block::
@@ -165,7 +166,7 @@ class ProfileExport:
         Tarball contains path: dc_explain_plans.parquet,
         Tarball contains path: dc_query_executions.parquet
         ...
-            
+
     """
 
     def __init__(
@@ -175,25 +176,25 @@ class ProfileExport:
         filename: Path,
     ) -> None:
         """
-        Initializes a ``ProfileExport`` object by assigning values 
-        to instance members. Initialization does not query the 
+        Initializes a ``ProfileExport`` object by assigning values
+        to instance members. Initialization does not query the
         database or file system.
 
         .. note::
             Many high-level export use cases can be addressed with the method
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile()`.
-            In particular, ``export_profile()`` is suitable for many cases that do not require 
+            In particular, ``export_profile()`` is suitable for many cases that do not require
             fine-grained access to the behavior of the export process.
 
 
-        Parameters 
+        Parameters
         -----------------
         target_schema: str
-            The schema containing replica system tables created by 
-            an instance of the 
+            The schema containing replica system tables created by
+            an instance of the
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` class.
         key: str
-            The suffix of the replica system tables in ``target_schema``. key acts 
+            The suffix of the replica system tables in ``target_schema``. key acts
             as a namespace for tables within the schema.
         filename: Path
             The name of the export bundle that ``ProfileExport`` will create.
@@ -249,7 +250,7 @@ class ProfileExport:
     @property
     def tmp_path(self) -> Path:
         """
-        Returns the  value of tmp_path. 
+        Returns the  value of tmp_path.
 
         ``ProfileExport`` creates temporary directories in ``tmp_path``
         when packing bundles.
@@ -339,23 +340,23 @@ class ProfileExport:
 
     def export(self) -> None:
         """
-        ``export()`` produces an export bundle of parquet files from a set of replica 
-        tables created by an instance of the 
+        ``export()`` produces an export bundle of parquet files from a set of replica
+        tables created by an instance of the
         :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` class.
 
         The export bundle is a tarball. Inside the tarball there are:
-            * ``profile_meta.json``, a file with some information about 
+            * ``profile_meta.json``, a file with some information about
             the other files in the tarball
-            * Several ``.parquet`` files. There is one ``.parquet`` for 
-            each system table that 
-            py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` 
+            * Several ``.parquet`` files. There is one ``.parquet`` for
+            each system table that
+            py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
             uses to analyze query performance.
             * For example, there is a file called ``dc_requests_issued.parquet``.
 
         .. note::
             Many high-level export use cases can be addressed with the method
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile()`.
-            In particular, ``export_profile()`` is suitable for many cases that do not require 
+            In particular, ``export_profile()`` is suitable for many cases that do not require
             fine-grained access to the behavior of the export process.
 
         Examples
@@ -372,7 +373,7 @@ class ProfileExport:
 
         Now we can profile a query and create a set of system table replicas
         by calling the ``QueryProfiler`` constructor:
-        
+
         .. code-block:: python
 
             qprof = QueryProfiler(
@@ -383,11 +384,11 @@ class ProfileExport:
                 key_id="example123"
             )
 
-        Now we can use ``ProfileExport`` to produce an export bundle. We need to 
+        Now we can use ``ProfileExport`` to produce an export bundle. We need to
         specify which replica tables to export by providing the ``target_schema``
-        and ``key_id`` parameters. We choose to name our export bundle 
+        and ``key_id`` parameters. We choose to name our export bundle
         ``"query_requests_example_001.tar"``.
-        
+
         .. code-block:: python
 
             exporter = ProfileExport(target_schema="replica_001",
@@ -400,9 +401,9 @@ class ProfileExport:
 
             exporter.export()
 
-        The ``export()`` function will confirm that all expected tables are 
+        The ``export()`` function will confirm that all expected tables are
         present in ``target_schema`` with suffix ``key_id``. Then it will export
-        each table to a pandas dataframe, and that dataframe will be saved to a 
+        each table to a pandas dataframe, and that dataframe will be saved to a
         file.
 
         After producing an export bundle, we can examine the file contents using
@@ -410,11 +411,11 @@ class ProfileExport:
         library to print the names of all files in the tarball
 
         .. code-block:: python
-            
+
             tfile = tarfile.open("query_requests_example_001.tar")
             for f in tfile.getnames():
                 print(f"Tarball contains path: {f}")
-        
+
         The output will be:
 
         .. code-block::
@@ -428,8 +429,7 @@ class ProfileExport:
         self._bundle_tables(export_metadata)
 
     def _tables_exist_or_raise(self) -> None:
-        """
-        """
+        """ """
         tables_in_schema = self._get_set_of_tables_in_schema()
 
         missing_tables = []
@@ -453,8 +453,7 @@ class ProfileExport:
         )
 
     def _get_set_of_tables_in_schema(self) -> Set[str]:
-        """
-        """
+        """ """
         result = _executeSQL(
             f"""SELECT table_name FROM v_catalog.tables 
                     WHERE 
@@ -489,8 +488,7 @@ class ProfileExport:
         return export_metadata
 
     def _bundle_tables(self, export_metadata: ExportMetadata):
-        """ 
-        """
+        """ """
 
         self.tarfile_obj = tarfile.open(self.filename, "w")
         for t in export_metadata.tables:

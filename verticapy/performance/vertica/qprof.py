@@ -3291,15 +3291,15 @@ class QueryProfiler:
     def export_profile(self, filename: os.PathLike) -> None:
         """
         The ``export_profile()`` method provides a high-level
-        interface for creating an export bundle of parquet files from a 
+        interface for creating an export bundle of parquet files from a
         QueryProfiler instance.
 
         The export bundle is a tarball. Inside the tarball there are:
-            * ``profile_meta.json``, a file with some information about 
+            * ``profile_meta.json``, a file with some information about
             the other files in the tarball
-            * Several ``.parquet`` files. There is one ``.parquet`` for 
-            each system table that 
-            py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` 
+            * Several ``.parquet`` files. There is one ``.parquet`` for
+            each system table that
+            py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
             uses to analyze query performance.
             * For example, there is a file called ``dc_requests_issued.parquet``.
 
@@ -3328,7 +3328,7 @@ class QueryProfiler:
 
         Now we can profile a query and create a set of system table replicas
         by calling the ``QueryProfiler`` constructor:
-        
+
         .. code-block:: python
 
             qprof = QueryProfiler(
@@ -3339,15 +3339,15 @@ class QueryProfiler:
                 key_id="example123"
             )
 
-        The parameter ``target_schema`` tells the QueryProfiler to create a 
-        set of replica tables. The parameter ``key_id`` specifies a suffix for all 
+        The parameter ``target_schema`` tells the QueryProfiler to create a
+        set of replica tables. The parameter ``key_id`` specifies a suffix for all
         of the replica tables associated with this profile. The replica tables are
         a snapshot of the system tables. The replica tables are filtered to contain
-        only the information relevant to the query that we have profiled. 
+        only the information relevant to the query that we have profiled.
 
         Now we can use ``export_profile`` to produce an export bundle.
         We choose to name our export bundle ``"query_requests_example_001.tar"``.
-        
+
         .. code-block:: python
 
             qprof.export_profile(filename="query_requests_example_001.tar")
@@ -3358,11 +3358,11 @@ class QueryProfiler:
         library to print the names of all files in the tarball
 
         .. code-block:: python
-            
+
             tfile = tarfile.open("query_requests_example_001.tar")
             for f in tfile.getnames():
                 print(f"Tarball contains path: {f}")
-        
+
         The output will be:
 
         .. code-block::
@@ -3398,24 +3398,24 @@ class QueryProfiler:
         tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp"),
     ):
         """
-        The static method ``import_profile`` can be used to create new 
+        The static method ``import_profile`` can be used to create new
         :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` object
-        from the contents of a export bundle. 
-        
+        from the contents of a export bundle.
+
         Export bundles can be produced
-        by the method 
+        by the method
         :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`.
-        The bundles contain system table data written into parquet files. 
+        The bundles contain system table data written into parquet files.
 
         The method ``import_profile`` executes the following steps:
             * Unpacks the profie bundle
-            * Creates tables in the in the target schema if they do not 
+            * Creates tables in the in the target schema if they do not
               exist. The tables will be suffixed by ``key_id``.
             * Copies the data from the parquet files into the tables
-            * Creates a ``QueryProfiler`` object initialized to use 
+            * Creates a ``QueryProfiler`` object initialized to use
               data from the newly created and loaded tables.
-        
-        The method returns the new ``QueryProfiler`` object. 
+
+        The method returns the new ``QueryProfiler`` object.
 
         Parameters
         ------------
@@ -3449,7 +3449,7 @@ class QueryProfiler:
 
         Now we can profile a query and create a set of system table replicas
         by calling the ``QueryProfiler`` constructor:
-        
+
         .. code-block:: python
 
             qprof = QueryProfiler(
@@ -3462,17 +3462,17 @@ class QueryProfiler:
 
         We can use ``export_profile`` to produce an export bundle.
         We choose to name our export bundle ``"query_requests_example_001.tar"``.
-        
+
         .. code-block:: python
 
             qprof.export_profile(filename="query_requests_example_001.tar")
 
-        After producing an export bundle, we can import it into a different 
-        schema using ``import_profile``. For purposes of this example, we'll 
-        import the data into another schema in the same database. We expect 
+        After producing an export bundle, we can import it into a different
+        schema using ``import_profile``. For purposes of this example, we'll
+        import the data into another schema in the same database. We expect
         it is more common to import the bundle into another database.
-        
-        Let's use the import schema name ``import_002``, which is distinct from 
+
+        Let's use the import schema name ``import_002``, which is distinct from
         the source schema ``replica_001``.
 
         .. code-block:: python
@@ -3482,9 +3482,9 @@ class QueryProfiler:
                 key_id="ex9876",
                 filename="query_requests_example_001.tar"
             )
-        
-        Now we use the ``QueryProfiler`` to analyze the imported information. All 
-        ``QueryProfiler`` methods are available. We'll use ``get_qduration()`` as 
+
+        Now we use the ``QueryProfiler`` to analyze the imported information. All
+        ``QueryProfiler`` methods are available. We'll use ``get_qduration()`` as
         an example.
 
         .. code-block:: python
@@ -3497,7 +3497,7 @@ class QueryProfiler:
 
             First query duration was 3.14 seconds
 
-        
+
         """
         pi = ProfileImport(
             # schema and target will be once this test copies
