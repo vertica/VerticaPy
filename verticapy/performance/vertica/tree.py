@@ -25,8 +25,8 @@ import numpy as np
 import verticapy._config.config as conf
 from verticapy._utils._sql._format import schema_relation
 from verticapy._typing import NoneType
-from verticapy.performance.vertica.qprof_utility import QprofUtility
 
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 from verticapy.plotting.base import get_default_graphviz_options
 
 if conf.get_import_success("graphviz"):
@@ -62,16 +62,17 @@ class PerformanceTree:
         The following metrics work only
         if ``metric_value is not None``:
 
-        - exec_time_ms
-        - est_rows
-        - proc_rows
-        - prod_rows
-        - rle_prod_rows
+        - bytes_spilled
         - clock_time_us
         - cstall_us
-        - pstall_us
-        - mem_res_mb
+        - exec_time_ms (default)
+        - est_rows
         - mem_all_mb
+        - mem_res_mb
+        - proc_rows
+        - prod_rows
+        - pstall_us
+        - rle_prod_rows
 
         It can also be a ``list`` or
         ``tuple`` of metrics.
@@ -128,25 +129,7 @@ class PerformanceTree:
         self,
         rows: str,
         path_id: Optional[int] = None,
-        metric: Union[
-            Literal[
-                None,
-                "cost",
-                "rows",
-                "exec_time_ms",
-                "est_rows",
-                "proc_rows",
-                "prod_rows",
-                "rle_prod_rows",
-                "clock_time_us",
-                "cstall_us",
-                "pstall_us",
-                "mem_res_mb",
-                "mem_all_mb",
-            ],
-            tuple,
-            list,
-        ] = "rows",
+        metric: Union[NoneType, str, tuple[str, str], list[str],] = "rows",
         metric_value: Optional[dict] = None,
         show_ancestors: bool = True,
         path_id_info: Optional[list] = None,
@@ -171,21 +154,7 @@ class PerformanceTree:
                 f"It has to be in [{', '.join([str(p) for p in self.path_order])}].\n"
                 f"Found {path_id}."
             )
-        available_metrics = [
-            None,
-            "cost",
-            "rows",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            "cstall_us",
-            "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
-        ]
+        available_metrics = QprofUtility._get_metrics()
         if isinstance(metric, (str, NoneType)):
             metric = [metric]
         for me in metric:
