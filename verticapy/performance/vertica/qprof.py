@@ -2227,7 +2227,12 @@ class QueryProfiler:
         path_id: Optional[int] = None,
         path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
-        metric: Union[NoneType, str, tuple[str, str], list[str],] = ["exec_time_ms", "prod_rows"],
+        metric: Union[
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
+        ] = ["exec_time_ms", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
         **tree_style,
@@ -2255,7 +2260,7 @@ class QueryProfiler:
             the following:
 
             - None (no specific color)
-            
+
             - bytes_spilled
             - clock_time_us
             - cost

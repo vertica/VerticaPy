@@ -129,7 +129,12 @@ class PerformanceTree:
         self,
         rows: str,
         path_id: Optional[int] = None,
-        metric: Union[NoneType, str, tuple[str, str], list[str],] = "rows",
+        metric: Union[
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
+        ] = "rows",
         metric_value: Optional[dict] = None,
         show_ancestors: bool = True,
         path_id_info: Optional[list] = None,
