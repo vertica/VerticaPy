@@ -160,10 +160,10 @@ in speed for both the modes:
         width = 400,
         height = 500
         )
-        fig.write_html("/project/data/VerticaPy/docs/figures/user_defined_functions_udx_xgboost_scoring.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/user_defined_functions_udx_xgboost_scoring.html")
 
     .. raw:: html
-      :file: /project/data/VerticaPy/docs/figures/user_defined_functions_udx_xgboost_scoring.html
+      :file: SPHINX_DIRECTORY/figures/user_defined_functions_udx_xgboost_scoring.html
 
 .. tab:: Top K per partition
 
@@ -219,10 +219,10 @@ in speed for both the modes:
         width = 400,
         height = 500
         )
-        fig.write_html("/project/data/VerticaPy/docs/figures/user_defined_functions_udx_top_k.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/user_defined_functions_udx_top_k.html")
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/user_defined_functions_udx_top_k.html
+        :file: SPHINX_DIRECTORY/figures/user_defined_functions_udx_top_k.html
 
 .. tab:: Shorter String
 
@@ -280,10 +280,10 @@ in speed for both the modes:
         width = 400,
         height = 500
         )
-        fig.write_html("/project/data/VerticaPy/docs/figures/user_defined_functions_udx_shorter_string.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/user_defined_functions_udx_shorter_string.html")
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/user_defined_functions_udx_shorter_string.html
+        :file: SPHINX_DIRECTORY/figures/user_defined_functions_udx_shorter_string.html
 
 ----
 

@@ -5,6 +5,41 @@ Vertica
 =========
 
 
+Query Performance Interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. currentmodule:: verticapy.performance.vertica.qprof_interface
+
+.. autosummary:: 
+   :toctree: api/
+
+   QueryProfilerInterface
+
+.. currentmodule:: verticapy.performance.vertica.qprof_interface
+
+**Methods:**
+
+.. autosummary::
+   :toctree: api/
+
+   QueryProfilerInterface.get_cluster_config
+   QueryProfilerInterface.get_cpu_time
+   QueryProfilerInterface.get_qduration
+   QueryProfilerInterface.get_qexecution
+   QueryProfilerInterface.get_qexecution_report
+   QueryProfilerInterface.get_qplan
+   QueryProfilerInterface.get_qplan_tree
+   QueryProfilerInterface.get_qplan_profile
+   QueryProfilerInterface.get_qsteps
+   QueryProfilerInterface.get_request
+   QueryProfilerInterface.get_query_events
+   QueryProfilerInterface.get_rp_status
+   QueryProfilerInterface.get_table
+   QueryProfilerInterface.get_version
+   QueryProfilerInterface.next
+   QueryProfilerInterface.previous
+   QueryProfilerInterface.step
+
 Query Performance
 ^^^^^^^^^^^^^^^^^^
 
