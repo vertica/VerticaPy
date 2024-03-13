@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import math
 import warnings
 from collections.abc import Iterable
@@ -140,6 +141,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.boxplot(["score1"], width = 600)
@@ -156,6 +158,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.boxplot(columns = ["score1", "score2", "score3"], width = 600)
@@ -373,6 +376,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.bar(["grade"])
@@ -389,6 +393,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.bar(columns = ["grade", "gender"])
@@ -650,6 +655,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.barh(["grade"], width = 600)
@@ -666,6 +672,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.barh(columns = ["grade", "gender"], width = 600)
@@ -862,6 +869,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.pie(["grade"], width = 600)
@@ -878,6 +886,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.pie(columns = ["grade", "gender"], width = 600)
@@ -1027,6 +1036,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.hist(["score1"], width = 600)
@@ -1043,6 +1053,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.hist(columns = ["score1", "score2"], width = 600)
@@ -1175,6 +1186,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.density(["score1"], width = 600)
@@ -1191,6 +1203,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.density(columns = ["score1", "score2"], width = 600)
@@ -1372,6 +1385,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.plot(columns = ["Asia"], ts = "date", kind = "spline", width = 600)
@@ -1388,6 +1402,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.plot(columns = ["Asia", "Africa", "Europe", "America", "Oceania"], ts = "date", width = 600)
@@ -1791,6 +1806,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.pivot_table(columns = ["category1", "category2"])
@@ -1918,6 +1934,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.contour(columns = ["x", "y"], func = f)
@@ -2060,6 +2077,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.heatmap(columns = ["x", "y"])
@@ -2358,6 +2376,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.scatter(columns = ["x", "y"], by = "category")
@@ -2374,6 +2393,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.scatter(columns = ["x", "y", "z"])
@@ -2645,6 +2665,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.outliers_plot(columns = ["x"])
@@ -2661,6 +2682,7 @@ class vDFPlot(vDFMachineLearning):
 
             .. ipython:: python
                 :suppress:
+                :okwarning:
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.outliers_plot(columns = ["x", "y"])
@@ -2896,6 +2918,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].boxplot(width = 600)
@@ -3063,6 +3086,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["grade"].bar()
@@ -3229,6 +3253,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["grade"].barh()
@@ -3391,6 +3416,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["grade"].pie(width = 600)
@@ -3527,6 +3553,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].spider(width = 600)
@@ -3687,6 +3714,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].hist(width = 600)
@@ -3835,6 +3863,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].density(width = 600)
@@ -4143,6 +4172,7 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["Asia"].plot(ts = "date", kind = "spline", width = 600)
