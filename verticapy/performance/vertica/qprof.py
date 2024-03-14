@@ -37,6 +37,7 @@ from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.performance.vertica.collection.profile_export import ProfileExport
 from verticapy.performance.vertica.collection.profile_import import ProfileImport
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.sql.dtypes import get_data_types
@@ -2227,23 +2228,10 @@ class QueryProfiler:
         path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
         metric: Union[
-            Literal[
-                None,
-                "cost",
-                "rows",
-                "exec_time_ms",
-                "est_rows",
-                "proc_rows",
-                "prod_rows",
-                "rle_prod_rows",
-                "clock_time_us",
-                "cstall_us",
-                "pstall_us",
-                "mem_res_mb",
-                "mem_all_mb",
-            ],
-            list,
-            tuple,
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
         ] = ["exec_time_ms", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
@@ -2272,18 +2260,20 @@ class QueryProfiler:
             the following:
 
             - None (no specific color)
+
+            - bytes_spilled
+            - clock_time_us
             - cost
-            - rows
-            - exec_time_ms
+            - cstall_us
+            - exec_time_ms (default)
             - est_rows
+            - mem_all_mb
+            - mem_res_mb
             - proc_rows
             - prod_rows
-            - rle_prod_rows
-            - clock_time_us
-            - cstall_us
             - pstall_us
-            - mem_res_mb
-            - mem_all_mb
+            - rle_prod_rows
+            - rows
 
             It can also be a ``list`` or
             a ``tuple`` of two metrics.
@@ -2971,7 +2961,9 @@ class QueryProfiler:
                 ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
                     counter_value ELSE NULL END) / 1000000, 1.0) AS mem_res_mb,
                 ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
-                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb
+                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb,
+                SUM(CASE TRIM(counter_name) WHEN 'bytes spilled' THEN
+                    counter_value ELSE NULL END) AS bytes_spilled
             FROM
                 v_monitor.execution_engine_profiles
             WHERE
@@ -2991,19 +2983,7 @@ class QueryProfiler:
     def get_qexecution(
         self,
         node_name: Union[None, str, list] = None,
-        metric: Literal[
-            "all",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            "cstall_us",
-            "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
-        ] = "exec_time_ms",
+        metric: str = "exec_time_ms",
         path_id: Optional[int] = None,
         kind: Literal[
             "bar",
@@ -3047,16 +3027,17 @@ class QueryProfiler:
         metric: str, optional
             Metric to use. One of the following:
             - all (all metrics are used).
-            - exec_time_ms (default)
-            - est_rows
-            - proc_rows
-            - prod_rows
-            - rle_prod_rows
+            - bytes_spilled
             - clock_time_us
             - cstall_us
-            - pstall_us
-            - mem_res_mb
+            - exec_time_ms (default)
+            - est_rows
             - mem_all_mb
+            - mem_res_mb
+            - proc_rows
+            - prod_rows
+            - pstall_us
+            - rle_prod_rows
         path_id: str
             Path ID.
         kind: str, optional
@@ -3197,18 +3178,9 @@ class QueryProfiler:
                     "Plots with metric='all' is only available for Plotly Integration."
                 )
             figs = []
-            all_metrics = [
-                "exec_time_ms",
-                "est_rows",
-                "proc_rows",
-                "prod_rows",
-                "rle_prod_rows",
-                "clock_time_us",
-                "cstall_us",
-                "pstall_us",
-                "mem_res_mb",
-                "mem_all_mb",
-            ]
+            all_metrics = QprofUtility._get_metrics()
+            for metric in [None, "cost", "rows"]:
+                all_metrics.remove(metric)
             for metric in all_metrics:
                 figs += [
                     self.get_qexecution(
