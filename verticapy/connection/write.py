@@ -291,6 +291,11 @@ def new_connection(
         | :py:func:`~verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
+    doPrintInfo = conf.get_option("print_info")
+    def _printInfo(info):
+        if doPrintInfo:
+            print(info)
+    
     path = get_connection_file()
     confparser = get_confparser()
 
@@ -303,24 +308,18 @@ def new_connection(
             )
         confparser.remove_section(name)
     confparser.add_section(name)
+
     if prompt:
-        oauth_access_token = getpass("Input OAuth Access Token:")
-        doPrintInfo = conf.get_option("print_info")
-        if oauth_access_token == "":
-            if doPrintInfo:
-                print("Default value applied: Input left empty.")
+        if not (oauth_access_token := getpass("Input OAuth Access Token:")):
+            _printInfo("Default value applied: Input left empty.")
         else:
             conn_info["oauth_access_token"] = oauth_access_token
-        oath_refresh_token = getpass("Input OAuth Refresh Token:")
-        if oath_refresh_token == "":
-            if doPrintInfo:
-                print("Default value applied: Input left empty.")
+        if not (oath_refresh_token := getpass("Input OAuth Refresh Token:")):
+            _printInfo("Default value applied: Input left empty.")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
-        client_secret = getpass("Input OAuth Client Secret: (OTCAD and public client users should leave this blank)")
-        if client_secret == "":
-            if doPrintInfo:
-                print("Default value applied: Input left empty.")
+        if not (client_secret := getpass("Input OAuth Client Secret: (OTCAD and public client users should leave this blank)")):
+            _printInfo("Default value applied: Input left empty.")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
     
@@ -329,7 +328,6 @@ def new_connection(
         oauth_manager.set_config(conn_info["oauth_config"])
         conn_info["oauth_access_token"] = oauth_manager.get_access_token_using_refresh_token()
         conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
-        
 
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
@@ -339,9 +337,8 @@ def new_connection(
 
     if auto:
         change_auto_connection(name)
-    if (
-        connect_attempt
-    ):  
+        
+    if connect_attempt:   
         # To prevent auto-connection. Needed for re-prompts in case of errors.
         gb_conn = get_global_connection()
         try:
@@ -349,14 +346,6 @@ def new_connection(
                 vertica_python.connect(**read_dsn(name, path)), name, path
             )
         except (ConnectionError, OAuthTokenRefreshError) as e:
-            print(e)
-            # Server error should be something like "token introspection failed" in which case we need
-            # to attempt token refresh. It may be something along these lines
-            # if "token introspection failed" in str(e)
-            #     if len(oauth_refresh_token) != 0 and oauth_manager and not oauth_manager.refresh_attempted:
-            #         oauth_access_token = oauth_manager.do_token_refresh()
-            # Then we need to update the access token in what is used when we try and connect.It looks like we use recursion 
-            # so I suppose we need to update the access token in the conn_info that is passed in the recursive call to new_connection
             print("Access Denied: Your authentication credentials are incorrect or have expired. Please retry")
             new_connection(
                 conn_info=read_dsn(name, path), prompt=True, connect_attempt=False
@@ -365,7 +354,7 @@ def new_connection(
                 gb_conn.set_connection(
                     vertica_python.connect(**read_dsn(name, path)), name, path
                 )
-                if conf.get_option("print_info"):
+                if doPrintInfo:
                     print("Connected Successfully!")
             except (ConnectionError, OAuthTokenRefreshError) as error:
                 print("Error persists:")
