@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import time
 import warnings
 from typing import Optional, Literal, Union
@@ -338,6 +339,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %load_ext verticapy.chart
 
@@ -347,6 +349,7 @@ def chart_magic(
     with the 'schema' parameter:
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.datasets import load_titanic, load_amazon, load_iris
 
@@ -376,12 +379,14 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k pie
         SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         pie_chart = _
         pie_chart.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic.html")
@@ -403,6 +408,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k line
         SELECT
@@ -413,6 +419,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         line_chart = _
         line_chart.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_2.html")
@@ -432,12 +439,14 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k pearson
         SELECT * FROM titanic;
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         heatmap = _
         heatmap.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_3.html")
@@ -458,6 +467,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k bar
         SELECT
@@ -467,6 +477,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         bar = _
         bar.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_4.html")
@@ -488,6 +499,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k scatter
         SELECT
@@ -498,6 +510,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         scatter = _
         scatter.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_5.html")
@@ -515,12 +528,14 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k boxplot
         SELECT * FROM titanic;
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         boxplot = _
         boxplot.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_6.html")
@@ -540,12 +555,14 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k spearman
         SELECT * FROM titanic;
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         export = _
         export.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_7.html")
@@ -573,6 +590,7 @@ def chart_magic(
     operator:
 
     .. ipython:: python
+        :okwarning:
 
         import verticapy.sql.functions as vpf
 
@@ -583,6 +601,7 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_8.html", "w")
         html_file.write(class_fare._repr_html_())
@@ -606,12 +625,14 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         %%chart -k bar
         SELECT * FROM :class_fare;
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         chart = _
         chart.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_9.html")
@@ -625,6 +646,13 @@ def chart_magic(
     Create charts from a SQL file:
 
     .. ipython:: python
+        :okwarning:
+
+        file = open("SPHINX_DIRECTORY/query.sql", "w+")
+        file.write("SELECT PetalLengthCm, PetalWidthCm, Species FROM iris;")
+        file.close()
+
+    .. code-block:: python
 
         file = open("query.sql", "w+")
         file.write("SELECT PetalLengthCm, PetalWidthCm, Species FROM iris;")
@@ -639,11 +667,13 @@ def chart_magic(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
-        %chart -f query.sql -k scatter
+        %chart -f SPHINX_DIRECTORY/query.sql -k scatter
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         sql_file = _
         sql_file.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_10.html")

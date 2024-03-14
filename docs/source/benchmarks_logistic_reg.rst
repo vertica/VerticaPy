@@ -221,6 +221,7 @@ Browse through the tabs to see the time comparison:
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             import plotly.graph_objects as go
             labels = ['Vertica', 'Spark']

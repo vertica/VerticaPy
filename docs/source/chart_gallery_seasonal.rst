@@ -221,6 +221,7 @@ To create a seasonal decomposition plot, we must visualize the primary time seri
     Following this, we can proceed to plot the final visualization.
 
     .. ipython:: python
+        :okwarning:
 
         decomposition["passengers"].plot(ts = "date", ax = ax1, color = "#0073E7")
         decomposition["passengers_trend"].plot(ts = "date", ax = ax2, color = "black")

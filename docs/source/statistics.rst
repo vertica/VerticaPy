@@ -16,13 +16,13 @@ Summary
    vp.set_option("plotting_lib", "highcharts")
    fig = summarise_verticapy_chart()
    html_text = fig.htmlcontent.replace("container", "plotting_highcharts_barh_1D")
-   with open("/project/data/VerticaPy/docs/figures/plotting_summarise_verticapy_chart.html", "w") as file:
+   with open("SPHINX_DIRECTORY/figures/plotting_summarise_verticapy_chart.html", "w") as file:
       file.write(html_text)
 
 Here is a drill-down bar chart summarizing the VerticaPy statistics. Each bar represents a key statistic, and you can click on each bar to explore further details. Whether you're interested in total records, mean age, maximum salary, minimum salary, or total transactions, this chart provides a quick snapshot of your data.
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/plotting_summarise_verticapy_chart.html
+  :file: SPHINX_DIRECTORY/figures/plotting_summarise_verticapy_chart.html
 
 Table: VerticaPy Statistics Summary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -50,12 +50,12 @@ Code Coverage
    from verticapy._utils._inspect_statistics import codecov_verticapy_chart
    vp.set_option("plotting_lib", "plotly")
    fig = codecov_verticapy_chart()
-   fig.write_html("/project/data/VerticaPy/docs/figures/plotting_codecov_verticapy_chart.html")
+   fig.write_html("SPHINX_DIRECTORY/figures/plotting_codecov_verticapy_chart.html")
 
 Here is a pie chart illustrating the code coverage for your VerticaPy project. This chart provides insights into the comprehensiveness of your codebase and areas that may require additional attention.
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/plotting_codecov_verticapy_chart.html
+  :file: SPHINX_DIRECTORY/figures/plotting_codecov_verticapy_chart.html
 
 Exploration and Discovery
 --------------------------

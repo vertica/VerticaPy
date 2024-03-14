@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import copy
 import os
 import vertica_python
@@ -258,6 +259,7 @@ class Clustering(Unsupervised):
         Let's import the model:
 
         .. ipython:: python
+            :okwarning:
 
             from verticapy.machine_learning.vertica import KMeans
 
@@ -294,6 +296,7 @@ class Clustering(Unsupervised):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.plot(width = 600)
@@ -568,6 +571,7 @@ class KMeans(Clustering):
     You can also find the cluster positions by:
 
     .. ipython:: python
+        :okwarning:
 
         model.clusters_
 
@@ -576,6 +580,7 @@ class KMeans(Clustering):
     squares, and the total sum of squares.
 
     .. ipython:: python
+        :okwarning:
 
         model.between_cluster_ss_
         model.total_within_cluster_ss_
@@ -585,6 +590,7 @@ class KMeans(Clustering):
     like the Elbow Score (the bigger it is, the better it is).
 
     .. ipython:: python
+        :okwarning:
 
         model.elbow_score_
 
@@ -595,6 +601,7 @@ class KMeans(Clustering):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_prediction.html", "w")
@@ -626,6 +633,7 @@ class KMeans(Clustering):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(width = 600)
@@ -649,6 +657,7 @@ class KMeans(Clustering):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot_voronoi(width = 600)
@@ -669,6 +678,7 @@ class KMeans(Clustering):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = model.contour(width = 600)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_contour.html")
@@ -1007,6 +1017,7 @@ class KMeans(Clustering):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.plot_voronoi(width = 600)
@@ -1805,6 +1816,7 @@ class BisectingKMeans(KMeans, Tree):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         from verticapy.machine_learning.vertica import BisectingKMeans
 
@@ -1875,12 +1887,14 @@ class BisectingKMeans(KMeans, Tree):
     You can also find the cluster positions by:
 
     .. ipython:: python
+        :okwarning:
 
         model.clusters_
 
     In order to get the size of each cluster, you can use:
 
     .. ipython:: python
+        :okwarning:
 
         model.cluster_size_
 
@@ -1889,6 +1903,7 @@ class BisectingKMeans(KMeans, Tree):
     squares, and the total sum of squares.
 
     .. ipython:: python
+        :okwarning:
 
         model.between_cluster_ss_
         model.total_within_cluster_ss_
@@ -1897,6 +1912,7 @@ class BisectingKMeans(KMeans, Tree):
     You also have access to the sum of squares of each cluster.
 
     .. ipython:: python
+        :okwarning:
 
         model.cluster_i_ss_
 
@@ -1904,6 +1920,7 @@ class BisectingKMeans(KMeans, Tree):
     like the Elbow Score (the bigger it is, the better it is).
 
     .. ipython:: python
+        :okwarning:
 
         model.elbow_score_
 
@@ -1914,6 +1931,7 @@ class BisectingKMeans(KMeans, Tree):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         result = model.predict(data, ["density", "sulphates"])
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_prediction.html", "w")
@@ -1941,6 +1959,7 @@ class BisectingKMeans(KMeans, Tree):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(width = 600)
@@ -1961,6 +1980,7 @@ class BisectingKMeans(KMeans, Tree):
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         res = model.plot_tree()
         res.render(filename='figures/machine_learning_vertica_tree_bisect_km_', format='png')
@@ -1981,6 +2001,7 @@ class BisectingKMeans(KMeans, Tree):
     graphviz DOT file code as follows:
 
     .. ipython:: python
+        :okwarning:
 
         model.to_graphviz()
 
@@ -2020,12 +2041,14 @@ class BisectingKMeans(KMeans, Tree):
     In order to see the parameters:
 
     .. ipython:: python
+        :okwarning:
 
         model.get_params()
 
     And to manually change some of the parameters:
 
     .. ipython:: python
+        :okwarning:
 
         model.set_params({'n_cluster': 5})
 
@@ -2071,6 +2094,7 @@ class BisectingKMeans(KMeans, Tree):
     You can get the SQL query equivalent of the XGB model by:
 
     .. ipython:: python
+        :okwarning:
 
         model.to_sql()
 
@@ -2522,6 +2546,7 @@ class BisectingKMeans(KMeans, Tree):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             res = model.plot_tree()
             res.render(filename='figures/machine_learning_vertica_cluster_BKMeans_plot_tree', format='png')
@@ -3277,6 +3302,7 @@ class DBSCAN(VerticaModel):
         Then we import the model:
 
         .. ipython:: python
+            :okwarning:
 
             from verticapy.machine_learning.vertica import DBSCAN
 
@@ -3307,6 +3333,7 @@ class DBSCAN(VerticaModel):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             vp.set_option("plotting_lib", "plotly")
             fig = model.plot(width = 600)

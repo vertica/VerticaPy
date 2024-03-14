@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
 from verticapy._typing import (
@@ -3303,6 +3304,7 @@ def specificity_score(
     Now we can conveniently calculate the score:
 
     .. ipython:: python
+        :okwarning:
 
         specificity_score(
             y_true  = "y_true",
@@ -3315,6 +3317,7 @@ def specificity_score(
         For multi-class classification, we can select
         the ``average`` method for averaging from the
         following options:
+
         - binary
         - micro
         - macro
@@ -3325,6 +3328,7 @@ def specificity_score(
     from the vDataFrame:
 
     .. ipython:: python
+        :okwarning:
 
         data.score(
             y_true  = "y_true",
