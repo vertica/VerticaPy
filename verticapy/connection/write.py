@@ -302,7 +302,6 @@ def new_connection(
                 "'overwrite' to True."
             )
         confparser.remove_section(name)
-
     confparser.add_section(name)
     if prompt:
         oauth_access_token = getpass("Input OAuth Access Token:")
@@ -318,15 +317,19 @@ def new_connection(
                 print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
-        client_secret = getpass("Input OAuth Client Secret:")
+        client_secret = getpass("Input OAuth Client Secret: (OTCAD and public client users should leave this blank)")
         if client_secret == "":
             if doPrintInfo:
                 print("Default value applied: Input left empty.")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
-
-    oauth_manager = OAuthManager(conn_info.get("oauth_refresh_token", ""))
-    oauth_manager.set_config(conn_info.get("oauth_config", {}))
+    
+    if conn_info.get("oauth_refresh_token", False):
+        oauth_manager = OAuthManager(conn_info["oauth_refresh_token"])
+        oauth_manager.set_config(conn_info["oauth_config"])
+        conn_info["oauth_access_token"] = oauth_manager.get_access_token_using_refresh_token()
+        conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
+        
 
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
@@ -346,6 +349,7 @@ def new_connection(
                 vertica_python.connect(**read_dsn(name, path)), name, path
             )
         except (ConnectionError, OAuthTokenRefreshError) as e:
+            print(e)
             # Server error should be something like "token introspection failed" in which case we need
             # to attempt token refresh. It may be something along these lines
             # if "token introspection failed" in str(e)

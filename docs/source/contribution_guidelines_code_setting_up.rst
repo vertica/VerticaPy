@@ -82,7 +82,7 @@ Spin up your Vertica database for tests and then config test settings:
     log_dir: 'vp_test_log'  # all test logs would write to files under this directory
     log_level: logging.WARNING
 
-* Override with a configuration file called `verticapy/tests/common/vp_test.conf`. This is a file that would be ignored by git. We created an example `verticapy/tests/common/vp_test.conf.example` for your reference.
+* Override with a configuration file called `verticapy/tests/vp_test.conf`. This is a file that would be ignored by git. We created an example `verticapy/tests/vp_test.conf.example` for your reference.
   
   .. code-block:: python
 
