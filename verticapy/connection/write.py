@@ -330,9 +330,9 @@ def new_connection(
     if conn_info.get("oauth_refresh_token", False):
         oauth_manager = OAuthManager(conn_info["oauth_refresh_token"])
         oauth_manager.set_config(conn_info["oauth_config"])
-        conn_info["oauth_access_token"] = (
-            oauth_manager.get_access_token_using_refresh_token()
-        )
+        conn_info[
+            "oauth_access_token"
+        ] = oauth_manager.get_access_token_using_refresh_token()
         conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
 
     for c in conn_info:

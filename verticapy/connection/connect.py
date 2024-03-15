@@ -134,9 +134,9 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         if connection_config.get("oauth_refresh_token", False):
             oauth_manager = OAuthManager(connection_config["oauth_refresh_token"])
             oauth_manager.set_config(connection_config["oauth_config"])
-            connection_config["oauth_access_token"] = (
-                oauth_manager.get_access_token_using_refresh_token()
-            )
+            connection_config[
+                "oauth_access_token"
+            ] = oauth_manager.get_access_token_using_refresh_token()
             gb_conn.set_connection(
                 vertica_connection(section=None, dsn=None, config=connection_config)
             )
