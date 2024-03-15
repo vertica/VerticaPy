@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import ast
 import os
 from typing import Optional
@@ -225,7 +226,6 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
                 conn_info[option_name] = ast.literal_eval(option_val)
             elif not option_name.startswith("env"):
                 conn_info[option_name] = option_val
-            
 
         return conn_info
 

@@ -17,11 +17,23 @@ permissions and limitations under the License.
 
 from vertica_python.errors import ConnectionError
 
+
 class OAuthConfigurationError(ConnectionError):
-    pass
+    """
+    Error class which covers errors pertaining to
+    OAuth configuration setup.
+    """
+
 
 class OAuthEndpointDiscoveryError(ConnectionError):
-    pass
+    """
+    Error class which covers errors pertaining to
+    failure to get token url from discovery url.
+    """
+
 
 class OAuthTokenRefreshError(ConnectionError):
-    pass
+    """
+    Error class which covers errors pertaining to
+    failure to authenticate using Refresh Token.
+    """

@@ -291,10 +291,11 @@ def new_connection(
             Sets the VerticaPy connection.
     """
     doPrintInfo = conf.get_option("print_info")
+
     def _printInfo(info):
         if doPrintInfo:
             print(info)
-    
+
     path = get_connection_file()
     confparser = get_confparser()
 
@@ -317,15 +318,21 @@ def new_connection(
             _printInfo("Default value applied: Input left empty.")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
-        if not (client_secret := getpass("Input OAuth Client Secret: (OTCAD and public client users should leave this blank)")):
+        if not (
+            client_secret := getpass(
+                "Input OAuth Client Secret: (OTCAD and public client users should leave this blank)"
+            )
+        ):
             _printInfo("Default value applied: Input left empty.")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
-    
+
     if conn_info.get("oauth_refresh_token", False):
         oauth_manager = OAuthManager(conn_info["oauth_refresh_token"])
         oauth_manager.set_config(conn_info["oauth_config"])
-        conn_info["oauth_access_token"] = oauth_manager.get_access_token_using_refresh_token()
+        conn_info["oauth_access_token"] = (
+            oauth_manager.get_access_token_using_refresh_token()
+        )
         conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
 
     for c in conn_info:
@@ -336,8 +343,8 @@ def new_connection(
 
     if auto:
         change_auto_connection(name)
-        
-    if connect_attempt:   
+
+    if connect_attempt:
         # To prevent auto-connection. Needed for re-prompts in case of errors.
         gb_conn = get_global_connection()
         try:
@@ -345,7 +352,9 @@ def new_connection(
                 vertica_python.connect(**read_dsn(name, path)), name, path
             )
         except (ConnectionError, OAuthTokenRefreshError) as e:
-            print("Access Denied: Your authentication credentials are incorrect or have expired. Please retry")
+            print(
+                "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
+            )
             new_connection(
                 conn_info=read_dsn(name, path), prompt=True, connect_attempt=False
             )
