@@ -17,7 +17,6 @@ permissions and limitations under the License.
 
 from getpass import getpass
 import warnings
-
 import vertica_python
 
 import verticapy._config.config as conf
