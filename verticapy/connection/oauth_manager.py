@@ -20,8 +20,9 @@ from __future__ import print_function, division, absolute_import, annotations
 import requests
 import warnings
 
+from urllib3.poolmanager import PoolManager
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
+
 
 from verticapy.connection.errors import (
     OAuthTokenRefreshError,
