@@ -20,4 +20,4 @@ statsmodels
 bs4
 ipywidgets
 pyarrow
-tensorflow==2.6.0
+tensorflow==2.15.1
