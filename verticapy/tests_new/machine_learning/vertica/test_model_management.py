@@ -108,10 +108,6 @@ def _import(vpy_model_obj, py_model_obj, category, schema_name):
         )
 
 
-@pytest.mark.skipif(
-    sys.version_info > (3, 11, 11),
-    reason="Tensorflow version in 3.12 is not supported yet",
-)
 @pytest.mark.parametrize("category", ["pmml", "vertica", "vertica_models", None])
 @pytest.mark.parametrize(
     "model_class",
