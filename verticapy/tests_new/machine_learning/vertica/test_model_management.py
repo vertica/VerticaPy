@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from collections import namedtuple
 from decimal import Decimal
 from itertools import chain
@@ -106,8 +107,10 @@ def _import(vpy_model_obj, py_model_obj, category, schema_name):
             kind=category,
         )
 
+
 @pytest.mark.skipif(
-    sys.version_info > (3, 11, 11), reason="Tensorflow version in 3.12 is not supported yet"
+    sys.version_info > (3, 11, 11),
+    reason="Tensorflow version in 3.12 is not supported yet",
 )
 @pytest.mark.parametrize("category", ["pmml", "vertica", "vertica_models", None])
 @pytest.mark.parametrize(
