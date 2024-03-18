@@ -19,3 +19,4 @@ xgboost
 statsmodels
 bs4
 ipywidgets
+requests
