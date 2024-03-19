@@ -22,9 +22,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install TensorFlow
-        if: startsWith(matrix.python-version, '3.9') || startsWith(matrix.python-version, '3.10') || startsWith(matrix.python-version, '3.11')
-        run: pip install tensorflow==2.15.1
       - name: Set up a Vertica server
         timeout-minutes: 15
         run: |
@@ -50,10 +47,13 @@ jobs:
           echo "*** Calling tox based on python-version ***"
           echo ${{ matrix.python-version }}
           if ${{ matrix.python-version == '3.9' }}; then
+            pip install tensorflow==2.15.1
             tox -e py39
           elif ${{ matrix.python-version == '3.10' }}; then
             tox -e py310
+            pip install tensorflow==2.15.1
           elif ${{ matrix.python-version == '3.11' }}; then
+            pip install tensorflow==2.15.1
             tox -e py311
           elif ${{ matrix.python-version == '3.12' }}; then
             tox -e py312
