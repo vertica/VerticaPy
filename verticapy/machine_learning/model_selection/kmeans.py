@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from typing import Literal, Optional, Union
 
 import numpy as np
@@ -192,6 +193,7 @@ def best_k(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
         fig = data.scatter(
@@ -212,6 +214,7 @@ def best_k(
     the three clusters we observed earlier.
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.machine_learning.model_selection import best_k
 
@@ -458,6 +461,7 @@ def elbow(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
         fig = data.scatter(

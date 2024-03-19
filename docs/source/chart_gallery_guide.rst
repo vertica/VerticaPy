@@ -116,6 +116,7 @@ In Python, the process is straightforward. We can use various vDataFrame methods
 
 .. ipython:: python
 	:suppress:
+    :okwarning:
 
 	fig = data["score1"].hist(width = 570)
 	fig.write_html("figures/plotting_plotly_chart_gallery_hist_single.html")
@@ -154,6 +155,7 @@ We write the SQL query using Jupyter magic cells. You can change the type of plo
 
 .. ipython:: python
 	:suppress:
+    :okwarning:
 
 	fig = data["score1"].hist(h = 2, width = 570)
 	fig.write_html("figures/plotting_plotly_chart_gallery_hist_single_h10.html")
@@ -181,6 +183,7 @@ Bar Bin Interval: `h`
 
 .. ipython:: python
 	:suppress:
+    :okwarning:
 
 	fig = data.bar(columns = ["score1", "score2"], h = (2, 3))
 	fig.write_html("figures/plotting_plotly_chart_gallery_bar_h1_h2.html")
@@ -201,6 +204,7 @@ For example, if 'category1' has 5 distinct elements, you can use `max_cardinalit
 
 .. ipython:: python
 	:suppress:
+    :okwarning:
 
 	fig = data.scatter(columns = ["score1", "score2"], by = "category1", max_cardinality = 2)
 	fig.write_html("figures/plotting_plotly_chart_gallery_scatter_max_cardinality.html")
@@ -216,6 +220,7 @@ You can also utilize the `cat_priority` parameter to filter and display only the
 
 .. ipython:: python
 	:suppress:
+    :okwarning:
 
 	fig = data.scatter(columns = ["score1", "score2"], by = "category1", cat_priority = ["C", "D"])
 	fig.write_html("figures/plotting_plotly_chart_gallery_scatter_max_cardinality.html")
@@ -242,6 +247,7 @@ Many charts utilize scatter plots, which may include a `max_nb_points` parameter
 
 .. ipython:: python
 	:suppress:
+    :okwarning:
 
 	fig = data.scatter(columns = ["score1", "score2"], by = "category1", max_cardinality = 2)
 	fig.write_html("figures/plotting_plotly_chart_gallery_scatter_max_cardinality.html")
@@ -273,6 +279,7 @@ Let's create a chart by filtering the data using two dates.
 
 .. ipython:: python
 	:suppress:
+    :okwarning:
 
 	fig = data["population"].plot(ts = "date", start_date = 1995, end_date = 2010)
 	fig.write_html("figures/plotting_plotly_chart_gallery_line_filter.html")

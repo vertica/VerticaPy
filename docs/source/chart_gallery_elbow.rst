@@ -106,7 +106,7 @@ plotting libraries.
         fig.write_html("figures/plotting_plotly_elbow_curve.html")
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/plotting_plotly_elbow_curve.html
+        :file: SPHINX_DIRECTORY/figures/plotting_plotly_elbow_curve.html
 
 .. tab:: Highcharts
 
@@ -143,7 +143,7 @@ plotting libraries.
           file.write(html_text)
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/plotting_highcharts_elbow_curve.html
+        :file: SPHINX_DIRECTORY/figures/plotting_highcharts_elbow_curve.html
         
 .. tab:: Matplotlib
 

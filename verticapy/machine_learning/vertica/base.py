@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import copy
 import warnings
 from abc import abstractmethod
@@ -224,6 +225,41 @@ class VerticaModel(PlottingUtils):
         """
         return f"<{self._model_type}>"
 
+    def _is_already_stored(
+        self,
+        raise_error: bool = False,
+        return_model_type: bool = False,
+    ) -> Union[bool, str]:
+        """
+        Checks whether the
+        model is stored in
+        the Vertica database.
+
+        Parameters
+        ----------
+        raise_error: bool, optional
+            If set to ``True`` and
+            an error occurs, raises
+            the error.
+        return_model_type: bool, optional
+            If set to ``True``,
+            returns a tuple with
+            the model category and
+            type.
+
+        Returns
+        -------
+        bool
+            ``True`` if the model is
+            stored in the Vertica
+            database.
+        """
+        return self.does_model_exists(
+            name=self.model_name,
+            raise_error=raise_error,
+            return_model_type=return_model_type,
+        )
+
     def drop(self) -> bool:
         """
         Drops the model from
@@ -327,41 +363,6 @@ class VerticaModel(PlottingUtils):
             please refer to that particular class.
         """
         return drop(self.model_name, method="model")
-
-    def _is_already_stored(
-        self,
-        raise_error: bool = False,
-        return_model_type: bool = False,
-    ) -> Union[bool, str]:
-        """
-        Checks whether the
-        model is stored in
-        the Vertica database.
-
-        Parameters
-        ----------
-        raise_error: bool, optional
-            If set to ``True`` and
-            an error occurs, raises
-            the error.
-        return_model_type: bool, optional
-            If set to ``True``,
-            returns a tuple with
-            the model category and
-            type.
-
-        Returns
-        -------
-        bool
-            ``True`` if the model is
-            stored in the Vertica
-            database.
-        """
-        return self.does_model_exists(
-            name=self.model_name,
-            raise_error=raise_error,
-            return_model_type=return_model_type,
-        )
 
     @staticmethod
     def does_model_exists(
@@ -2426,7 +2427,8 @@ class Supervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            print(report)
+            if conf.get_option("print_info"):
+                print(report)
         return None
 
 
@@ -2481,6 +2483,16 @@ class Tree:
         if self._model_type == "IsolationForest":
             tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
             for i in range(n):
+                # Check if any training_row_count is NaN
+                if not isinstance(
+                    tree.values["training_row_count"][i], NoneType
+                ) and np.isnan(tree.values["training_row_count"][i]):
+                    # Check if the node is root
+                    if not (tree.values["node_depth"][i] == 0):
+                        tree.values["training_row_count"][i] = 0
+                    else:
+                        # If ``training_row_count`` is nan and the node is root, then discard the tree.
+                        return None
                 if not isinstance(tree.values["leaf_path_length"][i], NoneType):
                     tree.values["prediction"] += [
                         [
@@ -7983,5 +7995,6 @@ class Unsupervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            print(report)
+            if conf.get_option("print_info"):
+                print(report)
         return None

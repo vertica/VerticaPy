@@ -99,19 +99,44 @@ class QprofUtility:
         """
         return [
             None,
+            "bytes_spilled",
+            "clock_time_us",
             "cost",
-            "rows",
+            "cstall_us",
             "exec_time_ms",
             "est_rows",
+            "mem_all_mb",
+            "mem_res_mb",
             "proc_rows",
             "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            "cstall_us",
             "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
+            "rle_prod_rows",
+            "rows",
         ]
+
+    @staticmethod
+    def _get_metrics_name(metric: str, inv: bool = False) -> str:
+        look_up_table = {
+            "bytes_spilled": "Number of bytes spilled",
+            "clock_time_us": "Clock time in \u00b5s",
+            "cost": "Query plan cost",
+            "cstall_us": "Network consumer stall time in \u00b5s",
+            "exec_time_ms": "Execution time in ms",
+            "est_rows": "Estimated row count",
+            "mem_res_mb": "Reserved memory size in MB",
+            "mem_all_mb": "Allocated memory size in MB",
+            "proc_rows": "Processed row count",
+            "prod_rows": "Produced row count",
+            "pstall_us": "Network producer stall time in \u00b5s",
+            "rle_prod_rows": "Produced RLE row count",
+            "rows": "Row count",
+        }
+        if inv:
+            look_up_table_inv = {v: k for k, v in look_up_table.items()}
+            look_up_table = look_up_table_inv
+        if metric in look_up_table:
+            return look_up_table[metric]
+        return metric
 
     @staticmethod
     def _get_categoryorder() -> list:

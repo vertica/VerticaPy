@@ -23,7 +23,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="verticapy",
-    version="1.0.1",
+    version="1.0.2",
     author="Badr Ouali",
     author_email="badr.ouali@vertica.com",
     url="https://github.com/vertica/VerticaPy",
@@ -54,6 +54,7 @@ setuptools.setup(
             "descartes>=1.0.0",
             "geopandas>=0.8.0",
             "shapely>=1.6.0",
+            "pyarrow>=14.0.0",
         ],
     },
     package_data={"": ["*.csv", "*.json", "*.css", "*.html"]},

@@ -15,6 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+import os
+from pathlib import Path
 import re
 from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
 import uuid
@@ -33,6 +35,9 @@ from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
+from verticapy.performance.vertica.collection.profile_export import ProfileExport
+from verticapy.performance.vertica.collection.profile_import import ProfileImport
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 from verticapy.performance.vertica.tree import PerformanceTree
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.sql.dtypes import get_data_types
@@ -142,8 +147,8 @@ class QueryProfiler:
 
         .. note::
 
-            This parameter is used only when ``request`` is
-            defined.
+            This parameter is used only when ``request``
+            is defined.
     check_tables: bool, optional
         If set to ``True`` all the transactions of
         the different Performance tables will be
@@ -155,6 +160,16 @@ class QueryProfiler:
             This parameter will aggregate on many
             tables using many parameters. It will
             make the process much more expensive.
+    iterchecks: bool, optional
+        If set to ``True``, the checks are done
+        iteratively instead of using a unique
+        SQL query. Usually checks are faster
+        when this parameter is set to ``False``.
+
+        .. note::
+
+            This parameter is used only when
+            ``check_tables is True``.
 
     Attributes
     ----------
@@ -855,6 +870,7 @@ class QueryProfiler:
         overwrite: bool = False,
         add_profile: bool = True,
         check_tables: bool = True,
+        iterchecks: bool = False,
     ) -> None:
         # TRANSACTIONS ARE STORED AS A LIST OF (tr_id, st_id) AND
         # AN INDEX USED TO NAVIGATE THROUGH THE DIFFERENT tuples.
@@ -902,8 +918,7 @@ class QueryProfiler:
         ):
             raise ValueError(
                 "When 'transactions' is not defined, a 'key_id' and a "
-                "'target_schema' "
-                "must be defined to retrieve all the "
+                "'target_schema' must be defined to retrieve all the "
                 "transactions."
             )
 
@@ -919,7 +934,21 @@ class QueryProfiler:
             )
 
         # CHECKING key_id; CREATING ONE IF IT DOES NOT EXIST.
-        if isinstance(key_id, NoneType):
+        if isinstance(key_id, NoneType) or (
+            not (isinstance(transactions, NoneType)) and not (overwrite)
+        ):
+            if not (isinstance(key_id, NoneType)) and (
+                not (isinstance(transactions, NoneType)) and not (overwrite)
+            ):
+                warning_message = (
+                    f"Parameter 'transactions' is not None, "
+                    "'key_id' is defined and parameter 'overwrite' "
+                    "is set to False. It means you are trying to "
+                    "use a potential existing key to store new "
+                    "transactions. This operation is not yet "
+                    "supported. A new key will be then generated."
+                )
+                warnings.warn(warning_message, Warning)
             self.key_id = str(uuid.uuid1()).replace("-", "")
         else:
             if isinstance(key_id, int):
@@ -958,19 +987,38 @@ class QueryProfiler:
                     WHERE session_id = (SELECT current_session())
                       AND is_executing='f'
                     ORDER BY start_timestamp DESC LIMIT 1;"""
-                transaction_id, statement_id = _executeSQL(
+                res = _executeSQL(
                     query,
                     title="Getting transaction_id, statement_id.",
                     method="fetchrow",
                 )
-                self.transactions += [(transaction_id, statement_id)]
+                if not isinstance(res, NoneType):
+                    transaction_id, statement_id = res[0], res[1]
+                    self.transactions += [(transaction_id, statement_id)]
+                else:
+                    warning_message = (
+                        f"No transaction linked to query: {request}."
+                        "\nIt might be still running. This transaction"
+                        " will be skipped."
+                    )
+                    warnings.warn(warning_message, Warning)
 
         if len(self.transactions) == 0 and isinstance(key_id, NoneType):
             raise ValueError("No transactions found.")
 
         elif len(self.transactions) != 0:
-            self.transaction_id = self.transactions[0][0]
-            self.statement_id = self.transactions[0][1]
+            if (len(self.transactions[0]) > 0) and isinstance(
+                self.transactions[0][0], int
+            ):
+                self.transaction_id = self.transactions[0][0]
+            else:
+                self.transaction_id = 1
+            if (len(self.transactions[0]) > 1) and isinstance(
+                self.transactions[0][1], int
+            ):
+                self.statement_id = self.transactions[0][1]
+            else:
+                self.statement_id = 1
 
         # BUILDING THE target_schema.
         if target_schema == "v_temp_schema":
@@ -986,19 +1034,14 @@ class QueryProfiler:
         self.overwrite = overwrite
         self._create_copy_v_table()
 
-        # SETTING THE requests.
+        # SETTING THE requests AND queries durations.
         if conf.get_option("print_info"):
-            print("Setting the requests...")
-        self._set_request()
-
-        # SETTING THE queries durations.
-        if conf.get_option("print_info"):
-            print("Setting the queries durations...")
-        self._set_qduration()
+            print("Setting the requests and queries durations...")
+        self._set_request_qd()
 
         # WARNING MESSAGES.
         if check_tables:
-            self._check_v_table()
+            self._check_v_table(iterchecks=iterchecks)
 
     # Tools
 
@@ -1302,22 +1345,64 @@ class QueryProfiler:
                         warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
 
-    def _check_v_table(self) -> None:
+    def _check_v_table(self, iterchecks: bool = True) -> None:
         """
         Checks if all the transactions
-        exist in all the different tables.
+        exist in all the different
+        tables.
+
+        Parameters
+        ----------
+        iterchecks: bool, optional
+            If set to ``True``, the checks are done
+            iteratively instead of using a unique
+            SQL query. Usually checks are faster
+            when this parameter is set to ``False``.
+
+            .. note::
+
+                This parameter is used only when
+                ``check_tables is True``.
         """
         tables = list(self._v_table_dict().keys())
         tables_schema = self._v_table_dict()
         config_table = self._v_config_table_list()
         warning_message = ""
         loop = self.transactions
-        if conf.get_option("print_info"):
-            print("Checking all the tables consistency...")
-        if conf.get_option("tqdm"):
-            loop = tqdm(loop, total=len(loop))
-        for tr_id, st_id in loop:
-            for table_name in tables:
+        if iterchecks:
+            if conf.get_option("tqdm"):
+                loop = tqdm(loop, total=len(loop))
+            if conf.get_option("print_info"):
+                print("Checking all the tables consistency iteratively...")
+            for tr_id, st_id in loop:
+                for table_name in tables:
+                    if table_name not in config_table:
+                        if len(self.target_tables) == 0:
+                            sc, tb = tables_schema[table_name], table_name
+                        else:
+                            tb = self.target_tables[table_name]
+                            schema = tables_schema[table_name]
+                            sc = self.target_schema[schema]
+                        query = f"""
+                            SELECT
+                                transaction_id,
+                                statement_id
+                            FROM {sc}.{tb}
+                            WHERE
+                                transaction_id = {tr_id}
+                            AND statement_id = {st_id}
+                            LIMIT 1"""
+                        res = _executeSQL(
+                            query,
+                            title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
+                            method="fetchall",
+                        )
+                        if not (res):
+                            warning_message += f"({tr_id}, {st_id}) -> {sc}.{tb}\n"
+        else:
+            select = ["q0.transaction_id", "q0.statement_id"]
+            jointables, relations = [], []
+            for idx, table_name in enumerate(tables):
                 if table_name not in config_table:
                     if len(self.target_tables) == 0:
                         sc, tb = tables_schema[table_name], table_name
@@ -1325,28 +1410,57 @@ class QueryProfiler:
                         tb = self.target_tables[table_name]
                         schema = tables_schema[table_name]
                         sc = self.target_schema[schema]
-                    query = f"""
-                        SELECT
-                            transaction_id,
-                            statement_id
-                        FROM {sc}.{tb}
-                        WHERE
-                            transaction_id = {tr_id}
-                        AND statement_id = {st_id}
-                        LIMIT 1"""
-                    res = _executeSQL(
-                        query,
-                        title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
-                        method="fetchall",
+                    select += [f"q{idx}.row_count AS {tb}"]
+                    current_table = (
+                        "(SELECT transaction_id, statement_id, COUNT(*) AS"
+                        f" row_count FROM {sc}.{tb} GROUP BY 1,2) q{idx}"
                     )
-                    if not (res):
-                        warning_message += f"({tr_id}, {st_id}) -> {sc}.{tb}\n"
+                    if idx != 0:
+                        current_table += " USING (transaction_id, statement_id)"
+                    jointables += [current_table]
+                    relations += [f"{sc}.{tb}"]
+            if conf.get_option("print_info"):
+                print("Checking all the tables consistency using a single SQL query...")
+            query = (
+                "SELECT "
+                + ", ".join(select)
+                + " FROM "
+                + " FULL JOIN ".join(jointables)
+            )
+            res = _executeSQL(
+                query,
+                title=f"Checking all transactions.",
+                method="fetchall",
+            )
+            if len(res) == 0:
+                warning_message = (
+                    "No transaction found. Please check the system tables."
+                )
+            else:
+                n = len(res[0])
+                transactions_dict = {}
+                for row in res:
+                    transactions_dict[(row[0], row[1])] = {}
+                    for idx in range(2, n):
+                        transactions_dict[(row[0], row[1])][relations[idx - 2]] = row[
+                            idx
+                        ]
+                for tr_id, st_id in loop:
+                    if (tr_id, st_id) not in transactions_dict:
+                        warning_message += f"({tr_id}, {st_id}) -> all tables\n"
+                    else:
+                        for rel in relations:
+                            nb_elem = transactions_dict[(tr_id, st_id)][rel]
+                            if isinstance(nb_elem, NoneType) or nb_elem == 0:
+                                warning_message += f"({tr_id}, {st_id}) -> {rel}\n"
         if len(warning_message) > 0:
             warning_message = "\nSome transactions are missing:\n\n" + warning_message
         missing_column = ""
         inconsistent_dt = ""
         table_name_list = list(self._v_table_dict())
         n = len(self.tables_dtypes)
+        if conf.get_option("print_info"):
+            print("Checking all the tables data types...")
         for i in range(n):
             table_name = table_name_list[i]
             table_1 = self.v_tables_dtypes[i]
@@ -1380,66 +1494,52 @@ class QueryProfiler:
             )
             warnings.warn(warning_message, Warning)
 
-    def _set_request(self):
+    def _set_request_qd(self):
         """
         Computes and sets the current
         ``transaction_id`` requests.
         """
         self.requests = []
         self.request_labels = []
-        for tr_id, st_id in self.transactions:
-            query = f"""
-                SELECT 
-                    request, label
-                FROM v_internal.dc_requests_issued 
-                WHERE transaction_id = {tr_id}
-                  AND   statement_id = {st_id};"""
-            query = self._replace_schema_in_query(query)
-            try:
-                res = _executeSQL(
-                    query,
-                    title="Getting the corresponding query",
-                    method="fetchrow",
-                )
-                self.requests += [res[0]]
-                self.request_labels += [res[1]]
-            except TypeError:
-                raise QueryError(
-                    f"No transaction with transaction_id={tr_id} "
-                    f"and statement_id={st_id} was found in the "
-                    "v_internal.dc_requests_issued table."
-                )
-        self.request = self.requests[self.transactions_idx]
-
-    def _set_qduration(self):
-        """
-        Computes and sets the current
-        ``transaction_id`` request.
-        """
         self.qdurations = []
+        query = f"""
+            SELECT 
+                q0.transaction_id, 
+                q0.statement_id, 
+                request, 
+                label, 
+                query_duration_us
+            FROM 
+            v_internal.dc_requests_issued AS q0
+            FULL JOIN
+            v_monitor.query_profiles AS q1 
+            USING (transaction_id, statement_id);"""
+        query = self._replace_schema_in_query(query)
+        res = _executeSQL(
+            query,
+            title="Getting the corresponding query",
+            method="fetchall",
+        )
+        transactions_dict = {}
+        for row in res:
+            transactions_dict[(row[0], row[1])] = {
+                "request": row[2],
+                "label": row[3],
+                "query_duration_us": row[4],
+            }
         for tr_id, st_id in self.transactions:
-            query = f"""
-                SELECT
-                    query_duration_us 
-                FROM 
-                    v_monitor.query_profiles 
-                WHERE 
-                    transaction_id={tr_id} AND 
-                    statement_id={st_id};"""
-            query = self._replace_schema_in_query(query)
-            try:
-                res = _executeSQL(
-                    query,
-                    title="Getting the corresponding query duration.",
-                    method="fetchfirstelem",
-                )
-                self.qdurations += [res]
-            except TypeError:
+            if (tr_id, st_id) not in transactions_dict:
                 raise QueryError(
                     f"No transaction with transaction_id={tr_id} "
                     f"and statement_id={st_id} was found in the "
                     "v_internal.dc_requests_issued table."
                 )
+            else:
+                info = transactions_dict[(tr_id, st_id)]
+                self.requests += [info["request"]]
+                self.request_labels += [info["label"]]
+                self.qdurations += [info["query_duration_us"]]
+        self.request = self.requests[self.transactions_idx]
         self.qduration = self.qdurations[self.transactions_idx]
 
     # Navigation
@@ -1816,7 +1916,12 @@ class QueryProfiler:
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
         )
         if return_html:
-            return res[1]
+            return format_query(
+                query=self.request,
+                indent_sql=indent_sql,
+                print_sql=print_sql,
+                only_html=True,
+            )
         return res[0]
 
     # Step 2: Query duration
@@ -2122,21 +2227,12 @@ class QueryProfiler:
         path_id: Optional[int] = None,
         path_id_info: Optional[list] = None,
         show_ancestors: bool = True,
-        metric: Literal[
-            None,
-            "cost",
-            "rows",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            "cstall_us",
-            "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
-        ] = "rows",
+        metric: Union[
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
+        ] = ["exec_time_ms", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
         **tree_style,
@@ -2164,18 +2260,20 @@ class QueryProfiler:
             the following:
 
             - None (no specific color)
+
+            - bytes_spilled
+            - clock_time_us
             - cost
-            - rows
-            - exec_time_ms
+            - cstall_us
+            - exec_time_ms (default)
             - est_rows
+            - mem_all_mb
+            - mem_res_mb
             - proc_rows
             - prod_rows
-            - rle_prod_rows
-            - clock_time_us
-            - cstall_us
             - pstall_us
-            - mem_res_mb
-            - mem_all_mb
+            - rle_prod_rows
+            - rows
 
             It can also be a ``list`` or
             a ``tuple`` of two metrics.
@@ -2196,6 +2294,7 @@ class QueryProfiler:
                 and two metrics are
                 used, two legends will
                 be drawn.
+                Default: True
             - color_low:
                 Color used as the lower
                 bound of the gradient.
@@ -2248,6 +2347,10 @@ class QueryProfiler:
                 Information box font
                 size.
                 Default: 8
+            - storage_access:
+                Maximum number of chars of
+                the storage access box.
+                Default: 9
             - network_edge:
                 If set to ``True`` the
                 network edges will all
@@ -2858,7 +2961,9 @@ class QueryProfiler:
                 ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
                     counter_value ELSE NULL END) / 1000000, 1.0) AS mem_res_mb,
                 ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
-                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb
+                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb,
+                SUM(CASE TRIM(counter_name) WHEN 'bytes spilled' THEN
+                    counter_value ELSE NULL END) AS bytes_spilled
             FROM
                 v_monitor.execution_engine_profiles
             WHERE
@@ -2878,19 +2983,7 @@ class QueryProfiler:
     def get_qexecution(
         self,
         node_name: Union[None, str, list] = None,
-        metric: Literal[
-            "all",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            "cstall_us",
-            "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
-        ] = "exec_time_ms",
+        metric: str = "exec_time_ms",
         path_id: Optional[int] = None,
         kind: Literal[
             "bar",
@@ -2934,16 +3027,17 @@ class QueryProfiler:
         metric: str, optional
             Metric to use. One of the following:
             - all (all metrics are used).
-            - exec_time_ms (default)
-            - est_rows
-            - proc_rows
-            - prod_rows
-            - rle_prod_rows
+            - bytes_spilled
             - clock_time_us
             - cstall_us
-            - pstall_us
-            - mem_res_mb
+            - exec_time_ms (default)
+            - est_rows
             - mem_all_mb
+            - mem_res_mb
+            - proc_rows
+            - prod_rows
+            - pstall_us
+            - rle_prod_rows
         path_id: str
             Path ID.
         kind: str, optional
@@ -3084,18 +3178,9 @@ class QueryProfiler:
                     "Plots with metric='all' is only available for Plotly Integration."
                 )
             figs = []
-            all_metrics = [
-                "exec_time_ms",
-                "est_rows",
-                "proc_rows",
-                "prod_rows",
-                "rle_prod_rows",
-                "clock_time_us",
-                "cstall_us",
-                "pstall_us",
-                "mem_res_mb",
-                "mem_all_mb",
-            ]
+            all_metrics = QprofUtility._get_metrics()
+            for metric in [None, "cost", "rows"]:
+                all_metrics.remove(metric)
             for metric in all_metrics:
                 figs += [
                     self.get_qexecution(
@@ -3250,3 +3335,227 @@ class QueryProfiler:
         query = """SELECT * FROM v_monitor.host_resources;"""
         query = self._replace_schema_in_query(query)
         return vDataFrame(query)
+
+    def export_profile(self, filename: os.PathLike) -> None:
+        """
+        The ``export_profile()`` method provides a high-level
+        interface for creating an export bundle of parquet files from a
+        QueryProfiler instance.
+
+        The export bundle is a tarball. Inside the tarball there are:
+            * ``profile_meta.json``, a file with some information about
+            the other files in the tarball
+            * Several ``.parquet`` files. There is one ``.parquet`` for
+            each system table that
+            py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+            uses to analyze query performance.
+            * For example, there is a file called ``dc_requests_issued.parquet``.
+
+        Parameters
+        --------------
+        filename: os.PathLike
+            The name of the export bundle to be produced. The input type is
+            a synonym for a string or a ``pathlib.Path``.
+
+        Returns
+        -------------
+
+        Returns None. Produces ``filename``.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+            from verticapy.performance.vertica.collection.profile_export import ProfileExport
+
+        Now we can profile a query and create a set of system table replicas
+        by calling the ``QueryProfiler`` constructor:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;",
+                target_schema="replica_001",
+                key_id="example123"
+            )
+
+        The parameter ``target_schema`` tells the QueryProfiler to create a
+        set of replica tables. The parameter ``key_id`` specifies a suffix for all
+        of the replica tables associated with this profile. The replica tables are
+        a snapshot of the system tables. The replica tables are filtered to contain
+        only the information relevant to the query that we have profiled.
+
+        Now we can use ``export_profile`` to produce an export bundle.
+        We choose to name our export bundle ``"query_requests_example_001.tar"``.
+
+        .. code-block:: python
+
+            qprof.export_profile(filename="query_requests_example_001.tar")
+
+
+        After producing an export bundle, we can examine the file contents using
+        any tool that read tar-format files. For instance, we can use the tarfile
+        library to print the names of all files in the tarball
+
+        .. code-block:: python
+
+            tfile = tarfile.open("query_requests_example_001.tar")
+            for f in tfile.getnames():
+                print(f"Tarball contains path: {f}")
+
+        The output will be:
+
+        .. code-block::
+
+            Tarball contains path: dc_explain_plans.parquet,
+            Tarball contains path: dc_query_executions.parquet
+            ...
+
+        """
+
+        if isinstance(self.target_schema, NoneType) or len(self.target_schema) == 0:
+            raise ValueError(
+                "Export requires that target_schema is set."
+                f" Current value of target_schema: {self.target_schema}"
+            )
+
+        # Target schema is a dictionary of values
+        unique_schemas = set([x for x in self.target_schema.values()])
+        if len(unique_schemas) != 1:
+            raise ValueError(f"Expected one unique schema, but found {unique_schemas}")
+        actual_schema = unique_schemas.pop()
+        exp = ProfileExport(
+            target_schema=actual_schema, key=self.key_id, filename=filename
+        )
+
+        exp.export()
+
+    @staticmethod
+    def import_profile(
+        target_schema: str,
+        key_id: str,
+        filename: os.PathLike,
+        tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp"),
+    ):
+        """
+        The static method ``import_profile`` can be used to create new
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler` object
+        from the contents of a export bundle.
+
+        Export bundles can be produced
+        by the method
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile`.
+        The bundles contain system table data written into parquet files.
+
+        The method ``import_profile`` executes the following steps:
+            * Unpacks the profie bundle
+            * Creates tables in the in the target schema if they do not
+              exist. The tables will be suffixed by ``key_id``.
+            * Copies the data from the parquet files into the tables
+            * Creates a ``QueryProfiler`` object initialized to use
+              data from the newly created and loaded tables.
+
+        The method returns the new ``QueryProfiler`` object.
+
+        Parameters
+        ------------
+        target_schema: str
+            The name of the schema to load data into
+        key_id: str
+            The suffix for table names in the target_schema
+        filename: os.PathLike
+            The file containing exported profile data
+        tmp_dir: os.PathLike
+            The directory to use for temporary storage of unpacked
+            files.
+
+
+        Returns
+        ----------
+        A QueryProfiler object
+
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+            from verticapy.performance.vertica.collection.profile_export import ProfileExport
+
+        Now we can profile a query and create a set of system table replicas
+        by calling the ``QueryProfiler`` constructor:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;",
+                target_schema="replica_001",
+                key_id="example123"
+            )
+
+        We can use ``export_profile`` to produce an export bundle.
+        We choose to name our export bundle ``"query_requests_example_001.tar"``.
+
+        .. code-block:: python
+
+            qprof.export_profile(filename="query_requests_example_001.tar")
+
+        After producing an export bundle, we can import it into a different
+        schema using ``import_profile``. For purposes of this example, we'll
+        import the data into another schema in the same database. We expect
+        it is more common to import the bundle into another database.
+
+        Let's use the import schema name ``import_002``, which is distinct from
+        the source schema ``replica_001``.
+
+        .. code-block:: python
+
+            qprof_imported = QueryProfiler.import_profile(
+                target_schema="import_002",
+                key_id="ex9876",
+                filename="query_requests_example_001.tar"
+            )
+
+        Now we use the ``QueryProfiler`` to analyze the imported information. All
+        ``QueryProfiler`` methods are available. We'll use ``get_qduration()`` as
+        an example.
+
+        .. code-block:: python
+
+            print(f"First query duration was {qprof_imported.get_qduration()} seconds")
+
+        Let's assume the query had a duration of 3.14 seconds. The output will be:
+
+        .. code-block::
+
+            First query duration was 3.14 seconds
+
+
+        """
+        pi = ProfileImport(
+            # schema and target will be once this test copies
+            # files into a schema
+            target_schema=target_schema,
+            key=key_id,
+            filename=filename,
+        )
+        pi.tmp_path = tmp_dir if isinstance(tmp_dir, Path) else Path(tmp_dir)
+        pi.check_schema_and_load_file()
+        qp = QueryProfiler(target_schema=target_schema, key_id=key_id)
+
+        return qp

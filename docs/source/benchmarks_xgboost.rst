@@ -806,6 +806,7 @@ Comparison
 
   .. ipython:: python
     :suppress:
+    :okwarning:
 
     import plotly.express as px
     ml_tools = ['EON', 'Enterprise']
@@ -827,6 +828,7 @@ Comparison
 
   .. ipython:: python
     :suppress:
+    :okwarning:
 
     import plotly.express as px
     ml_tools = ['EON', 'Enterprise']

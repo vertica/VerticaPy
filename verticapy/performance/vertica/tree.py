@@ -25,8 +25,8 @@ import numpy as np
 import verticapy._config.config as conf
 from verticapy._utils._sql._format import schema_relation
 from verticapy._typing import NoneType
-from verticapy.performance.vertica.qprof_utility import QprofUtility
 
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 from verticapy.plotting.base import get_default_graphviz_options
 
 if conf.get_import_success("graphviz"):
@@ -62,16 +62,17 @@ class PerformanceTree:
         The following metrics work only
         if ``metric_value is not None``:
 
-        - exec_time_ms
-        - est_rows
-        - proc_rows
-        - prod_rows
-        - rle_prod_rows
+        - bytes_spilled
         - clock_time_us
         - cstall_us
-        - pstall_us
-        - mem_res_mb
+        - exec_time_ms (default)
+        - est_rows
         - mem_all_mb
+        - mem_res_mb
+        - proc_rows
+        - prod_rows
+        - pstall_us
+        - rle_prod_rows
 
         It can also be a ``list`` or
         ``tuple`` of metrics.
@@ -129,23 +130,10 @@ class PerformanceTree:
         rows: str,
         path_id: Optional[int] = None,
         metric: Union[
-            Literal[
-                None,
-                "cost",
-                "rows",
-                "exec_time_ms",
-                "est_rows",
-                "proc_rows",
-                "prod_rows",
-                "rle_prod_rows",
-                "clock_time_us",
-                "cstall_us",
-                "pstall_us",
-                "mem_res_mb",
-                "mem_all_mb",
-            ],
-            tuple,
-            list,
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
         ] = "rows",
         metric_value: Optional[dict] = None,
         show_ancestors: bool = True,
@@ -171,21 +159,7 @@ class PerformanceTree:
                 f"It has to be in [{', '.join([str(p) for p in self.path_order])}].\n"
                 f"Found {path_id}."
             )
-        available_metrics = [
-            None,
-            "cost",
-            "rows",
-            "exec_time_ms",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "clock_time_us",
-            "cstall_us",
-            "pstall_us",
-            "mem_res_mb",
-            "mem_all_mb",
-        ]
+        available_metrics = QprofUtility._get_metrics()
         if isinstance(metric, (str, NoneType)):
             metric = [metric]
         for me in metric:
@@ -280,16 +254,20 @@ class PerformanceTree:
             d["info_rowsize"] = 30
         if "info_fontsize" not in d:
             d["info_fontsize"] = 8
+        if "storage_access" not in d:
+            d["storage_access"] = 9
         if "display_operator" not in d:
             d["display_operator"] = True
         if "display_operator_edge" not in d:
             d["display_operator_edge"] = True
         if "two_legend" not in d:
-            d["two_legend"] = False
+            d["two_legend"] = True
         if "display_proj" not in d:
             d["display_proj"] = True
         if "display_etc" not in d:
             d["display_etc"] = True
+        if "network_edge" not in d:
+            d["network_edge"] = True
         if "network_edge" not in d:
             d["network_edge"] = True
         self.style = d
@@ -1037,11 +1015,13 @@ class PerformanceTree:
 
         Parameters
         ----------
-        label: str
+        label: int / str
             The node label.
         colors: list
             A ``list`` of one or
             two colors.
+        operator: str, optional
+            Operator Icon.
 
         Returns
         -------
@@ -1074,12 +1054,18 @@ class PerformanceTree:
             second_color = ""
             colspan = 3
         proj = ""
+        div = 1
+        if len(str(label)) > 2:
+            div = 1.5
+        if len(str(label)) > 3:
+            div = 2
         if self.style["display_proj"] and "Projection: " in operator:
             proj = operator.split("Projection: ")[1].split("\n")[0]
-            if len(proj) > 11:
+            ss = self.style["storage_access"]
+            if len(proj) > ss:
                 proj = schema_relation(proj, do_quote=False)[1]
-            if len(proj) > 11:
-                proj = proj[:11] + ".."
+            if len(proj) > ss:
+                proj = proj[:ss] + ".."
             proj = (
                 f'<TR><TD COLSPAN="{colspan}" WIDTH="{width}" '
                 f'HEIGHT="{height}" BGCOLOR="{fillcolor}" ><FONT '
@@ -1089,7 +1075,7 @@ class PerformanceTree:
         if self.style["display_operator"] and not (isinstance(operator_icon, NoneType)):
             operator_icon = (
                 f'<TD WIDTH="{width}" HEIGHT="{height}" '
-                f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
+                f'BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize / div}" '
                 f'COLOR="{fontcolor}">{operator_icon}</FONT></TD>'
             )
         else:
@@ -1099,7 +1085,7 @@ class PerformanceTree:
             f'cellpadding="0"><TR><TD WIDTH="{width}" '
             f'HEIGHT="{height}" BGCOLOR="{colors[0]}" ><FONT '
             f'COLOR="{colors[0]}">.</FONT></TD><TD WIDTH="{width}" '
-            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize}" '
+            f'HEIGHT="{height}" BGCOLOR="{fillcolor}"><FONT POINT-SIZE="{fontsize / div}" '
             f'COLOR="{fontcolor}">{label}</FONT></TD>{operator_icon}{second_color}'
             f"</TR>{proj}</TABLE>>"
         )
@@ -1148,14 +1134,18 @@ class PerformanceTree:
         for i in range(n):
             tooltip_metrics = "\n"
             for j, x in enumerate(me):
-                tooltip_metrics += f"\n{self.metric[j]}: {x[i]}"
+                me_j = QprofUtility._get_metrics_name(self.metric[j])
+                tooltip_metrics += f"\n{me_j}: {x[i]}"
             tree_id = self.path_order[i]
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             row = self._format_row(self.rows[i].replace('"', "'"))
             operator_icon = self._get_operator_icon(row)
             if not (isinstance(self.metric[0], NoneType)):
-                alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                if m_max - m_min != 0:
+                    alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                else:
+                    alpha = 1.0
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
@@ -1163,7 +1153,10 @@ class PerformanceTree:
             colors = [color]
             if len(self.metric) > 1:
                 if not (isinstance(self.metric[1], NoneType)):
-                    alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
+                    if m_max_2 - m_min_2 != 0:
+                        alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
+                    else:
+                        alpha = 1.0
                     colors += [self._generate_gradient_color(alpha)]
                 else:
                     colors += [self.style["fillcolor"]]
@@ -1326,6 +1319,8 @@ class PerformanceTree:
                 math.log(1 + self._get_metric(self.rows[i], me)) for i in range(n)
             ]
         m_min, m_max = min(all_metrics), max(all_metrics)
+        if m_min == m_max:
+            m_min = 0
         cats = [0.0, 0.25, 0.5, 0.75, 1.0]
         cats = [
             self._format_number(int(math.exp(x * (m_max - m_min) + m_min) - 1))
@@ -1340,9 +1335,10 @@ class PerformanceTree:
         if len(metric) == 1 and isinstance(metric[0], NoneType):
             legend = "Legend"
         elif len(metric) > 1:
-            legend = f"{metric[0]} | {metric[1]}"
+            legend = f"{QprofUtility._get_metrics_name(metric[0])} | "
+            legend += f"{QprofUtility._get_metrics_name(metric[1])}"
         else:
-            legend = metric[0]
+            legend = QprofUtility._get_metrics_name(metric[0])
         default_params = get_default_graphviz_options()
         bgcolor = default_params["legend_bgcolor"]
         fontcolor = default_params["legend_fontcolor"]

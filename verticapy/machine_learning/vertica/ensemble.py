@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import random
 from typing import Literal, Optional, Union
 import numpy as np
@@ -4236,19 +4237,20 @@ class IsolationForest(Clustering, Tree):
                 self.get_tree(i),
                 self.X,
             )
-            tree_d = {
-                "children_left": tree[0],
-                "children_right": tree[1],
-                "feature": tree[2],
-                "threshold": tree[3],
-                "value": tree[4],
-                "psy": self.psy_,
-            }
-            for idx in range(len(tree[5])):
-                if not tree[5][idx] and isinstance(tree_d["threshold"][idx], str):
-                    tree_d["threshold"][idx] = float(tree_d["threshold"][idx])
-            model = mm.BinaryTreeAnomaly(**tree_d)
-            trees += [model]
+            if tree:
+                tree_d = {
+                    "children_left": tree[0],
+                    "children_right": tree[1],
+                    "feature": tree[2],
+                    "threshold": tree[3],
+                    "value": tree[4],
+                    "psy": self.psy_,
+                }
+                for idx in range(len(tree[5])):
+                    if not tree[5][idx] and isinstance(tree_d["threshold"][idx], str):
+                        tree_d["threshold"][idx] = float(tree_d["threshold"][idx])
+                model = mm.BinaryTreeAnomaly(**tree_d)
+                trees += [model]
         self.trees_ = trees
 
     # I/O Methods.

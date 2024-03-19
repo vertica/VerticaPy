@@ -342,6 +342,7 @@ Colors
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = data["score1"].spider()
         fig.update_traces(marker = dict(color = "red"))
@@ -364,6 +365,7 @@ Colors
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = data["score1"].spider(by = "category")
         new_colors = ["red", "orange","green"]
@@ -459,6 +461,7 @@ Size
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = data["score1"].spider(by = "category", width = 300, height = 300)
         fig.write_html("figures/plotting_plotly_spider_custom_size.html")
@@ -525,6 +528,7 @@ Text
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = data["score1"].spider().update_layout(title_text = "Custom Title")
         fig.write_html("figures/plotting_plotly_spider_custom_main_title.html")
@@ -540,6 +544,7 @@ Text
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         fig = data["score1"].spider(by = "category", legend_title_text = "Custom Legend")
         fig.write_html("figures/plotting_plotly_spider_custom_title.html")

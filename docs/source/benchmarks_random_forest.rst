@@ -212,6 +212,7 @@ Comparison
 
     .. ipython:: python
       :suppress:
+      :okwarning:
 
       import plotly.graph_objects as go
       data = {
@@ -260,6 +261,7 @@ Comparison
 
     .. ipython:: python
       :suppress:
+      :okwarning:
 
       import plotly.graph_objects as go
       data = {
@@ -345,6 +347,7 @@ Comparison
 
     .. ipython:: python
       :suppress:
+      :okwarning:
 
       import plotly.graph_objects as go
       data = {
@@ -393,6 +396,7 @@ Comparison
 
     .. ipython:: python
       :suppress:
+      :okwarning:
 
       import plotly.graph_objects as go
       data = {
@@ -455,6 +459,7 @@ Dataset
 
   .. ipython:: python
     :suppress:
+    :okwarning:
 
     import plotly.express as px
     import pandas as pd
