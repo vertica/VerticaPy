@@ -20,3 +20,4 @@ statsmodels
 bs4
 ipywidgets
 pyarrow
+tensorflow
