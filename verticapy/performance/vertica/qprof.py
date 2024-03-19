@@ -3444,6 +3444,7 @@ class QueryProfiler:
         key_id: str,
         filename: os.PathLike,
         tmp_dir: os.PathLike = os.getenv("TMPDIR", "/tmp"),
+        auto_initialize: bool = True,
     ):
         """
         The static method ``import_profile`` can be used to create new
@@ -3556,6 +3557,5 @@ class QueryProfiler:
         )
         pi.tmp_path = tmp_dir if isinstance(tmp_dir, Path) else Path(tmp_dir)
         pi.check_schema_and_load_file()
-        qp = QueryProfiler(target_schema=target_schema, key_id=key_id)
-
-        return qp
+        if auto_initialize:
+            return QueryProfiler(target_schema=target_schema, key_id=key_id)
