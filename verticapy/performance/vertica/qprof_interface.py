@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import uuid
 from typing import Optional, Union
 
@@ -77,10 +78,10 @@ class QueryProfilerInterface(QueryProfiler):
         # Query Inofrmation - Query Text & Time
         self.query_display_info = widgets.HTML(
             value=f"""
-        <b>Execution Time:</b> {self.get_qduration()}
-        <b>Target Schema:</b> {self.target_schema}
-        <b>Transaction ID:</b> {self.transaction_id}
-        <b>Statement ID:</b> {self.statement_id}
+        <b>Execution Time:</b> {self.get_qduration()} <br>
+        <b>Target Schema:</b> {self.target_schema["v_internal"]} <br>
+        <b>Transaction ID:</b> {self.transaction_id} <br>
+        <b>Statement ID:</b> {self.statement_id} <br>
         <b>Key ID:</b> {self.key_id}
         """
         )
@@ -315,10 +316,10 @@ class QueryProfilerInterface(QueryProfiler):
         current_query = self.get_request(print_sql=False, return_html=True)
         self.query_display.children[0].value = current_query
         self.query_display_info.value = f"""
-        <b>Execution Time:</b> {self.get_qduration()}
-        <b>Target Schema:</b> {self.target_schema}
-        <b>Transaction ID:</b> {self.transaction_id}
-        <b>Statement ID:</b> {self.statement_id}
+        <b>Execution Time:</b> {self.get_qduration()} <br>
+        <b>Target Schema:</b> {self.target_schema["v_internal"]} <br>
+        <b>Transaction ID:</b> {self.transaction_id} <br>
+        <b>Statement ID:</b> {self.statement_id} <br>
         <b>Key ID:</b> {self.key_id}
         """
 
