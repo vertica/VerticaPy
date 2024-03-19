@@ -428,7 +428,9 @@ def current_cursor() -> Cursor:
 
 
 def vertica_connection(
-    section: Optional[str], dsn: Optional[str], config: Optional[dict]
+    section: Optional[str] = None,
+    dsn: Optional[str] = None,
+    config: Optional[dict] = None,
 ) -> Connection:
     """
     Reads the input DSN and
