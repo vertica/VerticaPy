@@ -14,18 +14,23 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from typing import Optional
 
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
 
+import verticapy._config.config as conf
+from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
 from verticapy.connection.global_connection import (
     get_global_connection,
     GlobalConnection,
 )
 from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
+from verticapy.connection.write import new_connection
+from verticapy.connection.oauth_manager import OAuthManager
 
 """
 Connecting to the DB.
@@ -124,7 +129,40 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
     if prev_conn and not prev_conn.closed():
         prev_conn.close()
     try:
-        gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
+        connection_config = read_dsn(section, dsn)
+        # if the user has provided a refresh token, do token refresh, update the config's oauth access token
+        if connection_config.get("oauth_refresh_token", False):
+            oauth_manager = OAuthManager(connection_config["oauth_refresh_token"])
+            oauth_manager.set_config(connection_config["oauth_config"])
+            connection_config[
+                "oauth_access_token"
+            ] = oauth_manager.get_access_token_using_refresh_token()
+            gb_conn.set_connection(
+                vertica_connection(section=None, dsn=None, config=connection_config)
+            )
+        else:
+            gb_conn.set_connection(
+                vertica_connection(section, dsn, config=None), section, dsn
+            )
+        if conf.get_option("print_info"):
+            print("Connected Successfully!")
+    except (ConnectionError, OAuthTokenRefreshError) as error:
+        print(
+            "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
+        )
+        new_connection(
+            conn_info=read_dsn(section, dsn), prompt=True, connect_attempt=False
+        )
+        try:
+            gb_conn.set_connection(
+                vertica_connection(section, dsn, config=None), section, dsn
+            )
+            if conf.get_option("print_info"):
+                print("Connected Successfully!")
+        except (ConnectionError, OAuthTokenRefreshError) as error:
+            print("Error persists:")
+            raise error
+
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
@@ -389,7 +427,11 @@ def current_cursor() -> Cursor:
 # Local Connection.
 
 
-def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
+def vertica_connection(
+    section: Optional[str] = None,
+    dsn: Optional[str] = None,
+    config: Optional[dict] = None,
+) -> Connection:
     """
     Reads the input DSN and
     creates a Vertica Database
@@ -397,7 +439,7 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
 
     Parameters
     ----------
-    section: str
+    section: str, optional
         Name of the section in
         the configuration file.
     dsn: str, optional
@@ -406,6 +448,11 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
         the ``VERTICAPY_CONNECTION``
         environment variable will
         be used.
+    config: dict, optional
+        Configuration object override
+        used to create a connection.
+        If specified, will ignore the
+        section and dsn properties.
 
     Returns
     -------
@@ -444,7 +491,11 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
         | :py:func:`~verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
-    return vertica_python.connect(**read_dsn(section, dsn))
+    return (
+        vertica_python.connect(**config)
+        if config
+        else vertica_python.connect(**read_dsn(section, dsn))
+    )
 
 
 # VerticaPy Lab Connection.

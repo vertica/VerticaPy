@@ -3,3 +3,4 @@ pytest-timeout
 tox
 vertica_python
 bs4
+requests

@@ -14,10 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
 
+from getpass import getpass
+import warnings
+import vertica_python
+
+import verticapy._config.config as conf
+from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
 from verticapy.connection.global_connection import get_global_connection
-from verticapy.connection.connect import connect
+from verticapy.connection.oauth_manager import OAuthManager
+from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
 
 
@@ -186,6 +192,8 @@ def new_connection(
     name: str = "vertica_connection",
     auto: bool = True,
     overwrite: bool = True,
+    connect_attempt: bool = True,
+    prompt: bool = False,
 ) -> None:
     """
     Saves the new connection in the VerticaPy
@@ -245,6 +253,12 @@ def new_connection(
         If set to ``True`` and the connection
         already exists, the existing connection
         will be overwritten.
+    connect_attempt: bool
+        If set to False, it will not attempt
+        to connect automatically.
+    prompt: bool, optional
+        If set to True, it will open a prompt
+        tp ask for ``oauth_refresh_token`` as well as ``client_secret``.
 
     Examples
     --------
@@ -276,6 +290,12 @@ def new_connection(
         | :py:func:`~verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
+    doPrintInfo = conf.get_option("print_info")
+
+    def _printInfo(info):
+        if doPrintInfo:
+            print(info)
+
     path = get_connection_file()
     confparser = get_confparser()
 
@@ -287,8 +307,34 @@ def new_connection(
                 "'overwrite' to True."
             )
         confparser.remove_section(name)
-
     confparser.add_section(name)
+
+    if prompt:
+        if not (oauth_access_token := getpass("Input OAuth Access Token:")):
+            _printInfo("Default value applied: Input left empty.")
+        else:
+            conn_info["oauth_access_token"] = oauth_access_token
+        if not (oath_refresh_token := getpass("Input OAuth Refresh Token:")):
+            _printInfo("Default value applied: Input left empty.")
+        else:
+            conn_info["oauth_refresh_token"] = oath_refresh_token
+        if not (
+            client_secret := getpass(
+                "Input OAuth Client Secret: (OTCAD and public client users should leave this blank)"
+            )
+        ):
+            _printInfo("Default value applied: Input left empty.")
+        else:
+            conn_info["oauth_config"]["client_secret"] = client_secret
+
+    if conn_info.get("oauth_refresh_token", False):
+        oauth_manager = OAuthManager(conn_info["oauth_refresh_token"])
+        oauth_manager.set_config(conn_info["oauth_config"])
+        conn_info[
+            "oauth_access_token"
+        ] = oauth_manager.get_access_token_using_refresh_token()
+        conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
+
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
 
@@ -298,7 +344,29 @@ def new_connection(
     if auto:
         change_auto_connection(name)
 
-    connect(name, path)
+    if connect_attempt:
+        # To prevent auto-connection. Needed for re-prompts in case of errors.
+        gb_conn = get_global_connection()
+        try:
+            gb_conn.set_connection(
+                vertica_python.connect(**read_dsn(name, path)), name, path
+            )
+        except (ConnectionError, OAuthTokenRefreshError) as e:
+            print(
+                "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
+            )
+            new_connection(
+                conn_info=read_dsn(name, path), prompt=True, connect_attempt=False
+            )
+            try:
+                gb_conn.set_connection(
+                    vertica_python.connect(**read_dsn(name, path)), name, path
+                )
+                if doPrintInfo:
+                    print("Connected Successfully!")
+            except (ConnectionError, OAuthTokenRefreshError) as error:
+                print("Error persists:")
+                raise error
 
 
 new_auto_connection = new_connection
