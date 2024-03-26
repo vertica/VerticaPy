@@ -1135,7 +1135,7 @@ class PerformanceTree:
             tooltip_metrics = "\n"
             for j, x in enumerate(me):
                 me_j = QprofUtility._get_metrics_name(self.metric[j])
-                tooltip_metrics += f"\n{me_j}: {x[i]}"
+                tooltip_metrics += f"\n{me_j}: {format(x[i],',')}"
             tree_id = self.path_order[i]
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id

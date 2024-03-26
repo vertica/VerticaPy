@@ -2455,7 +2455,16 @@ class QueryProfiler:
                 metric_value[me] = {}
                 for path_id_val, metric_val in res:
                     if not isinstance(metric_val, NoneType):
-                        metric_value[me][path_id_val] = float(metric_val)
+                        if me in [
+                            "proc_rows",
+                            "prod_rows",
+                            "rows",
+                            "rle_prod_rows",
+                            "est_rows",
+                        ]:  # Rows will always be integers
+                            metric_value[me][path_id_val] = int(metric_val)
+                        else:
+                            metric_value[me][path_id_val] = float(metric_val)
                     else:
                         metric_value[me][path_id_val] = 0
         obj = PerformanceTree(

@@ -79,7 +79,7 @@ class QueryProfilerInterface(QueryProfiler):
         self.query_display_info = widgets.HTML(
             value=f"""
         <b>Execution Time:</b> {self.get_qduration()} <br>
-        <b>Target Schema:</b> {self.target_schema["v_internal"]} <br>
+        <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
         <b>Statement ID:</b> {self.statement_id} <br>
         <b>Key ID:</b> {self.key_id}
@@ -317,7 +317,7 @@ class QueryProfilerInterface(QueryProfiler):
         self.query_display.children[0].value = current_query
         self.query_display_info.value = f"""
         <b>Execution Time:</b> {self.get_qduration()} <br>
-        <b>Target Schema:</b> {self.target_schema["v_internal"]} <br>
+        <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
         <b>Statement ID:</b> {self.statement_id} <br>
         <b>Key ID:</b> {self.key_id}
