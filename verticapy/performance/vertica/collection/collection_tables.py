@@ -714,6 +714,15 @@ class CollectionTable:
             file_name=file_name, table_type=self.table_type, exported_rows=pdf_rows
         )
 
+    def check_if_tables_already_exist(self) -> int:
+        # Check if a table already exists
+        return f"""
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS table_exists
+        FROM v_catalog.tables 
+        WHERE table_schema = '{self.schema}'
+        AND table_name = '{self.get_import_name_fq().split('.')[-1]}';
+        """
+
 
 def getAllCollectionTables(
     target_schema: str, key: str, version: BundleVersion

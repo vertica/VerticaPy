@@ -236,6 +236,15 @@ class ProfileImport:
             target_schema=self.target_schema, key=self.key, version=self.bundle_version
         )
         for ctable in all_tables.values():
+            if (
+                _executeSQL(ctable.check_if_tables_already_exist(), method="fetchall")[
+                    0
+                ][0]
+                == 1
+            ):
+                raise ProfileImportError(
+                    f"Schema '{self.target_schema}' and Key ID '{self.key}' are already in the database. Risk of overwriting data."
+                )
             self.logger.info(f"Running create statements for {ctable.name}")
             table_sql = ctable.get_create_table_sql()
             proj_sql = ctable.get_create_projection_sql()
