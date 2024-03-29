@@ -23,7 +23,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="verticapy",
-    version="1.0.2",
+    version="1.0.3",
     author="Badr Ouali",
     author_email="badr.ouali@vertica.com",
     url="https://github.com/vertica/VerticaPy",
