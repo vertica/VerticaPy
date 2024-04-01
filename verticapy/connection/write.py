@@ -327,13 +327,15 @@ def new_connection(
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
 
-    if conn_info.get("oauth_refresh_token", False):
-        oauth_manager = OAuthManager(conn_info["oauth_refresh_token"])
-        oauth_manager.set_config(conn_info["oauth_config"])
-        conn_info[
-            "oauth_access_token"
-        ] = oauth_manager.get_access_token_using_refresh_token()
-        conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
+    try:
+        if conn_info.get("oauth_refresh_token", False):
+            oauth_manager = OAuthManager(conn_info["oauth_refresh_token"])
+            oauth_manager.set_config(conn_info["oauth_config"])
+            conn_info["oauth_access_token"] = oauth_manager.do_token_refresh()
+            conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
+    except OAuthTokenRefreshError as error:
+        print("An error occured while refreshing your OAuth token")
+        raise error
 
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
@@ -351,7 +353,7 @@ def new_connection(
             gb_conn.set_connection(
                 vertica_python.connect(**read_dsn(name, path)), name, path
             )
-        except (ConnectionError, OAuthTokenRefreshError) as e:
+        except OAuthTokenRefreshError as e:
             print(
                 "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
             )
@@ -364,9 +366,15 @@ def new_connection(
                 )
                 if doPrintInfo:
                     print("Connected Successfully!")
-            except (ConnectionError, OAuthTokenRefreshError) as error:
+            except OAuthTokenRefreshError as error:
                 print("Error persists:")
                 raise error
+        except ConnectionError as error:
+            print(
+                "A connection error occured. Common reasons may be an invalid host, port, or, if requiring "
+                "OAuth and token refresh, this may be due to an incorrect or malformed token url."
+            )
+            raise error
 
 
 new_auto_connection = new_connection
