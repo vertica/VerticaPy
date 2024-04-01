@@ -134,9 +134,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         if connection_config.get("oauth_refresh_token", False):
             oauth_manager = OAuthManager(connection_config["oauth_refresh_token"])
             oauth_manager.set_config(connection_config["oauth_config"])
-            connection_config[
-                "oauth_access_token"
-            ] = oauth_manager.do_token_refresh()
+            connection_config["oauth_access_token"] = oauth_manager.do_token_refresh()
             gb_conn.set_connection(
                 vertica_connection(section=None, dsn=None, config=connection_config)
             )
@@ -146,7 +144,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             )
         if conf.get_option("print_info"):
             print("Connected Successfully!")
-    except (OAuthTokenRefreshError) as error:
+    except OAuthTokenRefreshError as error:
         print(
             "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
         )
@@ -159,10 +157,10 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             )
             if conf.get_option("print_info"):
                 print("Connected Successfully!")
-        except (OAuthTokenRefreshError) as error:
+        except OAuthTokenRefreshError as error:
             print("Error persists:")
             raise error
-    except(ConnectionError) as error:
+    except ConnectionError as error:
         print(
             "A connection error occured. Common reasons may be an invalid host, port, or, if requiring "
             "OAuth and token refresh, this may be due to an incorrect or malformed token url."
@@ -384,7 +382,7 @@ def current_connection() -> GlobalConnection:
 
                     conn = verticapylab_connection()
                     gb_conn.set_connection(conn)
-                    
+
                 except:
                     raise e
 
