@@ -326,6 +326,7 @@ def new_connection(
             _printInfo("Default value applied: Input left empty.")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
+
     try:
         if conn_info.get("oauth_refresh_token", False):
             oauth_manager = OAuthManager(conn_info["oauth_refresh_token"])
@@ -376,7 +377,6 @@ def new_connection(
                 "OAuth and token refresh, this may be due to an incorrect or malformed token url."
             )
             raise error
-            
 
 
 new_auto_connection = new_connection

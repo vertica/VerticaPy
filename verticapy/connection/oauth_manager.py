@@ -19,7 +19,6 @@ from __future__ import print_function, division, absolute_import, annotations
 
 import requests
 import warnings
-import datetime
 
 from urllib3.poolmanager import PoolManager
 from requests.adapters import HTTPAdapter
@@ -162,5 +161,5 @@ class OAuthManager:
         # If the token url is not set, get it from the discovery url
         if len(self.token_url) == 0:
             self.token_url = self._get_token_url_from_discovery_url()
-        
+
         return self.get_access_token_using_refresh_token()

@@ -22,7 +22,6 @@ from typing import Optional
 from verticapy._typing import NoneType
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.utils import get_confparser
-import datetime
 
 
 def available_connections() -> list[str]:
@@ -227,6 +226,7 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
                 conn_info[option_name] = ast.literal_eval(option_val)
             elif not option_name.startswith("env"):
                 conn_info[option_name] = option_val
+
         return conn_info
 
     else:
