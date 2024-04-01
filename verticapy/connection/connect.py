@@ -20,6 +20,7 @@ from typing import Optional
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
+import datetime
 
 import verticapy._config.config as conf
 from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
@@ -136,7 +137,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             oauth_manager.set_config(connection_config["oauth_config"])
             connection_config[
                 "oauth_access_token"
-            ] = oauth_manager.get_access_token_using_refresh_token()
+            ] = oauth_manager.do_token_refresh()
             gb_conn.set_connection(
                 vertica_connection(section=None, dsn=None, config=connection_config)
             )
@@ -146,7 +147,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             )
         if conf.get_option("print_info"):
             print("Connected Successfully!")
-    except (ConnectionError, OAuthTokenRefreshError) as error:
+    except (OAuthTokenRefreshError) as error:
         print(
             "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
         )
@@ -159,10 +160,15 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             )
             if conf.get_option("print_info"):
                 print("Connected Successfully!")
-        except (ConnectionError, OAuthTokenRefreshError) as error:
+        except (OAuthTokenRefreshError) as error:
             print("Error persists:")
             raise error
-
+    except(ConnectionError) as error:
+        print(
+            "A connection error occured. Common reasons may be an invalid host, port, or, if requiring "
+            "OAuth and token refresh, this may be due to an incorrect or malformed token url."
+        )
+        raise error
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
@@ -379,7 +385,6 @@ def current_connection() -> GlobalConnection:
 
                     conn = verticapylab_connection()
                     gb_conn.set_connection(conn)
-
                 except:
                     raise e
 
