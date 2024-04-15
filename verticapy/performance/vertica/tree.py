@@ -206,6 +206,7 @@ class PerformanceTree:
             )
 
     # Styling
+
     def _set_style(self, d: dict) -> None:
         """
         Sets the current tree style.
@@ -262,6 +263,8 @@ class PerformanceTree:
             d["display_operator_edge"] = True
         if "two_legend" not in d:
             d["two_legend"] = True
+        if "display_legend" not in d:
+            d["display_legend"] = True
         if "display_proj" not in d:
             d["display_proj"] = True
         if "display_etc" not in d:
@@ -270,9 +273,14 @@ class PerformanceTree:
             d["network_edge"] = True
         if "network_edge" not in d:
             d["network_edge"] = True
+        if "temp_relation_access" not in d:
+            d["temp_relation_access"] = []
+        elif isinstance(d["temp_relation_access"], str):
+            d["temp_relation_access"] = [d["temp_relation_access"]]
         self.style = d
 
     # Utils
+
     @staticmethod
     def _color_string_to_tuple(color_string: str) -> tuple[int, int, int]:
         """
@@ -440,6 +448,87 @@ class PerformanceTree:
     # Special Methods
 
     @staticmethod
+    def _is_temp_relation_access(row: str, return_name: bool = False) -> bool:
+        """
+        Returns ``True`` if
+        the row includes a
+        temporary relation
+        access.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+        return_name: bool, optional
+            If set to ``True`` the
+            name of the temporary
+            relation is returned.
+            If no relation was found,
+            it will return ``None``.
+
+        Returns
+        -------
+        bool
+            ``True`` if the row
+            includes a temporary
+            relation access..
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        res = "TEMP RELATION ACCESS for " in row
+        if return_name:
+            if res:
+                return row.split("TEMP RELATION ACCESS for ")[1].split(" ")[0]
+            return None
+        return res
+
+    def _belong_to_temp_relation(
+        self, ancestors: Union[int, list[int]], return_name: bool = False
+    ) -> bool:
+        """
+        Returns ``True`` if one of
+        the ``ancestors`` belong
+        to a temporary relation.
+
+        Parameters
+        ----------
+        ancestors: list
+            List of the ancestors.
+
+        Returns
+        -------
+        bool
+            ``True`` if one of the
+            ``ancestors`` belong to
+            a temporary relation.
+        return_name: bool, optional
+            If set to ``True`` the
+            name of the temporary
+            relation is returned.
+            If no relation was found,
+            it will return ``None``.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if isinstance(ancestors, int):
+            ancestors = [ancestors]
+        for i in ancestors:
+            correct_ancestor = False
+            for row in self.rows:
+                if QprofUtility._get_label(row, return_path_id=True) == i:
+                    correct_ancestor = True
+                    break
+            if self._is_temp_relation_access(row) and correct_ancestor:
+                return self._is_temp_relation_access(row, return_name)
+        return False
+
+    @staticmethod
     def _get_level(row: str) -> int:
         """
         Gets the level of the
@@ -556,6 +645,8 @@ class PerformanceTree:
             if isinstance(operator, NoneType):
                 return "?"
             if theme == "sphinx":
+                if "TEMP RELATION ACCESS" in operator:
+                    return "TA"
                 if "INSERT" in operator:
                     return "I"
                 elif "DELETE" in operator:
@@ -585,7 +676,9 @@ class PerformanceTree:
                 elif "FILTER" in operator or "Filter" in operator:
                     return "F"
             else:
-                if "INSERT" in operator:
+                if "TEMP RELATION ACCESS" in operator:
+                    return "⏳"
+                elif "INSERT" in operator:
                     return "📥"
                 elif "DELETE" in operator:
                     return "🗑️"
@@ -1059,10 +1152,14 @@ class PerformanceTree:
             div = 1.5
         if len(str(label)) > 3:
             div = 2
-        if self.style["display_proj"] and "Projection: " in operator:
-            proj = operator.split("Projection: ")[1].split("\n")[0]
+        tr_access = self._is_temp_relation_access(operator, return_name=True)
+        if self.style["display_proj"] and ("Projection: " in operator or tr_access):
+            if isinstance(tr_access, str) and tr_access in operator:
+                proj = tr_access
+            else:
+                proj = operator.split("Projection: ")[1].split("\n")[0]
             ss = self.style["storage_access"]
-            if len(proj) > ss:
+            if len(proj) > ss and tr_access:
                 proj = schema_relation(proj, do_quote=False)[1]
             if len(proj) > ss:
                 proj = proj[:ss] + ".."
@@ -1139,6 +1236,21 @@ class PerformanceTree:
             tree_id = self.path_order[i]
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
+            tr_ancestors = self._find_ancestors(tree_id, relationships)
+            belong_tr = self._belong_to_temp_relation(tr_ancestors)
+            display_tr = True
+            if belong_tr:
+                tr_name = self._belong_to_temp_relation(tr_ancestors, return_name=True)
+                if (
+                    self.style["temp_relation_access"]
+                    and tr_name not in self.style["temp_relation_access"]
+                ):
+                    display_tr = False
+            elif (
+                self.style["temp_relation_access"]
+                and "main" not in self.style["temp_relation_access"]
+            ):
+                display_tr = False
             row = self._format_row(self.rows[i].replace('"', "'"))
             operator_icon = self._get_operator_icon(row)
             if not (isinstance(self.metric[0], NoneType)):
@@ -1165,7 +1277,7 @@ class PerformanceTree:
                 colors,
                 operator=row,
             )
-            if tree_id in links:
+            if tree_id in links and display_tr:
                 tooltip = row
                 if "ARRAY" in row:
                     tooltip = row.split("ARRAY")[0] + "ARRAY[...]"
@@ -1208,6 +1320,16 @@ class PerformanceTree:
                         if "(ARRAY[...]" in tooltip:
                             tooltip += ")"
                     res += f'\t{100000 - tree_id} [label="...", tooltip="{tooltip}"];\n'
+            if self._is_temp_relation_access(row):
+                children = self._find_children(tree_id, relationships)
+                if children:
+                    tr_name = self._is_temp_relation_access(row, return_name=True)
+                    if (
+                        not (self.style["temp_relation_access"])
+                        or tr_name in self.style["temp_relation_access"]
+                    ):
+                        res += f'\t{100000 - tree_id} [label="{tr_name}", tooltip="TEMPORARY RELATION: {tr_name}"];\n'
+
         return res
 
     def _gen_links(self) -> str:
@@ -1239,6 +1361,22 @@ class PerformanceTree:
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             parent, child = relationships[i]
+            tr_ancestors = self._find_ancestors(tree_id, relationships)
+            is_tr_access = self._belong_to_temp_relation(parent)
+            belong_tr = self._belong_to_temp_relation(tr_ancestors)
+            display_tr = True
+            if belong_tr:
+                tr_name = self._belong_to_temp_relation(tr_ancestors, return_name=True)
+                if (
+                    self.style["temp_relation_access"]
+                    and tr_name not in self.style["temp_relation_access"]
+                ):
+                    display_tr = False
+            elif (
+                self.style["temp_relation_access"]
+                and "main" not in self.style["temp_relation_access"]
+            ):
+                display_tr = False
             parent_row = ""
             for j, lb in enumerate(self.path_order):
                 if lb == parent and j >= 0:
@@ -1251,7 +1389,7 @@ class PerformanceTree:
                     style = "dotted"
                 elif "R" in label:
                     style = "dashed"
-            if parent != child and child in links:
+            if parent != child and child in links and not (is_tr_access) and display_tr:
                 res += f'\t{parent} -> {child} [dir=back, label="{label}", style={style}, fontcolor="{color}"];\n'
             if (
                 self.style["display_etc"]
@@ -1259,6 +1397,8 @@ class PerformanceTree:
                 and not (isinstance(self.path_id, NoneType))
                 and nb_children[parent] > 1
                 and parent not in done
+                and not (is_tr_access)
+                and display_tr
             ):
                 children = self._find_children(parent, relationships)
                 other_children = []
@@ -1277,14 +1417,20 @@ class PerformanceTree:
                     color = self.style["edge_color"]
                     res += f'\t{parent} -> {node} [dir=back, label="{label}", fontcolor="{color}"];\n'
                 done += [parent]
+            if is_tr_access and display_tr:
+                node = 100000 - parent
+                color = self.style["edge_color"]
+                res += f'\t{node} -> {tree_id} [dir=back, fontcolor="{color}"];\n'
             if (
                 child == self.path_id
                 and tree_id != init_id
                 and self.show_ancestors
                 and parent not in done
+                and not (is_tr_access)
+                and display_tr
             ):
                 res += f'\t{parent} -> {tree_id} [dir=back, label="{label}", style={style}];\n'
-            if tree_id in self.path_id_info:
+            if tree_id in self.path_id_info and display_tr:
                 res += (
                     f'\t{info_bubble} -> {tree_id} [dir=none, color="{info_color}"];\n'
                 )
@@ -1387,7 +1533,9 @@ class PerformanceTree:
         else:
             res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
-        if len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType)):
+        if (
+            len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType))
+        ) and self.style["display_legend"]:
             if self.style["two_legend"] and len(self.metric) > 1:
                 res += self._gen_legend(metric=[self.metric[0]], idx=0)
                 res += self._gen_legend(metric=[self.metric[1]], idx=1)
@@ -1395,8 +1543,24 @@ class PerformanceTree:
                 res += self._gen_legend(metric=self.metric)
         else:
             res += "\n"
-        res += self._gen_labels() + "\n"
-        res += self._gen_links() + "\n"
+        if self.style["temp_relation_order"]:
+            TR_tmp = [f"TREL{i}" for i in self.style["temp_relation_order"]] + ["main"]
+            TR_final = []
+            for tr in TR_tmp:
+                if (
+                    not (self.style["temp_relation_access"])
+                    or tr in self.style["temp_relation_access"]
+                ):
+                    TR_final += [tr]
+            tmp_copy = copy.deepcopy(self)
+            tmp_copy.style["display_legend"] = False
+            for tr in TR_final:
+                tmp_copy.style["temp_relation_access"] = [tr]
+                res += tmp_copy._gen_labels() + "\n"
+                res += tmp_copy._gen_links() + "\n"
+        else:
+            res += self._gen_labels() + "\n"
+            res += self._gen_links() + "\n"
         res += "}"
         return res
 
