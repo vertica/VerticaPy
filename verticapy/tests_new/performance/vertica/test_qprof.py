@@ -169,7 +169,7 @@ class TestQueryProfiler:
         "dc_requests_issued",
         "dc_query_executions",
         "dc_explain_plans",
-        "execution_engine_profiles",
+        "dc_execution_engine_profiles",
         "query_plan_profiles",
         "query_profiles",
         "resource_pool_status",
@@ -1260,7 +1260,7 @@ class TestQueryProfiler:
                 followed by sorting based on key column(s).
 
         **Steps to get expected result**
-        - Step 5: Get cpu time from ``v_monitor.execution_engine_profiles`` table using ``transaction_id``
+        - Step 5: Get cpu time from ``v_internal.dc_execution_engine_profiles`` table using ``transaction_id``
                 and ``statement_id``, and repeat step 4
 
         **Steps to compare actual and expected results**
@@ -1278,7 +1278,7 @@ class TestQueryProfiler:
         )
 
         transaction_id, statement_id = qprof.transactions[0]
-        query = f"SELECT node_name, path_id, counter_value counter_value FROM v_monitor.execution_engine_profiles WHERE TRIM(counter_name) = 'execution time (us)' and transaction_id={transaction_id} AND statement_id={statement_id}"
+        query = f"SELECT node_name, path_id, counter_value counter_value FROM v_internal.dc_execution_engine_profiles WHERE TRIM(counter_name) = 'execution time (us)' and transaction_id={transaction_id} AND statement_id={statement_id}"
         expected_qprof_cpu_time_raw = vDataFrame(query)
 
         logger.info(actual_qprof_cpu_time_raw)
@@ -1334,7 +1334,7 @@ class TestQueryProfiler:
         - Step 3: convert return result to pandas dataframe followed by sorting based on key column(s).
 
         **Steps to get expected result**
-        - Step 4: Get query execution report from ``v_monitor.execution_engine_profiles``
+        - Step 4: Get query execution report from ``v_internal.dc_execution_engine_profiles``
                 table using ``transaction_id`` and ``statement_id``, and repeat step 3
 
         **Steps to compare actual and expected results**
@@ -1359,7 +1359,7 @@ class TestQueryProfiler:
 
         logger.info("<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
         transaction_id, statement_id = qprof_common.transactions[0]
-        query = f"SELECT node_name, operator_name, path_id FROM v_monitor.execution_engine_profiles WHERE transaction_id={transaction_id} AND statement_id={statement_id} group by node_name, operator_name, path_id"
+        query = f"SELECT node_name, operator_name, path_id FROM v_internal.dc_execution_engine_profiles WHERE transaction_id={transaction_id} AND statement_id={statement_id} group by node_name, operator_name, path_id"
         expected_qprof_qexecution_report = (
             vDataFrame(query)
             .to_pandas()

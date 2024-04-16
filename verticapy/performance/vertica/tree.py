@@ -277,6 +277,8 @@ class PerformanceTree:
             d["temp_relation_access"] = []
         elif isinstance(d["temp_relation_access"], str):
             d["temp_relation_access"] = [d["temp_relation_access"]]
+        if "temp_relation_order" not in d:
+            d["temp_relation_order"] = []
         self.style = d
 
     # Utils
