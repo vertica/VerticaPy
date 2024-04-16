@@ -1732,15 +1732,14 @@ class QueryProfiler:
             simplify the selection.
 
             Examples:
-
-             - dc_requests_issued
-             - dc_query_executions
+             - execution_engine_profiles
              - dc_explain_plans
+             - dc_query_executions
+             - dc_requests_issued
+             - host_resources
              - query_plan_profiles
              - query_profiles
-             - execution_engine_profiles
              - resource_pool_status
-             - host_resources
 
         Returns
         -------
@@ -2139,6 +2138,75 @@ class QueryProfiler:
         return vdf
 
     # Step 5: Query plan
+    def get_qplan_tr_order(
+        self,
+    ) -> list[int]:
+        """
+        Returns the Query Plan Temp
+        Relations Order.
+        It is used to sort correctly
+        the temporary relations in
+        the final Tree.
+
+        Returns
+        -------
+        list
+            List of the different
+            temp relations index.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily call the function to get
+        the final order:
+
+            .. ipython:: python
+
+                qprof._get_qplan_tr_order()
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        query = f"""
+            SELECT 
+                REGEXP_SUBSTR(step_label, '\\d+')::INT
+            FROM v_internal.dc_plan_steps
+            WHERE 
+                transaction_id={self.transaction_id}
+            AND statement_id={self.statement_id}
+            AND step_label ILIKE '%TempRelWrite%' 
+            ORDER BY step_key ASC;"""
+        query = self._replace_schema_in_query(query)
+        try:
+            # TEST does not yet support this table.
+            res = _executeSQL(
+                query,
+                title="Getting the corresponding query",
+                method="fetchall",
+            )
+            return list(dict.fromkeys([q[0] for q in res]))
+        except:
+            return []
+
     def get_qplan(
         self,
         return_report: bool = False,
@@ -2295,6 +2363,11 @@ class QueryProfiler:
                 used, two legends will
                 be drawn.
                 Default: True
+            - display_legend:
+                If set to ``True``
+                the legend is
+                displayed.
+                Default: True
             - color_low:
                 Color used as the lower
                 bound of the gradient.
@@ -2378,6 +2451,16 @@ class QueryProfiler:
                 to represent the ancestors
                 children when they have more
                 than 1.
+            - temp_relation_access:
+                ``list`` of the temporary
+                tables to display. ``main``
+                represents the main relation
+                plan.
+                Ex: ``['TREL8', 'main']``
+                will only display the
+                temporary relation 8
+                and the main relation.
+                Default: []
 
         Returns
         -------
@@ -2467,6 +2550,7 @@ class QueryProfiler:
                             metric_value[me][path_id_val] = float(metric_val)
                     else:
                         metric_value[me][path_id_val] = 0
+        tree_style["temp_relation_order"] = self.get_qplan_tr_order()
         obj = PerformanceTree(
             rows,
             show_ancestors=show_ancestors,
