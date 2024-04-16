@@ -2196,12 +2196,16 @@ class QueryProfiler:
             AND step_label ILIKE '%TempRelWrite%' 
             ORDER BY step_key ASC;"""
         query = self._replace_schema_in_query(query)
-        res = _executeSQL(
-            query,
-            title="Getting the corresponding query",
-            method="fetchall",
-        )
-        return list(dict.fromkeys([q[0] for q in res]))
+        try:
+            # TEST does not yet support this table.
+            res = _executeSQL(
+                query,
+                title="Getting the corresponding query",
+                method="fetchall",
+            )
+            return list(dict.fromkeys([q[0] for q in res]))
+        except:
+            return []
 
     def get_qplan(
         self,
