@@ -1183,7 +1183,7 @@ class QueryProfiler:
             "dc_requests_issued": "v_internal",
             "dc_query_executions": "v_internal",
             "dc_explain_plans": "v_internal",
-            "dc_execution_engine_profiles": "v_internal",
+            "execution_engine_profiles": "v_monitor",
             "query_events": "v_monitor",
             "query_plan_profiles": "v_monitor",
             "query_profiles": "v_monitor",
@@ -1732,7 +1732,7 @@ class QueryProfiler:
             simplify the selection.
 
             Examples:
-             - dc_execution_engine_profiles
+             - execution_engine_profiles
              - dc_explain_plans
              - dc_query_executions
              - dc_requests_issued
@@ -2959,7 +2959,7 @@ class QueryProfiler:
                 path_id::VARCHAR, 
                 counter_value
             FROM 
-                v_internal.dc_execution_engine_profiles 
+                v_monitor.execution_engine_profiles 
             WHERE 
                 TRIM(counter_name) = 'execution time (us)' AND 
                 transaction_id={self.transaction_id} AND 
@@ -3054,7 +3054,7 @@ class QueryProfiler:
                 SUM(CASE TRIM(counter_name) WHEN 'bytes spilled' THEN
                     counter_value ELSE NULL END) AS bytes_spilled
             FROM
-                v_internal.dc_execution_engine_profiles
+                v_monitor.execution_engine_profiles
             WHERE
                 transaction_id={self.transaction_id} AND
                 statement_id={self.statement_id} AND
