@@ -273,6 +273,8 @@ class PerformanceTree:
             d["network_edge"] = True
         if "network_edge" not in d:
             d["network_edge"] = True
+        if "use_temp_relation" not in d:
+            d["use_temp_relation"] = True
         if "temp_relation_access" not in d:
             d["temp_relation_access"] = []
         elif isinstance(d["temp_relation_access"], str):
@@ -449,8 +451,7 @@ class PerformanceTree:
 
     # Special Methods
 
-    @staticmethod
-    def _is_temp_relation_access(row: str, return_name: bool = False) -> bool:
+    def _is_temp_relation_access(self, row: str, return_name: bool = False) -> bool:
         """
         Returns ``True`` if
         the row includes a
@@ -480,6 +481,8 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
+        if not (self.style["use_temp_relation"]):
+            return False
         res = "TEMP RELATION ACCESS for " in row
         if return_name:
             if res:
