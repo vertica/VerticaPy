@@ -1640,6 +1640,8 @@ class PlottingBase(PlottingBaseSQL):
         else:
             columns = format_type(columns, dtype=list)
         columns, order_by = vdf.format_colnames(columns, order_by)
+        if order_by in columns:
+            columns.remove(order_by)
         X = vdf.between(
             column=order_by, start=order_by_start, end=order_by_end, inplace=False
         )[[order_by] + columns].sort(columns=[order_by])
