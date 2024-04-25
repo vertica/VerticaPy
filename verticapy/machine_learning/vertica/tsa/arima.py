@@ -3115,13 +3115,13 @@ class VAR(AR):
 
     .. code-block::
 
-        data.plot(ts = "month")
+        data.plot(ts = "month", columns = ["GB1", "GB2", "GB3"])
 
     .. ipython:: python
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = data.plot(ts = "month", width = 650)
+        fig = data.plot(ts = "month", columns = ["GB1", "GB2", "GB3"], width = 650)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_data_plot.html")
 
     .. raw:: html
