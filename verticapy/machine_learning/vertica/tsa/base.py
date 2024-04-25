@@ -342,6 +342,7 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int = 10,
         output_standard_errors: bool = False,
         output_index: bool = False,
+        use_index_as_suffix: bool = False,
     ) -> str:
         """
         Returns the SQL code
@@ -414,6 +415,10 @@ class TimeSeriesModelBase(VerticaModel):
         output_index: bool, optional
             ``boolean``, whether to return
             the index of each position.
+        use_index_as_suffix: bool, optional
+            [Only used for multivariates models]
+            If set to ``True``, indexes are used as
+            suffix instead of predictors names.
 
         Returns
         -------
@@ -510,9 +515,10 @@ class TimeSeriesModelBase(VerticaModel):
             else:
                 output_standard_errors = ""
             if self._ismultivar():
-                alias = ", ".join(
-                    [f"prediction{i}" for i in range(self.parameters["p"])]
-                )
+                if use_index_as_suffix:
+                    alias = ", ".join([f"prediction{i}" for i in range(len(self.y))])
+                else:
+                    alias = ", ".join([f"prediction_{col[1:-1]}" for col in self.y])
                 alias = f" AS (index, {alias})"
             else:
                 alias = ""
@@ -957,6 +963,7 @@ class TimeSeriesModelBase(VerticaModel):
         """
         ar_ma = False
         if self._model_type in (
+            "VAR",
             "AR",
             "MA",
         ):
@@ -989,13 +996,12 @@ class TimeSeriesModelBase(VerticaModel):
                 output_standard_errors or output_index or output_estimated_ts
             ),
             output_index=output_index,
+            use_index_as_suffix=use_index_as_suffix,
         )
         no_relation = True
         if self._ismultivar():
             if use_index_as_suffix:
-                prediction = ", ".join(
-                    [f"prediction{i}" for i in range(self.parameters["p"])]
-                )
+                prediction = ", ".join([f"prediction{i}" for i in range(len(self.y))])
             else:
                 prediction = ", ".join([f"prediction_{col[1:-1]}" for col in self.y])
         else:
