@@ -681,7 +681,12 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
             :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
-        n, k = len(self.y), self.parameters["p"] if "p" in self.parameters else self.parameters["order"][0]
+        n, k = (
+            len(self.y),
+            self.parameters["p"]
+            if "p" in self.parameters
+            else self.parameters["order"][0],
+        )
         fi = self._get_features_importance()
         if self._ismultivar() and not (0 <= idx < n):
             raise ValueError(
