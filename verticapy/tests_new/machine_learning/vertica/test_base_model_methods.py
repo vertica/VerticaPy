@@ -904,6 +904,7 @@ def get_model_params(model_class):
                 "penalty": "none",
                 "C": 1.0,
                 "missing": "linear_interpolation",
+                "subtract_mean": False,
             },
         ),
         **dict.fromkeys(
