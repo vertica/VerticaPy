@@ -73,6 +73,7 @@ MINIMUM_VERTICA_VERSION = {
     "StandardScaler": [8, 1, 0],
     "SVD": [9, 1, 0],
     "TensorFlowModel": [10, 0, 0],
+    "VAR": [24, 2, 1],
     "XGBClassifier": [11, 1, 0],
     "XGBRegressor": [11, 1, 0],
 }

@@ -553,7 +553,12 @@ def load_model(
             model.X = info[3].split(",")
         model.test_relation = test_relation if (test_relation) else model.input_relation
     elif model._model_category == "TIMESERIES":
-        model.y = info[2]
+        if '"' in info[2]:
+            model.y = eval("[" + info[2] + "]")
+        else:
+            model.y = info[2].split(",")
+        if len(model.y) <= 1:
+            model.y = model.y[0]
         model.ts = info[3]
         model.test_relation = test_relation if (test_relation) else model.input_relation
         if model._model_type == "ARIMA":

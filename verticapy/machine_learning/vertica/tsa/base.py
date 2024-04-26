@@ -26,11 +26,13 @@ import verticapy._config.config as conf
 from verticapy._typing import (
     PlottingObject,
     NoneType,
+    SQLColumns,
     SQLRelation,
 )
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import (
     clean_query,
+    format_type,
     quote_ident,
     schema_relation,
 )
@@ -85,27 +87,55 @@ class TimeSeriesModelBase(VerticaModel):
                 "mean_",
             ] + common_params
 
+    def _ismultivar(self) -> bool:
+        """
+        Returns ``True`` if the model
+        is multivariate.
+        """
+        try:
+            return (
+                self.get_vertica_attributes("num_predictors")["num_predictors"][0] > 1
+            )
+        except:
+            return False
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
         """
         Computes the model's attributes.
         """
-        coefficients = self.get_vertica_attributes("coefficients")
-        i = 1
-        if "p" in self.parameters:
+        if self._ismultivar():
             p = self.parameters["p"]
-            self.intercept_ = coefficients["value"][0]
+            self.intercept_ = np.array(self.get_vertica_attributes("mean")["value"])
+            minmax = (
+                vDataFrame(self.input_relation)[self.y]
+                .aggregate(["min", "max"])
+                .to_numpy()
+            )
+            self.min_ = minmax[:, 0]
+            self.max_ = minmax[:, 1]
+            self.phi_ = []
+            for i in range(1, p + 1):
+                phi = np.array(self.get_vertica_attributes(f"phi_(t-{i})").to_numpy())
+                self.phi_ += [phi[:, 1:].astype(float)]
+            self.phi_ = np.array(self.phi_)
         else:
-            self.mean_ = self.get_vertica_attributes("mean")["mean"][0]
-            if "order" in self.parameters:
-                p = self.parameters["order"][0]
-                i = 0
+            coefficients = self.get_vertica_attributes("coefficients")
+            i = 1
+            if "p" in self.parameters:
+                p = self.parameters["p"]
+                self.intercept_ = coefficients["value"][0]
             else:
-                p = 0
-            self.mu_ = coefficients["value"][0]
-        self.phi_ = np.array(coefficients["value"][i : p + i])
-        self.theta_ = np.array(coefficients["value"][p + i :])
+                self.mean_ = self.get_vertica_attributes("mean")["mean"][0]
+                if "order" in self.parameters:
+                    p = self.parameters["order"][0]
+                    i = 0
+                else:
+                    p = 0
+                self.mu_ = coefficients["value"][0]
+            self.phi_ = np.array(coefficients["value"][i : p + i])
+            self.theta_ = np.array(coefficients["value"][p + i :])
         try:
             self.mse_ = self.get_vertica_attributes("mean_squared_error")[
                 "mean_squared_error"
@@ -129,7 +159,7 @@ class TimeSeriesModelBase(VerticaModel):
         self,
         input_relation: SQLRelation,
         ts: str,
-        y: str,
+        y: SQLColumns,
         test_relation: SQLRelation = "",
         return_report: bool = False,
     ) -> Optional[str]:
@@ -146,8 +176,12 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class`vDataColumn` type must be
             ``date`` (``date``, ``datetime``,
             ``timestamp``...) or numerical.
-        y: str
+        y: SQLColumns
             Response column.
+
+            In the case of multivariate analysis,
+            it represents a ``list`` of all the
+            predictors.
         test_relation: SQLRelation, optional
             Relation used to test the model.
         return_report: bool, optional
@@ -229,7 +263,13 @@ class TimeSeriesModelBase(VerticaModel):
         else:
             self._is_already_stored(raise_error=True)
         self.ts = quote_ident(ts)
-        self.y = quote_ident(y)
+        y = format_type(y, dtype=list)
+        if len(y) > 1:
+            self.y = quote_ident(y)
+            y_str = ", ".join(self.y)
+        else:
+            self.y = quote_ident(y[0])
+            y_str = self.y
         tmp_view = False
         if isinstance(input_relation, vDataFrame) and self._is_native:
             tmp_view = True
@@ -245,7 +285,7 @@ class TimeSeriesModelBase(VerticaModel):
                     CREATE OR REPLACE VIEW {relation} AS 
                         SELECT 
                             /*+LABEL('learn.VerticaModel.fit')*/ 
-                            {self.ts}, {self.y}
+                            {self.ts}, {y_str}
                         FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
@@ -273,22 +313,23 @@ class TimeSeriesModelBase(VerticaModel):
                     {self._vertica_fit_sql}
                     ('{self.model_name}', 
                      '{relation}',
-                     '{self.y}',
+                     '{y_str}',
                      '{self.ts}' 
                      USING PARAMETERS 
                      {', '.join([f"{p} = {parameters[p]}" for p in parameters])})"""
             try:
                 _executeSQL(query, title="Fitting the model.")
+                self._compute_attributes()
             finally:
                 if tmp_view:
                     drop(relation, method="view")
-        self._compute_attributes()
-        if self._is_native:
             report = self.summarize()
             if return_report:
                 return report
             if conf.get_option("print_info"):
                 print(report)
+        else:
+            self._compute_attributes()
         return None
 
     # I/O Methods.
@@ -296,11 +337,12 @@ class TimeSeriesModelBase(VerticaModel):
     def deploySQL(
         self,
         ts: Optional[str] = None,
-        y: Optional[str] = None,
+        y: Optional[SQLColumns] = None,
         start: Optional[int] = None,
         npredictions: int = 10,
         output_standard_errors: bool = False,
         output_index: bool = False,
+        use_index_as_suffix: bool = False,
     ) -> str:
         """
         Returns the SQL code
@@ -315,8 +357,12 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class`vDataColumn` type must be
             ``date`` (``date``, ``datetime``,
             ``timestamp``...) or numerical.
-        y: str, optional
+        y: SQLColumns, optional
             Response column.
+
+            In the case of multivariate analysis,
+            it represents a ``list`` of all the
+            predictors.
         start: int, optional
             The behavior of the start parameter and its
             range of accepted values depends on whether
@@ -369,6 +415,10 @@ class TimeSeriesModelBase(VerticaModel):
         output_index: bool, optional
             ``boolean``, whether to return
             the index of each position.
+        use_index_as_suffix: bool, optional
+            [Only used for multivariates models]
+            If set to ``True``, indexes are used as
+            suffix instead of predictors names.
 
         Returns
         -------
@@ -451,9 +501,11 @@ class TimeSeriesModelBase(VerticaModel):
             else:
                 ts = "ORDER BY " + quote_ident(ts)
             if isinstance(y, NoneType):
-                y = ""
+                y_str = ""
+            elif isinstance(y, list):
+                y_str = ", ".join(quote_ident(y))
             else:
-                y = quote_ident(y)
+                y_str = quote_ident(y)
             if isinstance(start, NoneType):
                 start = ""
             else:
@@ -462,16 +514,24 @@ class TimeSeriesModelBase(VerticaModel):
                 output_standard_errors = f", output_standard_errors = true"
             else:
                 output_standard_errors = ""
+            if self._ismultivar():
+                if use_index_as_suffix:
+                    alias = ", ".join([f"prediction{i}" for i in range(len(self.y))])
+                else:
+                    alias = ", ".join([f"prediction_{col[1:-1]}" for col in self.y])
+                alias = f" AS (index, {alias})"
+            else:
+                alias = ""
             # Deployment
             sql = f"""
-                {self._vertica_predict_sql}({y}
+                {self._vertica_predict_sql}({y_str}
                                             USING PARAMETERS 
                                             model_name = '{self.model_name}',
                                             add_mean = True,
                                             {start}
                                             npredictions = {npredictions}
                                             {output_standard_errors}) 
-                                            OVER ({ts})"""
+                                            OVER ({ts}){alias}"""
             return clean_query(sql)
         else:
             raise AttributeError(
@@ -490,6 +550,16 @@ class TimeSeriesModelBase(VerticaModel):
             raise AttributeError(
                 "Features Importance can not be computed for Moving Averages."
             )
+        elif self._ismultivar():
+            res = []
+            n, k = len(self.y), self.parameters["p"]
+            for i in range(n):
+                fi_k = []
+                for m in range(k):
+                    fi_k += [self.phi_[m][i, :] * (self.max_ - self.min_)]
+                v = np.concatenate(fi_k)
+                res += [100.0 * v / sum(abs(v))]
+            self.features_importance_ = res
         else:
             self.features_importance_ = 100.0 * self.phi_ / sum(abs(self.phi_))
 
@@ -502,7 +572,11 @@ class TimeSeriesModelBase(VerticaModel):
         return copy.deepcopy(self.features_importance_)
 
     def features_importance(
-        self, show: bool = True, chart: Optional[PlottingObject] = None, **style_kwargs
+        self,
+        idx: int = 0,
+        show: bool = True,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
     ) -> PlottingObject:
         """
         Computes the model's
@@ -510,6 +584,10 @@ class TimeSeriesModelBase(VerticaModel):
 
         Parameters
         ----------
+        idx: int, optional
+            It represents the index of the
+            predictor for which we want to
+            compute the feature importance.
         show: bool, optional
             If set to ``True``, draw the
             feature's importance.
@@ -603,13 +681,35 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
             :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
+        n, k = (
+            len(self.y),
+            self.parameters["p"]
+            if "p" in self.parameters
+            else self.parameters["order"][0],
+        )
         fi = self._get_features_importance()
-        columns = [copy.deepcopy(self.y) + f"[t-{i + 1}]" for i in range(len(fi))]
+        if self._ismultivar() and not (0 <= idx < n):
+            raise ValueError(
+                "Parameter 'idx' represents the index of the predictor for "
+                "which we want to compute the feature importance. It should "
+                "be between 0 and the total number of predictors minus one"
+                f" ({len(self.y) - 1})"
+            )
+        if self._ismultivar():
+            fi = fi[idx]
+            columns = []
+            for m in range(k):
+                for i in range(n):
+                    columns += [f"{self.y[i]}[t-{m + 1}]"]
+            title = f"Importance [{self.y[idx]}] (%)"
+        else:
+            columns = [copy.deepcopy(self.y) + f"[t-{i + 1}]" for i in range(len(fi))]
+            title = "Importance (%)"
         if show:
             data = {
                 "importance": fi,
             }
-            layout = {"columns": columns}
+            layout = {"columns": columns, "x_label": title}
             vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="ImportanceBarChart",
                 chart=chart,
@@ -629,7 +729,7 @@ class TimeSeriesModelBase(VerticaModel):
         self,
         vdf: Optional[SQLRelation] = None,
         ts: Optional[str] = None,
-        y: Optional[str] = None,
+        y: Optional[SQLColumns] = None,
         start: Optional[int] = None,
         npredictions: int = 10,
         output_standard_errors: bool = False,
@@ -638,6 +738,7 @@ class TimeSeriesModelBase(VerticaModel):
         freq: Literal[None, "m", "months", "y", "year", "infer"] = "infer",
         filter_step: Optional[int] = None,
         method: Literal["auto", "forecast"] = "auto",
+        use_index_as_suffix: bool = False,
     ) -> vDataFrame:
         """
         Predicts using the input relation.
@@ -658,8 +759,12 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class`vDataColumn` type must be
             ``date`` (``date``, ``datetime``,
             ``timestamp``...) or numerical.
-        y: str, optional
+        y: SQLColumns, optional
             Response column.
+
+            In the case of multivariate analysis,
+            it represents a ``list`` of all the
+            predictors.
         start: int, optional
             The behavior of the start parameter and its
             range of accepted values depends on whether
@@ -772,6 +877,10 @@ class TimeSeriesModelBase(VerticaModel):
                 model's own predictions and does not
                 consider actual observations after the
                 start point.
+        use_index_as_suffix: bool, optional
+            [Only used for multivariates models]
+            If set to ``True``, indexes are used as
+            suffix instead of predictors names.
 
         Returns
         -------
@@ -859,6 +968,7 @@ class TimeSeriesModelBase(VerticaModel):
         """
         ar_ma = False
         if self._model_type in (
+            "VAR",
             "AR",
             "MA",
         ):
@@ -891,8 +1001,16 @@ class TimeSeriesModelBase(VerticaModel):
                 output_standard_errors or output_index or output_estimated_ts
             ),
             output_index=output_index,
+            use_index_as_suffix=use_index_as_suffix,
         )
         no_relation = True
+        if self._ismultivar():
+            if use_index_as_suffix:
+                prediction = ", ".join([f"prediction{i}" for i in range(len(self.y))])
+            else:
+                prediction = ", ".join([f"prediction_{col[1:-1]}" for col in self.y])
+        else:
+            prediction = "prediction"
         if not (isinstance(vdf, NoneType)):
             relation = vdf
             if not (isinstance(start, NoneType)) and str(method).lower() == "forecast":
@@ -918,7 +1036,7 @@ class TimeSeriesModelBase(VerticaModel):
             sql = f"""
                 SELECT 
                     ROW_NUMBER() OVER () + {j} - 1 AS idx,
-                    prediction{output_standard_errors}
+                    {prediction}{output_standard_errors}
                 FROM ({sql}) VERTICAPY_SUBTABLE"""
         if output_estimated_ts:
             if isinstance(freq, str):
@@ -971,7 +1089,7 @@ class TimeSeriesModelBase(VerticaModel):
             sql = f"""
                 SELECT
                     {estimation},
-                    prediction{stde_out}
+                    {prediction}{stde_out}
                 FROM ({sql}) VERTICAPY_SUBTABLE{where}"""
         return vDataFrame(clean_query(sql))
 
@@ -982,7 +1100,7 @@ class TimeSeriesModelBase(VerticaModel):
         start: Optional[int] = None,
         npredictions: Optional[int] = None,
         method: Literal["auto", "forecast"] = "auto",
-    ):
+    ) -> str:
         """
         Returns the relation needed to evaluate the
         model.
@@ -1008,16 +1126,32 @@ class TimeSeriesModelBase(VerticaModel):
             npredictions=npredictions,
             output_index=True,
             method=method,
+            use_index_as_suffix=True,
         )
+        if self._ismultivar():
+            y_str = ", ".join([f"{col} AS y_true{i}" for i, col in enumerate(self.y)])
+            prediction_str = ", ".join(
+                [
+                    f"prediction_relation.prediction{i} AS y_pred{i}"
+                    for i, col in enumerate(self.y)
+                ]
+            )
+            y_true_str = ", ".join(
+                [f"true_values.y_true{i}" for i, col in enumerate(self.y)]
+            )
+        else:
+            y_str = f"{self.y} AS y_true"
+            prediction_str = "prediction_relation.prediction AS y_pred"
+            y_true_str = "true_values.y_true"
         sql = f"""
             (SELECT
-                true_values.y_true,
-                prediction_relation.prediction AS y_pred
+                {y_true_str},
+                {prediction_str}
             FROM 
                 (
                     SELECT
                         ROW_NUMBER() OVER (ORDER BY {self.ts}) - 1 AS idx,
-                        {self.y} AS y_true
+                        {y_str}
                     FROM {test_relation}
                 ) AS true_values
                 NATURAL JOIN
@@ -1290,15 +1424,31 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
             :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
-        return mt.regression_report(
-            "y_true",
-            "y_pred",
-            self._evaluation_relation(
-                start=start, npredictions=npredictions, method=method
-            ),
-            metrics=metrics,
-            k=1,
-        )
+        if self._ismultivar():
+            for i in range(len(self.y)):
+                tmp_res = mt.regression_report(
+                    f"y_true{i}",
+                    f"y_pred{i}",
+                    self._evaluation_relation(
+                        start=start, npredictions=npredictions, method=method
+                    ),
+                    metrics=metrics,
+                    k=1,
+                )
+                if i == 0:
+                    res = {"index": tmp_res["index"]}
+                res[self.y[i]] = tmp_res["value"]
+            return TableSample(res)
+        else:
+            return mt.regression_report(
+                "y_true",
+                "y_pred",
+                self._evaluation_relation(
+                    start=start, npredictions=npredictions, method=method
+                ),
+                metrics=metrics,
+                k=1,
+            )
 
     report = regression_report
 
@@ -1311,7 +1461,7 @@ class TimeSeriesModelBase(VerticaModel):
         start: Optional[int] = None,
         npredictions: Optional[int] = None,
         method: Literal["auto", "forecast"] = "auto",
-    ) -> float:
+    ) -> Union[float, TableSample]:
         """
         Computes the model score.
 
@@ -1566,7 +1716,15 @@ class TimeSeriesModelBase(VerticaModel):
             arg += [1]
         if root or adj:
             arg += [True]
-        return fun(*arg)
+        if self._ismultivar():
+            res = {"index": [metric]}
+            for i in range(len(self.y)):
+                arg[0] = f"y_true{i}"
+                arg[1] = f"y_pred{i}"
+                res[self.y[i]] = [fun(*arg)]
+            return TableSample(res)
+        else:
+            return fun(*arg)
 
     # Plotting Methods.
 
@@ -1574,10 +1732,11 @@ class TimeSeriesModelBase(VerticaModel):
         self,
         vdf: Optional[SQLRelation] = None,
         ts: Optional[str] = None,
-        y: Optional[str] = None,
+        y: Optional[SQLColumns] = None,
         start: Optional[int] = None,
         npredictions: int = 10,
         method: Literal["auto", "forecast"] = "auto",
+        idx: int = 0,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1600,8 +1759,12 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class`vDataColumn` type must be
             ``date`` (``date``, ``datetime``,
             ``timestamp``...) or numerical.
-        y: str, optional
+        y: SQLColumns, optional
             Response column.
+
+            In the case of multivariate analysis,
+            it represents a ``list`` of all the
+            predictors.
         start: int, optional
             The behavior of the start parameter and its
             range of accepted values depends on whether
@@ -1667,6 +1830,10 @@ class TimeSeriesModelBase(VerticaModel):
                 model's own predictions and does not
                 consider actual observations after the
                 start point.
+        idx: int, optional
+            It represents the index of the
+            predictor for which we want to
+            draw the TS plot.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -1759,9 +1926,28 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class:`~verticapy.machine_learning.vertica.tsa.AR`;
             :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
-        dataset_provided = True
-        if isinstance(vdf, NoneType):
-            dataset_provided = False
+        dataset_provided = not (isinstance(vdf, NoneType))
+        y_str, n = self.y, len(self.y)
+        prediction = self.predict(
+            vdf=vdf,
+            ts=ts,
+            y=y,
+            start=start,
+            npredictions=npredictions,
+            output_standard_errors=True,
+            method=method,
+            use_index_as_suffix=True,
+        )
+        if self._ismultivar() and not (0 <= idx < n):
+            raise ValueError(
+                "Parameter 'idx' represents the index of the predictor for "
+                "which we want to compute the feature importance. It should "
+                "be between 0 and the total number of predictors minus one"
+                f" ({len(self.y) - 1})"
+            )
+        if self._ismultivar():
+            y_str = self.y[idx]
+            prediction = prediction[[f"prediction{idx}"]]
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="TSPlot",
             chart=chart,
@@ -1769,17 +1955,9 @@ class TimeSeriesModelBase(VerticaModel):
         )
         return vpy_plt.TSPlot(
             vdf=vDataFrame(self.input_relation),
-            columns=self.y,
+            columns=y_str,
             order_by=self.ts,
-            prediction=self.predict(
-                vdf=vdf,
-                ts=ts,
-                y=y,
-                start=start,
-                npredictions=npredictions,
-                output_standard_errors=True,
-                method=method,
-            ),
+            prediction=prediction,
             start=start,
             dataset_provided=dataset_provided,
             method=method,
