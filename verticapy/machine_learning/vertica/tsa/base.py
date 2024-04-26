@@ -1425,7 +1425,7 @@ class TimeSeriesModelBase(VerticaModel):
             :py:class:`~verticapy.machine_learning.vertica.tsa.MA`;
         """
         if self._ismultivar():
-            for i in range(self.parameters["p"]):
+            for i in range(len(self.y)):
                 tmp_res = mt.regression_report(
                     f"y_true{i}",
                     f"y_pred{i}",
@@ -1718,7 +1718,7 @@ class TimeSeriesModelBase(VerticaModel):
             arg += [True]
         if self._ismultivar():
             res = {"index": [metric]}
-            for i in range(self.parameters["p"]):
+            for i in range(len(self.y)):
                 arg[0] = f"y_true{i}"
                 arg[1] = f"y_pred{i}"
                 res[self.y[i]] = [fun(*arg)]
