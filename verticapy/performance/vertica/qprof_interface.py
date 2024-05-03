@@ -118,13 +118,13 @@ class QueryProfilerInterface(QueryProfiler):
 
         # graph headers
         self.cpu_header = widgets.HTML(
-            value=f"<h1><b>CPU Time by node and path_id - [transaction_idx: {self.index_widget.value}]</b></h1>"
+            value=f"<h1><b>CPU Time by node and path_id - [query_idx: {self.index_widget.value}]</b></h1>"
         )
         self.qpt_header = widgets.HTML(
-            value=f"<h1><b>Query Plan Tree - [transaction_idx: {self.index_widget.value}]</b></h1>"
+            value=f"<h1><b>Query Plan Tree - [query_idx: {self.index_widget.value}]</b></h1>"
         )
         self.qsteps_header = widgets.HTML(
-            value=f"<h1><b>Query Execution Steps - [transaction_idx: {self.index_widget.value}]</b></h1>"
+            value=f"<h1><b>Query Execution Steps - [query_idx: {self.index_widget.value}]</b></h1>"
         )
 
     def get_qplan_tree(self, use_javascript=True):
@@ -137,13 +137,22 @@ class QueryProfilerInterface(QueryProfiler):
         """
         self.use_javascript = use_javascript
         # widget for choosing the metrics
-        tags = widgets.TagsInput(
-            value=["Execution time in ms", "Produced row count"],
-            allowed_tags=[
-                QprofUtility._get_metrics_name(i) for i in QprofUtility._get_metrics()
-            ],
-            allow_duplicates=False,
+        options_dropwdown = [
+            QprofUtility._get_metrics_name(i) for i in QprofUtility._get_metrics()
+        ]
+        dropdown1 = widgets.Dropdown(
+            options=options_dropwdown,
+            description="Metric # 1:",
+            value="Execution time in ms",
+            layout={"width": "260px"},
         )
+        dropdown2 = widgets.Dropdown(
+            options=options_dropwdown,
+            description="Metric # 2:",
+            value="Produced row count",
+            layout={"width": "260px"},
+        )
+        tags = widgets.VBox([dropdown1, dropdown2])
 
         self.colors = makeItems(
             [
@@ -195,7 +204,8 @@ class QueryProfilerInterface(QueryProfiler):
             [self.qpt_header], layout={"justify_content": "center"}
         )
         controls = {
-            "metric": tags,
+            "metric1": tags.children[0],
+            "metric2": tags.children[1],
             "index": self.index_widget,
             "path_id": self.pathid_dropdown.get_child(),
             "apply_tree_clicked": self.apply_tree,
@@ -211,7 +221,8 @@ class QueryProfilerInterface(QueryProfiler):
 
     def update_qplan_tree(
         self,
-        metric,
+        metric1,
+        metric2,
         index,
         path_id,
         apply_tree_clicked,
@@ -219,7 +230,9 @@ class QueryProfilerInterface(QueryProfiler):
         """
         Callback function that displays the Query Plan Tree.
         """
-        metric = [QprofUtility._get_metrics_name(i, inv=True) for i in metric]
+        metric = [
+            QprofUtility._get_metrics_name(i, inv=True) for i in [metric1, metric2]
+        ]
         if len(metric) == 0:
             metric = ["rows"]
         graph_id = "g" + str(uuid.uuid4())
@@ -250,7 +263,7 @@ class QueryProfilerInterface(QueryProfiler):
             output = replace_value(output, "#graph", f"#{graph_id}")
             display(HTML(output))
         self.qpt_header.value = (
-            f"<h1><b>Query Plan Tree - [transaction_idx: {index}]</b></h1>"
+            f"<h1><b>Query Plan Tree - [query_idx: {index}]</b></h1>"
         )
 
     # Event handlers for the buttons
@@ -381,7 +394,7 @@ class QueryProfilerInterface(QueryProfiler):
         ]
 
         controls = {
-            "transaction_idx": self.index_widget,
+            "query_idx": self.index_widget,
             "clicked": self.qsteps_switch,
         }
 
@@ -405,7 +418,7 @@ class QueryProfilerInterface(QueryProfiler):
 
     def update_qsteps(
         self,
-        transaction_idx,
+        query_idx,
         clicked,
     ):
         """
@@ -418,7 +431,9 @@ class QueryProfilerInterface(QueryProfiler):
                 categoryorder=self.qsteps_controls["categoryorder"],
             )
         )
-        self.qsteps_header.value = f"<h1><b>Query Execution Steps - [transaction_idx: {transaction_idx}]</b></h1>"
+        self.qsteps_header.value = (
+            f"<h1><b>Query Execution Steps - [query_idx: {query_idx}]</b></h1>"
+        )
 
     def qsteps_clicked(self, _):
         self.qsteps_controls = {
@@ -454,7 +469,7 @@ class QueryProfilerInterface(QueryProfiler):
         )
 
         controls = {
-            "transaction_idx": self.index_widget,
+            "query_idx": self.index_widget,
             "kind": cpu_items["kind"].get_child(),
             "categoryorder": cpu_items["categoryorder"].get_child(),
         }
@@ -476,7 +491,7 @@ class QueryProfilerInterface(QueryProfiler):
 
     def update_cpu_time(
         self,
-        transaction_idx,
+        query_idx,
         kind,
         categoryorder,
     ):
@@ -490,7 +505,9 @@ class QueryProfilerInterface(QueryProfiler):
                 categoryorder=categoryorder,
             )
         )
-        self.cpu_header.value = f"<h1><b>CPU Time by node and path_id - [transaction_idx: {transaction_idx}]</b></h1>"
+        self.cpu_header.value = (
+            f"<h1><b>CPU Time by node and path_id - [query_idx: {query_idx}]</b></h1>"
+        )
 
     ##########################################################
 

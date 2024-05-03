@@ -1219,7 +1219,7 @@ class PerformanceTree:
         if not (isinstance(self.metric[0], NoneType)):
             all_metrics = [math.log(1 + me[0][i]) for i in range(n)]
             m_min, m_max = min(all_metrics), max(all_metrics)
-        if len(self.metric) > 1:
+        if len(self.metric) > 1 and not (isinstance(self.metric[1], NoneType)):
             all_metrics_2 = [math.log(1 + me[1][i]) for i in range(n)]
             m_min_2, m_max_2 = min(all_metrics_2), max(all_metrics_2)
             if not (self.style["two_legend"]):
@@ -1236,8 +1236,9 @@ class PerformanceTree:
         for i in range(n):
             tooltip_metrics = "\n"
             for j, x in enumerate(me):
-                me_j = QprofUtility._get_metrics_name(self.metric[j])
-                tooltip_metrics += f"\n{me_j}: {format(x[i],',')}"
+                if not isinstance(x[i], NoneType):
+                    me_j = QprofUtility._get_metrics_name(self.metric[j])
+                    tooltip_metrics += f"\n{me_j}: {format(x[i],',')}"
             tree_id = self.path_order[i]
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
@@ -1542,8 +1543,10 @@ class PerformanceTree:
             len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType))
         ) and self.style["display_legend"]:
             if self.style["two_legend"] and len(self.metric) > 1:
-                res += self._gen_legend(metric=[self.metric[0]], idx=0)
-                res += self._gen_legend(metric=[self.metric[1]], idx=1)
+                if self.metric[0]:
+                    res += self._gen_legend(metric=[self.metric[0]], idx=0)
+                if self.metric[1]:
+                    res += self._gen_legend(metric=[self.metric[1]], idx=1)
             else:
                 res += self._gen_legend(metric=self.metric)
         else:
