@@ -153,7 +153,14 @@ class QueryProfilerInterface(QueryProfiler):
             layout={"width": "260px"},
         )
         tags = widgets.VBox([dropdown1, dropdown2])
-
+        temp_rel_widget = widgets.ToggleButtons(
+            options=["Temporary Relations", "Combined"],
+            disabled=False,
+            tooltips=[
+                "Show separate temporary relations",
+                "Show a condensed tree without any separate temporary relations",
+            ],
+        )
         self.colors = makeItems(
             [
                 (
@@ -175,6 +182,7 @@ class QueryProfilerInterface(QueryProfiler):
             [tree_button], layout={"justify_content": "center"}
         )
         tree_settings = [
+            temp_rel_widget,
             self.colors["color low"].get_item(),
             self.colors["color high"].get_item(),
             tree_button_box,
@@ -209,6 +217,7 @@ class QueryProfilerInterface(QueryProfiler):
             "index": self.index_widget,
             "path_id": self.pathid_dropdown.get_child(),
             "apply_tree_clicked": self.apply_tree,
+            "temp_display": temp_rel_widget,
         }
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
@@ -226,6 +235,7 @@ class QueryProfilerInterface(QueryProfiler):
         index,
         path_id,
         apply_tree_clicked,
+        temp_display,
     ):
         """
         Callback function that displays the Query Plan Tree.
@@ -244,6 +254,7 @@ class QueryProfilerInterface(QueryProfiler):
                 path_id=path_id,
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
+                use_temp_relation=False if temp_display == "Combined" else True,
             )  # type: ignore
             html_widget = widgets.HTML(value=graph.pipe(format="svg").decode("utf-8"))
             box = widgets.HBox([html_widget])
@@ -256,6 +267,7 @@ class QueryProfilerInterface(QueryProfiler):
                 return_graphviz=True,
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
+                use_temp_relation=False if temp_display == "Combined" else True,
             )
             output = read_package_file("html/index.html")
             output = replace_value(output, "var dotSrc = [];", f"var dotSrc = `{raw}`;")
