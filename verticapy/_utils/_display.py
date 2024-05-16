@@ -227,6 +227,12 @@ def print_table(
                 html_table += (
                     f"min-width: {cell_width[j]}px; " f'max-width: {cell_width[j]}px;"'
                 )
+                if conf.get_option("insert_comma_numbers"):
+                    try:
+                        float(val)
+                        val = "{:,}".format(val)
+                    except:
+                        pass
                 if (j == 0) or (i == 0):
                     if j != 0:
                         type_val, category, missing_values = "", "", ""

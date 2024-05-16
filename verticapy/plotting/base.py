@@ -1498,7 +1498,11 @@ class PlottingBase(PlottingBaseSQL):
         else:
             X = np.array([])
         n = len(columns)
-        self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
+        try:
+            Z = X[:, :n].astype(float)
+        except:
+            Z = X[:, :n]
+        self.data = {"X": Z, "s": None, "c": None}
         self.layout = {
             "columns": self._clean_quotes(columns),
             "size": self._clean_quotes(size),
@@ -1508,7 +1512,7 @@ class PlottingBase(PlottingBaseSQL):
             "has_size": has_size,
         }
         if not isinstance(size, NoneType) and (max_nb_points > 0):
-            self.data["s"] = X[:, n].astype(float)
+            self.data["s"] = Z
         if (
             (not isinstance(by, NoneType)) or (not isinstance(cmap_col, NoneType))
         ) and (max_nb_points > 0):

@@ -95,8 +95,11 @@ class ScatterPlot(PlotlyBase):
             data=data,
             columns=columns,
         )
-        df[column_names[0]] = df[column_names[0]].astype(float)
-        df[column_names[1]] = df[column_names[1]].astype(float)
+        try:
+            df[column_names[0]] = df[column_names[0]].astype(float)
+            df[column_names[1]] = df[column_names[1]].astype(float)
+        except:
+            pass
         if self.data.get("s") is not None:
             df[self.layout["size"]] = df[self.layout["size"]].astype(float)
             min_value = df[self.layout["size"]].min()

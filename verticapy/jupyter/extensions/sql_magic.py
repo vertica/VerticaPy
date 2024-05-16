@@ -33,6 +33,7 @@ from IPython.display import display, HTML
 
 import verticapy._config.config as conf
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._parsers import parse_explain_graphviz
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_procedure
 from verticapy._utils._sql._dblink import replace_external_queries
@@ -994,18 +995,9 @@ def sql_magic(
                     final_result = _executeSQL(
                         query, method="fetchall", print_time_sql=False
                     )
-                    final_result = "\n".join([l[0] for l in final_result])
-                    tree = "digraph G {" + final_result.split("\ndigraph G {")[1]
-                    plan = final_result.split("\ndigraph G {")[0]
-                    print(plan)
-                    if i < n - 1 or not conf.get_import_success("graphviz"):
-                        print(tree)
-                    else:
-                        res = graphviz.Source(tree)
-                        if i == n - 1:
-                            return res
-                        else:
-                            print(res)
+                    rows = parse_explain_graphviz(final_result, display_trees=True)
+                    if i == n - 1:
+                        return rows
                 elif query_type.lower() in ("profile",):
                     _executeSQL(query, method="cursor", print_time_sql=False)
                     query = query[8:]

@@ -706,27 +706,20 @@ def set_option(key: str, value: Any = None) -> None:
         raise OptionError(f"Option '{key}' does not exist.")
 
 
+# Performance
 register_option(Option("cache", True, "", bool_validator))
-register_option(Option("interactive", False, "", bool_validator))
-register_option(Option("count_on", False, "", bool_validator))
-register_option(Option("footer_on", True, "", bool_validator))
-register_option(Option("label_separator", None, "", optional_str_validator))
-register_option(Option("label_suffix", None, "", optional_str_validator))
-register_option(Option("max_columns", 50, "", st_positive_int_validator))
-register_option(Option("max_rows", 100, "", st_positive_int_validator))
-register_option(
-    Option("max_tableheight", 300, "", st_positive_int_validator)
-)  # min 300
-register_option(Option("max_cellwidth", 280, "", st_positive_int_validator))  # min 280
-register_option(Option("mode", "full", "", in_validator(["full", "light"])))
-register_option(Option("percent_bar", False, "", bool_validator))
-register_option(Option("print_info", True, "", bool_validator))
-register_option(Option("save_query_profile", True, "", bool_validator))
-register_option(Option("sql_on", False, "", bool_validator))
 register_option(Option("random_state", None, "", optional_positive_int_validator))
+
+# SQL
+# Temp Schema
 register_option(Option("temp_schema", "public", "", str_validator))
+# Query & Time
+register_option(Option("sql_on", False, "", bool_validator))
 register_option(Option("time_on", False, "", bool_validator))
-register_option(Option("tqdm", True, "", bool_validator))
+
+# Display & Plotting
+register_option(Option("interactive", False, "", bool_validator))
+register_option(Option("mode", "full", "", in_validator(["full", "light"])))
 register_option(
     Option(
         "plotting_lib",
@@ -743,3 +736,25 @@ register_option(
         in_validator(["light", "dark", "sphinx"]),
     )
 )
+register_option(Option("tqdm", True, "", bool_validator))
+
+# Formatting
+register_option(Option("count_on", False, "", bool_validator))
+register_option(Option("footer_on", True, "", bool_validator))
+register_option(Option("insert_comma_numbers", False, "", bool_validator))
+register_option(Option("max_cellwidth", 280, "", st_positive_int_validator))  # min 280
+register_option(Option("max_columns", 50, "", st_positive_int_validator))
+register_option(Option("max_rows", 100, "", st_positive_int_validator))
+register_option(
+    Option("max_tableheight", 300, "", st_positive_int_validator)
+)  # min 300
+register_option(Option("percent_bar", False, "", bool_validator))
+
+
+# Query Labels & Profile
+register_option(Option("label_separator", None, "", optional_str_validator))
+register_option(Option("label_suffix", None, "", optional_str_validator))
+register_option(Option("save_query_profile", True, "", bool_validator))
+
+# Verbosity
+register_option(Option("print_info", True, "", bool_validator))
