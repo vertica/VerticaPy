@@ -92,7 +92,7 @@ class ScatterPlot(PlotlyBase):
         if self.layout.get("c") is not None:
             columns = columns + [self.layout["c"]]
         df = pd.DataFrame(
-            data=data[:, :len(columns)],
+            data=data[:, : len(columns)],
             columns=columns,
         )
         try:
