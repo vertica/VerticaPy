@@ -1019,6 +1019,7 @@ class vDFCorr(vDFEncode):
             method = "kendall"
         else:
             kendall_type = None
+        val = 0.0
         if (method == "kendall" and kendall_type == "b") or (method != "kendall"):
             val = self.corr(columns=[column1, column2], method=method)
         sql = f"""

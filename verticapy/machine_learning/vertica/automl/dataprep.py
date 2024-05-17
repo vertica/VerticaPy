@@ -245,7 +245,7 @@ class AutoDataPrep(VerticaModel):
             X = vdf.get_columns()
         X, by = format_type(X, by, dtype=list)
         if not ts and self.parameters["identify_ts"]:
-            nb_date, nb_num, nb_others = 0, 0, 0
+            nb_date, nb_num, nb_others, cat_tmp, ts_tmp = 0, 0, 0, None, None
             for x in X:
                 if vdf[x].isnum() and not vdf[x].isbool():
                     nb_num += 1

@@ -85,6 +85,7 @@ class TestLinearModel:
             get_vpy_model(model_class),
             get_py_model(model_class),
         )
+        vpy_res, py_res = 0.0, 0.0
 
         if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
             _model_class_tuple = (

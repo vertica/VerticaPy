@@ -159,7 +159,7 @@ class ScatterPlot(MatplotlibBase):
         args = [self.data["X"][:, i] for i in range(m)]
         kwargs = self._update_dict(self.init_style, style_kwargs, 0)
         if self.layout["has_size"]:
-            s_min, s_max = min(self.data["s"]), max(self.data["s"])
+            s_min, s_max = self.data["s"].min(), self.data["s"].max()
             if s_max != s_min:
                 kwargs["s"] = 1000 * (self.data["s"] - s_min) / (s_max - s_min) + 1e-50
         if self.layout["has_category"]:

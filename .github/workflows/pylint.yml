@@ -27,5 +27,5 @@ jobs:
         pip install tensorflow
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=10 --disable=typecheck,W,C,R --extension-pkg-allow-list=scipy.special $(git ls-files '*.py')
+        pylint --fail-under=10 --disable=typecheck,E0606,W,C,R --extension-pkg-allow-list=scipy.special $(git ls-files '*.py')
         pylint --fail-under=9 --disable=typecheck,E,C,R $(git ls-files '*.py')

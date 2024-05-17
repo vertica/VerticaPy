@@ -19,7 +19,17 @@ import os
 from typing import List
 import warnings
 
+import verticapy._config.config as conf
 from verticapy._utils._sql._format import list_strip
+
+if conf.get_import_success("graphviz"):
+    import graphviz
+    from graphviz import Source
+
+if conf.get_import_success("IPython"):
+    from IPython.display import display
+
+# CSV
 
 
 def get_header_names(
@@ -251,3 +261,65 @@ def read_first_record(path: str, record_terminator: str) -> str:
                 # so we need len(sep) more to include the terminator
                 # because readline includes the terminator
                 return current_value[0 : (pos_of_term + len(record_terminator))]
+
+
+# Query Plan
+
+
+def parse_explain_graphviz_text(rows: list[str]) -> list[str]:
+    """
+    Parses the explain plan and returns a ``list``
+    of text elements.
+
+    Parameters
+    ------------
+    rows: list
+        Result of the explain plan.
+
+    Returns
+    ----------
+    A list of text elements.
+    """
+    rows = [row[0] for row in rows]
+    rows = "\n".join(rows)
+    splits = rows.split("digraph G {")
+    result = []
+    for row in splits:
+        if row.startswith("\ngraph ["):
+            tmp_result = row.split("}")
+            graphviz_tree = "digraph G {" + tmp_result[0] + "}"
+            result += [graphviz_tree]
+            result += ["}".join(tmp_result[1:])]
+        else:
+            result += [row]
+    return result
+
+
+def parse_explain_graphviz(rows: list[str], display_trees: bool = True) -> list:
+    """
+    Parses the explain plan and returns a ``list``
+    of elements including trees and titles.
+
+    Parameters
+    ------------
+    rows: list
+        Result of the explain plan.
+
+    Returns
+    ----------
+    A list of trees and titles.
+    """
+    rows = parse_explain_graphviz_text(rows)
+    result = []
+    for row in rows:
+        if conf.get_import_success("graphviz") and row.startswith("digraph G {"):
+            result += [Source(row)]
+        else:
+            result += [row]
+    if display_trees:
+        for row in result:
+            if isinstance(row, str) or not (conf.get_import_success("IPython")):
+                print(row)
+            else:
+                display(row)
+    return result

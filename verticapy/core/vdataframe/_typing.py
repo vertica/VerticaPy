@@ -789,6 +789,7 @@ class vDCTyping(vDCRead):
                 )
                 biggest_str = biggest_str.strip()
                 sep = guess_sep(biggest_str)
+                transformation_2 = None
                 if str(dtype).startswith("vmap"):
                     if len(biggest_str) > 2 and (
                         (biggest_str.startswith("{") and biggest_str.endswith("}"))

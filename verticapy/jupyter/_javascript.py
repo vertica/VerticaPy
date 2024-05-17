@@ -22,6 +22,7 @@ from typing import Any, Optional, TextIO
 
 import numpy as np
 
+import verticapy._config.config as conf
 from verticapy._typing import ArrayLike, NoneType
 from verticapy._utils._logo import verticapy_logo_html
 from verticapy._utils._sql._cast import to_category
@@ -213,6 +214,12 @@ def clean_data(data: ArrayLike) -> ArrayLike:
                 continue
             else:
                 val = data[i][j]
+                if conf.get_option("insert_comma_numbers"):
+                    try:
+                        float(val)
+                        val = "{:,}".format(val)
+                    except:
+                        pass
                 if isinstance(val, bool) is False and not isinstance(val, NoneType):
                     data[i][
                         j

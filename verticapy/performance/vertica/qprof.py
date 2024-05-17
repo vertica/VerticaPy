@@ -30,6 +30,7 @@ from verticapy.core.vdataframe import vDataFrame
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, PlottingObject, SQLExpression
+from verticapy._utils._parsers import parse_explain_graphviz
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
@@ -1101,7 +1102,7 @@ class QueryProfiler:
         elif unit.startswith("h"):
             div = "01:00:00"
         else:
-            ValueError("Incorrect parameter 'unit'.")
+            raise ValueError("Incorrect parameter 'unit'.")
         return div
 
     def _get_interval(self, unit: Literal["s", "m", "h"]) -> int:
@@ -1117,7 +1118,7 @@ class QueryProfiler:
         elif unit.startswith("h"):
             div = 3600000000
         else:
-            ValueError("Incorrect parameter 'unit'.")
+            raise ValueError("Incorrect parameter 'unit'.")
         return div
 
     def _get_chart_method(
@@ -2137,7 +2138,15 @@ class QueryProfiler:
             )
         return vdf
 
-    # Step 5: Query plan
+    # Step 5: Query plan + EXPLAIN
+
+    def get_qplan_explain(self, display_trees: bool = True) -> list:
+        """
+        TODO
+        """
+        return None
+        # return parse_explain_graphviz(rows, display_trees=display_trees)
+
     def get_qplan_tr_order(
         self,
     ) -> list[int]:
@@ -2682,7 +2691,8 @@ class QueryProfiler:
                 (sent_bytes // (1024 * 1024))::numeric(18, 2) AS out_mb,
                 left(path_line, 80) AS path_line
             FROM v_monitor.query_plan_profiles
-            WHERE transaction_id = {self.transaction_id}{where}
+            WHERE transaction_id={self.transaction_id} AND
+                  statement_id={self.statement_id}{where}
             ORDER BY
                 statement_id,
                 path_id,
@@ -3428,6 +3438,117 @@ class QueryProfiler:
         query = """SELECT * FROM v_monitor.host_resources;"""
         query = self._replace_schema_in_query(query)
         return vDataFrame(query)
+
+    # I/O
+
+    def to_html(self, path: Optional[str] = None) -> str:
+        """
+        Creates an HTML report.
+
+        Parameters
+        ----------
+        path: str, optional
+            Path where the report will
+            be exported.
+
+            .. warning::
+
+                The report will be created in the
+                local machine.
+
+        Returns
+        -------
+        str
+            HTML report.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can generate easily the HTML report:
+
+        .. code-block:: python
+
+            qprof.to_html()
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        cluster_info = self.get_cluster_config()._repr_html_()
+        cluster_report = self.get_rp_status()._repr_html_()
+        query_execution_report = self.get_qexecution_report()._repr_html_()
+        cpu_time_plot = self.get_cpu_time(kind="bar").to_html(full_html=False)
+        get_qexecution = self.get_qexecution().to_html(full_html=False)
+        get_qsteps = self.get_qsteps(kind="barh").htmlcontent
+        get_qplan_profile = self.get_qplan_profile(kind="pie").to_html(full_html=False)
+        graphviz_tree = self.get_qplan_tree()
+        svg_tree = graphviz_tree.pipe(format="svg").decode("utf-8")
+        html_content = f"""
+        <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Query Profiling Report</title>
+                <!-- Include Plotly resources -->
+                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                <link rel="stylesheet" href="https://cdn.plot.ly/plotly-latest.min.css">
+            </head>
+            <body>
+                <h1>System Configuration</h1>
+                <ul>
+                    <li>Cluster Information: <br>{cluster_info}</li>
+                    <li>Cluster Report: <br>{cluster_report}</li>
+                </ul>
+
+                <h1>Query Execution Report</h1>
+                {query_execution_report}
+
+                <h1>Execution Time on Each Node</h1>
+                <div id="qexecution">{get_qexecution}</div>
+
+                <h1>CPU Time Distribution</h1>
+                <div id="cpu_time_distribution">{cpu_time_plot}</div>
+
+                <h1>Query Steps</h1>
+                <div id="query_steps">{get_qsteps}</div>
+
+                <h1>Query Plan plot</h1>
+                <div id="query_plan_plot">{get_qplan_profile}</div>
+
+                <h1>Query Plan Tree</h1>
+                <div id="query_plan_tree">{svg_tree}</div>
+
+            </body>
+        </html>
+        """
+
+        if path:
+            with open(path, "w") as file:
+                file.write(html_content)
+
+        return html_content
+
+    # Import Export
 
     def export_profile(self, filename: os.PathLike) -> None:
         """

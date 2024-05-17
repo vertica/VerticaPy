@@ -60,6 +60,7 @@ def help_start() -> None:
         except TypeError:
             print("Invalid choice.\nRerun the help_start function when you need help.")
             return
+    link = None
     if response == 0:
         link = "https://www.vertica.com/python/old/quick-start.php"
     elif response == 1:

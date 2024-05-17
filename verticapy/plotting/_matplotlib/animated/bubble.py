@@ -262,6 +262,7 @@ class AnimatedBubblePlot(AnimatedBase):
         max_x = np.nanmax(Y0)
         min_y = np.nanmin(Y1)
         max_y = np.nanmax(Y1)
+        anim_text = None
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
