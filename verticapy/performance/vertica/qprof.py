@@ -1102,7 +1102,7 @@ class QueryProfiler:
         elif unit.startswith("h"):
             div = "01:00:00"
         else:
-            ValueError("Incorrect parameter 'unit'.")
+            raise ValueError("Incorrect parameter 'unit'.")
         return div
 
     def _get_interval(self, unit: Literal["s", "m", "h"]) -> int:
@@ -1118,7 +1118,7 @@ class QueryProfiler:
         elif unit.startswith("h"):
             div = 3600000000
         else:
-            ValueError("Incorrect parameter 'unit'.")
+            raise ValueError("Incorrect parameter 'unit'.")
         return div
 
     def _get_chart_method(
@@ -2140,7 +2140,7 @@ class QueryProfiler:
 
     # Step 5: Query plan + EXPLAIN
 
-    def get_qplan_explain(display_trees: bool = True) -> list:
+    def get_qplan_explain(self, display_trees: bool = True) -> list:
         """
         TODO
         """

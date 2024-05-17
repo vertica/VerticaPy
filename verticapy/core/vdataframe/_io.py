@@ -1367,8 +1367,7 @@ class vDFInOut(vDFSystem):
             order_by = self._get_last_order_by()
         if n_files > 1 and path:
             os.makedirs(path)
-        if not path:
-            json_files = []
+        json_files = []
         while current_nb_rows_written < total:
             json_file = "[\n"
             result = _executeSQL(
