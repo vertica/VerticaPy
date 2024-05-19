@@ -2144,8 +2144,20 @@ class QueryProfiler:
         """
         TODO
         """
-        return None
-        # return parse_explain_graphviz(rows, display_trees=display_trees)
+        query = self.request.strip()
+        if query.upper().startswith(("EXPLAIN", "PROFILE")):
+            query = query[7:].strip()
+        if query.upper().startswith(("VERBOSE",)):
+            query = query[7:].strip()
+        if query.upper().startswith(("LOCAL",)):
+            query = query[5:].strip()
+        query = f"EXPLAIN VERBOSE " + query
+        rows = _executeSQL(
+            query,
+            title="getting the result of the EXPLAIN VERBOSE",
+            method="fetchall",
+        )
+        return parse_explain_graphviz(rows, display_trees=display_trees)
 
     def get_qplan_tr_order(
         self,
@@ -2375,6 +2387,11 @@ class QueryProfiler:
             - display_legend:
                 If set to ``True``
                 the legend is
+                displayed.
+                Default: True
+            - display_annotations:
+                If set to ``True``
+                the annotations are
                 displayed.
                 Default: True
             - color_low:
