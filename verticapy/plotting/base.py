@@ -1512,7 +1512,7 @@ class PlottingBase(PlottingBaseSQL):
             "has_size": has_size,
         }
         if not isinstance(size, NoneType) and (max_nb_points > 0):
-            self.data["s"] = Z
+            self.data["s"] = Z[:, 0]
         if (
             (not isinstance(by, NoneType)) or (not isinstance(cmap_col, NoneType))
         ) and (max_nb_points > 0):
