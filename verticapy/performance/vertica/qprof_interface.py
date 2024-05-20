@@ -74,9 +74,14 @@ class QueryProfilerInterface(QueryProfiler):
         # self.test_output = widgets.Output()
         next_button.on_click(self.next_button_clicked)
         prev_button.on_click(self.prev_button_clicked)
-        self.transaction_buttons = widgets.VBox([widgets.HBox([prev_button, next_button])])
+        self.transaction_buttons = widgets.VBox(
+            [widgets.HBox([prev_button, next_button])]
+        )
         # Jumpt to query dropdown
-        self.query_select_dropdown = widgets.Dropdown(description = "Jump to query", options=[i+1 for i in range(len(self.get_queries()))])
+        self.query_select_dropdown = widgets.Dropdown(
+            description="Jump to query",
+            options=[i + 1 for i in range(len(self.get_queries()))],
+        )
         self.query_select_dropdown.style.description_width = "100px"
         # Query Inofrmation - Query Text & Time
         self.query_display_info = widgets.HTML(
@@ -204,9 +209,9 @@ class QueryProfilerInterface(QueryProfiler):
                 [self.pathid_dropdown.get_item(), refresh_pathids_box]
             ),
             "Tree style": widgets.VBox(tree_settings),
-            "Query Text": self.query_display,
+            "Query text": self.query_display,
         }
-        query_text_index = list(accordion_items.keys()).index("Query Text")
+        query_text_index = list(accordion_items.keys()).index("Query text")
         accordions = Visualizer._accordion(
             list(accordion_items.values()), accordion_items.keys()
         )
@@ -215,7 +220,7 @@ class QueryProfilerInterface(QueryProfiler):
             [self.qpt_header], layout={"justify_content": "center"}
         )
         controls = {
-            "index" : self.query_select_dropdown,
+            "index": self.query_select_dropdown,
             "metric1": tags.children[0],
             "metric2": tags.children[1],
             "path_id": self.pathid_dropdown.get_child(),
@@ -225,7 +230,12 @@ class QueryProfilerInterface(QueryProfiler):
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
         )
-        settings = [accordions, self.transaction_buttons, self.query_select_dropdown, self.query_display_info]
+        settings = [
+            accordions,
+            self.transaction_buttons,
+            self.query_select_dropdown,
+            self.query_display_info,
+        ]
         viz = Visualizer(
             settings_wids=settings, graph_wids=[header_box, interactive_output]
         )
@@ -293,7 +303,9 @@ class QueryProfilerInterface(QueryProfiler):
             button (Any): represents the button that was clicked
         """
         button.disabled = True
-        self.query_select_dropdown.value = (self.query_select_dropdown.value % len(self.get_queries())) + 1
+        self.query_select_dropdown.value = (
+            self.query_select_dropdown.value % len(self.get_queries())
+        ) + 1
         # self.next()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
@@ -313,7 +325,9 @@ class QueryProfilerInterface(QueryProfiler):
             button (Any): represents the button that was clicked
         """
         button.disabled = True
-        self.query_select_dropdown.value = ((self.query_select_dropdown.value-2) % len(self.get_queries())) + 1
+        self.query_select_dropdown.value = (
+            (self.query_select_dropdown.value - 2) % len(self.get_queries())
+        ) + 1
         self.previous()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
@@ -325,7 +339,7 @@ class QueryProfilerInterface(QueryProfiler):
     def query_select_button_selected(self, selection):
         """
         Callback function triggered
-        when the user selects the index of 
+        when the user selects the index of
         a particular query.
 
         Args:
@@ -335,7 +349,7 @@ class QueryProfilerInterface(QueryProfiler):
         self.refresh_pathids.disabled = False
         self.index_widget.value = selection
         self.step_idx.value = selection
-        self.set_position(selection-1)
+        self.set_position(selection - 1)
         self.update_query_display()
 
     def refresh_clicked(self, button):
