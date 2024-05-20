@@ -141,7 +141,9 @@ class PerformanceTree:
         display_operator: bool = True,
         style: dict = {},
     ) -> None:
-        if len(rows) == 0 or "PATH ID" not in rows:
+        if len(rows) == 0 or (
+            "PATH ID" not in rows and "Cost" not in rows and "Rows" not in rows
+        ):
             raise ValueError(
                 "No PATH ID detected in the Query Plan.\n"
                 "It seems to be empty.\nAre you sured to have "
@@ -265,6 +267,8 @@ class PerformanceTree:
             d["two_legend"] = True
         if "display_legend" not in d:
             d["display_legend"] = True
+        if "display_annotations" not in d:
+            d["display_annotations"] = True
         if "display_proj" not in d:
             d["display_proj"] = True
         if "display_etc" not in d:
@@ -1442,6 +1446,44 @@ class PerformanceTree:
                 )
         return res
 
+    def _gen_legend_annotations(self):
+        """ """
+        default_params = get_default_graphviz_options()
+        bgcolor = default_params["legend_bgcolor"]
+        fontcolor = default_params["legend_fontcolor"]
+        fillcolor = default_params["fillcolor"]
+        rows = "\n".join(self.rows).upper()
+        res = ""
+        if "OUTER" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-O</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">OUTER</FONT></td></tr>'
+        if "INNER" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-I</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">INNER</FONT></td></tr>'
+        if "CROSS JOIN" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-X</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">CROSS JOIN</FONT></td></tr>'
+        if "FILTER" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-F</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">FILTER</FONT></td></tr>'
+        if "BROADCAST" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-B</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
+        if "RESEGMENT" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-R</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
+        if "RESEGMENT" in rows and "GLOBAL" in rows and "LOCAL" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-GLR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL/LOCAL RESEGMENT</FONT></td></tr>'
+        if "RESEGMENT" in rows and "GLOBAL" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-GR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL RESEGMENT</FONT></td></tr>'
+        if "RESEGMENT" in rows and "LOCAL" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-LR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">LOCAL RESEGMENT</FONT></td></tr>'
+        if "HASH" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-H</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">HASH</FONT></td></tr>'
+        if "MERGE" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-M</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">MERGE</FONT></td></tr>'
+        if "PIPELINED" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-P</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">PIPELINED</FONT></td></tr>'
+        if res:
+            res_f = f'\tlegend_annotations [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
+            res = f'{res_f}<tr><td BGCOLOR="{bgcolor}"></td><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">Signification</FONT></td></tr>{res}'
+            res += "</table>>]\n\n"
+        return res
+
     def _gen_legend(self, metric: Optional[list] = None, idx: int = 0) -> str:
         """
         Generates the Graphviz
@@ -1539,6 +1581,8 @@ class PerformanceTree:
         else:
             res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
+        if self.style["display_annotations"]:
+            res += self._gen_legend_annotations() + "\n"
         if (
             len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType))
         ) and self.style["display_legend"]:
