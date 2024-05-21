@@ -2106,6 +2106,131 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        return self._get_qsteps(
+            unit=unit, kind=kind, categoryorder=categoryorder, show=show, **style_kwargs
+        )
+
+    def _get_qsteps(
+        self,
+        unit: Literal["s", "m", "h"] = "s",
+        kind: Literal[
+            "bar",
+            "barh",
+        ] = "bar",
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "sum descending",
+        show: bool = True,
+        **style_kwargs,
+    ) -> Union[PlottingObject, vDataFrame]:
+        """
+        Returns the Query Execution Steps chart.
+
+        Parameters
+        ----------
+        unit: str, optional
+            Unit used to draw the chart.
+
+            - s:
+                second
+
+            - m:
+                minute
+
+            - h:
+                hour
+
+        kind: str, optional
+            Chart Type.
+
+            - bar:
+                Bar Chart.
+
+            - barh:
+                Horizontal Bar Chart.
+
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
+
+        show: bool, optional
+            If set to True, the Plotting object
+            is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can get the time breakdown of all the
+        steps in a graphical output, we can call
+        the ``get_qsteps`` attribute.
+
+        .. code-block:: python
+
+            qprof.get_qsteps(kind="bar")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
         if show:
             kind = self._check_kind(kind, ["bar", "barh"])
         div = self._get_interval_str(unit)
@@ -2312,6 +2437,245 @@ class QueryProfiler:
         return vdf
 
     def get_qplan_tree(
+        self,
+        path_id: Optional[int] = None,
+        path_id_info: Optional[list] = None,
+        show_ancestors: bool = True,
+        metric: Union[
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
+        ] = ["exec_time_ms", "prod_rows"],
+        pic_path: Optional[str] = None,
+        return_graphviz: bool = False,
+        **tree_style,
+    ) -> Union["Source", str]:
+        """
+        Draws the Query Plan tree.
+
+        Parameters
+        ----------
+        path_id: int, optional
+            A path ID used to filter
+            the tree elements by
+            starting from it.
+        path_id_info: list, optional
+            ``list`` of path_id used
+            to display the different
+            query information.
+        show_ancestors: bool, optional
+            If set to ``True`` the
+            ancestors of ``path_id``
+            are also displayed.
+        metric: str | tuple | list, optional
+            The metric used to color
+            the tree nodes. One of
+            the following:
+
+            - None (no specific color)
+
+            - bytes_spilled
+            - clock_time_us
+            - cost
+            - cstall_us
+            - exec_time_ms (default)
+            - est_rows
+            - mem_all_mb
+            - mem_res_mb
+            - proc_rows
+            - prod_rows
+            - pstall_us
+            - rle_prod_rows
+            - rows
+
+            It can also be a ``list`` or
+            a ``tuple`` of two metrics.
+
+        pic_path: str, optional
+            Absolute path to save
+            the image of the tree.
+        return_graphviz: bool, optional
+            If set to ``True``, the
+            ``str`` Graphviz tree is
+            returned.
+        tree_style: dict, optional
+            ``dictionary`` used to
+            customize the tree.
+
+            - two_legend:
+                If set to ``True``
+                and two metrics are
+                used, two legends will
+                be drawn.
+                Default: True
+            - display_legend:
+                If set to ``True``
+                the legend is
+                displayed.
+                Default: True
+            - display_annotations:
+                If set to ``True``
+                the annotations are
+                displayed.
+                Default: True
+            - color_low:
+                Color used as the lower
+                bound of the gradient.
+                Default: '#00FF00' (green)
+            - color_high:
+                Color used as the upper
+                bound of the gradient.
+                Default: '#FF0000' (red)
+            - fontcolor:
+                Font color.
+                Default (light-m): #000000 (black)
+                Default (dark-m): #FFFFFF (white)
+            - fontsize:
+                Font size.
+                Default: 22
+            - fillcolor:
+                Color used to fill the
+                nodes in case no gradient
+                is computed: ``metric=None``.
+                Default (light-m): #FFFFFF (white)
+                Default (dark-m): #000000 (black)
+            - edge_color:
+                Edge color.
+                Default (light-m): #000000 (black)
+                Default (dark-m): #FFFFFF (white)
+            - edge_style:
+                Edge Style.
+                Default: 'solid'.
+            - shape:
+                Node shape.
+                Default: 'circle'.
+            - width:
+                Node width.
+                Default: 0.6.
+            - height:
+                Node height.
+                Default: 0.6.
+            - info_color:
+                Color of the information box.
+                Default: #DFDFDF (lightgray)
+            - info_fontcolor:
+                Fontcolor of the information
+                box.
+                Default: #000000 (black)
+            - info_rowsize:
+                Maximum size of a line
+                in the information box.
+                Default: 30
+            - info_fontsize:
+                Information box font
+                size.
+                Default: 8
+            - storage_access:
+                Maximum number of chars of
+                the storage access box.
+                Default: 9
+            - network_edge:
+                If set to ``True`` the
+                network edges will all
+                have their own style:
+                dotted for BROADCAST,
+                dashed for RESEGMENT
+                else solid.
+            - display_operator:
+                If set to ``True`` the
+                PATH ID operator of each
+                node will be displayed.
+            - display_operator_edge:
+                If set to ``True`` the
+                operator edge of each
+                node will be displayed.
+            - display_proj:
+                If set to ``True`` the
+                projection of each STORAGE
+                ACCESS PATH ID will be
+                partially displayed.
+            - display_etc:
+                If set to ``True`` and
+                ``path_is is not None``
+                the symbol "..." is used
+                to represent the ancestors
+                children when they have more
+                than 1.
+            - temp_relation_access:
+                ``list`` of the temporary
+                tables to display. ``main``
+                represents the main relation
+                plan.
+                Ex: ``['TREL8', 'main']``
+                will only display the
+                temporary relation 8
+                and the main relation.
+                Default: []
+
+        Returns
+        -------
+        graphviz.Source
+            graphviz object.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily call the function
+        to get the query plan Graphviz:
+
+        .. ipython:: python
+
+            qprof.get_qplan_tree(return_graphviz = True)
+
+        We can conveniently get the Query Plan tree:
+
+        .. code-block::
+
+            qprof.get_qplan_tree()
+
+        .. ipython:: python
+            :suppress:
+
+            res = qprof.get_qplan_tree()
+            res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+
+
+        .. image:: /../figures/performance_get_qplan_tree_1.png
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        return self._get_qplan_tree(
+            path_id=path_id,
+            path_id_info=path_id_info,
+            show_ancestors=show_ancestors,
+            metric=metric,
+            pic_path=pic_path,
+            return_graphviz=return_graphviz,
+            **tree_style,
+        )
+
+    def _get_qplan_tree(
         self,
         path_id: Optional[int] = None,
         path_id_info: Optional[list] = None,
@@ -2982,6 +3346,124 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        return self._get_cpu_time(
+            kind=kind,
+            reverse=reverse,
+            categoryorder=categoryorder,
+            show=show,
+            **style_kwargs,
+        )
+
+    def _get_cpu_time(
+        self,
+        kind: Literal[
+            "bar",
+            "barh",
+        ] = "bar",
+        reverse: bool = False,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "max descending",
+        show: bool = True,
+        **style_kwargs,
+    ) -> Union[PlottingObject, vDataFrame]:
+        """
+        Returns the CPU Time by node and path_id chart.
+
+        Parameters
+        ----------
+        kind: str, optional
+            Chart Type.
+
+            - bar:
+                Bar Chart.
+            - barh:
+                Horizontal Bar Chart.
+
+        reverse: bool, optional
+            If set to ``True``, the
+            chart will be reversed.
+        categoryorder: str, optional
+            How to sort the bars.
+            One of the following options:
+
+            - trace (no transformation)
+            - category ascending
+            - category descending
+            - total ascending
+            - total descending
+            - min ascending
+            - min descending
+            - max ascending
+            - max descending
+            - sum ascending
+            - sum descending
+            - mean ascending
+            - mean descending
+            - median ascending
+            - median descending
+
+        show: bool, optional
+            If set to ``True``, the
+            Plotting object is returned.
+        **style_kwargs
+            Any  optional parameter to
+            pass to the plotting functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To visualize the CPU time spent by each node:
+
+        .. code-block:: python
+
+            qprof.get_cpu_time(kind="bar")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
         if show:
             kind = self._check_kind(kind, ["bar", "barh"])
         query = f"""
@@ -3513,11 +3995,11 @@ class QueryProfiler:
         cluster_info = self.get_cluster_config()._repr_html_()
         cluster_report = self.get_rp_status()._repr_html_()
         query_execution_report = self.get_qexecution_report()._repr_html_()
-        cpu_time_plot = self.get_cpu_time(kind="bar").to_html(full_html=False)
+        cpu_time_plot = self._get_cpu_time(kind="bar").to_html(full_html=False)
         get_qexecution = self.get_qexecution().to_html(full_html=False)
-        get_qsteps = self.get_qsteps(kind="barh").htmlcontent
+        get_qsteps = self._get_qsteps(kind="barh").htmlcontent
         get_qplan_profile = self.get_qplan_profile(kind="pie").to_html(full_html=False)
-        graphviz_tree = self.get_qplan_tree()
+        graphviz_tree = self._get_qplan_tree()
         svg_tree = graphviz_tree.pipe(format="svg").decode("utf-8")
         html_content = f"""
         <!DOCTYPE html>
