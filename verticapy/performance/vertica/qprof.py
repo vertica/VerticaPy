@@ -3080,7 +3080,7 @@ class QueryProfiler:
         **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
         """
-        Helper function to return the CPU Time 
+        Helper function to return the CPU Time
         by node and path_id chart.
         """
         if show:
