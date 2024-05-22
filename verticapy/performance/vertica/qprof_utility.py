@@ -25,7 +25,9 @@ class QprofUtility:
     """
 
     @staticmethod
-    def _get_label(row: str, return_path_id: bool = True) -> Union[str, int]:
+    def _get_label(
+        row: str, return_path_id: bool = True, row_idx: int = 0
+    ) -> Union[str, int]:
         """
         Gets the label from
         Query Plan chart.
@@ -37,6 +39,8 @@ class QprofUtility:
         return_path_id: bool, optional
             If set to ``True`` returns
             the path ID instead.
+        row_idx: int, optional
+            The ID of the row.
 
         Returns
         -------
@@ -54,13 +58,13 @@ class QprofUtility:
         if return_path_id:
             if "PATH ID: " not in res:
                 if "INSERT" in res:
-                    return -1001
+                    return -10000 - row_idx
                 if "DELETE" in res:
-                    return -1002
+                    return -20000 - row_idx
                 if "UPDATE" in res:
-                    return -1003
+                    return -30000 - row_idx
                 if "MERGE" in res:
-                    return -1004
+                    return -40000 - row_idx
                 return -1000
             res = res.split("PATH ID: ")[1].split(")")[0]
             res = re.sub(r"[^0-9]", "", res)
@@ -90,7 +94,9 @@ class QprofUtility:
         """
         ...
         """
-        return [QprofUtility._get_label(row) for row in rows]
+        return [
+            QprofUtility._get_label(row, row_idx=idx) for idx, row in enumerate(rows)
+        ]
 
     @staticmethod
     def _get_metrics() -> list:

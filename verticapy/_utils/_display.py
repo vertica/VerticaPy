@@ -265,8 +265,11 @@ def print_table(
                             else:
                                 category = '<div style="margin-bottom: 6px;"></div>'
                         if type_val != "":
+                            overflow = "hidden"
+                            if len(str(type_val)) > 30:
+                                overflow = "scroll"
                             ctype = (
-                                '<div style="overflow-y: scroll; color: #FE5016; '
+                                f'<div style="overflow-y: {overflow}; color: #FE5016; '
                                 f'margin-top: 6px; font-size: 0.95em;">{type_val}</div>'
                             )
                         else:
