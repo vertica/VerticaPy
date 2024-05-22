@@ -2106,6 +2106,40 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        return self._get_qsteps(
+            unit=unit, kind=kind, categoryorder=categoryorder, show=show, **style_kwargs
+        )
+
+    def _get_qsteps(
+        self,
+        unit: Literal["s", "m", "h"] = "s",
+        kind: Literal[
+            "bar",
+            "barh",
+        ] = "bar",
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "sum descending",
+        show: bool = True,
+        **style_kwargs,
+    ) -> Union[PlottingObject, vDataFrame]:
+        """
+        Helper function to return the Query Execution Steps chart.
+        """
         if show:
             kind = self._check_kind(kind, ["bar", "barh"])
         div = self._get_interval_str(unit)
@@ -2539,6 +2573,34 @@ class QueryProfiler:
 
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        return self._get_qplan_tree(
+            path_id=path_id,
+            path_id_info=path_id_info,
+            show_ancestors=show_ancestors,
+            metric=metric,
+            pic_path=pic_path,
+            return_graphviz=return_graphviz,
+            **tree_style,
+        )
+
+    def _get_qplan_tree(
+        self,
+        path_id: Optional[int] = None,
+        path_id_info: Optional[list] = None,
+        show_ancestors: bool = True,
+        metric: Union[
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
+        ] = ["exec_time_ms", "prod_rows"],
+        pic_path: Optional[str] = None,
+        return_graphviz: bool = False,
+        **tree_style,
+    ) -> Union["Source", str]:
+        """
+        Helper function to draw the Query Plan tree.
         """
         rows = self.get_qplan(print_plan=False)
         if len(rows) == "":
@@ -2981,6 +3043,45 @@ class QueryProfiler:
 
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        return self._get_cpu_time(
+            kind=kind,
+            reverse=reverse,
+            categoryorder=categoryorder,
+            show=show,
+            **style_kwargs,
+        )
+
+    def _get_cpu_time(
+        self,
+        kind: Literal[
+            "bar",
+            "barh",
+        ] = "bar",
+        reverse: bool = False,
+        categoryorder: Literal[
+            "trace",
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            "min ascending",
+            "min descending",
+            "max ascending",
+            "max descending",
+            "sum ascending",
+            "sum descending",
+            "mean ascending",
+            "mean descending",
+            "median ascending",
+            "median descending",
+        ] = "max descending",
+        show: bool = True,
+        **style_kwargs,
+    ) -> Union[PlottingObject, vDataFrame]:
+        """
+        Helper function to return the CPU Time
+        by node and path_id chart.
         """
         if show:
             kind = self._check_kind(kind, ["bar", "barh"])
@@ -3513,11 +3614,11 @@ class QueryProfiler:
         cluster_info = self.get_cluster_config()._repr_html_()
         cluster_report = self.get_rp_status()._repr_html_()
         query_execution_report = self.get_qexecution_report()._repr_html_()
-        cpu_time_plot = self.get_cpu_time(kind="bar").to_html(full_html=False)
+        cpu_time_plot = self._get_cpu_time(kind="bar").to_html(full_html=False)
         get_qexecution = self.get_qexecution().to_html(full_html=False)
-        get_qsteps = self.get_qsteps(kind="barh").htmlcontent
+        get_qsteps = self._get_qsteps(kind="barh").htmlcontent
         get_qplan_profile = self.get_qplan_profile(kind="pie").to_html(full_html=False)
-        graphviz_tree = self.get_qplan_tree()
+        graphviz_tree = self._get_qplan_tree()
         svg_tree = graphviz_tree.pipe(format="svg").decode("utf-8")
         html_content = f"""
         <!DOCTYPE html>
