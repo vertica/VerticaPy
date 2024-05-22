@@ -15,7 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-from typing import Union
+from typing import Union, Set
+
+from verticapy._utils._sql._sys import _executeSQL
 
 
 class QprofUtility:
@@ -160,3 +162,18 @@ class QprofUtility:
             "median ascending",
             "median descending",
         ]
+
+    @staticmethod
+    def _get_set_of_tables_in_schema(target_schema: str, key: str) -> Set[str]:
+        result = _executeSQL(
+            f"""SELECT table_name FROM v_catalog.tables 
+                    WHERE 
+                        table_schema = '{target_schema}'
+                        and table_name ilike '%_{key}';
+                    """,
+            method="fetchall",
+        )
+        existing_tables = set()
+        for row in result:
+            existing_tables.add(row[0])
+        return existing_tables
