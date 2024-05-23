@@ -2654,6 +2654,7 @@ class QueryProfiler:
             metric=metric,
             pic_path=pic_path,
             return_graphviz=return_graphviz,
+            return_html=return_html,
             idx=idx,
             **tree_style,
         )
