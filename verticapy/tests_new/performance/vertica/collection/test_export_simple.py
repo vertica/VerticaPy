@@ -134,7 +134,7 @@ class TestQueryProfilerSimple:
         assert new_qp is not None
         # We don't validate the qplan tree in this test. We just want to ensure that it is
         # produced.
-        new_qp.get_qplan_tree()
+        new_qp.get_qplan_tree(return_html=False)
 
         # Also check that the tables were created ok
         loaded_tables = self._get_set_of_tables_in_schema(schema_loader, key)

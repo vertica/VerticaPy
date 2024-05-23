@@ -269,6 +269,7 @@ class QueryProfilerInterface(QueryProfiler):
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
                 use_temp_relation=False if temp_display == "Combined" else True,
+                return_html=False,
             )  # type: ignore
             html_widget = widgets.HTML(value=graph.pipe(format="svg").decode("utf-8"))
             box = widgets.HBox([html_widget])
@@ -282,6 +283,7 @@ class QueryProfilerInterface(QueryProfiler):
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
                 use_temp_relation=False if temp_display == "Combined" else True,
+                return_html=False,
             )
             output = read_package_file("html/index.html")
             output = replace_value(output, "var dotSrc = [];", f"var dotSrc = `{raw}`;")

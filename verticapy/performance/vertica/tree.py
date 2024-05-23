@@ -529,8 +529,8 @@ class PerformanceTree:
             ancestors = [ancestors]
         for i in ancestors:
             correct_ancestor = False
-            for row in self.rows:
-                if QprofUtility._get_label(row, return_path_id=True) == i:
+            for idx, row in enumerate(self.rows):
+                if QprofUtility._get_label(row, return_path_id=True, row_idx=idx) == i:
                     correct_ancestor = True
                     break
             if self._is_temp_relation_access(row) and correct_ancestor:
@@ -813,7 +813,7 @@ class PerformanceTree:
             res = res[1:]
         return res
 
-    def _get_metric(self, row: str, metric: str) -> int:
+    def _get_metric(self, row: str, metric: str, row_idx: int = 0) -> int:
         """
         Gets the metric of the
         specific row.
@@ -824,6 +824,8 @@ class PerformanceTree:
             Tree row.
         metric: str
             The metric to use.
+        row_idx: int, optional
+            The ID of the row.
 
         Returns
         -------
@@ -844,7 +846,7 @@ class PerformanceTree:
         elif metric in ("cost", "rows"):
             return 0
         else:
-            path_id = QprofUtility._get_label(row, return_path_id=True)
+            path_id = QprofUtility._get_label(row, return_path_id=True, row_idx=row_idx)
             if path_id in self.metric_value[metric]:
                 res = self.metric_value[metric][path_id]
                 if isinstance(res, NoneType):
@@ -1219,7 +1221,9 @@ class PerformanceTree:
         elif self.style["display_operator"]:
             wh = 1.1
         for j in range(len(self.metric)):
-            me += [[self._get_metric(self.rows[i], self.metric[j]) for i in range(n)]]
+            me += [
+                [self._get_metric(self.rows[i], self.metric[j], i) for i in range(n)]
+            ]
         if not (isinstance(self.metric[0], NoneType)):
             all_metrics = [math.log(1 + me[0][i]) for i in range(n)]
             m_min, m_max = min(all_metrics), max(all_metrics)
@@ -1271,7 +1275,7 @@ class PerformanceTree:
                 color = self._generate_gradient_color(alpha)
             else:
                 color = self.style["fillcolor"]
-            label = QprofUtility._get_label(self.rows[i])
+            label = QprofUtility._get_label(self.rows[i], row_idx=i)
             colors = [color]
             if len(self.metric) > 1:
                 if not (isinstance(self.metric[1], NoneType)):
@@ -1455,32 +1459,32 @@ class PerformanceTree:
         rows = "\n".join(self.rows).upper()
         res = ""
         if "OUTER" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-O</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">OUTER</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">O</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">OUTER</FONT></td></tr>'
         if "INNER" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-I</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">INNER</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">I</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">INNER</FONT></td></tr>'
         if "CROSS JOIN" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-X</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">CROSS JOIN</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">X</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">CROSS JOIN</FONT></td></tr>'
         if "FILTER" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-F</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">FILTER</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">F</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">FILTER</FONT></td></tr>'
         if "BROADCAST" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-B</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">B</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
         if "RESEGMENT" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-R</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">R</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
         if "RESEGMENT" in rows and "GLOBAL" in rows and "LOCAL" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-GLR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL/LOCAL RESEGMENT</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">GLR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL/LOCAL RESEGMENT</FONT></td></tr>'
         if "RESEGMENT" in rows and "GLOBAL" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-GR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL RESEGMENT</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">GR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL RESEGMENT</FONT></td></tr>'
         if "RESEGMENT" in rows and "LOCAL" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-LR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">LOCAL RESEGMENT</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">LR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">LOCAL RESEGMENT</FONT></td></tr>'
         if "HASH" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-H</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">HASH</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">H</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">HASH</FONT></td></tr>'
         if "MERGE" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-M</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">MERGE</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">M</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">MERGE</FONT></td></tr>'
         if "PIPELINED" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">-P</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">PIPELINED</FONT></td></tr>'
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">P</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">PIPELINED</FONT></td></tr>'
         if res:
             res_f = f'\tlegend_annotations [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
-            res = f'{res_f}<tr><td BGCOLOR="{bgcolor}"></td><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">Signification</FONT></td></tr>{res}'
+            res = f'{res_f}<tr><td BGCOLOR="{bgcolor}"></td><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">Path transition</FONT></td></tr>{res}'
             res += "</table>>]\n\n"
         return res
 
@@ -1510,7 +1514,7 @@ class PerformanceTree:
         all_metrics = []
         for me in metric:
             all_metrics += [
-                math.log(1 + self._get_metric(self.rows[i], me)) for i in range(n)
+                math.log(1 + self._get_metric(self.rows[i], me, i)) for i in range(n)
             ]
         m_min, m_max = min(all_metrics), max(all_metrics)
         if m_min == m_max:

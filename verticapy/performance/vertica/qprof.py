@@ -46,6 +46,9 @@ from verticapy.sql.dtypes import get_data_types
 if TYPE_CHECKING and conf.get_import_success("graphviz"):
     from graphviz import Source
 
+if conf.get_import_success("IPython"):
+    from IPython.display import HTML
+
 
 class QueryProfiler:
     """
@@ -1194,6 +1197,7 @@ class QueryProfiler:
             "dc_plan_activities": "v_internal",
             "dc_lock_attempts": "v_internal",
             "dc_plan_resources": "v_internal",
+            "dc_slow_events": "v_internal",
             "configuration_parameters": "v_monitor",
             "projection_storage": "v_monitor",
             "projection_usage": "v_monitor",
@@ -1215,6 +1219,7 @@ class QueryProfiler:
         """
         return [
             "dc_lock_attempts",
+            "dc_slow_events",
             "configuration_parameters",
             "projections",
             "projection_columns",
@@ -1737,6 +1742,7 @@ class QueryProfiler:
              - dc_explain_plans
              - dc_query_executions
              - dc_requests_issued
+             - dc_slow_events
              - host_resources
              - query_plan_profiles
              - query_profiles
@@ -2176,7 +2182,59 @@ class QueryProfiler:
 
     def get_qplan_explain(self, display_trees: bool = True) -> list:
         """
-        TODO
+        Returns the tree's query
+        explain plan as a ``list``
+        of titles and trees.
+
+        .. note::
+
+            A ``EXPLAIN VERBOSE`` query
+            is executed.
+
+        Parameters
+        ----------
+        display_trees: bool, optional
+            If set to ``True``,
+            prints the result before
+            returning the final output.
+
+        Returns
+        -------
+        list
+            List of the different
+            titles and trees.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily call the function to get
+        the explain plan:
+
+            .. ipython:: python
+
+                qprof.get_qplan_explain()
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
         query = self.request.strip()
         if query.upper().startswith(("EXPLAIN", "PROFILE")):
@@ -2358,6 +2416,8 @@ class QueryProfiler:
         ] = ["exec_time_ms", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
+        return_html: bool = True,
+        idx: Union[None, int, tuple] = None,
         **tree_style,
     ) -> Union["Source", str]:
         """
@@ -2408,6 +2468,19 @@ class QueryProfiler:
             If set to ``True``, the
             ``str`` Graphviz tree is
             returned.
+        return_html: bool, optional
+            If set to ``True``, the
+            ``HTML`` tree representation
+            is returned.
+        idx: int / tuple, optional
+            If not ``None``, it
+            represents the index
+            of the transaction
+            we want to visualize.
+            It is similar to
+            running ``set_position``
+            method before displaying
+            the final tree.
         tree_style: dict, optional
             ``dictionary`` used to
             customize the tree.
@@ -2581,6 +2654,8 @@ class QueryProfiler:
             metric=metric,
             pic_path=pic_path,
             return_graphviz=return_graphviz,
+            return_html=return_html,
+            idx=idx,
             **tree_style,
         )
 
@@ -2597,11 +2672,15 @@ class QueryProfiler:
         ] = ["exec_time_ms", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
+        return_html: bool = True,
+        idx: Union[None, int, tuple] = None,
         **tree_style,
     ) -> Union["Source", str]:
         """
         Helper function to draw the Query Plan tree.
         """
+        if not (isinstance(idx, NoneType)):
+            self.set_position(idx)
         rows = self.get_qplan(print_plan=False)
         if len(rows) == "":
             raise ValueError("The Query Plan is empty. Its data might have been lost.")
@@ -2650,7 +2729,12 @@ class QueryProfiler:
         )
         if return_graphviz:
             return obj.to_graphviz()
-        return obj.plot_tree(pic_path)
+        res = obj.plot_tree(pic_path)
+        if return_html:
+            res = res.pipe(format="svg").decode("utf-8")
+            if conf.get_import_success("IPython"):
+                return HTML(res)
+        return res
 
     # Step 6: Query plan profile
     def get_qplan_profile(
@@ -3618,7 +3702,7 @@ class QueryProfiler:
         get_qexecution = self.get_qexecution().to_html(full_html=False)
         get_qsteps = self._get_qsteps(kind="barh").htmlcontent
         get_qplan_profile = self.get_qplan_profile(kind="pie").to_html(full_html=False)
-        graphviz_tree = self._get_qplan_tree()
+        graphviz_tree = self._get_qplan_tree(return_html=False)
         svg_tree = graphviz_tree.pipe(format="svg").decode("utf-8")
         html_content = f"""
         <!DOCTYPE html>

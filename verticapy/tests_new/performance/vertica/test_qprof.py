@@ -980,6 +980,7 @@ class TestQueryProfiler:
             metric=metric,
             pic_path=pic_path,
             return_graphviz=return_graphviz,
+            return_html=False,
         )
         # actual
         ss1 = ""
