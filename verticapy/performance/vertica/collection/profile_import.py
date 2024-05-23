@@ -27,6 +27,7 @@ import pandas as pd
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.core.parsers.pandas import read_pandas
+from verticapy.performance.vertica.qprof_utility import QprofUtility
 
 # from verticapy.sql import insert_into
 
@@ -191,7 +192,9 @@ class ProfileImport:
             raise ProfileImportError(f"Schema {self.target_schema} does not exist")
 
     def _tables_exist_or_raise(self) -> None:
-        tables_in_schema = self._get_set_of_tables_in_schema()
+        tables_in_schema = QprofUtility._get_set_of_tables_in_schema(
+            self.target_schema, self.key
+        )
         all_tables = getAllCollectionTables(
             target_schema=self.target_schema, key=self.key, version=self.bundle_version
         )
@@ -210,20 +213,6 @@ class ProfileImport:
             f" in schema {self.target_schema}."
             f" Missing: [ {','.join(missing_tables)} ]"
         )
-
-    def _get_set_of_tables_in_schema(self) -> Set[str]:
-        result = _executeSQL(
-            f"""SELECT table_name FROM v_catalog.tables 
-                    WHERE 
-                        table_schema = '{self.target_schema}'
-                        and table_name ilike '%_{self.key}';
-                    """,
-            method="fetchall",
-        )
-        existing_tables = set()
-        for row in result:
-            existing_tables.add(row[0])
-        return existing_tables
 
     def _create_schema_if_not_exists(self) -> None:
         _executeSQL(
