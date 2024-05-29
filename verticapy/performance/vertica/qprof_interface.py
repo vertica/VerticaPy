@@ -80,7 +80,7 @@ class QueryProfilerInterface(QueryProfiler):
         # Jumpt to query dropdown
         self.query_select_dropdown = widgets.Dropdown(
             description="Jump to query",
-            options=[i + 1 for i in range(len(self.get_queries()))],
+            options=[i for i in range(len(self.get_queries()))],
         )
         self.query_select_dropdown.style.description_width = "100px"
         # Query Inofrmation - Query Text & Time
@@ -305,9 +305,15 @@ class QueryProfilerInterface(QueryProfiler):
             button (Any): represents the button that was clicked
         """
         button.disabled = True
-        self.query_select_dropdown.value = (
-            self.query_select_dropdown.value % len(self.get_queries())
-        ) + 1
+        total = len(self.get_queries())
+        current = self.query_select_dropdown.value
+        if current == (total - 1):
+            next = 0
+        elif current != 0:
+            next = current % (total - 1) + 1
+        else:
+            next = 1
+        self.query_select_dropdown.value = next
         # self.next()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
@@ -327,9 +333,13 @@ class QueryProfilerInterface(QueryProfiler):
             button (Any): represents the button that was clicked
         """
         button.disabled = True
-        self.query_select_dropdown.value = (
-            (self.query_select_dropdown.value - 2) % len(self.get_queries())
-        ) + 1
+        total = len(self.get_queries())
+        current = self.query_select_dropdown.value
+        if current == 0:
+            previous = total - 1
+        else:
+            previous = (current - 1) % (total - 1)
+        self.query_select_dropdown.value = previous
         self.previous()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
@@ -351,7 +361,7 @@ class QueryProfilerInterface(QueryProfiler):
         self.refresh_pathids.disabled = False
         self.index_widget.value = selection
         self.step_idx.value = selection
-        self.set_position(selection - 1)
+        self.set_position(selection)
         self.update_query_display()
 
     def refresh_clicked(self, button):
