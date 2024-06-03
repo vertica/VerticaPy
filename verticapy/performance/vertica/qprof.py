@@ -1536,14 +1536,14 @@ class QueryProfiler:
                 USING (transaction_id, statement_id)
         """
         query = self._replace_schema_in_query(query)
-        query += """
+        query += f"""
             FULL JOIN
                 v_monitor.query_requests AS q2 
                 USING (transaction_id, statement_id)
             WHERE 
                 {transaction_id_condition}
                 AND {statement_id_condition};
-                """
+        """
         res = _executeSQL(
             query,
             title="Getting the corresponding query",
