@@ -1510,18 +1510,37 @@ class QueryProfiler:
         self.requests = []
         self.request_labels = []
         self.qdurations = []
+        self.start_timestamp = []
+        self.end_timestamp = []
+        # Extracting transaction_ids and statement_ids from the list of tuples
+        transaction_ids = [t[0] for t in self.transactions]
+        statement_ids = [t[1] for t in self.transactions]
+        # Generating the WHERE clause for transaction_id
+        transaction_id_condition = "q0.transaction_id IN (" + ", ".join(map(str, transaction_ids)) + ")"
+        # Generating the WHERE clause for statement_id
+        statement_id_condition = "q0.statement_id IN (" + ", ".join(map(str, statement_ids)) + ")"
         query = f"""
+
             SELECT 
                 q0.transaction_id, 
                 q0.statement_id, 
-                request, 
-                label, 
-                query_duration_us
+                q0.request, 
+                q0.label, 
+                query_duration_us,
+                q2.start_timestamp,
+                q2.end_timestamp
             FROM 
-            v_internal.dc_requests_issued AS q0
+                v_internal.dc_requests_issued AS q0
             FULL JOIN
-            v_monitor.query_profiles AS q1 
-            USING (transaction_id, statement_id);"""
+                v_monitor.query_profiles AS q1 
+                USING (transaction_id, statement_id)
+            FULL JOIN
+                v_monitor.query_requests AS q2 
+                USING (transaction_id, statement_id)
+            WHERE 
+                {transaction_id_condition}
+                AND {statement_id_condition};
+        """
         query = self._replace_schema_in_query(query)
         res = _executeSQL(
             query,
@@ -1534,6 +1553,8 @@ class QueryProfiler:
                 "request": row[2],
                 "label": row[3],
                 "query_duration_us": row[4],
+                "query_start_timestamp": row[5],
+                "query_end_timestamp": row[6],
             }
         for tr_id, st_id in self.transactions:
             if (tr_id, st_id) not in transactions_dict:
@@ -1547,6 +1568,8 @@ class QueryProfiler:
                 self.requests += [info["request"]]
                 self.request_labels += [info["label"]]
                 self.qdurations += [info["query_duration_us"]]
+                self.start_timestamp += [info["query_start_timestamp"]]
+                self.end_timestamp += [info["query_end_timestamp"]]
         self.request = self.requests[self.transactions_idx]
         self.qduration = self.qdurations[self.transactions_idx]
 
