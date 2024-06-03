@@ -1751,6 +1751,8 @@ class QueryProfiler:
                 "request_label": copy.deepcopy(self.request_labels),
                 "request": copy.deepcopy(self.requests),
                 "qduration": [qd / 1000000 for qd in self.qdurations],
+                "start_timestamp": self.start_timestamp,
+                "end_timestamp": self.end_timestamp,
             },
             _clean_query=False,
         )
