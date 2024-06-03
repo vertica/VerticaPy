@@ -1515,10 +1515,16 @@ class QueryProfiler:
         # Extracting transaction_ids and statement_ids from the list of tuples
         transaction_ids = [t[0] for t in self.transactions]
         statement_ids = [t[1] for t in self.transactions]
+
         # Generating the WHERE clause for transaction_id
-        transaction_id_condition = "q0.transaction_id IN (" + ", ".join(map(str, transaction_ids)) + ")"
+        transaction_id_condition = (
+            "q0.transaction_id IN (" + ", ".join(map(str, transaction_ids)) + ")"
+        )
+
         # Generating the WHERE clause for statement_id
-        statement_id_condition = "q0.statement_id IN (" + ", ".join(map(str, statement_ids)) + ")"
+        statement_id_condition = (
+            "q0.statement_id IN (" + ", ".join(map(str, statement_ids)) + ")"
+        )
         query = f"""
 
             SELECT 
@@ -1543,7 +1549,7 @@ class QueryProfiler:
             WHERE 
                 {transaction_id_condition}
                 AND {statement_id_condition};
-        """
+                """
         res = _executeSQL(
             query,
             title="Getting the corresponding query",
