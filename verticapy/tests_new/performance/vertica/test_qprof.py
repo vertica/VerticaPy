@@ -57,6 +57,8 @@ class QprofAttr:
         self.requests = kwargs["requests"]
         self.request_labels = kwargs["request_labels"]
         self.qdurations = kwargs["qdurations"]
+        self.start_timestamp = kwargs["start_timestamp"]
+        self.end_timestamp = kwargs["end_timestamp"]
         self.key_id = None
         self.target_schema = {"v_internal": "qprof_test", "v_monitor": "qprof_test"}
         self.target_tables = {}
@@ -76,7 +78,13 @@ def qprof_data(titanic_vd: pytest.fixture, schema_loader: pytest.fixture) -> Qpr
     """
     # titanic = titanic_vd.to_pandas()
 
-    transactions, qdurations, request_labels = [], [], []
+    transactions, qdurations, request_labels, start_timestamp, end_timestamp = (
+        [],
+        [],
+        [],
+        [],
+        [],
+    )
 
     qprof_sql3 = f"""SELECT /*+LABEL('QueryProfiler_sql3_requests_UT')*/ ticket, substr(ticket, 1, 5) AS ticket, AVG(age) AS avg_age FROM {schema_loader}.titanic GROUP BY 1"""
 
@@ -99,6 +107,12 @@ def qprof_data(titanic_vd: pytest.fixture, schema_loader: pytest.fixture) -> Qpr
 
         qduration_sql = f"""SELECT query_duration_us FROM v_monitor.query_profiles WHERE transaction_id={transaction_id} AND statement_id={statement_id}"""
         qduration_res = current_cursor().execute(qduration_sql).fetchall()[0][0]
+        sql = f"select start_timestamp, end_timestamp from v_monitor.query_requests where request_label = '{q_info.label}' and request not like 'PROFILE%' ORDER BY start_timestamp DESC LIMIT 1"
+        res = current_cursor().execute(sql).fetchall()
+        logger.info(res)
+        start_timestamp, end_timestamp = (
+            res[0] if isinstance(res[0], list) == 1 else res
+        )
         # logger.info(qduration_res)
         qdurations.append(qduration_res)
         # logger.info(qdurations)
@@ -109,6 +123,8 @@ def qprof_data(titanic_vd: pytest.fixture, schema_loader: pytest.fixture) -> Qpr
             "requests": queries,
             "request_labels": request_labels,
             "qdurations": qdurations,
+            "start_timestamp": start_timestamp,
+            "end_timestamp": end_timestamp,
         }
     )
 
@@ -583,6 +599,22 @@ class TestQueryProfiler:
             .to_pandas()
             .astype({"qduration": float})
         )
+        # Convert the 'start_timestamp' column to datetime
+        actual_qprof_queries["start_timestamp"] = pd.to_datetime(
+            actual_qprof_queries["start_timestamp"]
+        )
+        # Truncate the 'start_timestamp' column to the nearest second
+        actual_qprof_queries["start_timestamp"] = actual_qprof_queries[
+            "start_timestamp"
+        ].dt.round("min")
+        # Convert the 'end_timestamp' column to datetime
+        actual_qprof_queries["end_timestamp"] = pd.to_datetime(
+            actual_qprof_queries["end_timestamp"]
+        )
+        # Truncate the 'end_timestamp' column to the nearest second
+        actual_qprof_queries["end_timestamp"] = actual_qprof_queries[
+            "end_timestamp"
+        ].dt.round("min")
         logger.info(f"Actual Result: {actual_qprof_queries}")
 
         logger.info("<<<<<<<<<<<<<<<<<< expected result >>>>>>>>>>>>>>>>>>>>>>>>>>>>")
@@ -600,11 +632,28 @@ class TestQueryProfiler:
                 "qduration": [
                     float(duration / 1000000) for duration in qprof_data.qdurations
                 ],
+                "start_timestamp": qprof_data.start_timestamp,
+                "end_timestamp": qprof_data.end_timestamp,
             }
+        )
+        expected_qprof_queries.start_timestamp = pd.to_datetime(
+            expected_qprof_queries.start_timestamp
+        )
+        expected_qprof_queries.start_timestamp = (
+            expected_qprof_queries.start_timestamp.dt.round("min").dt.tz_localize(None)
+        )
+        expected_qprof_queries.end_timestamp = pd.to_datetime(
+            expected_qprof_queries.end_timestamp
+        )
+        expected_qprof_queries.end_timestamp = (
+            expected_qprof_queries.end_timestamp.dt.round("min").dt.tz_localize(None)
         )
         logger.info(f"Expected Result: {expected_qprof_queries}")
 
         logger.info("<<<<<<<<<<<<<<<<<<<<<< compare result >>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print(expected_qprof_queries)
+
+        print(actual_qprof_queries)
         res = _compare_pandas(expected_qprof_queries, actual_qprof_queries)
         logger.info(f"Compare Result: {res}")
 
