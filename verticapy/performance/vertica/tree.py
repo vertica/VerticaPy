@@ -482,7 +482,7 @@ class PerformanceTree:
             for idx in range(len(res)):
                 res[idx] = (
                     res[idx].split(" ")[0],
-                    self._get_operator_edge("", res[idx].split(" ")[1]),
+                    self._get_operator_edge("", " ".join(res[idx].split(" ")[1:])),
                 )
             return res
         return []
