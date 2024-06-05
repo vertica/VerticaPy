@@ -47,6 +47,7 @@ class QueryProfilerInterface(QueryProfiler):
         add_profile: bool = True,
         check_tables: bool = True,
         iterchecks: bool = False,
+        print_info: bool = True,
     ) -> None:
         super().__init__(
             transactions,
@@ -57,6 +58,7 @@ class QueryProfilerInterface(QueryProfiler):
             add_profile,
             check_tables,
             iterchecks,
+            print_info,
         )
 
         self.apply_tree = widgets.Checkbox(
@@ -184,7 +186,7 @@ class QueryProfilerInterface(QueryProfiler):
             ],
         )
         projections_dml_widget = widgets.ToggleButtons(
-            options=["Default", "DML projections"],
+            options=["DML projections", "No DML projections"],
             disabled=False,
             tooltips=[
                 "If the operation is a DML, all target projections are displayed",
