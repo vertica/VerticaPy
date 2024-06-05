@@ -1386,7 +1386,11 @@ class QueryProfiler:
         for idx, tr in enumerate(transactions):
             if isinstance(tr, int):
                 transactions[idx] = (tr, 1)
-        if len(transactions) != 0:
+        if (
+            len(transactions) != 0
+            and not (isinstance(self.target_schema, NoneType))
+            and not (isinstance(self.key_id, NoneType))
+        ):
             v_temp_table_dict = self._v_table_dict()
             v_config_table_list = self._v_config_table_list()
             loop = v_temp_table_dict.items()
@@ -1673,6 +1677,67 @@ class QueryProfiler:
                 self.query_success += [info["query_success"]]
         self.request = self.requests[self.transactions_idx]
         self.qduration = self.qdurations[self.transactions_idx]
+
+    # Insertion
+
+    def insert(
+        self,
+        transactions: Union[int, tuple, list[int], list[tuple[int, int]]],
+    ) -> None:
+        """
+        Functions to insert new
+        transactions to the copy
+        of the performance tables.
+
+        transactions: str | tuple | list, optional
+        Six options are possible for this parameter:
+
+        - An ``integer``:
+            It will represent the ``transaction_id``,
+            the ``statement_id`` will be set to 1.
+        - A ``tuple``:
+            ``(transaction_id, statement_id)``.
+        - A ``list`` of ``tuples``:
+            ``(transaction_id, statement_id)``.
+        - A ``list`` of ``integers``:
+            the ``transaction_id``; the ``statement_id``
+            will automatically be set to 1.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily insert new transactions:
+
+        .. code-block:: python
+
+            qprof.insert([(1, 4), (3, 9)])
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_queries_1.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        self._insert_copy_v_table(transactions)
 
     # Navigation
 
