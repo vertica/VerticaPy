@@ -867,7 +867,9 @@ class QueryProfiler:
     @save_verticapy_logs
     def __init__(
         self,
-        transactions: Union[None, str, list[int], list[tuple[int, int]]] = None,
+        transactions: Union[
+            None, str, int, tuple, list[int], list[tuple[int, int]], list[str]
+        ] = None,
         key_id: Optional[str] = None,
         resource_pool: Optional[str] = None,
         target_schema: Union[None, str, dict] = None,
@@ -875,6 +877,7 @@ class QueryProfiler:
         add_profile: bool = True,
         check_tables: bool = True,
         iterchecks: bool = False,
+        print_info: bool = True,
     ) -> None:
         # TRANSACTIONS ARE STORED AS A LIST OF (tr_id, st_id) AND
         # AN INDEX USED TO NAVIGATE THROUGH THE DIFFERENT tuples.
@@ -946,16 +949,18 @@ class QueryProfiler:
                 > 0
             )
         ):
-            warning_message = (
-                f"Parameter 'transactions' is not None, "
-                "'key_id' is defined and parameter 'overwrite' "
-                "is set to False. It means you are trying to "
-                "use a potential existing key to store new "
-                "transactions. This operation is not yet "
-                "supported. A new key will be then generated."
-            )
-            warnings.warn(warning_message, Warning)
             self.key_id = str(uuid.uuid1()).replace("-", "")
+            if not (isinstance(key_id, NoneType)) and not (overwrite):
+                warning_message = (
+                    f"Parameter 'transactions' is not None, "
+                    "'key_id' is defined and parameter 'overwrite' "
+                    "is set to False. It means you are trying to "
+                    "use a potential existing key to store new "
+                    "transactions. This operation is not yet "
+                    "supported. A new key will be then generated: "
+                    f"{self.key_id}"
+                )
+                warnings.warn(warning_message, Warning)
         else:
             if isinstance(key_id, int):
                 self.key_id = str(key_id)
@@ -1038,10 +1043,10 @@ class QueryProfiler:
                 self.target_schema = copy.deepcopy(target_schema)
 
         self.overwrite = overwrite
-        self._create_copy_v_table()
+        self._create_copy_v_table(print_info=print_info)
 
         # SETTING THE requests AND queries durations.
-        if conf.get_option("print_info"):
+        if conf.get_option("print_info") and print_info:
             print("Setting the requests and queries durations...")
         self._set_request_qd()
 
@@ -1232,7 +1237,7 @@ class QueryProfiler:
             "storage_containers",
         ]
 
-    def _create_copy_v_table(self) -> None:
+    def _create_copy_v_table(self, print_info: bool = True) -> None:
         """
         Functions to create a copy
         of the performance tables.
@@ -1246,9 +1251,9 @@ class QueryProfiler:
         v_temp_table_dict = self._v_table_dict()
         v_config_table_list = self._v_config_table_list()
         loop = v_temp_table_dict.items()
-        if conf.get_option("print_info"):
+        if conf.get_option("print_info") and print_info:
             print("Searching the performance tables...")
-        if conf.get_option("tqdm"):
+        if conf.get_option("tqdm") and print_info:
             loop = tqdm(loop, total=len(loop))
         idx = 0
         for table, schema in loop:
@@ -1352,6 +1357,90 @@ class QueryProfiler:
                         )
                         warnings.warn(warning_message, Warning)
         self.target_tables = target_tables
+
+    def _insert_copy_v_table(
+        self,
+        transactions: Union[int, tuple, list[int], list[tuple[int, int]]],
+    ) -> None:
+        """
+        Functions to insert new
+        transactions to the copy
+        of the performance tables.
+
+        transactions: str | tuple | list, optional
+        Six options are possible for this parameter:
+
+        - An ``integer``:
+            It will represent the ``transaction_id``,
+            the ``statement_id`` will be set to 1.
+        - A ``tuple``:
+            ``(transaction_id, statement_id)``.
+        - A ``list`` of ``tuples``:
+            ``(transaction_id, statement_id)``.
+        - A ``list`` of ``integers``:
+            the ``transaction_id``; the ``statement_id``
+            will automatically be set to 1.
+        """
+        if isinstance(transactions, (int, tuple)):
+            transactions = [transactions]
+        for idx, tr in enumerate(transactions):
+            if isinstance(tr, int):
+                transactions[idx] = (tr, 1)
+        if len(transactions) != 0:
+            v_temp_table_dict = self._v_table_dict()
+            v_config_table_list = self._v_config_table_list()
+            loop = v_temp_table_dict.items()
+            if conf.get_option("print_info"):
+                print("Inserting the new transactions...")
+            if conf.get_option("tqdm"):
+                loop = tqdm(loop, total=len(loop))
+            idx = 0
+            for table, schema in loop:
+                if table not in v_config_table_list:
+                    new_schema = self.target_schema[schema]
+                    new_table = f"qprof_{table}_{self.key_id}"
+                    sql = f"INSERT INTO {new_schema}.{new_table}"
+                    sql += f" SELECT * FROM {schema}.{table}"
+                    sql += " WHERE "
+                    jdx = 0
+                    for tr, st in transactions:
+                        if jdx > 0:
+                            sql += " OR "
+                        sql += f"(transaction_id={tr} AND statement_id={st})"
+                        jdx += 1
+                    sql += " AND transaction_id || '-' || statement_id NOT IN "
+                    sql += "(SELECT transaction_id || '-' || statement_id FROM "
+                    sql += f"{new_schema}.{new_table})"
+                    sql += " ORDER BY transaction_id, statement_id"
+                    try:
+                        _executeSQL(
+                            sql,
+                            title="Inserting the new transactions.",
+                        )
+                    except Exception as e:
+                        warning_message = (
+                            "An error occurs during the insertion of the transactions: "
+                            f"{transactions} in the relation {new_schema}.{new_table}.\n"
+                            "\n\nError Details:\n" + str(e)
+                        )
+                        warnings.warn(warning_message, Warning)
+            self.__init__(
+                key_id=self.key_id,
+                target_schema=self.target_schema,
+                check_tables=False,
+                print_info=False,
+            )
+            missing_transactions = []
+            for tr in transactions:
+                if tr not in self.transactions:
+                    missing_transactions += [tr]
+            if missing_transactions:
+                warning_message = (
+                    "During the insertion, some transactions were missing:\n"
+                    f"{transactions}\n"
+                    "Are you sure that they exist?"
+                )
+                warnings.warn(warning_message, Warning)
 
     def _check_v_table(self, iterchecks: bool = True) -> None:
         """
