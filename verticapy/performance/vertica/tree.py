@@ -939,7 +939,14 @@ class PerformanceTree:
         else:
             path_id = QprofUtility._get_label(row, return_path_id=True, row_idx=row_idx)
             if path_id in self.metric_value[metric]:
-                res = self.metric_value[metric][path_id]
+                if (
+                    path_id < -1
+                    and -1 in self.metric_value[metric]
+                    and path_id not in self.metric_value[metric]
+                ):
+                    res = self.metric_value[metric][-1]
+                else:
+                    res = self.metric_value[metric][path_id]
                 if isinstance(res, NoneType):
                     return 0
                 return res
@@ -1228,7 +1235,7 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
-        if isinstance(label, int) and label <= -1000:
+        if isinstance(label, int) and label < 0:
             label = self._get_special_operator(operator)
         if not (self.style["display_operator"]) and len(colors) == 1:
             return f'"{label}", style="filled", fillcolor="{colors[0]}"'
