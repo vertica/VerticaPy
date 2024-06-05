@@ -1512,6 +1512,7 @@ class QueryProfiler:
         self.qdurations = []
         self.start_timestamp = []
         self.end_timestamp = []
+        self.query_success = []
         # Extracting transaction_ids and statement_ids from the list of tuples
         transaction_ids = [t[0] for t in self.transactions]
         statement_ids = [t[1] for t in self.transactions]
@@ -1534,7 +1535,8 @@ class QueryProfiler:
                 q0.label, 
                 query_duration_us,
                 q2.start_timestamp,
-                q2.end_timestamp
+                q2.end_timestamp,
+                q2.success
             FROM 
                 v_internal.dc_requests_issued AS q0
             FULL JOIN
@@ -1563,6 +1565,7 @@ class QueryProfiler:
                 "query_duration_us": row[4],
                 "query_start_timestamp": row[5],
                 "query_end_timestamp": row[6],
+                "query_success": row[7],
             }
         for tr_id, st_id in self.transactions:
             if (tr_id, st_id) not in transactions_dict:
@@ -1578,6 +1581,7 @@ class QueryProfiler:
                 self.qdurations += [info["query_duration_us"]]
                 self.start_timestamp += [info["query_start_timestamp"]]
                 self.end_timestamp += [info["query_end_timestamp"]]
+                self.query_success += [info["query_success"]]
         self.request = self.requests[self.transactions_idx]
         self.qduration = self.qdurations[self.transactions_idx]
 

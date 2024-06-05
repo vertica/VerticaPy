@@ -83,9 +83,23 @@ class QueryProfilerInterface(QueryProfiler):
             options=[i for i in range(len(self.get_queries()))],
         )
         self.query_select_dropdown.style.description_width = "100px"
+        # Success and Failure HTML
+        self.success_html = """
+        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'>
+            <circle cx='12' cy='12' r='12' fill='#4CAF50'/>
+            <path d='M9 19c-.256 0-.512-.098-.707-.293l-5-5c-.39-.39-.39-1.024 0-1.414s1.024-.39 1.414 0L9 16.586l10.293-10.293c.39-.39 1.024-.39 1.414 0s.39 1.024 0 1.414l-11 11c-.195.195-.451.293-.707.293z' fill='white'/>
+        </svg>
+        """
+        self.failure_html = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+            <circle cx="12" cy="12" r="12" fill="#F44336"/>
+            <path d="M15.5355 8.46447a1 1 0 0 0-1.4142 0L12 10.5858 9.87868 8.46447a1 1 0 0 0-1.4142 1.4142L10.5858 12 8.46447 14.1213a1 1 0 0 0 1.4142 1.4142L12 13.4142l2.1213 2.1213a1 1 0 0 0 1.4142-1.4142L13.4142 12l2.1213-2.1213a1 1 0 0 0 0-1.4142z" fill="white"/>
+        </svg>
+        """
         # Query Inofrmation - Query Text & Time
         self.query_display_info = widgets.HTML(
             value=f"""
+        <b>Query Execution Success:</b> {self.success_html if self.query_success else self.failure_html} <br>
         <b>Execution Time:</b> {self.get_qduration()} <br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
@@ -408,6 +422,7 @@ class QueryProfilerInterface(QueryProfiler):
         current_query = self.get_request(print_sql=False, return_html=True)
         self.query_display.children[0].value = current_query
         self.query_display_info.value = f"""
+        <b>Query Execution Success:</b> {self.success_html if self.query_success else self.failure_html} <br>
         <b>Execution Time:</b> {self.get_qduration()} <br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
