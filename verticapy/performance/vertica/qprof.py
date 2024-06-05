@@ -2629,6 +2629,11 @@ class QueryProfiler:
                 temporary relation 8
                 and the main relation.
                 Default: []
+            - display_projections_dml:
+                If set to ``True`` and
+                the operation is a DML
+                all the target projections
+                are displayed.
 
         Returns
         -------
