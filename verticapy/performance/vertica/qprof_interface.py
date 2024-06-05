@@ -83,9 +83,23 @@ class QueryProfilerInterface(QueryProfiler):
             options=[i for i in range(len(self.get_queries()))],
         )
         self.query_select_dropdown.style.description_width = "100px"
+        # Success and Failure HTML
+        self.success_html = """
+        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'>
+            <circle cx='12' cy='12' r='12' fill='#4CAF50'/>
+            <path d='M9 19c-.256 0-.512-.098-.707-.293l-5-5c-.39-.39-.39-1.024 0-1.414s1.024-.39 1.414 0L9 16.586l10.293-10.293c.39-.39 1.024-.39 1.414 0s.39 1.024 0 1.414l-11 11c-.195.195-.451.293-.707.293z' fill='white'/>
+        </svg>
+        """
+        self.failure_html = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+            <circle cx="12" cy="12" r="12" fill="#F44336"/>
+            <path d="M15.5355 8.46447a1 1 0 0 0-1.4142 0L12 10.5858 9.87868 8.46447a1 1 0 0 0-1.4142 1.4142L10.5858 12 8.46447 14.1213a1 1 0 0 0 1.4142 1.4142L12 13.4142l2.1213 2.1213a1 1 0 0 0 1.4142-1.4142L13.4142 12l2.1213-2.1213a1 1 0 0 0 0-1.4142z" fill="white"/>
+        </svg>
+        """
         # Query Inofrmation - Query Text & Time
         self.query_display_info = widgets.HTML(
             value=f"""
+        <b>Query Execution Success:</b> {self.success_html if self.query_success else self.failure_html} <br>
         <b>Execution Time:</b> {self.get_qduration()} <br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
@@ -169,6 +183,14 @@ class QueryProfilerInterface(QueryProfiler):
                 "Show a condensed tree without any separate temporary relations",
             ],
         )
+        projections_dml_widget = widgets.ToggleButtons(
+            options=["Default", "DML projections"],
+            disabled=False,
+            tooltips=[
+                "If the operation is a DML, all target projections are displayed",
+                "Default view",
+            ],
+        )
         self.colors = makeItems(
             [
                 (
@@ -191,6 +213,7 @@ class QueryProfilerInterface(QueryProfiler):
         )
         tree_settings = [
             temp_rel_widget,
+            projections_dml_widget,
             self.colors["color low"].get_item(),
             self.colors["color high"].get_item(),
             tree_button_box,
@@ -226,6 +249,7 @@ class QueryProfilerInterface(QueryProfiler):
             "path_id": self.pathid_dropdown.get_child(),
             "apply_tree_clicked": self.apply_tree,
             "temp_display": temp_rel_widget,
+            "projection_display": projections_dml_widget,
         }
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
@@ -249,6 +273,7 @@ class QueryProfilerInterface(QueryProfiler):
         path_id,
         apply_tree_clicked,
         temp_display,
+        projection_display,
     ):
         """
         Callback function that displays the Query Plan Tree.
@@ -269,6 +294,9 @@ class QueryProfilerInterface(QueryProfiler):
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
                 use_temp_relation=False if temp_display == "Combined" else True,
+                display_projections_dml=False
+                if projection_display == "Default"
+                else True,
                 return_html=False,
             )  # type: ignore
             html_widget = widgets.HTML(value=graph.pipe(format="svg").decode("utf-8"))
@@ -283,6 +311,9 @@ class QueryProfilerInterface(QueryProfiler):
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
                 use_temp_relation=False if temp_display == "Combined" else True,
+                display_projections_dml=False
+                if projection_display == "Default"
+                else True,
                 return_html=False,
             )
             output = read_package_file("html/index.html")
@@ -391,6 +422,7 @@ class QueryProfilerInterface(QueryProfiler):
         current_query = self.get_request(print_sql=False, return_html=True)
         self.query_display.children[0].value = current_query
         self.query_display_info.value = f"""
+        <b>Query Execution Success:</b> {self.success_html if self.query_success else self.failure_html} <br>
         <b>Execution Time:</b> {self.get_qduration()} <br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
