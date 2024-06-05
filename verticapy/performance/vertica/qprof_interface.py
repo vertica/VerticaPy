@@ -169,6 +169,14 @@ class QueryProfilerInterface(QueryProfiler):
                 "Show a condensed tree without any separate temporary relations",
             ],
         )
+        projections_dml_widget = widgets.ToggleButtons(
+            options=["Default", "DML projections"],
+            disabled=False,
+            tooltips=[
+                "If the operation is a DML, all target projections are displayed",
+                "Default view",
+            ],
+        )
         self.colors = makeItems(
             [
                 (
@@ -191,6 +199,7 @@ class QueryProfilerInterface(QueryProfiler):
         )
         tree_settings = [
             temp_rel_widget,
+            projections_dml_widget,
             self.colors["color low"].get_item(),
             self.colors["color high"].get_item(),
             tree_button_box,
@@ -226,6 +235,7 @@ class QueryProfilerInterface(QueryProfiler):
             "path_id": self.pathid_dropdown.get_child(),
             "apply_tree_clicked": self.apply_tree,
             "temp_display": temp_rel_widget,
+            "projection_display": projections_dml_widget,
         }
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
@@ -249,6 +259,7 @@ class QueryProfilerInterface(QueryProfiler):
         path_id,
         apply_tree_clicked,
         temp_display,
+        projection_display,
     ):
         """
         Callback function that displays the Query Plan Tree.
@@ -269,6 +280,9 @@ class QueryProfilerInterface(QueryProfiler):
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
                 use_temp_relation=False if temp_display == "Combined" else True,
+                display_projections_dml=False
+                if projection_display == "Default"
+                else True,
                 return_html=False,
             )  # type: ignore
             html_widget = widgets.HTML(value=graph.pipe(format="svg").decode("utf-8"))
@@ -283,6 +297,9 @@ class QueryProfilerInterface(QueryProfiler):
                 color_low=self.tree_style["color_low"],
                 color_high=self.tree_style["color_high"],
                 use_temp_relation=False if temp_display == "Combined" else True,
+                display_projections_dml=False
+                if projection_display == "Default"
+                else True,
                 return_html=False,
             )
             output = read_package_file("html/index.html")
