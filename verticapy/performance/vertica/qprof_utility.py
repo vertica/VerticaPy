@@ -69,18 +69,32 @@ class QprofUtility:
                     return -40000 - row_idx
                 return -1000
             res = res.split("PATH ID: ")[1].split(")")[0]
+            mul = 1
+            if len(res.strip()) > 0 and "-" == res.strip()[0]:
+                mul = -1
             res = re.sub(r"[^0-9]", "", res)
             if len(res) == 0:
                 return -1
-            return int(res)
+            return int(res) * mul
         return res
 
     @staticmethod
-    def _get_rows(rows: str) -> list:
+    def _get_rows(rows: str) -> list[str]:
         """
         ...
         """
         qplan = rows.split("\n")
+        current_id = -1
+        for idx, row in enumerate(qplan):
+            if (
+                "[" in row
+                and "]" in row
+                and "Cost" in row
+                and "Rows" in row
+                and "PATH ID: " not in row
+            ):
+                qplan[idx] += f" (PATH ID: {current_id})"
+                current_id -= 1
         n = len(qplan)
         rows_list, tmp_rows = [], []
         for i in range(n):
