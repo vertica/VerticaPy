@@ -262,6 +262,6 @@ class TestTFIDF:
         elif attribute_name == "fixed_vocabulary_":
             assert vpy_model.fixed_vocabulary_ == py_model.fixed_vocabulary_
         elif attribute_name == "stop_words_":
-            assert list(vpy_model.stop_words_) == list(py_model.stop_words_)
+            assert list(vpy_model.stop_words_) == list(py_model.stop_words)
         else:
             assert vpy_model.n_document_ == len(self.documents)

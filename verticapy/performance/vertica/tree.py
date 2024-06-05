@@ -146,8 +146,9 @@ class PerformanceTree:
         ):
             raise ValueError(
                 "No PATH ID detected in the Query Plan.\n"
-                "It seems to be empty.\nAre you sured to have "
-                "profiled your query?"
+                "Please be sure to populate the 'v_internal.dc_explain_plans' "
+                "DC table.\nYou might sometimes face retention problems.\n"
+                "Are you sure to have profiled your query?"
             )
         self.rows = QprofUtility._get_rows(rows)
         self.path_order = QprofUtility._get_path_order(self.rows)
@@ -285,6 +286,8 @@ class PerformanceTree:
             d["temp_relation_access"] = [d["temp_relation_access"]]
         if "temp_relation_order" not in d:
             d["temp_relation_order"] = []
+        if "display_projections_dml" not in d:
+            d["display_projections_dml"] = True
         self.style = d
 
     # Utils
@@ -452,6 +455,92 @@ class PerformanceTree:
             return f"{round(nb / 1e9)}B"
         else:
             return f"{round(nb / 1e12)}T"
+
+    # DML: Target Projections
+
+    def _get_target_projection(self, row: str) -> list[str]:
+        """
+        Returns the target projections.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+
+        Returns
+        -------
+        list
+            target projections.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if "Target Projection: " in row:
+            res = row.split("Target Projection: ")[1:]
+            for idx in range(len(res)):
+                res[idx] = (
+                    res[idx].split(" ")[0],
+                    self._get_operator_edge("", res[idx].split(" ")[1]),
+                )
+            return res
+        return []
+
+    def _get_target_projection_links(self, row: str, node: int) -> str:
+        """
+        Returns the target projections
+        links.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+        node: int
+            Node ID.
+
+        Returns
+        -------
+        str
+            target projections links.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if node >= 0:
+            return ""
+        res = ""
+        projs = self._get_target_projection(row)
+        color = self.style["edge_color"]
+        fontcolor = self.style["fontcolor"]
+        fontsize = self.style["fontsize"] / 2
+        fillcolor = self.style["fillcolor"]
+        width = self.style["width"] * 80
+        height = self.style["height"] * 60
+        style = "solid"
+        wh = 0.8
+        for idx, proj in enumerate(projs):
+            init_node = -1000000 + (node + 1) * 1000 - idx
+            label = proj[0]
+            schema, table = schema_relation(label)
+            schema, table = schema[1:-1], table[1:-1]
+            if len(label) > 12:
+                label = ".." + table
+            if len(label) > 12:
+                label = label[:12]
+            label = (
+                '<<TABLE border="1" cellborder="1" cellspacing="0" '
+                f'cellpadding="0"><TR><TD WIDTH="{width}" '
+                f'HEIGHT="{height}" BGCOLOR="{fillcolor}">'
+                f'<FONT POINT-SIZE="{fontsize}" COLOR="{fontcolor}"'
+                f">{label}</FONT></TD></TR></TABLE>>"
+            )
+            params = f'width={wh}, height={wh}, tooltip="{proj[0]}", fixedsize=true, URL="#path_id={init_node}"'
+            res += f"\t{init_node} [{params}, label={label}];\n"
+            res += f'\t{init_node} -> {node} [label="{proj[1]}", style={style}, fontcolor="{color}"];\n'
+        return res
 
     # Special Methods
 
@@ -803,6 +892,8 @@ class PerformanceTree:
                 res += "-LR"
                 if "HASH" in parent_operator:
                     res += "-H"
+            elif "(RESEGMENT)" in parent_operator:
+                res += "-R"
             elif "HASH" in parent_operator:
                 res += "-H"
             if "MERGE" in parent_operator:
@@ -1372,6 +1463,8 @@ class PerformanceTree:
         for i in range(n):
             row = self._format_row(self.rows[i].replace('"', "'"))
             tree_id = self.path_order[i]
+            if self.style["display_projections_dml"]:
+                res += self._get_target_projection_links(row, tree_id)
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
             parent, child = relationships[i]
