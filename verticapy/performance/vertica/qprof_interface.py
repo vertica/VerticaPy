@@ -390,7 +390,7 @@ class QueryProfilerInterface(QueryProfiler):
         Args:
             Dropdown selection (Any): represents the selection
         """
-        self.pathid_dropdown.set_child_attr("disabled", True)
+        # self.pathid_dropdown.set_child_attr("disabled", True)
         self.refresh_pathids.disabled = False
         self.index_widget.value = selection
         self.step_idx.value = selection
