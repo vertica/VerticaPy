@@ -5,7 +5,7 @@ VerticaPyLab
 =================
 
 The easiest way to try out VerticaPy is with `VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_, a docker-based 
-JyputerLab environement designed to provide users with a powerful, easy-to-use development platform for VerticaPy. Capitalizing
+JupyterLab environement designed to provide users with a powerful, easy-to-use development platform for VerticaPy. Capitalizing
 on the convenicnece of docker, VerticaPyLab eliminates the need for any intricate installations, configurations, and dependency 
 management. VerticaPyLab extends the capabilities of JupyterLab by integrating essential tools, extensions, and utilities that 
 allow you to unlock the full potential of VerticaPy's machine learning and analytic funtionalities, all while utilizing the 
@@ -17,11 +17,11 @@ of Vertica with the capabilities of Python's ML toolkit.
 
 Some key features of VerticaPyLab include the following:
 - Autocompletion and syntax highlighting: enhance your coding efficiency and write more accurate, error free code with the 
-help of automplete and syntax highlighting.
+help of autocomplete and syntax highlighting.
 - QueryProfiler: use the QueryProfiler tool to investigate and identify the reasons why a query or set of queries are running slow.
 - Graphics and visualizations: create an array of visualizations and plots directly in the JupyterLab environment 
 using the power of Grafana, Matplotlib, Plotly, and other libraries.
-- Run vsql: execute Vertica's vsql editor from the VerticaPyLab interface, streamlining your database administration tasks.
+- Run vsql: execute the Vertica vsql editor from the VerticaPyLab interface, streamlining your database administration tasks.
 - Seamless data ingestion: VerticaPyLab offers streamlined data ingestion capabilities, allowing you to effortlessly load 
 and process massive datasets from your Vertica database.
 
@@ -130,7 +130,7 @@ The following steps import and launch VerticaPyLab:
 Getting started with VerticaPyLab
 ===================================
 
-Launching VerticaPyLab will take you to the following homepage:
+Launching VerticaPyLab takes you to the following homepage:
 
 .. image:: ../../docs/source/_static/verticapylab.png
    :width: 80%
@@ -142,5 +142,5 @@ connection, you can use it to reconnect to the database by selecting it in **Ava
 - QueryProfiler: profile a query or set of queries to investigate reasons for slow performance. You can either load
 an existing QueryProfiler object or create one from scratch. After you load or create a QueryProfiler object, a window 
 opens with an interactive version of the query plan. 
-- Data Science Essentials: explore a set of interactive data science tutorials that walk through some of the capabilities
+- Data Science Essentials: explore a set of interactive data science tutorials that walk through some of the amazing capabilities
 of VerticaPy.
