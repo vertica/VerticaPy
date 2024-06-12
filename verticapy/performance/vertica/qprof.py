@@ -1605,7 +1605,7 @@ class QueryProfiler:
         self.qdurations = []
         self.start_timestamp = []
         self.end_timestamp = []
-        self.query_success = []
+        self.query_successes = []
         # Extracting transaction_ids and statement_ids from the list of tuples
         transaction_ids = [t[0] for t in self.transactions]
         statement_ids = [t[1] for t in self.transactions]
@@ -1674,9 +1674,10 @@ class QueryProfiler:
                 self.qdurations += [info["query_duration_us"]]
                 self.start_timestamp += [info["query_start_timestamp"]]
                 self.end_timestamp += [info["query_end_timestamp"]]
-                self.query_success += [info["query_success"]]
+                self.query_successes += [info["query_success"]]
         self.request = self.requests[self.transactions_idx]
         self.qduration = self.qdurations[self.transactions_idx]
+        self.query_success = self.query_successes[self.transactions_idx]
 
     # Insertion
 
@@ -1772,6 +1773,7 @@ class QueryProfiler:
                 self.statement_id = self.transactions[idx][1]
                 self.request = self.requests[idx]
                 self.qduration = self.qdurations[idx]
+                self.query_success = self.query_successes[idx]
             else:
                 raise TypeError(
                     "Wrong type for parameter 'idx'. Expecting: int or tuple."
