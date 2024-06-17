@@ -286,7 +286,7 @@ def parse_explain_graphviz_text(rows: list[str]) -> list[str]:
     result = []
     while i < n:
         if "digraph G {" in rows[i:]:
-            if rows[i:i + 11] != "digraph G {":
+            if rows[i : i + 11] != "digraph G {":
                 i += 1
             else:
                 result += [rows[k:i].strip()]
