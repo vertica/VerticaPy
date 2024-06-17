@@ -282,16 +282,27 @@ def parse_explain_graphviz_text(rows: list[str]) -> list[str]:
     """
     rows = [row[0] for row in rows]
     rows = "\n".join(rows)
-    splits = rows.split("digraph G {")
+    n, i, k = len(rows), 0, 0
     result = []
-    for row in splits:
-        if row.startswith("\ngraph ["):
-            tmp_result = row.split("}")
-            graphviz_tree = "digraph G {" + tmp_result[0] + "}"
-            result += [graphviz_tree]
-            result += ["}".join(tmp_result[1:])]
+    while i < n:
+        if "digraph G {" in rows[i:]:
+            if rows[i:i + 11] != "digraph G {":
+                i += 1
+            else:
+                result += [rows[k:i].strip()]
+                k, nb = i, 1
+                i += 12
+                while nb > 0:
+                    if rows[i] == "{":
+                        nb += 1
+                    elif rows[i] == "}":
+                        nb -= 1
+                    i += 1
+                result += [rows[k:i].strip()]
+                k = i
         else:
-            result += [row]
+            result += [rows[i:].strip()]
+            break
     return result
 
 
