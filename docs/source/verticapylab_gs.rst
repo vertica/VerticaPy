@@ -130,13 +130,8 @@ The following steps import and launch VerticaPyLab:
 Getting started with VerticaPyLab
 ===================================
 
-Launching VerticaPyLab takes you to the following homepage:
-
-.. image:: ../../docs/source/_static/verticapylab.png
-   :width: 80%
-   :align: center
-
-From this page, you have access to a number of tools and functionalites, including:
+After you launch the service, you are taken to the VerticaPy UI homepage. From this page, you have access to a number of tools
+and functionalites, including:
 - Connect: connect to a Vertica database. You will need the host, username, password, and database name. Once you create a 
 connection, you can use it to reconnect to the database by selecting it in **Available connections**.
 - QueryProfiler: profile a query or set of queries to investigate reasons for slow performance. You can either load
