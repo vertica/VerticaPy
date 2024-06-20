@@ -256,9 +256,14 @@ def calculate_tolerance(vpy_score, py_score):
     _rel_tol = abs(vpy_score - py_score) / min(abs(vpy_score), abs(py_score))
     _abs_tol = abs(vpy_score - py_score) / (1 + min(abs(vpy_score), abs(py_score)))
 
-    print(
-        f"rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
-    )
+    try:
+        print(
+            f"rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
+    except:
+        print(
+            f"rel_tol(e): {'%.e' % float(_rel_tol)}, abs_tol(e): {'%.e' % float(_abs_tol)}"
+        )
 
     return _rel_tol, _abs_tol
 

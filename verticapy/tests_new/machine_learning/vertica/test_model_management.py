@@ -242,13 +242,21 @@ class TestModelManagement:
                 titanic_vd_fun, ["age", "fare", "sex"], "prediction"
             )
             if category == "pmml":
-                vpy_res = np.sum(
-                    [
-                        i[0]["predicted_value"]
-                        for i in pred_vdf[["prediction"]].to_list()
-                    ],
-                    dtype=int,
-                )
+                try:
+                    vpy_res = np.sum(
+                        [
+                            i[0]["predicted_value"]
+                            for i in pred_vdf[["prediction"]].to_list()
+                        ],
+                        dtype=int,
+                    )
+                except:
+                    vpy_res = sum(
+                        [
+                            i[0]["predicted_value"]
+                            for i in pred_vdf[["prediction"]].to_list()
+                        ],
+                    )
             else:
                 vpy_res = np.mean(
                     list(

@@ -319,7 +319,9 @@ class ProfileImport:
         When files are missing, logs a warning or raises an error depending on
         the value of ``self.raise_when_missing_files``
         """
-        if len(missing_files) == 0:
+        if (
+            len(missing_files) <= 1
+        ):  # To change to 0 when we add the dc_slow_events in the archive
             return
         message = (
             f"Bundle {self.filename} unpacked in directory {unpack_dir}"
