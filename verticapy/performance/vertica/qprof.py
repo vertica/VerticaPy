@@ -1904,7 +1904,7 @@ class QueryProfiler:
         requests = copy.deepcopy(self.requests)
         total_size = sum([len(item) for item in self.requests])
         if total_size > 36000:
-            warning_message += (
+            warning_message = (
                 "Some of the requests in the schema seem to "
                 "be really large. They will be truncated."
             )
