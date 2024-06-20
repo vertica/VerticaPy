@@ -96,7 +96,10 @@ class VoronoiPlot(PlotlyBase):
     def _get_voronoi_lines(self, points: np.array) -> tuple[list, list]:
         vor = scipy_st.Voronoi(points)
         center = vor.points.mean(axis=0)
-        ptp_bound = vor.points.ptp(axis=0)
+        try:
+            ptp_bound = vor.points.ptp(axis=0)
+        except:
+            ptp_bound = np.ptp(vor.points, axis=0)
         finite_segments = []
         infinite_segments = []
         for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
