@@ -1901,6 +1901,19 @@ class QueryProfiler:
         current_query = [
             (self.transaction_id, self.statement_id) == tr for tr in self.transactions
         ]
+        requests = copy.deepcopy(self.requests)
+        total_size = sum([len(item) for item in self.requests])
+        if total_size > 36000:
+            warning_message += (
+                "Some of the requests in the schema seem to "
+                "be really large. They will be truncated."
+            )
+            warnings.warn(warning_message, Warning)
+            if len(requests) < 36:
+                k = 1000
+            else:
+                k = 100
+            requests = [item[:k] for item in requests]
 
         return vDataFrame(
             {
@@ -1909,7 +1922,7 @@ class QueryProfiler:
                 "transaction_id": [tr[0] for tr in self.transactions],
                 "statement_id": [tr[1] for tr in self.transactions],
                 "request_label": copy.deepcopy(self.request_labels),
-                "request": copy.deepcopy(self.requests),
+                "request": requests,
                 "qduration": [qd / 1000000 for qd in self.qdurations],
                 "start_timestamp": self.start_timestamp,
                 "end_timestamp": self.end_timestamp,
