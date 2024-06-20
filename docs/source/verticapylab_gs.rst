@@ -16,13 +16,11 @@ necessary dependecies installed. Using these two components, VerticaPyLab offers
 of Vertica with the capabilities of VerticaPy and the ease of Python syntax.
 
 Some key features of VerticaPyLab include the following:
- - QueryProfiler: use the QueryProfiler tool to investigate and identify the reasons why a query or set of queries are running slow.
- - Graphics and visualizations: create an array of visualizations and plots directly in the JupyterLab environment 
-using the power of Grafana, Matplotlib, Plotly, and other libraries.
- - Run vsql: execute the Vertica vsql editor from the VerticaPyLab interface, streamlining your database administration tasks.
- - Seamless data ingestion: VerticaPyLab offers streamlined data ingestion capabilities, allowing you to effortlessly load 
-and process massive datasets from your Vertica database.
- - Interactive tutorials: familiarize yourself with core VerticaPy concepts using the included VerticaPy lessons.
+
+- **QueryProfiler:** use the QueryProfiler tool to investigate and identify the reasons why a query or set of queries are running slow.
+- **Graphics and visualizations:** create an array of visualizations and plots directly in the JupyterLab environment using the power of Highcharts, Matplotlib, Plotly, and other libraries.
+- **Seamless data ingestion:** VerticaPyLab offers streamlined data ingestion capabilities, allowing you to effortlessly load and process massive datasets from your Vertica database.
+- **Interactive tutorials:** familiarize yourself with core VerticaPy concepts using the included VerticaPy lessons.
 
 Install VerticaPyLab
 =====================
@@ -50,12 +48,12 @@ Install WSL 2
 
 2. Run the following command, which enables the required components, downloads the latest Linux kernel, sets WSL 2 as default, and installs the default Ubuntu distribution:
 	
-    .. code-block:: 
-        
-      $ wsl --install   
+.. code-block:: 
+    
+  $ wsl --install   
 
 
-    .. note:: The above command works only if WSL is not already installed. If the above command returns the WSL help text, run `wsl --list --online` to see a list of available Linux distributions, then run `wsl --install -d `*`DistroName`*  to install one of the available distributions. To uninstall WSL, see `unregister or uninstall a Linux distribution <https://docs.microsoft.com/en-us/windows/wsl/basic-commands#unregister-or-uninstall-a-linux-distribution>`_.
+.. note:: The above command works only if WSL is not already installed. If the above command returns the WSL help text, run `wsl --list --online` to see a list of available Linux distributions, then run `wsl --install -d `*`DistroName`*  to install one of the available distributions. To uninstall WSL, see `unregister or uninstall a Linux distribution <https://docs.microsoft.com/en-us/windows/wsl/basic-commands#unregister-or-uninstall-a-linux-distribution>`_.
 
 3. Reboot your machine. The Linux distribution you installed above should start automatically. If it does not, you can start it manually from the Windows Start menu.
 
@@ -64,9 +62,9 @@ Install WSL 2
 5. Set your username and password.
 6. Install the **make** package:
 
-    .. code-block::
+.. code-block::
 
-      $ sudo apt install make
+  $ sudo apt install make
 
 
 Docker Desktop
@@ -88,21 +86,19 @@ VerticaPyLab Quickstart
 The following steps import and launch VerticaPyLab:
 
 1. Start a Linux distribution.
-2. Clone the VerticaPyLab repository:
-
+2. Clone the VerticaPyLab repository:  
     .. code-block::
 
       $ git clone https://github.com/vertica/VerticaPyLab.git
 
-3. Navigate to the cloned directory:
-
-    .. code-block::
-        
-      $ cd VerticaPyLab
+3. Navigate to the cloned directory:  
+      .. code-block::
+            
+        $ cd VerticaPyLab
 
 4.  Start the VerticaPyLab service. There are two options, depending on whether you want to launch both the Vertica and JupyterLab containers or just the JupyterLab container:
 	1. To launch both containers, run:
-	
+        
         .. code-block::
             
           $ make all
@@ -119,13 +115,11 @@ The following steps import and launch VerticaPyLab:
 
 5. Open the displayed link in a browser.
 6. To stop the VerticaPyLab, run:
-
     .. code-block::
         
       $ make stop
 
 7. To clean up the environment and delete all images, run:
-
     .. code-block::
         
       $ make uninstall
@@ -135,10 +129,13 @@ Getting started with VerticaPyLab
 
 After you launch the service, you are taken to the VerticaPy UI homepage. From this page, you have access to a number of tools
 and functionalites, including:
- - Connect: connect to a Vertica database. You will need the host, username, password, and database name. Once you create a 
-connection, you can use it to reconnect to the database by selecting it in **Available connections**.
- - QueryProfiler: profile a query or set of queries to investigate reasons for slow performance. You can either load
-an existing QueryProfiler object or create one from scratch. After you load or create a QueryProfiler object, a window 
-opens with an interactive version of the query plan. 
- - Data Science Essentials: explore a set of interactive data science tutorials that walk through some of the amazing capabilities
-of VerticaPy.
+
+- Connect: connect to a Vertica database. You will need the host, username, password, and database name. Once you create a \
+  connection, you can use it to reconnect to the database by selecting it in **Available connections**.
+
+- QueryProfiler: profile a query or set of queries to investigate reasons for slow performance. You can either load \
+  an existing QueryProfiler object or create one from scratch. After you load or create a QueryProfiler object, a window \ 
+  opens with an interactive version of the query plan. 
+
+- Data Science Essentials: explore a set of interactive data science tutorials that walk through some of the amazing capabilities \
+  of VerticaPy.
