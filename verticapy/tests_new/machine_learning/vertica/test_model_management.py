@@ -253,7 +253,7 @@ class TestModelManagement:
                 except:
                     vpy_res = sum(
                         [
-                            i[0]["predicted_value"]
+                            int(i[0]["predicted_value"])
                             for i in pred_vdf[["prediction"]].to_list()
                         ],
                     )
