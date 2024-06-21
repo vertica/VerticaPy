@@ -1734,7 +1734,10 @@ class vDFInOut(vDFSystem):
         )
         column_names = [column[0] for column in current_cursor().description]
         df = pd.DataFrame(data)
-        df.columns = column_names
+        if not df.empty:
+            df.columns = column_names
+        else:
+            df.reindex(columns=column_names)
         return df
 
     @save_verticapy_logs
