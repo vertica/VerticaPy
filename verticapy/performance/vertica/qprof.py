@@ -1916,6 +1916,8 @@ class QueryProfiler:
         idx = 0
         query = TableSample(d).to_sql()
         while len(query) > 64000:
+            if idx > 2:
+                break
             if idx == 0:
                 warning_message = (
                     "The SQL query used to generate the final "
@@ -1927,8 +1929,6 @@ class QueryProfiler:
             k = int(1000 * (10 ** (-idx)))
             d["request"] = [item[:k] + "..." for item in self.requests]
             idx = idx + 1
-            if idx > 3:
-                break
 
         return vDataFrame(
             query,
