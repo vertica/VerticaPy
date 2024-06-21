@@ -1915,13 +1915,13 @@ class QueryProfiler:
         }
         idx = 0
         query = TableSample(d).to_sql()
-        while len(query) > 64000:
+        while len(query) > 10000000:
             if idx > 2:
                 break
             if idx == 0:
                 warning_message = (
                     "The SQL query used to generate the final "
-                    "table exceeds 64000 characters.\n"
+                    "table exceeds 10000000 characters.\n"
                     "Some of the requests in the schema seem to "
                     "be really large. They will be truncated."
                 )
