@@ -140,3 +140,10 @@ and functionalites, including:
 
 - Data Science Essentials: explore a set of interactive data science tutorials that walk through some of the amazing capabilities \
   of VerticaPy.
+
+
+.. toctree::
+  :hidden:
+  :maxdepth: 1
+  
+  verticapylab_gs_queryprofiler
