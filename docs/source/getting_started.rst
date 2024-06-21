@@ -20,28 +20,13 @@ Getting Started
       Python API for Vertica Data Science at Scale
     </div>
 
-Install VerticaPyLab
---------------------
+The following instructions provide steps to install VerticaPy, Juypter Lab, and Vertica. For information
+about installing VerticaPyLab, a custom JuypterLab enviornment that already has VerticaPy installed and 
+includes an easy-to-use interface and tools like :py:func:`~verticapy.performance.vertica.qprof`, 
+see :ref:`verticapylab_gs`.
 
-The easiest way to try out VerticaPy is by using `VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_. VerticaPyLab eliminates the need for intricate installations, configurations, 
-and managing dependencies. 
-
-By providing a pre-configured environment, VerticaPyLab empowers you to focus on learning and harnessing the combined potential of Vertica and VerticaPy.
-
-VerticaPyLab comprises of two containers: one housing the robust Vertica analytical database and another featuring JupyterLab, an interactive computing environment. 
-These two components synergize to offer a cohesive environment that bridges the power of Vertica with the capabilities of Python's ML toolkit, including VerticaPy.
-
-.. image:: ../../docs/source/_static/verticapylab.png
-   :width: 80%
-   :align: center
-
-Getting started with VerticaPyLab is quite easy. Follow these simple steps to immerse yourself in a hassle-free ML and Data Analytics environment.
-
- 1. Download VerticaPyLab: Begin by visiting the official `GitHub repository of VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_. You'll find comprehensive installation instructions and resources to guide you through the process.
- 2. Install VerticaPyLab: Say goodbye to complex setup processes. With VerticaPyLab, all you need to do is execute a single command: 'make all'. This command triggers the installation of both the Vertica container and the JupyterLab container, automating the entire process.
-
-Install Each Element Separately
--------------------------------
+Installion Guide
+-----------------
 
 Prerequisite
 ^^^^^^^^^^^^
@@ -126,3 +111,11 @@ Create a VerticaPy schema for native VerticaPy models (that is, models available
     vp.create_verticapy_schema()
 
 You can now start playing with the library! A good starting point is the `Quick Start guide <https://github.com/vertica/VerticaPy#quickstart>`_.
+
+
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+    :titlesonly:
+
+    verticapylab_gs
