@@ -1925,7 +1925,7 @@ class QueryProfiler:
                 )
                 warnings.warn(warning_message, Warning)
             k = int(1000 * (10 ** (-idx)))
-            d["request"] = [item[:k] + "..." for item in requests]
+            d["request"] = [item[:k] + "..." for item in self.requests]
             idx = idx + 1
             if idx > 3:
                 break
