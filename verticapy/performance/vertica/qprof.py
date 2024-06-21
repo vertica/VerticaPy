@@ -26,6 +26,7 @@ from tqdm.auto import tqdm
 
 from verticapy.errors import EmptyParameter, ExtensionError, QueryError
 
+from verticapy.core.tablesample import TableSample
 from verticapy.core.vdataframe import vDataFrame
 
 import verticapy._config.config as conf
@@ -1901,32 +1902,36 @@ class QueryProfiler:
         current_query = [
             (self.transaction_id, self.statement_id) == tr for tr in self.transactions
         ]
-        requests = copy.deepcopy(self.requests)
-        total_size = sum([len(item) for item in self.requests])
-        if total_size > 36000:
-            warning_message = (
-                "Some of the requests in the schema seem to "
-                "be really large. They will be truncated."
-            )
-            warnings.warn(warning_message, Warning)
-            if len(requests) < 36:
-                k = 1000
-            else:
-                k = 100
-            requests = [item[:k] for item in requests]
+        d = {
+            "index": [i for i in range(n)],
+            "is_current": current_query,
+            "transaction_id": [tr[0] for tr in self.transactions],
+            "statement_id": [tr[1] for tr in self.transactions],
+            "request_label": copy.deepcopy(self.request_labels),
+            "request": copy.deepcopy(self.requests),
+            "qduration": [qd / 1000000 for qd in self.qdurations],
+            "start_timestamp": self.start_timestamp,
+            "end_timestamp": self.end_timestamp,
+        }
+        idx = 0
+        query = TableSample(d).to_sql()
+        while len(query) > 64000:
+            if idx == 0:
+                warning_message = (
+                    "The SQL query used to generate the final "
+                    "table exceeds 64000 characters.\n"
+                    "Some of the requests in the schema seem to "
+                    "be really large. They will be truncated."
+                )
+                warnings.warn(warning_message, Warning)
+            k = int(1000 * (10 ** (-idx)))
+            d["request"] = [item[:k] + "..." for item in requests]
+            idx = idx + 1
+            if idx > 3:
+                break
 
         return vDataFrame(
-            {
-                "index": [i for i in range(n)],
-                "is_current": current_query,
-                "transaction_id": [tr[0] for tr in self.transactions],
-                "statement_id": [tr[1] for tr in self.transactions],
-                "request_label": copy.deepcopy(self.request_labels),
-                "request": requests,
-                "qduration": [qd / 1000000 for qd in self.qdurations],
-                "start_timestamp": self.start_timestamp,
-                "end_timestamp": self.end_timestamp,
-            },
+            query,
             _clean_query=False,
         )
 

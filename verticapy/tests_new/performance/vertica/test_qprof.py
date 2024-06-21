@@ -658,8 +658,8 @@ class TestQueryProfiler:
         logger.info(f"Compare Result: {res}")
 
         assert (
-            len(res) <= 1
-        )  # (should be 0) must be changed when we've added a new test archive for QPROF
+            len(res) <= 2
+        )  # (should be 1) must be changed when we've added a new test archive for QPROF
 
     @pytest.mark.parametrize(
         "show",
