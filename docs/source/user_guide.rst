@@ -112,7 +112,23 @@ User Guide
         
           :bdg-primary:`User Defined Functions` :bdg-primary:`GeoPandas`
 
+    .. grid-item::
+    
+      .. card:: Performance
+          :link: user_guide.performance
+          :link-type: ref
+          :text-align: center
+          :class-card: custom-card-8
 
+          20 mins
+          ^^^^^^^^
+          Uncover the analytical power of Vertica with the Query 
+          Profiling tool. Identify bottlenecks and gain insights 
+          to optimize query performance, ensuring efficient data 
+          processing.
+        
+          :bdg-primary:`QueryProfiler`
+          
 .. toctree::
   :hidden:
   :maxdepth: 1
