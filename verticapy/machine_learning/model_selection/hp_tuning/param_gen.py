@@ -262,7 +262,6 @@ def gen_params_grid(
             params_grid = {
                 "tol": [1e-4, 1e-6, 1e-8],
                 "C": [elem / 1000 for elem in range(1, 5000, math.ceil(5000 / nbins))],
-                "fit_intercept": [False, True],
                 "intercept_mode": ["regularized", "unregularized"],
                 "max_iter": [100, 500, 1000],
             }
@@ -270,7 +269,6 @@ def gen_params_grid(
             params_grid = {
                 "tol": [1e-6],
                 "C": [1e-1, 0.0, 1.0, 10.0],
-                "fit_intercept": [True],
                 "intercept_mode": ["regularized", "unregularized"],
                 "max_iter": [100],
             }
@@ -278,7 +276,6 @@ def gen_params_grid(
             params_grid = {
                 "tol": [1e-6],
                 "C": [0.0, 1.0],
-                "fit_intercept": [True],
                 "intercept_mode": ["regularized", "unregularized"],
                 "max_iter": [100],
             }
@@ -286,7 +283,6 @@ def gen_params_grid(
             return {
                 "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
                 "C": {"type": float, "range": [0.0, 1000.0], "nbins": nbins},
-                "fit_intercept": {"type": bool},
                 "intercept_mode": {
                     "type": str,
                     "values": ["regularized", "unregularized"],
