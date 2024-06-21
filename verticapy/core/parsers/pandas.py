@@ -345,6 +345,16 @@ def read_pandas(
         if len(df.columns) == len(null_columns):
             names = ", ".join([f"NULL AS {quote_ident(col)}" for col in df.columns])
             q = " UNION ALL ".join([f"(SELECT {names})" for i in range(len(df))])
+            if q == "":
+                if len(df.columns) > 0:
+                    joins = ", ".join(
+                        [f"NULL::VARCHAR(64000) AS {col}" for col in df.columns]
+                    )
+                    q = f"""SELECT  {joins} LIMIT 0"""
+                else:
+                    raise ValueError(
+                        "There are no columns or values. Invalid DataFrame."
+                    )
             return vDataFrame(q)
         if len(str_cols) > 0 or len(null_columns) > 0:
             tmp_df = df.copy()

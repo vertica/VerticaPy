@@ -679,7 +679,10 @@ class CollectionTable:
         if len(adjustments) != 0:
             # copies the dataframe. in-place update is deprecated according
             # to the pandas docs
-            dataframe = dataframe.astype(adjustments)
+            if not dataframe.empty:
+                dataframe = dataframe.astype(adjustments)
+            else:
+                dataframe = dataframe.reindex(columns=list(adjustments))
         self.logger.info(f"Begin copy to table {self.get_import_name()}")
         vdf = read_pandas(
             df=dataframe,
