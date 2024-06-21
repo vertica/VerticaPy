@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 import collections
 import copy
 import decimal
@@ -1597,6 +1598,9 @@ class TableSample:
                 row += [f"{val} AS {column_str}"]
             sql += [f"(SELECT {', '.join(row)})"]
         sql = " UNION ALL ".join(sql)
+        if sql == "":
+            joins = ", ".join([f"NULL::VARCHAR(64000) AS {col}" for col in self.values])
+            sql = f"""SELECT  {joins} LIMIT 0"""
         return sql
 
     def to_vdf(self) -> "vDataFrame":

@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+
 from abc import abstractmethod
 from enum import Enum
 import json
@@ -47,7 +48,6 @@ class AllTableTypes(Enum):
     DC_EXPLAIN_PLANS = "dc_explain_plans"
     DC_QUERY_EXECUTIONS = "dc_query_executions"
     DC_REQUESTS_ISSUED = "dc_requests_issued"
-    DC_SLOW_EVENTS = "dc_slow_events"
     EXECUTION_ENGINE_PROFILES = "execution_engine_profiles"
     EXPORT_EVENTS = "export_events"
     HOST_RESOURCES = "host_resources"
@@ -676,10 +676,15 @@ class CollectionTable:
         An integer representing the number of rows loaded into the database.
         """
         adjustments = self.get_pandas_column_type_adjustments()
+        print("ADJUSTMENTS:", adjustments)
+        print("DATAFRAME:", dataframe)
         if len(adjustments) != 0:
             # copies the dataframe. in-place update is deprecated according
             # to the pandas docs
-            dataframe = dataframe.astype(adjustments)
+            if not dataframe.empty:
+                dataframe = dataframe.astype(adjustments)
+            else:
+                dataframe = dataframe.reindex(columns=list(adjustments))
         self.logger.info(f"Begin copy to table {self.get_import_name()}")
         vdf = read_pandas(
             df=dataframe,
@@ -770,7 +775,6 @@ ALL_TABLES_V1 = [
     AllTableTypes.DC_EXPLAIN_PLANS,
     AllTableTypes.DC_QUERY_EXECUTIONS,
     AllTableTypes.DC_REQUESTS_ISSUED,
-    AllTableTypes.DC_SLOW_EVENTS,
     AllTableTypes.EXECUTION_ENGINE_PROFILES,
     AllTableTypes.EXPORT_EVENTS,
     AllTableTypes.HOST_RESOURCES,
@@ -784,7 +788,6 @@ ALL_TABLES_V2 = [
     AllTableTypes.DC_EXPLAIN_PLANS,
     AllTableTypes.DC_QUERY_EXECUTIONS,
     AllTableTypes.DC_REQUESTS_ISSUED,
-    AllTableTypes.DC_SLOW_EVENTS,
     AllTableTypes.EXECUTION_ENGINE_PROFILES,
     # Host resources lacks txn_id, stmt_id
     AllTableTypes.HOST_RESOURCES,
@@ -857,8 +860,6 @@ def collectionTableFactory(
         return DCQueryExecutionsTable(target_schema, key)
     if table_type == AllTableTypes.DC_REQUESTS_ISSUED:
         return DCRequestsIssuedTable(target_schema, key)
-    if table_type == AllTableTypes.DC_SLOW_EVENTS:
-        return DCSlowEventsTable(target_schema, key)
     if table_type == AllTableTypes.EXECUTION_ENGINE_PROFILES:
         return ExecutionEngineProfilesTable(target_schema, key)
     if table_type == AllTableTypes.EXPORT_EVENTS:
@@ -1260,104 +1261,6 @@ class DCRequestsIssuedTable(CollectionTable):
 
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
         return {"query_start_epoch": "Int64", "digest": "Int64"}
-
-
-################ dc_slow_events ###################
-class DCSlowEventsTable(CollectionTable):
-    """
-    ``DCSlowEventsTable`` stores data from the system table
-    dc_slow_events
-    """
-
-    def __init__(self, table_schema: str, key: str) -> None:
-        super().__init__(AllTableTypes.DC_SLOW_EVENTS, table_schema, key)
-
-    def get_create_table_sql(self) -> str:
-        return f"""
-        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
-        (
-            "time" timestamptz,
-            node_name varchar(128),
-            session_id varchar(128),
-            user_id int,
-            user_name varchar(128),
-            transaction_id int,
-            statement_id int,
-            request_id int,
-            event_description varchar(512),
-            threshold_us int,
-            duration_us int,
-            val1 int,
-            val2 int,
-            val3 varchar(1024),
-            phases_duration_us varchar(1024),
-            thread_id int
-        );
-        """
-
-    def get_create_projection_sql(self) -> str:
-        import_name = self.get_import_name()
-        fq_proj_name = self.get_super_proj_name_fq()
-        import_name_fq = self.get_import_name_fq()
-        return f"""
-        CREATE PROJECTION IF NOT EXISTS {fq_proj_name}
-        /*+basename({import_name}),createtype(A)*/
-        (
-            "time",
-            node_name,
-            session_id,
-            user_id,
-            user_name,
-            transaction_id,
-            statement_id,
-            request_id,
-            event_description,
-            threshold_us,
-            duration_us,
-            val1,
-            val2,
-            val3,
-            phases_duration_us,
-            thread_id
-        )
-        AS
-        SELECT {import_name}."time",
-            {import_name}.node_name,
-            {import_name}.session_id,
-            {import_name}.user_id,
-            {import_name}.user_name,
-            {import_name}.transaction_id,
-            {import_name}.statement_id,
-            {import_name}.request_id,
-            {import_name}.event_description,
-            {import_name}.threshold_us,
-            {import_name}.duration_us,
-            {import_name}.val1,
-            {import_name}.val2,
-            {import_name}.val3,
-            {import_name}.phases_duration_us,
-            {import_name}.thread_id
-        FROM {import_name_fq}
-        ORDER BY {import_name}.transaction_id,
-            {import_name}.statement_id,
-            {import_name}.node_name,
-            {import_name}.request_id
-        SEGMENTED BY hash({import_name}."time", 
-            {import_name}.user_id, 
-            {import_name}.transaction_id, 
-            {import_name}.statement_id, 
-            {import_name}.request_id) 
-        ALL NODES;
-        """
-
-    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
-        return {
-            "threshold_us": "Int64",
-            "duration_us": "Int64",
-            "val1": "Int64",
-            "val2": "Int64",
-            "thread_id": "Int64",
-        }
 
 
 ################ execution_engine_profiles ###################
