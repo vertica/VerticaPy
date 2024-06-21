@@ -131,7 +131,6 @@ Vertica database using the Python programming language. Vertica is a high-perfor
     :titlesonly:
 
     getting_started
-    verticapylab_gs
     connection
     whats_new
     contribution_guidelines

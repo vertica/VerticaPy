@@ -23,7 +23,7 @@ Getting Started
 The following instructions provide steps to install VerticaPy, Juypter Lab, and Vertica. For information
 about installing VerticaPyLab, a custom JuypterLab enviornment that already has VerticaPy installed and 
 includes an easy-to-use interface and tools like :py:func:`~verticapy.performance.vertica.qprof`, 
-see :ref:`verticapylab_gs.rst`.
+see :ref:`verticapylab_gs`.
 
 Installion Guide
 -----------------
@@ -111,3 +111,11 @@ Create a VerticaPy schema for native VerticaPy models (that is, models available
     vp.create_verticapy_schema()
 
 You can now start playing with the library! A good starting point is the `Quick Start guide <https://github.com/vertica/VerticaPy#quickstart>`_.
+
+
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+    :titlesonly:
+
+    verticapylab_gs
