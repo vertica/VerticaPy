@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from decimal import Decimal
+import sys
 import os
 import pandas as pd
 import pytest
@@ -650,6 +651,9 @@ class TestXGBModel:
     test class - test class for xgb model
     """
 
+    @pytest.mark.skipif(
+        sys.version_info > (3, 11), reason="Requires Python 3.11 or lower"
+    )
     def test_to_json(self, model_class, get_vpy_model, get_py_model):
         """
         test function - test_to_json
