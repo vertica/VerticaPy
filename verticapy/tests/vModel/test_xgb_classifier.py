@@ -19,6 +19,7 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
+import sys
 import os
 
 # Other Modules
@@ -561,6 +562,9 @@ class TestXGBC:
         result = model.plot_tree()
         assert model.to_graphviz() == result.source.strip()
 
+    @pytest.mark.skipif(
+        sys.version_info > (3, 11), reason="Requires Python 3.11 or lower"
+    )
     def test_to_json_binary(self, titanic_vd):
         import xgboost as xgb
 
@@ -593,6 +597,9 @@ class TestXGBC:
         model.drop()
         os.remove(path)
 
+    @pytest.mark.skipif(
+        sys.version_info > (3, 11), reason="Requires Python 3.11 or lower"
+    )
     def test_to_json_multiclass(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic.fillna()

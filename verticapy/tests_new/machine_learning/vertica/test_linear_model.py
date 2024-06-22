@@ -288,9 +288,14 @@ class TestLinearModel:
 
                 if metric_type != "":
                     _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
-                    print(
-                        f"Model_class: {model_class}, Metric_name: {metric}, Metric_type: {metric_type}, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
-                    )
+                    try:
+                        print(
+                            f"Model_class: {model_class}, Metric_name: {metric}, Metric_type: {metric_type}, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+                        )
+                    except:
+                        print(
+                            f"Model_class: {model_class}, Metric_name: {metric}, Metric_type: {metric_type}, rel_tol(e): {'%.e' % float(_rel_tol)}, abs_tol(e): {'%.e' % float(_abs_tol)}"
+                        )
 
                     if py_res == 0:
                         assert vpy_res == pytest.approx(py_res, abs=1e-9)
