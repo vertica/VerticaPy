@@ -1846,13 +1846,21 @@ Algorithms used for classification.
 
 class RandomForestClassifier(MulticlassClassifier, RandomForest):
     """
-    Creates a ``RandomForestClassifier``
-    object using the Vertica RF_CLASSIFIER
-    function. It is an ensemble learning
-    method for classification that operates
-    by constructing a multitude of decision
-    trees at training-time and outputting a
-    class with the mode.
+    Creates a RandomForestClassifier object
+    using the Vertica RF_CLASSIFIER function.
+    It is an ensemble learning method for
+    classification that operates by constructing
+    a multitude of decision trees during
+    training and predicting the class by using
+    a majority voting strategy among the
+    individual trees.
+
+    The classifier aggregates the predictions
+    of multiple decision trees to determine
+    the final output class, thus improving
+    the overall prediction accuracy and
+    robustness compared to a single decision
+    tree.
 
     Parameters
     ----------

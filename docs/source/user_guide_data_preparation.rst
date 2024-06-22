@@ -104,7 +104,7 @@ Data Preparation
     .. grid-item::
 
         .. card:: Feature engineering
-          :link: notebooks/data_prep/featrues_engineering/index.html
+          :link: notebooks/data_prep/features_engineering/index.html
           :text-align: center
           :class-card: custom-card-13
 
@@ -121,7 +121,7 @@ Data Preparation
   notebooks/data_prep/decomposition/index.ipynb
   notebooks/data_prep/duplicates/index.ipynb
   notebooks/data_prep/encoding/index.ipynb
-  notebooks/data_prep/featrues_engineering/index.ipynb
+  notebooks/data_prep/features_engineering/index.ipynb
   notebooks/data_prep/joins/index.ipynb
   notebooks/data_prep/missing_values/index.ipynb
   notebooks/data_prep/normalization/index.ipynb
