@@ -15,12 +15,12 @@ VerticaPyLab requires the following prerequisites:
 
 **For Windows**
 
-- Docker Desktop version (for)
+- Docker Desktop version (Docker version 18.09 or higher)
 - Windows Subsystem for Linux  2 (WSL 2)
 
 **For Mac/Linux**
 
-- Docker `(click here for more info) <https://docs.docker.com/engine/install/>`_
+- Docker version 18.09 or higher `(click here for installation instructions) <https://docs.docker.com/engine/install/>`_
 
 .. note:: To learn how to get the above please look at :ref:`pre_reqs`.
 
@@ -42,12 +42,12 @@ The following steps import and launch VerticaPyLab:
         cd VerticaPyLab
 
 4.  Start the JupyterLab container:
-    .. code-block::
+      .. code-block::
         
         make verticapylab-start
 
 .. note:: If ``make`` command is not there, you may need to install it:
-    .. code-block::
+      .. code-block::
 
         sudo apt install make
 

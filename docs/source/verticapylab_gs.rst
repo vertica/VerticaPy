@@ -34,8 +34,15 @@ Prerequisites
 ---------------
 
 VerticaPyLab requires the following prerequisites:
-- Docker Desktop version 
-- (Windows only) Windows Subsystem for Linux  2 (WSL 2)
+
+**For Windows**
+
+- Docker Desktop version (Docker version 18.09 or higher)
+- Windows Subsystem for Linux  2 (WSL 2)
+
+**For Mac/Linux**
+
+- Docker version 18.09 or higher `(click here for installation instructions) <https://docs.docker.com/engine/install/>`_
 
 If you need to install any of the prerequisites, installation instructions are provided below. 
 
