@@ -28,6 +28,8 @@ Install VerticaPyLab
 
 The following guide provides instructions for installing VerticaPyLab and its prerequisites. 
 
+.. _pre_reqs:
+
 Prerequisites
 ---------------
 
@@ -81,49 +83,69 @@ Install and configure Docker Desktop
 3. Click the gear icon on the top right and navigate to the **General** tab.
 4. Verify that the **Use WSL 2 based engine** option is turned on. If not, check it and click **Apply & Restart**.
 
+.. _url_issue:
+
 VerticaPyLab Quickstart
 ========================
 
 The following steps import and launch VerticaPyLab:
 
 1. Start a Linux distribution.
-2. Clone the VerticaPyLab repository:  
-    .. code-block::
+2. Clone the VerticaPyLab repository:
+
+   .. code-block::
 
       $ git clone https://github.com/vertica/VerticaPyLab.git
 
-3. Navigate to the cloned directory:  
-      .. code-block::
-            
-        $ cd VerticaPyLab
+3. Navigate to the cloned directory:
 
-4.  Start the VerticaPyLab service. There are two options, depending on whether you want to launch both the Vertica and JupyterLab containers or just the JupyterLab container:
-	1. To launch both containers, run:
-        
-        .. code-block::
-            
-          $ make all
+   .. code-block::
 
-        This command automatically creates and connects you to a demo database.
+      $ cd VerticaPyLab
 
-	1. To launch only the JupyterLab container, run:
+4. Start the VerticaPyLab service. There are two options, depending on whether you want to launch both the Vertica and JupyterLab containers or just the JupyterLab container:
 
-        .. code-block::
-            
-          $ make verticapylab-start
+   - To launch both containers, run:
 
-        You can connect to an existing Vertica database after you open VerticaPyLab.
+     .. code-block::
+
+        $ make all
+
+     This command automatically creates and connects you to a demo database.
+
+   - To launch only the JupyterLab container, run:
+
+     .. code-block::
+
+        $ make verticapylab-start
+
+     You can connect to an existing Vertica database after you open VerticaPyLab.
 
 5. Open the displayed link in a browser.
+
+In some cases where you are accessing the docker remotely, you may need to modify the ``etc/VerticaPyLab.conf.default`` file:
+
+- Inside the ``etc/VerticaPyLab.conf.default``, change the variable value of ``VERTICAPYLAB_BIND_ADDRESS``.
+
+  .. code-block::
+
+    VERTICAPYLAB_BIND_ADDRESS=0.0.0.0
+
+- Run ``make all``.
+- Copy the produced URL address, and replace with the remote/virtual machine IP.
+
 6. To stop the VerticaPyLab, run:
-    .. code-block::
-        
+
+   .. code-block::
+
       $ make stop
 
 7. To clean up the environment and delete all images, run:
-    .. code-block::
-        
+
+   .. code-block::
+
       $ make uninstall
+
 
 Getting started with VerticaPyLab
 ===================================
