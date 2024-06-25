@@ -323,7 +323,7 @@ Random Forest Classifier
    RandomForestClassifier.object_type
 
 XGBoost Classifier
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    
@@ -453,7 +453,7 @@ Neighbors
 -----------
 
 K-Nearest Neighbors Classifier (Beta)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: verticapy.machine_learning.vertica
    

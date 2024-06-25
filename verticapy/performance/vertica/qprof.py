@@ -590,11 +590,14 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
-        res = qprof.get_qplan_tree()
-        res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+        result = qprof.get_qplan_tree()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
 
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree.html
 
-    .. image:: /../figures/performance_get_qplan_tree_1.png
 
     We can easily customize the tree:
 
@@ -611,16 +614,18 @@ class QueryProfiler:
         :suppress:
         :okwarning:
 
-        res = qprof.get_qplan_tree(
+        result = qprof.get_qplan_tree(
             metric='cost',
             shape='square',
             color_low='#0000FF',
             color_high='#FFC0CB',
         )
-        res.render(filename='figures/performance_get_qplan_tree_2', format='png')
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
 
-
-    .. image:: /../figures/performance_get_qplan_tree_2.png
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_2.html
 
     We can look at a specific path ID,
     and look at some specific paths
@@ -637,11 +642,11 @@ class QueryProfiler:
             color_high='#FFC0CB',
         )
 
+
     .. ipython:: python
         :suppress:
-        :okwarning:
 
-        res = qprof.get_qplan_tree(
+        result = qprof.get_qplan_tree(
             path_id=1,
             path_id_info=[1, 3],
             metric='cost',
@@ -649,10 +654,12 @@ class QueryProfiler:
             color_low='#0000FF',
             color_high='#FFC0CB',
         )
-        res.render(filename='figures/performance_get_qplan_tree_3', format='png')
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qplan_tree_4.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
 
-
-    .. image:: /../figures/performance_get_qplan_tree_3.png
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qplan_tree_4.html
 
     **Query Plan Profile**
 
@@ -2836,11 +2843,13 @@ class QueryProfiler:
         .. ipython:: python
             :suppress:
 
-            res = qprof.get_qplan_tree()
-            res.render(filename='figures/performance_get_qplan_tree_1', format='png')
+            result = qprof.get_qplan_tree()
+            html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_3.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
 
-
-        .. image:: /../figures/performance_get_qplan_tree_1.png
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_3.html
 
         .. note::
 

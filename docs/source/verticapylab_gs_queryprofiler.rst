@@ -12,10 +12,17 @@ Prerequisites
 =================
 
 VerticaPyLab requires the following prerequisites:
-- Docker Desktop version 
-- (Windows only) Windows Subsystem for Linux  2 (WSL 2)
 
-.. note:: To learn how to get the above please look at :ref:`verticapylab_gs`.
+**For Windows**
+
+- Docker Desktop version (Docker version 18.09 or higher)
+- Windows Subsystem for Linux  2 (WSL 2)
+
+**For Mac/Linux**
+
+- Docker version 18.09 or higher `(click here for installation instructions) <https://docs.docker.com/engine/install/>`_
+
+.. note:: To learn how to get the above please look at :ref:`pre_reqs`.
 
 
 VerticaPyLab Quickstart
@@ -35,9 +42,19 @@ The following steps import and launch VerticaPyLab:
         cd VerticaPyLab
 
 4.  Start the JupyterLab container:
-    .. code-block::
+      .. code-block::
         
         make verticapylab-start
+
+.. note:: If ``make`` command is not there, you may need to install it:
+      .. code-block::
+
+        sudo apt install make
+
+    
+    A browser should pop up automatically. If it does not, then you can copy the URL link into any browser. 
+    Additionally, if you are trying to connect to your container through a VM/remotely, then please follow the instructions of step 5 here: :ref:`url_issue`.
+
 
 When you are done with using the container and want to shut it down, you can simple do:
 
