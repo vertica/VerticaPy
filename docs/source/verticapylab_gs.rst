@@ -4,9 +4,9 @@
 VerticaPyLab
 =================
 
-The easiest way to try out VerticaPy is with `VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_, a docker-based 
+The easiest way to try out VerticaPy is with `VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_, a Docker-based 
 JupyterLab environment designed to provide users with a powerful, GUI-based platform for using Vertica and VerticaPy 
-functionalities, including various no-code tools. Capitalizing on the convenience of docker, VerticaPyLab eliminates the need
+functionalities, including various no-code tools. Capitalizing on the convenience of Docker, VerticaPyLab eliminates the need
 for any intricate installations, configurations, and dependency management. VerticaPyLab extends the capabilities of JupyterLab
 by integrating essential tools, extensions, and utilities that allow you to unlock the full potential of VerticaPy's machine 
 learning and analytic funtionalities, all while utilizing the performance and scalability of the Vertica columnar database. 
@@ -130,7 +130,7 @@ The following steps import and launch VerticaPyLab:
 
 5. Open the displayed link in a browser.
 
-In some cases where you are accessing the docker remotely, you may need to modify the ``etc/VerticaPyLab.conf.default`` file:
+In some cases where you are accessing the Docker remotely, you may need to modify the ``etc/VerticaPyLab.conf.default`` file:
 
 - Inside the ``etc/VerticaPyLab.conf.default``, change the variable value of ``VERTICAPYLAB_BIND_ADDRESS``.
 
