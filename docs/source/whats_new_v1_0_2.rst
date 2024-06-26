@@ -28,13 +28,13 @@ OAuth Refresh Tokens
 ---------------------
 
 - We have updated the connector to accept OAuth refresh tokens.
-- Additioanlly we have added a ``prompt`` option for :py:func:`~verticapy.connection.new_connection`. This allows the user to enter the secrets discretly with a masked display.
+- Additionally we have added a ``prompt`` option for :py:func:`~verticapy.connection.new_connection`. This allows the user to enter the secrets discretely with a masked display.
 
 Multi-TimeSeries (Beta)
 -----------------------
 
 We added a new Time Series class: ``TimeSeriesByCategory``. This allows the users to build multiple models based off on a category. The number of models created
-are equal to the categories. This saves users time to create multiple models separately. For more inofrmation please see :py:func:`~verticapy.machine_learning.vertica.tsa.ensemble.TimeSeriesByCategory`.
+are equal to the categories. This saves users time to create multiple models separately. For more information please see :py:func:`~verticapy.machine_learning.vertica.tsa.ensemble.TimeSeriesByCategory`.
 
 Plots
 ------

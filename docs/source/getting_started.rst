@@ -21,7 +21,7 @@ Getting Started
     </div>
 
 The following instructions provide steps to install VerticaPy, Juypter Lab, and Vertica. For information
-about installing VerticaPyLab, a custom JuypterLab enviornment that already has VerticaPy installed and 
+about installing VerticaPyLab, a custom JuypterLab environment that already has VerticaPy installed and 
 includes an easy-to-use interface and tools like :py:func:`~verticapy.performance.vertica.qprof`, 
 see :ref:`verticapylab_gs`.
 

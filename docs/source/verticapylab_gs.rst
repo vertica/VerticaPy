@@ -5,14 +5,14 @@ VerticaPyLab
 =================
 
 The easiest way to try out VerticaPy is with `VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_, a docker-based 
-JupyterLab environement designed to provide users with a powerful, GUI-based platform for using Vertica and VerticaPy 
-functionalites, including various no-code tools. Capitalizing on the convenicnece of docker, VerticaPyLab eliminates the need
+JupyterLab environment designed to provide users with a powerful, GUI-based platform for using Vertica and VerticaPy 
+functionalities, including various no-code tools. Capitalizing on the convenience of docker, VerticaPyLab eliminates the need
 for any intricate installations, configurations, and dependency management. VerticaPyLab extends the capabilities of JupyterLab
 by integrating essential tools, extensions, and utilities that allow you to unlock the full potential of VerticaPy's machine 
 learning and analytic funtionalities, all while utilizing the performance and scalability of the Vertica columnar database. 
 
 VerticaPyLab utilizes two containers, one housing a Vertica database and the other a JupyterLab container with VerticaPy and 
-necessary dependecies installed. Using these two components, VerticaPyLab offers a cohesive environment that bridges the power 
+necessary dependencies installed. Using these two components, VerticaPyLab offers a cohesive environment that bridges the power 
 of Vertica with the capabilities of VerticaPy and the ease of Python syntax.
 
 Some key features of VerticaPyLab include the following:

@@ -5,7 +5,7 @@ Query Profiler User Interface
 =============================
 
 If you already have a Vertica database running and just want to use the QueryProfiler tool 
-to analyze your query, then you can do the minimalistic installaion of VerticaPyLab
+to analyze your query, then you can do the minimalistic installation of VerticaPyLab
 to achieve this.
 
 Prerequisites

@@ -33,7 +33,7 @@ QueryProfilerInterface
 Machine Learning
 -----------------
 
-- Added Vector Auto Regression (VAR) to the list of Vertica algortihms.
+- Added Vector Auto Regression (VAR) to the list of Vertica algorithms.
 
 
 
