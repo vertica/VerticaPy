@@ -66,7 +66,7 @@ Be sure to write a detailed description for each function that explains how it w
             plotting functions.
         """
 
-.. important:: For a detailed explaination of how to write doc-strings, please refer to :ref:`contribution_guidelines.code.auto_doc`
+.. important:: For a detailed explanation of how to write doc-strings, please refer to :ref:`contribution_guidelines.code.auto_doc`
 
 Important: the vDataFrame.get_columns() and vDataFrame.format_colnames() functions are essential for correctly formatting input column names.
 

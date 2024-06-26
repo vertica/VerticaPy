@@ -37,7 +37,7 @@ A unit test might look like this:
 
 
 A fixture by the name of "schema_loader" has been defined in the conftest file that creates a schema with a random name. This schema is dropped at the end of the unit test. You are encouraged to make use of this fixture to name your models/datasets, if necessary. 
-For example, the follwoing loads a dataset and gives it a name from the schema.
+For example, the following loads a dataset and gives it a name from the schema.
 
 .. code-block:: python
 

@@ -2,7 +2,7 @@
 
 
 ===============
-Miscellenious
+Miscellaneous
 ===============
 
 Code formatting as per PEP 8
@@ -10,7 +10,7 @@ Code formatting as per PEP 8
 
 Once you are satisfied with your code, please run `black <https://black.readthedocs.io/en/stable/>`_ for your code. Black will automatically format all your code to make it professional and consistent with PEP 8.
 
-Next please run `pylint <https://pypi.org/project/pylint/>`_ and ensure that your score is above the minimum threshold of 5. Pylint will automatically provide you with the improvement opportunities that you can adjust to increaes your score.
+Next please run `pylint <https://pypi.org/project/pylint/>`_ and ensure that your score is above the minimum threshold of 5. Pylint will automatically provide you with the improvement opportunities that you can adjust to increase your score.
 
 As per the updated CI/CD, no code will be accepted that requires formatting using black or has a lower pylint score than the threshold stated above. 
 
