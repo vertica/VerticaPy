@@ -88,7 +88,7 @@ methods.
           :class-card: custom-card
 
           ^^^^^^^^^
-          User Defined Fucntions.
+          User Defined Functions.
 
     .. grid-item::
     
