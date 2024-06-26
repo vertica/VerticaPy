@@ -43,7 +43,7 @@ If you want to have a nice environment to play with, we recommend you to install
 
 **Vertica 9+**
 
-VerticaPy relies on Vertica 9 or more recent version.
+VerticaPy relies on Vertica 9 or a more recent version.
 
 Vertica is the most advanced analytics data warehouse based on a massively scalable architecture. 
 It features the broadest set of analytical functions spanning event and time series, geospatial, end-to-end in-database machine learning, and pattern matching. 
