@@ -343,7 +343,7 @@ html_theme_options = {
                                 <div class="color-theme-container">
                                     <button class="theme-toggle">
                                         <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-                                        <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+                                        <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
                                         <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
                                         <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
                                     </button>
