@@ -130,7 +130,9 @@ The following steps import and launch VerticaPyLab:
 
 5. Open the displayed link in a browser.
 
+
 In some cases where you are accessing the Docker remotely, you may need to modify the ``etc/VerticaPyLab.conf.default`` file:
+
 
 - Inside the ``etc/VerticaPyLab.conf.default``, change the variable value of ``VERTICAPYLAB_BIND_ADDRESS``.
 
