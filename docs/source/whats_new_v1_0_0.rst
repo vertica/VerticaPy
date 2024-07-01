@@ -355,6 +355,6 @@ Internal
 
 - The new GitHub workflow now automatically checks for pylint score of the new code that is added. If the error score is below 10, then the tests fail.
 
-- Added a check in the workflow for fomatting using black. If any files requires reformatting, the test fails and reports the relevant files.
+- Added a check in the workflow for formatting using black. If any files requires reformatting, the test fails and reports the relevant files.
 
   

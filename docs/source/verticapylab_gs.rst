@@ -4,20 +4,20 @@
 VerticaPyLab
 =================
 
-The easiest way to try out VerticaPy is with `VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_, a docker-based 
-JupyterLab environement designed to provide users with a powerful, GUI-based platform for using Vertica and VerticaPy 
-functionalites, including various no-code tools. Capitalizing on the convenicnece of docker, VerticaPyLab eliminates the need
+The easiest way to try out VerticaPy is with `VerticaPyLab <https://github.com/vertica/VerticaPyLab>`_, a Docker-based 
+JupyterLab environment designed to provide users with a powerful, GUI-based platform for using Vertica and VerticaPy 
+functionalities, including various no-code tools. Capitalizing on the convenience of Docker, VerticaPyLab eliminates the need
 for any intricate installations, configurations, and dependency management. VerticaPyLab extends the capabilities of JupyterLab
 by integrating essential tools, extensions, and utilities that allow you to unlock the full potential of VerticaPy's machine 
 learning and analytic funtionalities, all while utilizing the performance and scalability of the Vertica columnar database. 
 
 VerticaPyLab utilizes two containers, one housing a Vertica database and the other a JupyterLab container with VerticaPy and 
-necessary dependecies installed. Using these two components, VerticaPyLab offers a cohesive environment that bridges the power 
+necessary dependencies installed. Using these two components, VerticaPyLab offers a cohesive environment that bridges the power 
 of Vertica with the capabilities of VerticaPy and the ease of Python syntax.
 
 Some key features of VerticaPyLab include the following:
 
-- **QueryProfiler:** use the QueryProfiler tool to investigate and identify the reasons why a query or set of queries are running slow.
+- **QueryProfiler:** use the QueryProfiler tool to investigate and identify the reasons why a query or set of queries are running slowly.
 - **Graphics and visualizations:** create an array of visualizations and plots directly in the JupyterLab environment using the power of Grafana, Matplotlib, Plotly, and other libraries.
 - **Run vsql:** execute the Vertica vsql editor from the VerticaPyLab interface, streamlining your database administration tasks.
 - **Seamless data ingestion:** VerticaPyLab offers streamlined data ingestion capabilities, allowing you to effortlessly load and process massive datasets from your Vertica database.
@@ -130,7 +130,9 @@ The following steps import and launch VerticaPyLab:
 
 5. Open the displayed link in a browser.
 
-In some cases where you are accessing the docker remotely, you may need to modify the ``etc/VerticaPyLab.conf.default`` file:
+
+In some cases where you are accessing the Docker remotely, you may need to modify the ``etc/VerticaPyLab.conf.default`` file:
+
 
 - Inside the ``etc/VerticaPyLab.conf.default``, change the variable value of ``VERTICAPYLAB_BIND_ADDRESS``.
 
@@ -160,14 +162,14 @@ Getting started with VerticaPyLab
 After you launch the service, you are taken to the VerticaPy UI homepage. From this page, you have access to a number of tools
 and functionalites, including:
 
-- Connect: connect to a Vertica database. You will need the host, username, password, and database name. Once you create a \
+- **Connect:** connect to a Vertica database. You will need the host, username, password, and database name. Once you create a \
   connection, you can use it to reconnect to the database by selecting it in **Available connections**.
 
-- QueryProfiler: profile a query or set of queries to investigate reasons for slow performance. You can either load \
+- **QueryProfiler:** profile a query or set of queries to investigate reasons for slow performance. You can either load \
   an existing QueryProfiler object or create one from scratch. After you load or create a QueryProfiler object, a window \ 
   opens with an interactive version of the query plan. 
 
-- Data Science Essentials: explore a set of interactive data science tutorials that walk through some of the amazing capabilities \
+- **Data Science Essentials:** explore a set of interactive data science tutorials that walk through some of the amazing capabilities \
   of VerticaPy.
 
 

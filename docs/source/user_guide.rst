@@ -139,3 +139,4 @@ User Guide
   user_guide_data_preparation
   user_guide_machine_learning
   user_guide_full_stack
+  user_guide_performance

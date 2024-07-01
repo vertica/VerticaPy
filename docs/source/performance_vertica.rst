@@ -22,6 +22,7 @@ Query Performance Interface
 .. autosummary::
    :toctree: api/
 
+   QueryProfilerInterface.export_profile
    QueryProfilerInterface.get_cluster_config
    QueryProfilerInterface.get_cpu_time
    QueryProfilerInterface.get_qduration
@@ -57,6 +58,7 @@ Query Performance
 .. autosummary::
    :toctree: api/
 
+   QueryProfiler.export_profile
    QueryProfiler.get_cluster_config
    QueryProfiler.get_cpu_time
    QueryProfiler.get_qduration
@@ -67,10 +69,15 @@ Query Performance
    QueryProfiler.get_qplan_profile
    QueryProfiler.get_qsteps
    QueryProfiler.get_request
+   QueryProfiler.get_queries
    QueryProfiler.get_query_events
    QueryProfiler.get_rp_status
    QueryProfiler.get_table
    QueryProfiler.get_version
+   QueryProfiler.import_profile
+   QueryProfiler.insert
+   QueryProfiler.set_position
    QueryProfiler.next
    QueryProfiler.previous
    QueryProfiler.step
+   QueryProfiler.to_html

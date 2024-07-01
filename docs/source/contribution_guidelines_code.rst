@@ -16,5 +16,5 @@ The main elements of code contribution are:
     contribution_guidelines_code_example
     
 
-Please browse through each to find the required inforamtion.
+Please browse through each to find the required information.
 

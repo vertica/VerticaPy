@@ -11,7 +11,7 @@ In this page we will provide the basic structure for a docstring for any Vertica
 Structure for docstring
 ========================
 
-An ideal docstring should have the following struvture:
+An ideal docstring should have the following structure:
 
 Version information
 --------------------
@@ -148,7 +148,7 @@ In the examples, we can provide the code syntax to run the function. But first w
     Examples
     --------
 
-Below the heading, we have multiple ways to show our result. The simplest way is to just make code block and type in input and output. Autoamtically, python syntax will be highlighted using the code below:
+Below the heading, we have multiple ways to show our result. The simplest way is to just make code block and type in input and output. Automatically, python syntax will be highlighted using the code below:
 
 .. code-block::
 
@@ -323,7 +323,7 @@ And to reference a module named vDataFrame:
 
    :py:mod:`vDataFrame`
 
-Now you can go throught the below examples to understand the usage in detail. From the examples you will note a few things:
+Now you can go through the below examples to understand the usage in detail. From the examples you will note a few things:
 
 - Headers are created by writing "---------" underneath them
 - Automatically the parameters are boldened

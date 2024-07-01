@@ -21,7 +21,7 @@ Getting Started
     </div>
 
 The following instructions provide steps to install VerticaPy, Juypter Lab, and Vertica. For information
-about installing VerticaPyLab, a custom JuypterLab enviornment that already has VerticaPy installed and 
+about installing VerticaPyLab, a custom JuypterLab environment that already has VerticaPy installed and 
 includes an easy-to-use interface and tools like :py:func:`~verticapy.performance.vertica.qprof`, 
 see :ref:`verticapylab_gs`.
 
@@ -43,7 +43,7 @@ If you want to have a nice environment to play with, we recommend you to install
 
 **Vertica 9+**
 
-VerticaPy relies on Vertica 9 or more recent version.
+VerticaPy relies on Vertica 9 or a more recent version.
 
 Vertica is the most advanced analytics data warehouse based on a massively scalable architecture. 
 It features the broadest set of analytical functions spanning event and time series, geospatial, end-to-end in-database machine learning, and pattern matching. 

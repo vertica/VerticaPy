@@ -4,7 +4,7 @@
 Version 1.0.3
 ===============
 
-This minor release has some chagnes that focus on improving the QueryProfiler and QueryProfilerInterface.
+This minor release has some changes that focus on improving the QueryProfiler and QueryProfilerInterface.
 
 QueryProfiler
 -----------------

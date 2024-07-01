@@ -427,7 +427,7 @@ We can plot using the matplotlib library. An extra step that we need to do is to
 
 .. important:: We need to follow the following naming convention while creating image files. 
     The name should be the entire directory with _ between sub-directories. We should also add the class name if the function is inside a particular class. For example: 
-    If I want to create an html/image for the boxplot function which is located in core/vDataFrame/_plottling.py and inside teh vDFPlot class. For this the file name should be: ``core_vDataFrame__plotting_vDFPlot_boxplot``
+    If I want to create an html/image for the boxplot function which is located in core/vDataFrame/_plottling.py and inside the vDFPlot class. For this the file name should be: ``core_vDataFrame__plotting_vDFPlot_boxplot``
     If you want to create multiple plots inside one function that add numbering at the end for example:
     ``core_vDataFrame__plotting_vDFPlot_boxplot_1``
     ``core_vDataFrame__plotting_vDFPlot_boxplot_2``
@@ -512,7 +512,7 @@ If we want to produce advanced output like the VerticaPy vDataFrame output or so
 
 The name should be the entire directory with _ between sub-directories. We should also add the class name if the function is inside a particular class. For example:
 
-If I want to create an html/image for the boxplot function which is located in ``core/vDataFrame/_plottling.py`` and inside teh vDFPlot class. For this the html name should be:
+If I want to create an html/image for the boxplot function which is located in ``core/vDataFrame/_plottling.py`` and inside the vDFPlot class. For this the html name should be:
 
 ``core_vDataFrame__plotting_vDFPlot_boxplot.html``
 
