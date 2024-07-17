@@ -6,7 +6,7 @@ on:
 jobs:
   codecov:
     name: Codecov Workflow
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
@@ -23,10 +23,10 @@ jobs:
       - name: Set up a Vertica server
         timeout-minutes: 15
         run: |
-          docker pull vertica/vertica-ce:latest
+          docker pull opentext/vertica-ce:latest
           docker run -d -v /tmp:/tmp -p 5433:5433 -p 5444:5444 \
             --name vertica_docker \
-            vertica/vertica-ce
+            opentext/vertica-ce
           echo "Vertica startup ..."
           until docker exec vertica_docker test -f /data/vertica/VMart/agent_start.out; do \
             echo "..."; \
