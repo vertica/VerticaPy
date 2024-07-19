@@ -68,16 +68,62 @@ class QueryProfilerStats(QueryProfiler):
         """
         res = _executeSQL(
             query,
-            title="Getting the 'Send Data to Client' ratio",
+            title="Getting the 'Send Data to Client' ratio.",
             method="fetchrow",
         )
         return (res[0], res[1], float(res[2]))
+
+    def test_exec_time(self):
+        """
+        Checks if the parser of the SQL is
+        taking too much time.
+        PreparePlan, CompilePlan should be
+        under the second and ExecutePlan
+        should take most of the time.
+
+        .. note::
+
+            If Vertica is taking too much
+            time to parse the query, something
+            wrong: one example could be that the
+            logging parameter causing to spend a
+            lot of time to parse the data.
+            It can be due to a system parameter.
+
+        Returns
+        -------
+        tuple
+            (exec time, total time, ratio).
+        """
+        query = f"""
+            SELECT 
+                DECODE(step, 'ExecutePlan', 1, 0) AS step,
+                SUM(elapsed) AS elapsed
+            FROM
+                {self.get_qsteps(show=False)}
+            GROUP BY 1
+            ORDER BY 1
+        """
+        res = _executeSQL(
+            query,
+            title="Getting the exec time vs the total.",
+            method="fetchall",
+        )
+        total_time = res[0][1] + res[1][1]
+        return res[1][1], total_time, res[1][1] / total_time
 
     def test_pool_queue_wait_time(self):
         """
         This test can be used to see if
         a pool takes too much time to be
         allocated.
+
+        The optimizer creates the plan to
+        execute the query. If the queue_wait_time
+        is not near to 0, it means the resource
+        pool is not giving the needed memory
+        to the query. It means we do not have
+        enough memory to execute the query.
 
         Returns
         -------
@@ -99,12 +145,12 @@ class QueryProfilerStats(QueryProfiler):
                     FROM
                         {self.get_resource_acquisition()}
                     GROUP BY 1, 2
-                ) x
+                ) AS q0
             WHERE queue_wait_time > '1 second'::INTERVAL
         """
         res = _executeSQL(
             query,
-            title="Getting the 'Send Data to Client' ratio",
+            title="Getting the queue wait time for each pool.",
             method="fetchall",
         )
         return res
@@ -144,7 +190,7 @@ class QueryProfilerStats(QueryProfiler):
         """
         res = _executeSQL(
             query,
-            title="Getting the 'Send Data to Client' ratio",
+            title="Getting all the query events.",
             method="fetchall",
         )
         informational, warning, critical = [], [], []
