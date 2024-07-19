@@ -744,6 +744,29 @@ class QueryProfiler:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cpu_time_table.html
 
+    Resource Acquisition Report
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    To obtain a comprehensive resource acquisition
+    report, including specific details such as
+    queue_wait_time, pool_name...
+    utilize the following syntax:
+
+    .. code-block:: python
+
+        qprof.get_resource_acquisition()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_qexecution_report()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_resource_acquisition.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_resource_acquisition.html
+
     Query Execution Report
     ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1883,7 +1906,7 @@ class QueryProfiler:
             1: self.get_request,
             2: self.get_qduration,
             3: self.get_qsteps,
-            4: NotImplemented,
+            4: self.get_resource_acquisition,
             5: self.get_qplan_tree,
             6: self.get_qplan_profile,
             7: NotImplemented,
@@ -2427,6 +2450,78 @@ class QueryProfiler:
                 **style_kwargs,
             )
         return vdf
+
+    # Step 4: Resource Acquisition
+    def get_resource_acquisition(self) -> vDataFrame:
+        """
+        Returns the a report including
+        the resource acquisition.
+
+        Returns
+        -------
+        vDataFrame
+            report.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To get the complete resource
+        acquisition report use:
+
+        .. code-block:: python
+
+            qprof.get_resource_acquisition()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_resource_acquisition.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        query = f"""
+            SELECT
+                a.node_name,
+                a.queue_entry_timestamp,
+                a.acquisition_timestamp,
+                ( a.acquisition_timestamp - a.queue_entry_timestamp ) AS queue_wait_time,
+                a.pool_name, 
+                a.memory_inuse_kb AS mem_kb,
+                (b.reserved_extra_memory_b/1000)::INTEGER AS emem_kb,
+                (a.memory_inuse_kb-b.reserved_extra_memory_b/1000)::INTEGER AS rmem_kb,
+                a.open_file_handle_count AS fhc,
+                a.thread_count AS threads
+            FROM 
+                v_monitor.resource_acquisitions a
+                INNER JOIN query_profiles b
+                    ON a.transaction_id = b.transaction_id
+            WHERE 
+                a.transaction_id={self.transaction_id} AND 
+                a.statement_id={self.statement_id}
+            ORDER BY
+                1, 2
+            ;"""
+        query = self._replace_schema_in_query(query)
+        return vDataFrame(query)
 
     # Step 5: Query plan + EXPLAIN
 

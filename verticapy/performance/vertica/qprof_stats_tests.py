@@ -32,6 +32,14 @@ class QueryProfilerStats(QueryProfiler):
         client is too huge. It can reveal
         network or terminal problems.
 
+        .. note::
+
+            If the ratio is bigger than 20%
+            and the total exec time grater
+            than 3s. It probably means that
+            there is a network or terminal
+            problem.
+
         Returns
         -------
         tuple
@@ -56,7 +64,7 @@ class QueryProfilerStats(QueryProfiler):
                     GROUP BY 1
                 ) AS q0
             ) AS q1
-            WHERE activity = 'Send Data to Client'
+            WHERE activity = 'Send Data to Client';
         """
         res = _executeSQL(
             query,
@@ -64,3 +72,100 @@ class QueryProfilerStats(QueryProfiler):
             method="fetchrow",
         )
         return (res[0], res[1], float(res[2]))
+
+    def test_pool_queue_wait_time(self):
+        """
+        This test can be used to see if
+        a pool takes too much time to be
+        allocated.
+
+        Returns
+        -------
+        list
+            (node_name, pool_name,
+            queue_wait_time_seconds).
+        """
+        query = f"""
+            SELECT
+                node_name, 
+                pool_name, 
+                queue_wait_time / '00:00:01'::INTERVAL AS queue_wait_time_seconds
+            FROM
+                (
+                    SELECT 
+                        node_name, 
+                        pool_name,
+                        SUM(queue_wait_time) AS queue_wait_time
+                    FROM
+                        {self.get_resource_acquisition()}
+                    GROUP BY 1, 2
+                ) x
+            WHERE queue_wait_time > '1 second'::INTERVAL
+        """
+        res = _executeSQL(
+            query,
+            title="Getting the 'Send Data to Client' ratio",
+            method="fetchall",
+        )
+        return res
+
+    def test_query_events(self):
+        """
+        This test can be used to check
+        all types of events. They are
+        classified in three categories:
+        informational, warning, critical
+
+        .. note::
+
+            The tables' columns are the
+            following:
+                node_name,
+                event_category,
+                event_type,
+                event_description,
+                suggested_action
+
+        Returns
+        -------
+        tuple of list
+            (informational, warning, critical).
+        """
+        query = f"""
+            SELECT
+                node_name,
+                event_category,
+                event_type,
+                event_description,
+                suggested_action
+            FROM
+                {self.get_query_events()}
+            ORDER BY 2, 3;
+        """
+        res = _executeSQL(
+            query,
+            title="Getting the 'Send Data to Client' ratio",
+            method="fetchall",
+        )
+        informational, warning, critical = [], [], []
+        for event in res:
+            if event[2] in (
+                "AUTO_PROJECTION_USED",
+                "GROUP_BY_SPILLED",
+                "INVALID COST",
+                "PATTERN_MATCH_NMEE",
+                "PREDICATE OUTSIDE HISTOGRAM",
+                "RESEGMENTED_MANY_ROWS",
+                "RLE_OVERRIDDEN",
+            ):
+                warning += [event]
+            elif event[2] in (
+                "DELETE WITH NON OPTIMIZED PROJECTION",
+                "JOIN_SPILLED",
+                "MEMORY LIMIT HIT",
+                "NO HISTOGRAM",
+            ):
+                critical += [event]
+            else:
+                informational += [event]
+        return (informational, warning, critical)
