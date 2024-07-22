@@ -1656,6 +1656,14 @@ class TestBaseModelMethods:
         """
         test function - to_pmml
         """
+        export_path = f"/tmp/vpy_model_{model_class}"
+        # Cleanup existing directory or file
+        if os.path.exists(export_path):
+            print(f"Deleting existing path {export_path}")
+            if os.path.isdir(export_path):
+                shutil.rmtree(export_path)
+            else:
+                os.remove(export_path)
         try:
             assert get_models.vpy.model.to_pmml(path="/tmp/")
         except QueryError:
