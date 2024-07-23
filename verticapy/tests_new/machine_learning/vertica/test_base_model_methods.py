@@ -1667,7 +1667,10 @@ class TestBaseModelMethods:
         if os.path.exists(export_path):
             print(f"Deleting existing path {export_path}")
             if os.path.isdir(export_path):
-                shutil.rmtree(export_path)
+                try:
+                    shutil.rmtree(export_path)
+                except PermissionError:
+                    pass
             else:
                 os.remove(export_path)
         try:
@@ -1675,18 +1678,10 @@ class TestBaseModelMethods:
         except QueryError:
             with pytest.raises(QueryError) as exception_info:
                 get_models.vpy.model.to_pmml(path="/tmp/")
-            if (
-                "PermissionError: [Errno 13] Permission denied"
+            assert (
+                f"Exporting a model of type {get_train_function(model_class)} to PMML is not yet supported"
                 in exception_info.value.message
-            ):
-                print(
-                    f"PermissionError, you should investigate: {exception_info.value.message}"
-                )
-            else:
-                assert (
-                    f"Exporting a model of type {get_train_function(model_class)} to PMML is not yet supported"
-                    in exception_info.value.message
-                )
+            )
 
     def test_to_python(self, get_models, model_class, get_pred_column):
         """
