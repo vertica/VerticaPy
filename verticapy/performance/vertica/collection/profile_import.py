@@ -44,7 +44,8 @@ class ProfileImportError(Exception):
 
 class ProfileImport:
     """
-    ``ProfileImport`` loads data from a profile collection into a running database.
+    ``ProfileImport`` loads data from a profile collection
+    into a running database.
     Can create schemas and tables to load the profile into.
     """
 
@@ -89,9 +90,11 @@ class ProfileImport:
     @property
     def skip_create_table(self) -> bool:
         """
-        ``ProfileImport`` will SKIP running ddl statements to create new
-        tables when ``skip_create_table`` is True. Otherwise it will run
-        DDL statements. Default value is False.
+        ``ProfileImport`` will SKIP running ddl
+        statements to create new tables when
+        ``skip_create_table`` is True. Otherwise
+        it will run DDL statements. Default value
+        is False.
 
         The DDL statements are:
            CREATE TABLE ... IF NOT EXISTS
