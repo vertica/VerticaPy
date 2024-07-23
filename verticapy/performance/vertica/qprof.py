@@ -1269,7 +1269,7 @@ class QueryProfiler:
         object and their linked schema.
         """
         return {
-            "dc_requests_issued": "v_internal", # This table should be at the top because it is used to find transaction_ids and statement_ids
+            "dc_requests_issued": "v_internal",  # This table should be at the top because it is used to find transaction_ids and statement_ids
             "dc_explain_plans": "v_internal",
             "dc_query_executions": "v_internal",
             "dc_plan_activities": "v_internal",
