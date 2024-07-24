@@ -64,7 +64,7 @@ make html
 - Removes some patterns that make the links easier to read
 python3 remove_pattern.py
 
-- Fixes some links that for notebooks and other nested files
+- Fix some links that for notebooks and other nested files
 python3 fix_links
 
 - Create a TOC tree for each page
