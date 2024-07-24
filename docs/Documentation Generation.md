@@ -36,7 +36,7 @@ replacement_word = "/project/data/VerticaPy/docs"
 
 ## Generating the doc
 
-If you run the ``refresh.sh`` script, that should generate the documentation on its own. 
+Running the ``refresh.sh`` script will generate the documentation on its own. 
 
 But if there are issues, then you can run the contents of that refresh script line by line:
 
