@@ -122,6 +122,9 @@ Official documentation is available at: <br>
 
 https://www.vertica.com/python/documentation/
 
+To generate documentation, please look at: <br>
+https://github.com/mail4umar/VerticaPy/blob/master/docs/Documentation%20Generation.md
+
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
