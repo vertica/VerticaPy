@@ -55,7 +55,7 @@ python3 replace_sphinx_dir.py
 pip install ../.
 ```
 
-- CLean the build
+- Clean the build
 make clean
 
 - Create the build (this may take quite some time)
