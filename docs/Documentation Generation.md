@@ -4,7 +4,7 @@ This document will help you create the documentation for entire VerticaPy librar
 
 ## Before you start
 
-- You need to clone the entire VerticaPy repo.
+- You need to clone the entire VerticaPy repo
 - Open verticapy/_config/config.py and change the theme to sphinx (this ensures that the created plots/graphs are transparent which is needed to accessibility)
 
 ```
@@ -17,7 +17,7 @@ register_option(
     )
 )
 ```
-- Open a bash terminal, cd into ``VerticaPy/docs`` and install all requirements.
+- Open a bash terminal, cd into ``VerticaPy/docs`` and install all requirements
 
 ```
 pip install -r requirements
