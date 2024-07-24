@@ -744,6 +744,29 @@ class QueryProfiler:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cpu_time_table.html
 
+    Resource Acquisition Report
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    To obtain a comprehensive resource acquisition
+    report, including specific details such as
+    queue_wait_time, pool_name...
+    utilize the following syntax:
+
+    .. code-block:: python
+
+        qprof.get_resource_acquisition()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_qexecution_report()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_resource_acquisition.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_resource_acquisition.html
+
     Query Execution Report
     ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -766,6 +789,54 @@ class QueryProfiler:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_full_report.html
+
+    Query Activity Time Report
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    To obtain a comprehensive report including
+    Elapsed, exec_time and I/O by node, activity
+    & path_id, utilize the following syntax:
+
+    .. code-block:: python
+
+        qprof.get_activity_time()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_activity_time()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_activity_time.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_activity_time.html
+
+    Projection Data Distribution
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    To obtain the projection data distribution,
+    utilize the following syntax:
+
+    .. code-block:: python
+
+        qprof.get_proj_data_distrib()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_proj_data_distrib()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_proj_data_distrib.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_proj_data_distrib.html
+
+    .. note::
+
+        This report is really useful to check
+        if the data are correctly segmented.
 
     Node/Cluster Information
     ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1198,29 +1269,29 @@ class QueryProfiler:
         object and their linked schema.
         """
         return {
-            "dc_requests_issued": "v_internal",
-            "dc_query_executions": "v_internal",
+            "dc_requests_issued": "v_internal",  # This table should be at the top because it is used to find transaction_ids and statement_ids
             "dc_explain_plans": "v_internal",
+            "dc_query_executions": "v_internal",
+            "dc_plan_activities": "v_internal",
             "execution_engine_profiles": "v_monitor",
+            "host_resources": "v_monitor",
             "query_events": "v_monitor",
             "query_plan_profiles": "v_monitor",
             "query_profiles": "v_monitor",
+            "projection_storage": "v_monitor",
+            "projection_usage": "v_monitor",
             "resource_pool_status": "v_monitor",
-            "host_resources": "v_monitor",
+            "storage_containers": "v_monitor",
             # New Tables - still not used.
-            "dc_plan_activities": "v_internal",
             "dc_lock_attempts": "v_internal",
             "dc_plan_resources": "v_internal",
             "dc_slow_events": "v_internal",
             "configuration_parameters": "v_monitor",
-            "projection_storage": "v_monitor",
-            "projection_usage": "v_monitor",
             "query_consumption": "v_monitor",
             "query_events": "v_monitor",
-            "resource_acquisitions": "v_monitor",
-            "storage_containers": "v_monitor",
             "projections": "v_catalog",
             "projection_columns": "v_catalog",
+            "resource_acquisitions": "v_monitor",
             "resource_pools": "v_catalog",
         }
 
@@ -1835,19 +1906,19 @@ class QueryProfiler:
             1: self.get_request,
             2: self.get_qduration,
             3: self.get_qsteps,
-            4: NotImplemented,
+            4: self.get_resource_acquisition,
             5: self.get_qplan_tree,
             6: self.get_qplan_profile,
             7: NotImplemented,
             8: NotImplemented,
-            9: NotImplemented,
+            9: self.get_activity_time,
             10: self.get_query_events,
             11: NotImplemented,
             12: self.get_cpu_time,
             13: NotImplemented,
             14: self.get_qexecution,
             15: NotImplemented,
-            16: NotImplemented,
+            16: self.get_proj_data_distrib,
             17: NotImplemented,
             18: NotImplemented,
             19: NotImplemented,
@@ -2379,6 +2450,78 @@ class QueryProfiler:
                 **style_kwargs,
             )
         return vdf
+
+    # Step 4: Resource Acquisition
+    def get_resource_acquisition(self) -> vDataFrame:
+        """
+        Returns the a report including
+        the resource acquisition.
+
+        Returns
+        -------
+        vDataFrame
+            report.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To get the complete resource
+        acquisition report use:
+
+        .. code-block:: python
+
+            qprof.get_resource_acquisition()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_resource_acquisition.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        query = f"""
+            SELECT
+                a.node_name,
+                a.queue_entry_timestamp,
+                a.acquisition_timestamp,
+                ( a.acquisition_timestamp - a.queue_entry_timestamp ) AS queue_wait_time,
+                a.pool_name, 
+                a.memory_inuse_kb AS mem_kb,
+                (b.reserved_extra_memory_b/1000)::INTEGER AS emem_kb,
+                (a.memory_inuse_kb-b.reserved_extra_memory_b/1000)::INTEGER AS rmem_kb,
+                a.open_file_handle_count AS fhc,
+                a.thread_count AS threads
+            FROM 
+                v_monitor.resource_acquisitions a
+                INNER JOIN query_profiles b
+                    ON a.transaction_id = b.transaction_id
+            WHERE 
+                a.transaction_id={self.transaction_id} AND 
+                a.statement_id={self.statement_id}
+            ORDER BY
+                1, 2
+            ;"""
+        query = self._replace_schema_in_query(query)
+        return vDataFrame(query)
 
     # Step 5: Query plan + EXPLAIN
 
@@ -3083,6 +3226,76 @@ class QueryProfiler:
             )
         return vdf
 
+    # Step 9: Elapsed, exec_time and I/O by node, activity & path_id
+    def get_activity_time(self) -> vDataFrame:
+        """
+        Returns the a report including:
+        Elapsed, exec_time and I/O by node,
+        activity & path_id.
+
+        Returns
+        -------
+        vDataFrame
+            report.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To get the complete report use:
+
+        .. code-block:: python
+
+            qprof.get_activity_time()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_activity_time.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        query = f"""
+            SELECT
+                node_name,
+                path_id,
+                activity,
+                activity_id::VARCHAR || ',' || baseplan_id::VARCHAR || ',' || localplan_id::VARCHAR AS abl_id,
+                TIMESTAMPDIFF( us , start_time, end_time) AS elaps_us, 
+                execution_time_us AS exec_us,
+                CASE WHEN associated_oid IS NOT NULL THEN description ELSE NULL END AS input,
+                input_size_rows AS input_rows,
+                ROUND(input_size_bytes/1000000, 2.0) AS input_mb,
+                processed_rows AS proc_rows,
+                ROUND(processed_bytes/1000000, 2.0) AS proc_mb
+            FROM
+                v_internal.dc_plan_activities
+            WHERE
+                transaction_id={self.transaction_id} AND
+                statement_id={self.statement_id}
+            ORDER BY
+                1, 2, 4;"""
+        query = self._replace_schema_in_query(query)
+        return vDataFrame(query)
+
     # Step 10: Query events
     def get_query_events(self) -> vDataFrame:
         """
@@ -3749,6 +3962,101 @@ class QueryProfiler:
                 fun = self._get_chart_method(vdf["operator_name"], kind)
                 return fun(method="sum", of=metric)
         return vdf[["operator_name", metric]]
+
+    # Step 16: Projection Data Distribution
+    def get_proj_data_distrib(self) -> vDataFrame:
+        """
+        Returns the Projection Data Distribution.
+
+        Returns
+        -------
+        vDataFrame
+            report.
+
+        Examples
+        --------
+
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To get the complete report use:
+
+        .. code-block:: python
+
+            qprof.get_proj_data_distrib()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_proj_data_distrib.html
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        query = f"""
+            SELECT
+                p.anchor_table_schema || '.' || p.anchor_table_name AS table_name,
+                s.projection_name,
+                s.node_name,
+                SUM(s.row_count) AS row_count, 
+                SUM(s.used_bytes) AS used_bytes,
+                SUM(s.ros_count) AS ROS_count,
+                SUM(sc.deleted_row_count) AS del_rows,
+                SUM(sc.delete_vector_count) AS DV_count
+            FROM
+                v_monitor.projection_storage s
+                INNER JOIN v_monitor.projection_usage p
+                  ON s.projection_id = p.projection_id
+                INNER JOIN v_monitor.storage_containers sc
+                  ON s.projection_id = sc.projection_id
+                INNER JOIN v_catalog.projections pj
+                  ON s.projection_id = pj.projection_id
+            WHERE
+                p.statement_id={self.statement_id} AND
+                p.transaction_id={self.transaction_id} AND
+                pj.is_segmented IS true
+            GROUP BY 1, 2, 3
+            UNION ALL
+            SELECT
+                DISTINCT 
+                    p.anchor_table_schema || '.' || p.anchor_table_name AS table_name,
+                    s.projection_name,
+                    'all (unsegmented)' AS node_name,
+                    s.row_count AS row_count, 
+                    s.used_bytes AS used_bytes,
+                    s.ros_count AS ROS_count,
+                    sc.deleted_row_count AS del_rows,
+                    sc.delete_vector_count AS DV_count
+            FROM
+                v_monitor.projection_usage p
+                INNER JOIN v_monitor.projection_storage s
+                  ON s.projection_id = p.projection_id 
+                INNER JOIN v_monitor.storage_containers sc
+                  ON sc.projection_id = p.projection_id
+                INNER JOIN v_catalog.projections pj
+                  ON pj.projection_id = p.projection_id
+            WHERE
+                p.statement_id={self.statement_id} AND
+                p.transaction_id={self.transaction_id} AND
+                pj.is_segmented IS false
+            ORDER BY 1, 2, 3;"""
+        query = self._replace_schema_in_query(query)
+        return vDataFrame(query)
 
     # Step 20: Getting Cluster configuration
     def get_rp_status(self) -> vDataFrame:

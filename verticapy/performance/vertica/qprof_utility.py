@@ -22,8 +22,8 @@ from verticapy._utils._sql._sys import _executeSQL
 
 class QprofUtility:
     """
-    A class that contains a collection of static methods
-    for qprof
+    A class that contains a collection
+    of static methods for QPROF.
     """
 
     @staticmethod

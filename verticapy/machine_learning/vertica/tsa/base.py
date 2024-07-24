@@ -127,7 +127,11 @@ class TimeSeriesModelBase(VerticaModel):
                 p = self.parameters["p"]
                 self.intercept_ = coefficients["value"][0]
             else:
-                self.mean_ = self.get_vertica_attributes("mean")["mean"][0]
+                mean_tmp = self.get_vertica_attributes("mean")
+                if "value" in mean_tmp:
+                    self.mean_ = mean_tmp["value"][0]
+                else:
+                    self.mean_ = mean_tmp["mean"][0]
                 if "order" in self.parameters:
                     p = self.parameters["order"][0]
                     i = 0

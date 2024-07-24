@@ -1028,29 +1028,33 @@ def get_vertica_model_attributes(model_class):
             {
                 "attr_name": [
                     "coefficients",
+                    "mean",
                     "lag_order",
+                    "num_predictors",
                     "lambda",
                     "mean_squared_error",
                     "rejected_row_count",
                     "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
+                    "predictor_columns",
+                    "timestamp_column",
                     "missing_method",
                     "call_string",
                 ],
                 "attr_fields": [
                     "parameter, value",
+                    "predictor, value",
                     "lag_order",
+                    "num_predictors",
                     "lambda",
-                    "mean_squared_error",
+                    "predictor, value",
                     "rejected_row_count",
                     "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
+                    "predictor_columns",
+                    "timestamp_column",
                     "missing_method",
                     "call_string",
                 ],
-                "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             },
         ),
         **dict.fromkeys(
@@ -1060,29 +1064,31 @@ def get_vertica_model_attributes(model_class):
                     "coefficients",
                     "mean",
                     "lag_order",
+                    "num_predictors",
                     "lambda",
                     "mean_squared_error",
                     "rejected_row_count",
                     "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
+                    "predictor_columns",
+                    "timestamp_column",
                     "missing_method",
                     "call_string",
                 ],
                 "attr_fields": [
                     "parameter, value",
-                    "mean",
+                    "predictor, value",
                     "lag_order",
+                    "num_predictors",
                     "lambda",
-                    "mean_squared_error",
+                    "predictor, value",
                     "rejected_row_count",
                     "accepted_row_count",
-                    "timeseries_name",
-                    "timestamp_name",
+                    "predictor_columns",
+                    "timestamp_column",
                     "missing_method",
                     "call_string",
                 ],
-                "#_of_rows": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                "#_of_rows": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             },
         ),
         **dict.fromkeys(
@@ -1656,12 +1662,25 @@ class TestBaseModelMethods:
         """
         test function - to_pmml
         """
+        export_path = f"/tmp/vpy_model_{model_class}"
+        # Cleanup existing directory or file
+        if os.path.exists(export_path):
+            print(f"Deleting existing path {export_path}")
+            if os.path.isdir(export_path):
+                try:
+                    shutil.rmtree(export_path)
+                except PermissionError:
+                    pass
+            else:
+                os.remove(export_path)
         try:
             assert get_models.vpy.model.to_pmml(path="/tmp/")
         except QueryError:
+            pytest.skip(
+                f"Error which should be examined: A directory or file named [/tmp/...] already exists"
+            )
             with pytest.raises(QueryError) as exception_info:
                 get_models.vpy.model.to_pmml(path="/tmp/")
-
             assert (
                 f"Exporting a model of type {get_train_function(model_class)} to PMML is not yet supported"
                 in exception_info.value.message
