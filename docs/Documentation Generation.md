@@ -73,7 +73,7 @@ python3 create_toc_tree.py
 - Update notebook links (this should not be needed if ``fix_links`` works)
 python3 notebook_correction.py 
 
-At this point, your document should be generated. It should be inside the ``build/html`` folder. 
+At this point, your document will be generated. It will be inside the ``build/html`` folder. 
 
 The next steps are only to revert the changes to the python code.
 
