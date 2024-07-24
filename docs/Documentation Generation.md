@@ -17,7 +17,7 @@ register_option(
     )
 )
 ```
-- Open a bash terminal and cd into ``VerticaPy/docs``. Then install all requirements
+- Open a bash terminal, cd into ``VerticaPy/docs`` and install all requirements.
 
 ```
 pip install -r requirements
