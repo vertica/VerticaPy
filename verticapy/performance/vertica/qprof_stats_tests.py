@@ -206,7 +206,7 @@ class QueryProfilerStats(QueryProfiler):
 
         if len(pooltime) == 0:
             description = (
-                "All resource pool queue wait times " "are within acceptable limits."
+                "All resource pool queue wait times are within acceptable limits."
             )
             recommended_action = ""
             informational += [
