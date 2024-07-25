@@ -28,7 +28,7 @@ class QueryProfilerStats(QueryProfiler):
     @staticmethod
     def _get_time_conv(time_ms: float) -> tuple[float, str]:
         """
-        Util method to convert time
+        Utility method to convert time
         to the right unit.
         """
         optime, unit = time_ms, "milliseconds"
