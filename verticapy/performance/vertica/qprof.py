@@ -1705,24 +1705,22 @@ class QueryProfiler:
                 q0.request, 
                 q0.label, 
                 query_duration_us,
-                q2.start_timestamp,
-                q2.end_timestamp,
+                q2.start_time,
+                q2.end_time,
                 q2.success
             FROM 
                 v_internal.dc_requests_issued AS q0
             FULL JOIN
                 v_monitor.query_profiles AS q1 
                 USING (transaction_id, statement_id)
-        """
-        query = self._replace_schema_in_query(query)
-        query += f"""
             FULL JOIN
-                v_monitor.query_requests AS q2 
+                v_monitor.query_consumption AS q2 
                 USING (transaction_id, statement_id)
             WHERE 
                 {transaction_id_condition}
                 AND {statement_id_condition};
                 """
+        query = self._replace_schema_in_query(query)
         res = _executeSQL(
             query,
             title="Getting the corresponding query",
