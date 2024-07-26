@@ -65,7 +65,7 @@ class PerformanceTree:
         - bytes_spilled
         - clock_time_us
         - cstall_us
-        - exec_time_ms (default)
+        - exec_time_us (default)
         - est_rows
         - mem_all_mb
         - mem_res_mb
