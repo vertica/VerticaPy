@@ -25,7 +25,227 @@ class QueryProfilerStats(QueryProfiler):
     performance tests.
     """
 
-    def test_client_data(self):
+    @staticmethod
+    def _get_time_conv(time_ms: float) -> tuple[float, str]:
+        """
+        Utility method to convert time
+        to the right unit.
+        """
+        optime, unit = time_ms, "milliseconds"
+        if optime > 1000:
+            optime = optime / 1000
+            unit = "seconds"
+            if optime > 3600:
+                optime = optime / 3600
+                unit = "hours"
+        optime = round(optime, 2)
+        return optime, unit
+
+    def main_tests(self):
+        """
+        This is the main test to run to
+        get all the information needed
+        to understand queries performances.
+
+        Events are classified in three
+        categories:
+        informational, warning, critical
+
+        .. note::
+
+            The tables' columns are the
+            following:
+                node_name,
+                event_category,
+                event_type,
+                event_description,
+                suggested_action
+
+        Returns
+        -------
+        tuple of list
+            (informational, warning, critical).
+        """
+
+        # Getting all Vertica Events
+        informational, warning, critical = self.query_events_test()
+
+        # Client Data Test
+        client_data_test = self.client_data_test()
+
+        percent = round(client_data_test[-1] * 100, 2)
+        optime, unit = self._get_time_conv(client_data_test[1])
+        extime, exunit = self._get_time_conv(client_data_test[2])
+
+        if percent > 40:
+            description = (
+                "The time to send data to the client is alarmingly higher than "
+                f"expected, taking {optime} {unit} which represents {percent}% "
+                f"of the total execution time of {extime} {exunit}."
+            )
+            recommended_action = (
+                "Check your network connection and terminal "
+                "configuration for critical issues."
+            )
+            critical += [
+                [
+                    client_data_test[0],
+                    "NETWORK",
+                    "TRANSMISSION_TIME_TO_CLIENT_CRITICAL",
+                    description,
+                    recommended_action,
+                ]
+            ]
+        elif percent > 20:
+            description = (
+                "The time to send data to the client is a bit higher than "
+                f"expected, taking {optime} {unit} which represents {percent}% "
+                f"of the total execution time of {extime} {exunit}."
+            )
+            recommended_action = (
+                "Check your network connection and terminal configuration."
+            )
+            warning += [
+                [
+                    client_data_test[0],
+                    "NETWORK",
+                    "TRANSMISSION_TIME_TO_CLIENT_HIGH",
+                    description,
+                    recommended_action,
+                ]
+            ]
+        else:
+            description = (
+                "The time to send data to the client is reasonable, taking "
+                f"only {optime} {unit} which is just {percent}% of the "
+                f"total execution time of {extime} {exunit}."
+            )
+            recommended_action = ""
+            informational += [
+                [
+                    client_data_test[0],
+                    "NETWORK",
+                    "TRANSMISSION_TIME_TO_CLIENT_REASONABLE",
+                    description,
+                    recommended_action,
+                ]
+            ]
+
+        # Parser Test
+        exec_time_test = self.exec_time_test()
+
+        percent = round(exec_time_test[-1] * 100, 2)
+        optime, unit = self._get_time_conv(exec_time_test[0])
+        extime, exunit = self._get_time_conv(exec_time_test[1])
+        extime_ms = exec_time_test[1]
+
+        if percent > 50 and extime_ms > 5000:
+            description = (
+                "The time to parse the data and generate the plan "
+                f"is alarmingly higher than expected, taking {optime} "
+                f"{unit}, which represents {percent}% of the total time "
+                f"({extime} {exunit}) for parsing and executing."
+            )
+            recommended_action = (
+                "Please check your system parameters for critical issues."
+            )
+            critical += [
+                [
+                    "initiator",
+                    "OPTIMIZATION",
+                    "PARSING_TIME_CRITICAL",
+                    description,
+                    recommended_action,
+                ]
+            ]
+        elif percent > 30 and extime_ms > 5000:
+            description = (
+                "The time to parse the data and generate the plan "
+                f"is a bit higher than expected, taking {optime} {unit}, "
+                f"which represents {percent}% of the total time "
+                f"({extime} {exunit}) for parsing and executing."
+            )
+            recommended_action = (
+                "Please check your system parameters for possible issues."
+            )
+            warning += [
+                [
+                    "initiator",
+                    "OPTIMIZATION",
+                    "PARSING_TIME_HIGH",
+                    description,
+                    recommended_action,
+                ]
+            ]
+        else:
+            if extime_ms > 5000:
+                description = (
+                    "The time to parse the data and generate the plan "
+                    f"is reasonable, taking only {optime} {unit} which "
+                    f"is just {percent}% of the total execution time "
+                    f"of {extime} {exunit}."
+                )
+            else:
+                description = (
+                    "The time to parse the data and generate the plan "
+                    f"is reasonable, taking only {optime} {unit}."
+                )
+            recommended_action = ""
+            informational += [
+                [
+                    "initiator",
+                    "OPTIMIZATION",
+                    "PARSING_TIME_REASONABLE",
+                    description,
+                    recommended_action,
+                ]
+            ]
+
+        # Resource Pool Test
+        pooltime = self.pool_queue_wait_time_test()
+
+        if len(pooltime) == 0:
+            description = (
+                "All resource pool queue wait times are within acceptable limits."
+            )
+            recommended_action = ""
+            informational += [
+                [
+                    "initiator",
+                    "EXECUTION",
+                    "RP_QUEUE_WAIT_TIME_REASONABLE",
+                    description,
+                    recommended_action,
+                ]
+            ]
+        else:
+            for node_name, pool_name, qts in pooltime:
+                description = (
+                    "Some resource pools have queue wait "
+                    "times higher than expected. Resource "
+                    f"pool {pool_name} is taking {qts} seconds "
+                    "to be allocated."
+                )
+                recommended_action = (
+                    "Consider adjusting the MAXMEMORYSIZE and "
+                    "PLANNEDCONCURRENCY resource pools so that "
+                    "the optimizer has sufficient memory. On a "
+                    "heavily used system, this event may occur "
+                    "more frequently."
+                )
+                warning += [
+                    [
+                        node_name,
+                        "EXECUTION",
+                        "RP_QUEUE_WAIT_TIME_HIGH",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+
+        return informational, warning, critical
+
+    def client_data_test(self):
         """
         This test can be used to check
         if the time to send the data to
@@ -35,7 +255,7 @@ class QueryProfilerStats(QueryProfiler):
         .. note::
 
             If the ratio is bigger than 20%
-            and the total exec time grater
+            and the total exec time greater
             than 3s. It probably means that
             there is a network or terminal
             problem.
@@ -43,11 +263,13 @@ class QueryProfilerStats(QueryProfiler):
         Returns
         -------
         tuple
-            ('Send Data to Client' exec time,
+            (node name,
+             'Send Data to Client' exec time,
              total exec time, ratio).
         """
         query = f"""
             SELECT
+                node_name,
                 exec_us,
                 total,
                 exec_us / total AS ratio
@@ -59,9 +281,11 @@ class QueryProfilerStats(QueryProfiler):
                 FROM
                 (
                     SELECT
-                        activity, SUM(exec_us) AS exec_us
+                        node_name,
+                        activity, 
+                        SUM(exec_us) AS exec_us
                     FROM {self.get_activity_time()}
-                    GROUP BY 1
+                    GROUP BY 1, 2
                 ) AS q0
             ) AS q1
             WHERE activity = 'Send Data to Client';
@@ -71,9 +295,9 @@ class QueryProfilerStats(QueryProfiler):
             title="Getting the 'Send Data to Client' ratio.",
             method="fetchrow",
         )
-        return (res[0], res[1], float(res[2]))
+        return (res[0], res[1], res[2], float(res[3]))
 
-    def test_exec_time(self):
+    def exec_time_test(self):
         """
         Checks if the parser of the SQL is
         taking too much time.
@@ -112,7 +336,7 @@ class QueryProfilerStats(QueryProfiler):
         total_time = res[0][1] + res[1][1]
         return res[1][1], total_time, res[1][1] / total_time
 
-    def test_pool_queue_wait_time(self):
+    def pool_queue_wait_time_test(self):
         """
         This test can be used to see if
         a pool takes too much time to be
@@ -155,7 +379,7 @@ class QueryProfilerStats(QueryProfiler):
         )
         return res
 
-    def test_query_events(self):
+    def query_events_test(self):
         """
         This test can be used to check
         all types of events. They are
