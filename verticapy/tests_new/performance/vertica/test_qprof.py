@@ -985,7 +985,7 @@ class TestQueryProfiler:
         [
             "cost",
             "rows",
-            "exec_time_ms",
+            "exec_time_us",
             "est_rows",
             "proc_rows",
             "prod_rows",
@@ -1467,7 +1467,7 @@ class TestQueryProfiler:
         "metric",
         [
             # "all",
-            # "exec_time_ms",
+            # "exec_time_us",
             "est_rows",
             # "proc_rows",
             # "prod_rows",

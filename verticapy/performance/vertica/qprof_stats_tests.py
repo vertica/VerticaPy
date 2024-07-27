@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.performance.vertica.qprof import QueryProfiler
@@ -26,12 +28,14 @@ class QueryProfilerStats(QueryProfiler):
     """
 
     @staticmethod
-    def _get_time_conv(time_ms: float) -> tuple[float, str]:
+    def _get_time_conv(time_ms: Optional[float]) -> tuple[float, str]:
         """
         Utility method to convert time
         to the right unit.
         """
-        optime, unit = time_ms, "milliseconds"
+        if time_ms is None:
+            return 0, "seconds"
+        optime, unit = float(time_ms), "milliseconds"
         if optime > 1000:
             optime = optime / 1000
             unit = "seconds"
@@ -243,6 +247,188 @@ class QueryProfilerStats(QueryProfiler):
                     ]
                 ]
 
+        # Segmentation Test
+        segmentation_test = self.segmentation_test()
+
+        for (
+            table_name,
+            projection_name,
+            node_name,
+            row_count,
+            avg_row_count,
+            ratio,
+        ) in segmentation_test:
+            percent = round(ratio * 100, 2)
+            row_count = int(row_count)
+            avg_row_count = int(avg_row_count)
+
+            if percent > 50:
+                description = (
+                    f"The table '{table_name}' is poorly segmented for projection "
+                    f"'{projection_name}' on node '{node_name}'. It has {row_count} "
+                    f"rows, compared to an average of {avg_row_count} rows on "
+                    f"other nodes, representing a deviation of {percent}%. Please "
+                    "resegment to rectify this issue."
+                )
+                recommended_action = (
+                    "Please resegment to rectify this issue. You can "
+                    "use DBD to create a more uniform segmentation."
+                )
+                warning += [
+                    [
+                        node_name,
+                        "OPTIMIZATION",
+                        "DATA_SEGMENTATION_BAD",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+            elif percent > 30:
+                description = (
+                    f"The table '{table_name}' is not ideally segmented for projection "
+                    f"'{projection_name}' on node '{node_name}'. It has {row_count} "
+                    f"rows, compared to an average of {avg_row_count} rows on "
+                    f"other nodes, representing a deviation of {percent}%. The deviation "
+                    "is high but within acceptable limits, so no immediate action is "
+                    "required."
+                )
+                recommended_action = (
+                    "Please resegment to rectify this issue. You can "
+                    "use DBD to create a more uniform segmentation."
+                )
+                warning += [
+                    [
+                        node_name,
+                        "OPTIMIZATION",
+                        "DATA_SEGMENTATION_FAIR",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+            else:
+                description = (
+                    f"The table '{table_name}' is well-segmented for projection "
+                    f"'{projection_name}' on node '{node_name}'. It has {row_count} "
+                    f"rows, closely matching the average of {avg_row_count} rows on "
+                    f"other nodes, with a deviation of {percent}% which is within "
+                    "acceptable limits."
+                )
+                recommended_action = ""
+                informational += [
+                    [
+                        node_name,
+                        "OPTIMIZATION",
+                        "DATA_SEGMENTATION_GOOD",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+
+        # Clock Time VS Exec Time
+        clock_exec_time_test = self.clock_exec_time_test()
+
+        for (
+            node_name,
+            operator_name,
+            path_id,
+            clock_time_us,
+            exec_time_us,
+            ratio,
+        ) in clock_exec_time_test:
+            if ratio is None:
+                percent = 0
+            else:
+                percent = round(ratio * 100, 2)
+            clock_time, ct_unit = self._get_time_conv(clock_time_us)
+            exec_time, et_unit = self._get_time_conv(exec_time_us)
+
+            if (exec_time_us is None or exec_time_us < 5000) and (
+                clock_time_us is None or clock_time_us < 5000
+            ):
+                description = (
+                    f"The clock time ({clock_time} {ct_unit}) for "
+                    f"node '{node_name}' in PATH ID {path_id} with "
+                    f"operator '{operator_name}' is comparable to "
+                    f"execution time ({exec_time} {et_unit})."
+                )
+                recommended_action = ""
+                informational += [
+                    [
+                        node_name,
+                        "EXECUTION",
+                        "CLOCK_EXEC_TIME_DIFFERENCE_REASONABLE",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+            elif percent > 20:
+                description = (
+                    f"The clock time ({clock_time} {ct_unit}) for node"
+                    f" '{node_name}' in PATH ID {path_id} with operator"
+                    f" '{operator_name}' is much greater than the execution"
+                    f" time ({exec_time} {et_unit}). This increase is"
+                    f" {percent}. Take immediate action."
+                )
+                recommended_action = (
+                    "There could be multiple reasons for the difference between "
+                    "execution time and clock time. Investigate to gain more "
+                    "insights. Sometimes the discrepancy is expected, such as "
+                    "in the case of a JOIN waiting for a SCAN. Other times, it "
+                    "could be due to I/O operations, which can be analyzed further."
+                )
+                critical += [
+                    [
+                        node_name,
+                        "EXECUTION",
+                        "CLOCK_EXEC_TIME_DIFFERENCE_CRITICAL",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+            elif percent > 10:
+                description = (
+                    f"The clock time ({clock_time} {ct_unit}) for "
+                    f"node '{node_name}' in PATH ID {path_id} with"
+                    f" operator '{operator_name}' is {percent} greater"
+                    f" than the execution time ({exec_time} {et_unit})."
+                    " This can be concerning. You can investigate to improve "
+                    "query performance."
+                )
+                recommended_action = (
+                    "There could be multiple reasons for the difference between "
+                    "execution time and clock time. Investigate to gain more "
+                    "insights. Sometimes the discrepancy is expected, such as "
+                    "in the case of a JOIN waiting for a SCAN. Other times, it "
+                    "could be due to I/O operations, which can be analyzed further."
+                )
+                warning += [
+                    [
+                        node_name,
+                        "EXECUTION",
+                        "CLOCK_EXEC_TIME_DIFFERENCE_HIGH",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+            else:
+                description = (
+                    f"The clock time ({clock_time} {ct_unit}) for "
+                    f"node '{node_name}' in PATH ID {path_id} with "
+                    f"operator '{operator_name}' is comparable to "
+                    f"execution time ({exec_time} {et_unit}). "
+                    f"This increase is only {percent}."
+                )
+                recommended_action = ""
+                informational += [
+                    [
+                        node_name,
+                        "EXECUTION",
+                        "CLOCK_EXEC_TIME_DIFFERENCE_REASONABLE",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+
         return informational, warning, critical
 
     def client_data_test(self):
@@ -439,3 +625,117 @@ class QueryProfilerStats(QueryProfiler):
             else:
                 informational += [event]
         return (informational, warning, critical)
+
+    def segmentation_test(self):
+        """
+        This test can be used to check
+        if the data are correctly
+        segmented.
+
+        .. note::
+
+            The tables' columns are the
+            following:
+                table_name,
+                projection_name,
+                node_name,
+                row_count,
+                avg_row_count,
+                ratio
+
+            A ratio equals to 0 means
+            perfectly segmented data.
+            And a ratio equals to 1
+            means very poorly segmented
+            data.
+
+        Returns
+        -------
+        list of list
+            (table_name, projection_name,
+             node_name, row_count, avg_row_count,
+             ratio).
+        """
+        query = f"""
+            SELECT
+                table_name,
+                projection_name,
+                node_name,
+                row_count,
+                avg_row_count,
+                ABS(row_count - avg_row_count) / avg_row_count AS ratio
+            FROM
+                (
+                    SELECT
+                        table_name,
+                        projection_name,
+                        node_name,
+                        row_count,
+                        AVG(row_count) OVER (PARTITION BY projection_name) AS avg_row_count
+                    FROM
+                        {self.get_proj_data_distrib()}
+                ) AS q0;
+        """
+        res = _executeSQL(
+            query,
+            title="Getting all the query events.",
+            method="fetchall",
+        )
+        return res
+
+    def clock_exec_time_test(self):
+        """
+        This test can be used to check
+        if the execution time is near to
+        the clock time.
+
+        If the clock time is much greater
+        than the execution time, it means
+        that the thread has been in a wait
+        state for some time, waiting for
+        something.
+
+        .. note::
+
+            The tables' columns are the
+            following:
+                node_name,
+                operator_name,
+                path_id,
+                clock_time_us,
+                exec_time_us,
+                ratio
+
+            A ratio greater than 20% can
+            be seen as critical.
+
+        Returns
+        -------
+        list of list
+            (node_name, operator_name,
+             path_id, clock_time_us,
+             exec_time_us, ratio).
+        """
+        query = f"""
+            SELECT 
+                node_name,
+                operator_name,
+                path_id,
+                clock_time_us,
+                exec_time_us,
+                (CASE
+                    WHEN exec_time_us = 0 OR clock_time_us = 0
+                        THEN NULL
+                    WHEN exec_time_us > clock_time_us
+                        THEN (exec_time_us - clock_time_us) / clock_time_us
+                    ELSE
+                        (clock_time_us - exec_time_us) / exec_time_us
+                END) AS ratio
+            FROM {self.get_qexecution_report()}
+        """
+        res = _executeSQL(
+            query,
+            title="Getting all the query events.",
+            method="fetchall",
+        )
+        return res

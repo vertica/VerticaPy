@@ -870,7 +870,7 @@ class QueryProfiler:
 
             qprof.get_qexecution(
                 node_name = "v_vdash_node0003",
-                metric = "exec_time_ms",
+                metric = "exec_time_us",
                 kind = "pie",
             )
 
@@ -883,7 +883,7 @@ class QueryProfiler:
                     "v_vdash_node0001",
                     "v_vdash_node0003",
                 ],
-                metric = "exec_time_ms",
+                metric = "exec_time_us",
                 kind = "pie",
             )
 
@@ -2756,7 +2756,7 @@ class QueryProfiler:
             str,
             tuple[str, str],
             list[str],
-        ] = ["exec_time_ms", "prod_rows"],
+        ] = ["exec_time_us", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
         return_html: bool = True,
@@ -2791,7 +2791,7 @@ class QueryProfiler:
             - clock_time_us
             - cost
             - cstall_us
-            - exec_time_ms (default)
+            - exec_time_us (default)
             - est_rows
             - mem_all_mb
             - mem_res_mb
@@ -3019,7 +3019,7 @@ class QueryProfiler:
             str,
             tuple[str, str],
             list[str],
-        ] = ["exec_time_ms", "prod_rows"],
+        ] = ["exec_time_us", "prod_rows"],
         pic_path: Optional[str] = None,
         return_graphviz: bool = False,
         return_html: bool = True,
@@ -3668,7 +3668,7 @@ class QueryProfiler:
                 operator_name,
                 path_id,
                 ROUND(SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
-                    counter_value ELSE NULL END) / 1000, 3.0) AS exec_time_ms,
+                    counter_value ELSE NULL END) / 1000, 3.0) AS exec_time_us,
                 SUM(CASE TRIM(counter_name) WHEN 'estimated rows produced' THEN
                     counter_value ELSE NULL END) AS est_rows,
                 SUM(CASE TRIM(counter_name) WHEN 'rows processed' THEN
@@ -3708,7 +3708,7 @@ class QueryProfiler:
     def get_qexecution(
         self,
         node_name: Union[None, str, list] = None,
-        metric: str = "exec_time_ms",
+        metric: str = "exec_time_us",
         path_id: Optional[int] = None,
         kind: Literal[
             "bar",
@@ -3755,7 +3755,7 @@ class QueryProfiler:
             - bytes_spilled
             - clock_time_us
             - cstall_us
-            - exec_time_ms (default)
+            - exec_time_us (default)
             - est_rows
             - mem_all_mb
             - mem_res_mb
@@ -3869,7 +3869,7 @@ class QueryProfiler:
 
                 qprof.get_qexecution(
                     node_name = "v_vdash_node0003",
-                    metric = "exec_time_ms",
+                    metric = "exec_time_us",
                     kind = "pie",
                 )
 
@@ -3882,7 +3882,7 @@ class QueryProfiler:
                         "v_vdash_node0001",
                         "v_vdash_node0003",
                     ],
-                    metric = "exec_time_ms",
+                    metric = "exec_time_us",
                     kind = "pie",
                 )
 
