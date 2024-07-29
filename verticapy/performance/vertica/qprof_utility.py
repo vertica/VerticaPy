@@ -79,6 +79,36 @@ class QprofUtility:
         return res
 
     @staticmethod
+    def _get_no_statistics(
+        row: str,
+    ) -> Union[str, int]:
+        """
+        Returns if the row
+        includes or does not
+        include statistics.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+
+        Returns
+        -------
+        bool
+            True if the row
+            has statistics.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.qprof_utility`
+        for more information.
+        """
+        if "NO STATISTICS" in row:
+            return "🚫"
+        else:
+            return ""
+
+    @staticmethod
     def _get_rows(rows: str) -> list[str]:
         """
         ...

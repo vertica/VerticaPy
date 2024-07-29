@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Optional
 
 from verticapy._utils._sql._sys import _executeSQL
@@ -45,6 +46,35 @@ class QueryProfilerStats(QueryProfiler):
         optime = round(optime, 2)
         return optime, unit
 
+    def _get_sql_action(
+        self, informational: list[list], warning: list[list], critical: list[list]
+    ) -> tuple[list[list]]:
+        """
+        Takes as inputs all the query
+        events (informational, warning,
+        critical) and returns the associated
+        SQL action.
+        """
+        informational_final = copy.deepcopy(informational)
+        warning_final = copy.deepcopy(warning)
+        critical_final = copy.deepcopy(critical)
+
+        for idx, qe in enumerate(informational_final):
+            informational_final[idx] = qe + [""]
+        for idx, qe in enumerate(warning_final):
+            if qe[2] == "PREDICATE OUTSIDE HISTOGRAM" and qe[4].startswith(
+                "analyze_statistics"
+            ):
+                warning_final[idx] = qe + ["SELECT " + qe[4]]
+            else:
+                warning_final[idx] = qe + [""]
+        for idx, qe in enumerate(critical_final):
+            if qe[2] == "NO HISTOGRAM" and qe[4].startswith("analyze_statistics"):
+                critical_final[idx] = qe + ["SELECT " + qe[4]]
+            else:
+                critical_final[idx] = qe + [""]
+        return informational_final, warning_final, critical_final
+
     def main_tests(self):
         """
         This is the main test to run to
@@ -63,7 +93,8 @@ class QueryProfilerStats(QueryProfiler):
                 event_category,
                 event_type,
                 event_description,
-                suggested_action
+                suggested_action,
+                action_sql
 
         Returns
         -------
@@ -155,7 +186,7 @@ class QueryProfilerStats(QueryProfiler):
             )
             critical += [
                 [
-                    "initiator",
+                    "Query Initiator",
                     "OPTIMIZATION",
                     "PARSING_TIME_CRITICAL",
                     description,
@@ -174,7 +205,7 @@ class QueryProfilerStats(QueryProfiler):
             )
             warning += [
                 [
-                    "initiator",
+                    "Query Initiator",
                     "OPTIMIZATION",
                     "PARSING_TIME_HIGH",
                     description,
@@ -197,7 +228,7 @@ class QueryProfilerStats(QueryProfiler):
             recommended_action = ""
             informational += [
                 [
-                    "initiator",
+                    "Query Initiator",
                     "OPTIMIZATION",
                     "PARSING_TIME_REASONABLE",
                     description,
@@ -215,7 +246,7 @@ class QueryProfilerStats(QueryProfiler):
             recommended_action = ""
             informational += [
                 [
-                    "initiator",
+                    "Query Initiator",
                     "EXECUTION",
                     "RP_QUEUE_WAIT_TIME_REASONABLE",
                     description,
@@ -429,6 +460,9 @@ class QueryProfilerStats(QueryProfiler):
                     ]
                 ]
 
+        informational, warning, critical = self._get_sql_action(
+            informational, warning, critical
+        )
         return informational, warning, critical
 
     def client_data_test(self):

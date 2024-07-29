@@ -1395,7 +1395,8 @@ class PerformanceTree:
                     tooltip = row.split("ARRAY")[0] + "ARRAY[...]"
                     if "(ARRAY[...]" in tooltip:
                         tooltip += ")"
-                params = f'width={wh}, height={wh}, tooltip="{tooltip}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}"'
+                ns_icon = QprofUtility._get_no_statistics(tooltip)
+                params = f'width={wh}, height={wh}, tooltip="{tooltip}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}", xlabel="{ns_icon}"'
                 res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
@@ -1431,7 +1432,8 @@ class PerformanceTree:
                         tooltip = descendants_str.split("ARRAY")[0] + "ARRAY[...]"
                         if "(ARRAY[...]" in tooltip:
                             tooltip += ")"
-                    res += f'\t{100000 - tree_id} [label="...", tooltip="{tooltip}"];\n'
+                    ns_icon = QprofUtility._get_no_statistics(tooltip)
+                    res += f'\t{100000 - tree_id} [label="...", tooltip="{tooltip}", xlabel="{ns_icon}"];\n'
             if self._is_temp_relation_access(row):
                 children = self._find_children(tree_id, relationships)
                 if children:
