@@ -21,7 +21,7 @@ from typing import Optional, Union
 import verticapy._config.config as conf
 from verticapy.jupyter._javascript import read_package_file, replace_value
 from verticapy.jupyter._widgets import Visualizer, Item, makeItems
-from verticapy.performance.vertica.qprof import QueryProfiler
+from verticapy.performance.vertica.qprof_stats_tests import QueryProfilerStats
 from verticapy.performance.vertica.qprof_utility import QprofUtility
 
 if conf.get_import_success("IPython"):
@@ -29,7 +29,7 @@ if conf.get_import_success("IPython"):
     import ipywidgets as widgets
 
 
-class QueryProfilerInterface(QueryProfiler):
+class QueryProfilerInterface(QueryProfilerStats):
     """
     A class that inherits
     ``QueryProfiler`` and
@@ -434,7 +434,7 @@ class QueryProfilerInterface(QueryProfiler):
 
     ##########################################################################
 
-    def get_qsteps(self):
+    def get_qsteps_(self):
         """
         Returns an interactive Query Execution Steps chart.
         """
@@ -521,7 +521,7 @@ class QueryProfilerInterface(QueryProfiler):
         Callback function that displays the Query Execution Steps.
         """
         display(
-            super().get_qsteps(
+            super().get_qsteps_(
                 unit=self.qsteps_controls["unit"],
                 kind=self.qsteps_controls["kind"],
                 categoryorder=self.qsteps_controls["categoryorder"],
@@ -666,7 +666,7 @@ class QueryProfilerInterface(QueryProfiler):
             0: self.get_version,
             1: self.get_request,
             2: self.get_qduration,
-            3: self.get_qsteps,
+            3: self.get_qsteps_,
             4: NotImplemented,
             5: self.get_qplan_tree,
             6: self.get_qplan_profile,
