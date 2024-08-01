@@ -1755,6 +1755,28 @@ class QueryProfiler:
         self.qduration = self.qdurations[self.transactions_idx]
         self.query_success = self.query_successes[self.transactions_idx]
 
+    def _get_current_nodes(self):
+        """
+        Returns a ``list`` of
+        the current nodes.
+        """
+        query = f"""
+            SELECT 
+                DISTINCT node_name
+            FROM 
+                v_internal.dc_query_executions 
+            WHERE 
+                transaction_id={self.transaction_id} AND 
+                statement_id={self.statement_id}
+            ORDER BY 1;"""
+        query = self._replace_schema_in_query(query)
+        nodes = _executeSQL(
+            query,
+            title="getting all the current nodes.",
+            method="fetchall",
+        )
+        return [nd[0] for nd in nodes] + ["Query Initiator"]
+
     # Insertion
 
     def insert(

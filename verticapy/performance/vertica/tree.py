@@ -1560,13 +1560,14 @@ class PerformanceTree:
         fillcolor = default_params["fillcolor"]
         rows = "\n".join(self.rows).upper()
         res = ""
+
         if "OUTER" in rows:
             res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">O</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">OUTER</FONT></td></tr>'
         if "INNER" in rows:
             res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">I</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">INNER</FONT></td></tr>'
         if "CROSS JOIN" in rows:
             res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">X</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">CROSS JOIN</FONT></td></tr>'
-        if "FILTER" in rows:
+        if "OUTER (FILTER)" in rows or "INNER (FILTER)" in rows:
             res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">F</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">FILTER</FONT></td></tr>'
         if "BROADCAST" in rows:
             res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">B</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
@@ -1584,6 +1585,8 @@ class PerformanceTree:
             res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">M</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">MERGE</FONT></td></tr>'
         if "PIPELINED" in rows:
             res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">P</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">PIPELINED</FONT></td></tr>'
+        if "NO STATISTICS" in rows:
+            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">🚫</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">NO STATISTICS</FONT></td></tr>'
         if res:
             res_f = f'\tlegend_annotations [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
             res = f'{res_f}<tr><td BGCOLOR="{bgcolor}"></td><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">Path transition</FONT></td></tr>{res}'

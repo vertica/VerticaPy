@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import copy
 from typing import Optional
 
+from verticapy._typing import NoneType
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.performance.vertica.qprof import QueryProfiler
@@ -29,17 +30,25 @@ class QueryProfilerStats(QueryProfiler):
     """
 
     @staticmethod
-    def _get_time_conv(time_ms: Optional[float]) -> tuple[float, str]:
+    def _get_time_conv(
+        time_us: Optional[float], out_unit: Optional[str] = None
+    ) -> tuple[float, str]:
         """
         Utility method to convert time
         to the right unit.
         """
-        if time_ms is None:
-            return 0, "seconds"
-        optime, unit = float(time_ms), "milliseconds"
-        if optime > 1000:
-            optime = optime / 1000
+        if time_us is None:
+            return 0.0, "milliseconds"
+        if out_unit == "microseconds":
+            return round(float(time_us), 2), out_unit
+        optime, unit = float(time_us / 1000), "milliseconds"
+        if out_unit == "milliseconds":
+            return round(float(optime), 2), out_unit
+        if optime > 1000000:
+            optime = optime / 1000000
             unit = "seconds"
+            if out_unit == "seconds":
+                return round(optime, 2), out_unit
             if optime > 3600:
                 optime = optime / 3600
                 unit = "hours"
@@ -108,133 +117,135 @@ class QueryProfilerStats(QueryProfiler):
         # Client Data Test
         client_data_test = self.client_data_test()
 
-        percent = round(client_data_test[-1] * 100, 2)
-        optime, unit = self._get_time_conv(client_data_test[1])
-        extime, exunit = self._get_time_conv(client_data_test[2])
+        if not (isinstance(client_data_test, NoneType)):
+            percent = round(client_data_test[-1] * 100, 2)
+            optime, unit = self._get_time_conv(client_data_test[1])
+            extime, exunit = self._get_time_conv(client_data_test[2], unit)
 
-        if percent > 40:
-            description = (
-                "The time to send data to the client is alarmingly higher than "
-                f"expected, taking {optime} {unit} which represents {percent}% "
-                f"of the total execution time of {extime} {exunit}."
-            )
-            recommended_action = (
-                "Check your network connection and terminal "
-                "configuration for critical issues."
-            )
-            critical += [
-                [
-                    client_data_test[0],
-                    "NETWORK",
-                    "TRANSMISSION_TIME_TO_CLIENT_CRITICAL",
-                    description,
-                    recommended_action,
+            if percent > 40:
+                description = (
+                    "The time to send data to the client is alarmingly higher than "
+                    f"expected, taking {optime} {unit} which represents {percent}% "
+                    f"of the total execution time of {extime} {exunit}."
+                )
+                recommended_action = (
+                    "Check your network connection and terminal "
+                    "configuration for critical issues."
+                )
+                critical += [
+                    [
+                        client_data_test[0],
+                        "NETWORK",
+                        "TRANSMISSION_TIME_TO_CLIENT_CRITICAL",
+                        description,
+                        recommended_action,
+                    ]
                 ]
-            ]
-        elif percent > 20:
-            description = (
-                "The time to send data to the client is a bit higher than "
-                f"expected, taking {optime} {unit} which represents {percent}% "
-                f"of the total execution time of {extime} {exunit}."
-            )
-            recommended_action = (
-                "Check your network connection and terminal configuration."
-            )
-            warning += [
-                [
-                    client_data_test[0],
-                    "NETWORK",
-                    "TRANSMISSION_TIME_TO_CLIENT_HIGH",
-                    description,
-                    recommended_action,
+            elif percent > 20:
+                description = (
+                    "The time to send data to the client is a bit higher than "
+                    f"expected, taking {optime} {unit} which represents {percent}% "
+                    f"of the total execution time of {extime} {exunit}."
+                )
+                recommended_action = (
+                    "Check your network connection and terminal configuration."
+                )
+                warning += [
+                    [
+                        client_data_test[0],
+                        "NETWORK",
+                        "TRANSMISSION_TIME_TO_CLIENT_HIGH",
+                        description,
+                        recommended_action,
+                    ]
                 ]
-            ]
-        else:
-            description = (
-                "The time to send data to the client is reasonable, taking "
-                f"only {optime} {unit} which is just {percent}% of the "
-                f"total execution time of {extime} {exunit}."
-            )
-            recommended_action = ""
-            informational += [
-                [
-                    client_data_test[0],
-                    "NETWORK",
-                    "TRANSMISSION_TIME_TO_CLIENT_REASONABLE",
-                    description,
-                    recommended_action,
+            else:
+                description = (
+                    "The time to send data to the client is reasonable, taking "
+                    f"only {optime} {unit} which is just {percent}% of the "
+                    f"total execution time of {extime} {exunit}."
+                )
+                recommended_action = ""
+                informational += [
+                    [
+                        client_data_test[0],
+                        "NETWORK",
+                        "TRANSMISSION_TIME_TO_CLIENT_REASONABLE",
+                        description,
+                        recommended_action,
+                    ]
                 ]
-            ]
 
         # Parser Test
         exec_time_test = self.exec_time_test()
 
-        percent = round(exec_time_test[-1] * 100, 2)
-        optime, unit = self._get_time_conv(exec_time_test[0])
-        extime, exunit = self._get_time_conv(exec_time_test[1])
-        extime_ms = exec_time_test[1]
+        if not (isinstance(exec_time_test, NoneType)):
+            percent = round(exec_time_test[-1] * 100, 2)
+            optime, unit = self._get_time_conv(exec_time_test[0])
+            extime, exunit = self._get_time_conv(exec_time_test[1], unit)
+            extime_us = exec_time_test[1]
 
-        if percent > 50 and extime_ms > 5000:
-            description = (
-                "The time to parse the data and generate the plan "
-                f"is alarmingly higher than expected, taking {optime} "
-                f"{unit}, which represents {percent}% of the total time "
-                f"({extime} {exunit}) for parsing and executing."
-            )
-            recommended_action = (
-                "Please check your system parameters for critical issues."
-            )
-            critical += [
-                [
-                    "Query Initiator",
-                    "OPTIMIZATION",
-                    "PARSING_TIME_CRITICAL",
-                    description,
-                    recommended_action,
-                ]
-            ]
-        elif percent > 30 and extime_ms > 5000:
-            description = (
-                "The time to parse the data and generate the plan "
-                f"is a bit higher than expected, taking {optime} {unit}, "
-                f"which represents {percent}% of the total time "
-                f"({extime} {exunit}) for parsing and executing."
-            )
-            recommended_action = (
-                "Please check your system parameters for possible issues."
-            )
-            warning += [
-                [
-                    "Query Initiator",
-                    "OPTIMIZATION",
-                    "PARSING_TIME_HIGH",
-                    description,
-                    recommended_action,
-                ]
-            ]
-        else:
-            if extime_ms > 5000:
+            if percent > 50 and extime_us > 5000:
                 description = (
                     "The time to parse the data and generate the plan "
-                    f"is reasonable, taking only {optime} {unit} which "
-                    f"is just {percent}% of the total execution time "
-                    f"of {extime} {exunit}."
+                    f"is alarmingly higher than expected, taking {optime} "
+                    f"{unit}, which represents {percent}% of the total time "
+                    f"({extime} {exunit}) for parsing and executing."
                 )
+                recommended_action = (
+                    "Please check your system parameters for critical issues."
+                )
+                critical += [
+                    [
+                        "Query Initiator",
+                        "OPTIMIZATION",
+                        "PARSING_TIME_CRITICAL",
+                        description,
+                        recommended_action,
+                    ]
+                ]
+            elif percent > 30 and extime_us > 5000:
+                description = (
+                    "The time to parse the data and generate the plan "
+                    f"is a bit higher than expected, taking {optime} {unit}, "
+                    f"which represents {percent}% of the total time "
+                    f"({extime} {exunit}) for parsing and executing."
+                )
+                recommended_action = (
+                    "Please check your system parameters for possible issues."
+                )
+                warning += [
+                    [
+                        "Query Initiator",
+                        "OPTIMIZATION",
+                        "PARSING_TIME_HIGH",
+                        description,
+                        recommended_action,
+                    ]
+                ]
             else:
-                description = (
-                    "The time to parse the data and generate the plan "
-                    f"is reasonable, taking only {optime} {unit}."
-                )
-            recommended_action = ""
-            informational += [
-                [
-                    "Query Initiator",
-                    "OPTIMIZATION",
-                    "PARSING_TIME_REASONABLE",
-                    description,
-                    recommended_action,
+                if extime_us > 5000:
+                    description = (
+                        "The time to parse the data and generate the plan "
+                        f"is reasonable, taking only {optime} {unit} which "
+                        f"is just {percent}% of the total execution time "
+                        f"of {extime} {exunit}."
+                    )
+                else:
+                    description = (
+                        "The time to parse the data and generate the plan "
+                        f"is reasonable, taking only {optime} {unit}."
+                    )
+                recommended_action = ""
+                informational += [
+                    [
+                        "Query Initiator",
+                        "OPTIMIZATION",
+                        "PARSING_TIME_REASONABLE",
+                        description,
+                        recommended_action,
+                    ]
                 ]
-            ]
 
         # Resource Pool Test
         pooltime = self.pool_queue_wait_time_test()
@@ -371,7 +382,7 @@ class QueryProfilerStats(QueryProfiler):
             else:
                 percent = round(ratio * 100, 2)
             clock_time, ct_unit = self._get_time_conv(clock_time_us)
-            exec_time, et_unit = self._get_time_conv(exec_time_us)
+            exec_time, et_unit = self._get_time_conv(exec_time_us, ct_unit)
 
             if (exec_time_us is None or exec_time_us < 5000) and (
                 clock_time_us is None or clock_time_us < 5000
@@ -463,7 +474,20 @@ class QueryProfilerStats(QueryProfiler):
         informational, warning, critical = self._get_sql_action(
             informational, warning, critical
         )
-        return informational, warning, critical
+        nodes = self._get_current_nodes()
+        informational_final = []
+        warning_final = []
+        critical_final = []
+        for alert in informational:
+            if alert[0] in nodes:
+                informational_final += [alert]
+        for alert in warning:
+            if alert[0] in nodes:
+                warning_final += [alert]
+        for alert in critical:
+            if alert[0] in nodes:
+                critical_final += [alert]
+        return informational_final, warning_final, critical_final
 
     def client_data_test(self):
         """
@@ -515,6 +539,8 @@ class QueryProfilerStats(QueryProfiler):
             title="Getting the 'Send Data to Client' ratio.",
             method="fetchrow",
         )
+        if isinstance(res, NoneType):
+            return None
         return (res[0], res[1], res[2], float(res[3]))
 
     def exec_time_test(self):
@@ -553,6 +579,8 @@ class QueryProfilerStats(QueryProfiler):
             title="Getting the exec time vs the total.",
             method="fetchall",
         )
+        if not res:
+            return None
         total_time = res[0][1] + res[1][1]
         return res[1][1], total_time, res[1][1] / total_time
 

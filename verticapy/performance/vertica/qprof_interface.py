@@ -167,7 +167,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         dropdown1 = widgets.Dropdown(
             options=options_dropwdown,
             description="Metric # 1:",
-            value="Execution time in ms",
+            value="Execution time in us",
             layout={"width": "260px"},
         )
         dropdown2 = widgets.Dropdown(
