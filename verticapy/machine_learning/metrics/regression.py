@@ -45,12 +45,12 @@ FUNCTIONS_REGRESSION_SQL_DICTIONARY = {
     "msle": "AVG(POW(LOG({y_true} + 1) - LOG({y_score} + 1), 2))",
     "quantile_error": "APPROXIMATE_PERCENTILE(ABS({y_true} - {y_score}) USING PARAMETERS percentile = {q})",
     "qe": "APPROXIMATE_PERCENTILE(ABS({y_true} - {y_score}) USING PARAMETERS percentile = {q})",
-    "r2": "POWER(CORR({y_true}, {y_score}), 2)",
-    "rsquared": "POWER(CORR({y_true}, {y_score}), 2)",
-    "r2_adj": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - POWER(CORR({y_true}, {y_score}), 2))",
-    "rsquared_adj": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - POWER(CORR({y_true}, {y_score}), 2))",
-    "r2adj": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - POWER(CORR({y_true}, {y_score}), 2))",
-    "r2adjusted": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - POWER(CORR({y_true}, {y_score}), 2))",
+    "r2": "1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))",
+    "rsquared": "1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))",
+    "r2_adj": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))))",
+    "rsquared_adj": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))))",
+    "r2adj": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))))",
+    "r2adjusted": "1 - ((MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - 1) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 1)) * (1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))))",
     "aic": "MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) * LN(MAX(_verticapy_mse)) + 2 * ({k} + 1) + (POWER(2 * ({k} + 1), 2) + 2 * ({k} + 1)) / (MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) - {k} - 2)",
     "bic": "MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END) * LN(MAX(_verticapy_mse)) + ({k} + 1) * LN(MAX(CASE WHEN _verticapy_cnt_y_true > _verticapy_cnt_y_score THEN _verticapy_cnt_y_score ELSE _verticapy_cnt_y_true END))",
 }
@@ -1287,7 +1287,9 @@ def regression_report(
             q_subquery += [f"{mse} AS _verticapy_mse"]
             mse_in = True
         if m in ("r2", "r2_adj") and not avg_in:
-            q_subquery += [f"AVG({y_true}) OVER() AS _verticapy_avg_y_true"]
+            q_subquery += [
+                f"AVG(CASE WHEN {y_true} IS NULL OR {y_score} IS NULL THEN NULL ELSE {y_true} END) OVER() AS _verticapy_avg_y_true"
+            ]
             avg_in = True
     if len(q_subquery) > 0:
         relation = f"""
