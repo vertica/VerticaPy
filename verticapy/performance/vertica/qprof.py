@@ -2532,7 +2532,7 @@ class QueryProfiler:
                 a.thread_count AS threads
             FROM 
                 v_monitor.resource_acquisitions a
-                INNER JOIN query_profiles b
+                INNER JOIN v_monitor.query_profiles b
                     ON a.transaction_id = b.transaction_id
             WHERE 
                 a.transaction_id={self.transaction_id} AND 
