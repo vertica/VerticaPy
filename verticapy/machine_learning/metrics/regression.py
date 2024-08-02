@@ -1279,7 +1279,7 @@ def regression_report(
         if m in ("r2_adj", "aic", "bic") and not cnt_in:
             q_subquery += [
                 f"COUNT({y_true}) OVER() AS _verticapy_cnt_y_true",
-                f"COUNT({y_score}) OVER() AS _verticapy_cnt_y_score",
+                f"COUNT(_y_score) OVER() AS _verticapy_cnt_y_score",
             ]
             cnt_in = True
         if m in ("aic", "bic") and not mse_in:
@@ -1288,15 +1288,22 @@ def regression_report(
             mse_in = True
         if m in ("r2", "r2_adj") and not avg_in:
             q_subquery += [
-                f"AVG(CASE WHEN {y_true} IS NULL OR {y_score} IS NULL THEN NULL ELSE {y_true} END) OVER() AS _verticapy_avg_y_true"
+                f"AVG(CASE WHEN {y_true} IS NULL OR _y_score IS NULL THEN NULL ELSE {y_true} END) OVER() AS _verticapy_avg_y_true"
             ]
             avg_in = True
     if len(q_subquery) > 0:
         relation = f"""
-            (SELECT
-                *,
-                {', '.join(q_subquery)}
-            FROM {input_relation}) VERTICAPY_SUBTABLE"""
+            (
+                SELECT
+                    *,
+                    {', '.join(q_subquery)}
+                FROM (
+                    SELECT 
+                        *, 
+                        {y_score} AS _y_score
+                    FROM {input_relation}
+                ) VERTICAPY_SUBTABLE
+            ) VERTICAPY_SUBTABLE"""
     else:
         relation = input_relation
     metrics_sql = []
@@ -1319,6 +1326,9 @@ def regression_report(
                     y_true=y_true, y_score=y_score, k=k
                 )
             ]
+    if len(q_subquery) > 0:
+        for idx, metric in enumerate(metrics_sql):
+            metrics_sql[idx] = metric.replace(y_score, "_y_score")
     query = f"""
         SELECT {', '.join(metrics_sql)} 
         FROM {relation} 
