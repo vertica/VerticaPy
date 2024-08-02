@@ -125,8 +125,8 @@ class QueryProfilerStats(QueryProfiler):
             if percent > 40:
                 description = (
                     "The time to send data to the client is alarmingly higher than "
-                    f"expected, taking {optime} {unit} which represents {percent}% "
-                    f"of the total execution time of {extime} {exunit}."
+                    f"expected, taking {optime:,} {unit} which represents {percent:,}% "
+                    f"of the total execution time of {extime:,} {exunit}."
                 )
                 recommended_action = (
                     "Check your network connection and terminal "
@@ -144,8 +144,8 @@ class QueryProfilerStats(QueryProfiler):
             elif percent > 20:
                 description = (
                     "The time to send data to the client is a bit higher than "
-                    f"expected, taking {optime} {unit} which represents {percent}% "
-                    f"of the total execution time of {extime} {exunit}."
+                    f"expected, taking {optime:,} {unit} which represents {percent:,}% "
+                    f"of the total execution time of {extime:,} {exunit}."
                 )
                 recommended_action = (
                     "Check your network connection and terminal configuration."
@@ -162,8 +162,8 @@ class QueryProfilerStats(QueryProfiler):
             else:
                 description = (
                     "The time to send data to the client is reasonable, taking "
-                    f"only {optime} {unit} which is just {percent}% of the "
-                    f"total execution time of {extime} {exunit}."
+                    f"only {optime:,} {unit} which is just {percent:,}% of the "
+                    f"total execution time of {extime:,} {exunit}."
                 )
                 recommended_action = ""
                 informational += [
@@ -185,12 +185,12 @@ class QueryProfilerStats(QueryProfiler):
             extime, exunit = self._get_time_conv(exec_time_test[1], unit)
             extime_us = exec_time_test[1]
 
-            if percent > 50 and extime_us > 5000:
+            if percent > 50 and extime_us > 5000000:
                 description = (
                     "The time to parse the data and generate the plan "
-                    f"is alarmingly higher than expected, taking {optime} "
-                    f"{unit}, which represents {percent}% of the total time "
-                    f"({extime} {exunit}) for parsing and executing."
+                    f"is alarmingly higher than expected, taking {optime:,} "
+                    f"{unit}, which represents {percent:,}% of the total time "
+                    f"({extime:,} {exunit}) for parsing and executing."
                 )
                 recommended_action = (
                     "Please check your system parameters for critical issues."
@@ -204,12 +204,12 @@ class QueryProfilerStats(QueryProfiler):
                         recommended_action,
                     ]
                 ]
-            elif percent > 30 and extime_us > 5000:
+            elif percent > 30 and extime_us > 5000000:
                 description = (
                     "The time to parse the data and generate the plan "
-                    f"is a bit higher than expected, taking {optime} {unit}, "
-                    f"which represents {percent}% of the total time "
-                    f"({extime} {exunit}) for parsing and executing."
+                    f"is a bit higher than expected, taking {optime:,} {unit}, "
+                    f"which represents {percent:,}% of the total time "
+                    f"({extime:,} {exunit}) for parsing and executing."
                 )
                 recommended_action = (
                     "Please check your system parameters for possible issues."
@@ -224,17 +224,17 @@ class QueryProfilerStats(QueryProfiler):
                     ]
                 ]
             else:
-                if extime_us > 5000:
+                if extime_us > 5000000:
                     description = (
                         "The time to parse the data and generate the plan "
-                        f"is reasonable, taking only {optime} {unit} which "
-                        f"is just {percent}% of the total execution time "
-                        f"of {extime} {exunit}."
+                        f"is reasonable, taking only {optime:,} {unit} which "
+                        f"is just {percent:,}% of the total execution time "
+                        f"of {extime:,} {exunit}."
                     )
                 else:
                     description = (
                         "The time to parse the data and generate the plan "
-                        f"is reasonable, taking only {optime} {unit}."
+                        f"is reasonable, taking only {optime:,} {unit}."
                     )
                 recommended_action = ""
                 informational += [
@@ -269,7 +269,7 @@ class QueryProfilerStats(QueryProfiler):
                 description = (
                     "Some resource pools have queue wait "
                     "times higher than expected. Resource "
-                    f"pool {pool_name} is taking {qts} seconds "
+                    f"pool {pool_name} is taking {qts:,} seconds "
                     "to be allocated."
                 )
                 recommended_action = (
@@ -307,9 +307,9 @@ class QueryProfilerStats(QueryProfiler):
             if percent > 50:
                 description = (
                     f"The table '{table_name}' is poorly segmented for projection "
-                    f"'{projection_name}' on node '{node_name}'. It has {row_count} "
-                    f"rows, compared to an average of {avg_row_count} rows on "
-                    f"other nodes, representing a deviation of {percent}%. Please "
+                    f"'{projection_name}' on node '{node_name}'. It has {row_count:,} "
+                    f"rows, compared to an average of {avg_row_count:,} rows on "
+                    f"other nodes, representing a deviation of {percent:,}%. Please "
                     "resegment to rectify this issue."
                 )
                 recommended_action = (
@@ -328,9 +328,9 @@ class QueryProfilerStats(QueryProfiler):
             elif percent > 30:
                 description = (
                     f"The table '{table_name}' is not ideally segmented for projection "
-                    f"'{projection_name}' on node '{node_name}'. It has {row_count} "
-                    f"rows, compared to an average of {avg_row_count} rows on "
-                    f"other nodes, representing a deviation of {percent}%. The deviation "
+                    f"'{projection_name}' on node '{node_name}'. It has {row_count:,} "
+                    f"rows, compared to an average of {avg_row_count:,} rows on "
+                    f"other nodes, representing a deviation of {percent:,}%. The deviation "
                     "is high but within acceptable limits, so no immediate action is "
                     "required."
                 )
@@ -350,9 +350,9 @@ class QueryProfilerStats(QueryProfiler):
             else:
                 description = (
                     f"The table '{table_name}' is well-segmented for projection "
-                    f"'{projection_name}' on node '{node_name}'. It has {row_count} "
-                    f"rows, closely matching the average of {avg_row_count} rows on "
-                    f"other nodes, with a deviation of {percent}% which is within "
+                    f"'{projection_name}' on node '{node_name}'. It has {row_count:,} "
+                    f"rows, closely matching the average of {avg_row_count:,} rows on "
+                    f"other nodes, with a deviation of {percent:,}% which is within "
                     "acceptable limits."
                 )
                 recommended_action = ""
@@ -384,14 +384,14 @@ class QueryProfilerStats(QueryProfiler):
             clock_time, ct_unit = self._get_time_conv(clock_time_us)
             exec_time, et_unit = self._get_time_conv(exec_time_us, ct_unit)
 
-            if (exec_time_us is None or exec_time_us < 5000) and (
-                clock_time_us is None or clock_time_us < 5000
+            if (exec_time_us is None or exec_time_us < 5000000) and (
+                clock_time_us is None or clock_time_us < 5000000
             ):
                 description = (
-                    f"The clock time ({clock_time} {ct_unit}) for "
+                    f"The clock time ({clock_time:,} {ct_unit}) for "
                     f"node '{node_name}' in PATH ID {path_id} with "
                     f"operator '{operator_name}' is comparable to "
-                    f"execution time ({exec_time} {et_unit})."
+                    f"execution time ({exec_time:,} {et_unit})."
                 )
                 recommended_action = ""
                 informational += [
@@ -405,11 +405,11 @@ class QueryProfilerStats(QueryProfiler):
                 ]
             elif percent > 20:
                 description = (
-                    f"The clock time ({clock_time} {ct_unit}) for node"
+                    f"The clock time ({clock_time:,} {ct_unit}) for node"
                     f" '{node_name}' in PATH ID {path_id} with operator"
-                    f" '{operator_name}' is much greater than the execution"
-                    f" time ({exec_time} {et_unit}). This increase is"
-                    f" {percent}. Take immediate action."
+                    f" '{operator_name}' differs significantly than the execution"
+                    f" time ({exec_time:,} {et_unit}). The ratio stands at approximately"
+                    f" {percent:,}%. Take immediate action."
                 )
                 recommended_action = (
                     "There could be multiple reasons for the difference between "
@@ -429,10 +429,11 @@ class QueryProfilerStats(QueryProfiler):
                 ]
             elif percent > 10:
                 description = (
-                    f"The clock time ({clock_time} {ct_unit}) for "
+                    f"The clock time ({clock_time:,} {ct_unit}) for "
                     f"node '{node_name}' in PATH ID {path_id} with"
-                    f" operator '{operator_name}' is {percent} greater"
-                    f" than the execution time ({exec_time} {et_unit})."
+                    f" operator '{operator_name}' differs"
+                    f" than the execution time ({exec_time:,} {et_unit})."
+                    f" The ratio stands at approximately {percent:,}%."
                     " This can be concerning. You can investigate to improve "
                     "query performance."
                 )
@@ -454,11 +455,11 @@ class QueryProfilerStats(QueryProfiler):
                 ]
             else:
                 description = (
-                    f"The clock time ({clock_time} {ct_unit}) for "
+                    f"The clock time ({clock_time:,} {ct_unit}) for "
                     f"node '{node_name}' in PATH ID {path_id} with "
                     f"operator '{operator_name}' is comparable to "
-                    f"execution time ({exec_time} {et_unit}). "
-                    f"This increase is only {percent}."
+                    f"execution time ({exec_time:,} {et_unit}). "
+                    f"This increase is only {percent:,}."
                 )
                 recommended_action = ""
                 informational += [
@@ -789,9 +790,9 @@ class QueryProfilerStats(QueryProfiler):
                     WHEN exec_time_us = 0 OR clock_time_us = 0
                         THEN NULL
                     WHEN exec_time_us > clock_time_us
-                        THEN (exec_time_us - clock_time_us) / clock_time_us
+                        THEN (exec_time_us - clock_time_us) / exec_time_us
                     ELSE
-                        (clock_time_us - exec_time_us) / exec_time_us
+                        (clock_time_us - exec_time_us) / clock_time_us
                 END) AS ratio
             FROM {self.get_qexecution_report()}
         """
