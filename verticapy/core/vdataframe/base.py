@@ -630,7 +630,9 @@ class vDataFrame(vDFAnimatedPlot):
 
                 # Getting the main relation information
                 main_relation = f"({sql}) VERTICAPY_SUBTABLE"
-                dtypes = get_data_types(sql)
+                dtypes = get_data_types(
+                    f"SELECT * FROM ({sql}) VERTICA_SUBTABLE LIMIT 0"
+                )
                 isflex = False
 
             else:

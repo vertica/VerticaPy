@@ -360,8 +360,8 @@ class TestModelSelection:
             True,
             True,
         )
-        assert result["importance"][-1] == pytest.approx(99.40699725013596, 1e-4)
-        assert result["importance"][-4] == pytest.approx(0.5930027498640466, 1e-4)
+        assert result["importance"][-1] == pytest.approx(100.0, 1e-4)
+        assert result["importance"][-4] == pytest.approx(0.0, 1e-4)
         plt.close("all")
         result = stepwise(
             model,
@@ -377,13 +377,9 @@ class TestModelSelection:
             True,
             True,
         )
-        assert result["importance"][-1] == pytest.approx(0.7255807088358904, 1e-4)
-        assert result["importance"][-4] == pytest.approx(99.2744192911641096, 1e-4)
-        plt.close("all")
-        model = LinearRegression("LR_stepwise_test")
+        assert result["importance"][-1] == pytest.approx(0.0, 1e-4)
+        assert result["importance"][-4] == pytest.approx(100.00000000000001, 1e-4)
         model.drop()
-        assert result["importance"][-1] == pytest.approx(0.7255807088358904, 1e-4)
-        assert result["importance"][-4] == pytest.approx(99.2744192911641096, 1e-4)
         plt.close("all")
 
     def test_overwrite_model(self, titanic_vd):

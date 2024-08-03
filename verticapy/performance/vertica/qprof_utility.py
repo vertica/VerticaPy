@@ -173,7 +173,7 @@ class QprofUtility:
             "clock_time_us": "Clock time in \u00b5s",
             "cost": "Query plan cost",
             "cstall_us": "Network consumer stall time in \u00b5s",
-            "exec_time_us": "Execution time in ms",
+            "exec_time_us": "Execution time in us",
             "est_rows": "Estimated row count",
             "mem_res_mb": "Reserved memory size in MB",
             "mem_all_mb": "Allocated memory size in MB",

@@ -1558,32 +1558,66 @@ class PerformanceTree:
         bgcolor = default_params["legend_bgcolor"]
         fontcolor = default_params["legend_fontcolor"]
         fillcolor = default_params["fillcolor"]
-        rows = "\n".join(self.rows).upper()
+        all_legend = {}
+        for row in self.rows:
+            row_tmp = row.upper()
+            if "OUTER ->" in row_tmp:
+                all_legend[
+                    "OUTER"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">O</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">OUTER</FONT></td></tr>'
+            if "INNER ->" in row_tmp:
+                all_legend[
+                    "INNER"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">I</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">INNER</FONT></td></tr>'
+            if "CROSS JOIN" in row_tmp:
+                all_legend[
+                    "CROSS JOIN"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">X</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">CROSS JOIN</FONT></td></tr>'
+            if "OUTER (FILTER)" in row_tmp or "INNER (FILTER)" in row_tmp:
+                all_legend[
+                    "FILTER"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">F</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">FILTER</FONT></td></tr>'
+            if "OUTER (BROADCAST)" in row_tmp or "INNER (BROADCAST)" in row_tmp:
+                all_legend[
+                    "BROADCAST"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">B</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
+            if "GLOBAL RESEGMENT" in row_tmp and "LOCAL RESEGMENT" in row_tmp:
+                all_legend[
+                    "GLR"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">GLR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL/LOCAL RESEGMENT</FONT></td></tr>'
+            elif "GLOBAL RESEGMENT" in row_tmp:
+                all_legend[
+                    "GR"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">GR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL RESEGMENT</FONT></td></tr>'
+            elif "LOCAL RESEGMENT" in row_tmp:
+                all_legend[
+                    "LR"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">LR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">LOCAL RESEGMENT</FONT></td></tr>'
+            elif "(RESEGMENT)" in row_tmp:
+                all_legend[
+                    "RESEGMENT"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">R</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
+            if "HASH" in row_tmp:
+                all_legend[
+                    "HASH"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">H</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">HASH</FONT></td></tr>'
+            if "MERGE" in row_tmp:
+                all_legend[
+                    "MERGE"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">M</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">MERGE</FONT></td></tr>'
+            if "PIPELINED" in row_tmp:
+                all_legend[
+                    "PIPELINED"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">P</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">PIPELINED</FONT></td></tr>'
+            if "NO STATISTICS" in row_tmp:
+                all_legend[
+                    "NO STATISTICS"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">🚫</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">NO STATISTICS</FONT></td></tr>'
+
         res = ""
-        if "OUTER" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">O</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">OUTER</FONT></td></tr>'
-        if "INNER" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">I</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">INNER</FONT></td></tr>'
-        if "CROSS JOIN" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">X</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">CROSS JOIN</FONT></td></tr>'
-        if "FILTER" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">F</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">FILTER</FONT></td></tr>'
-        if "BROADCAST" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">B</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
-        if "RESEGMENT" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">R</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
-        if "RESEGMENT" in rows and "GLOBAL" in rows and "LOCAL" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">GLR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL/LOCAL RESEGMENT</FONT></td></tr>'
-        if "RESEGMENT" in rows and "GLOBAL" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">GR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">GLOBAL RESEGMENT</FONT></td></tr>'
-        if "RESEGMENT" in rows and "LOCAL" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">LR</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">LOCAL RESEGMENT</FONT></td></tr>'
-        if "HASH" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">H</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">HASH</FONT></td></tr>'
-        if "MERGE" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">M</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">MERGE</FONT></td></tr>'
-        if "PIPELINED" in rows:
-            res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">P</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">PIPELINED</FONT></td></tr>'
+        for op in all_legend:
+            res += all_legend[op]
+
         if res:
             res_f = f'\tlegend_annotations [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
             res = f'{res_f}<tr><td BGCOLOR="{bgcolor}"></td><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">Path transition</FONT></td></tr>{res}'
