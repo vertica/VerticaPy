@@ -47,6 +47,7 @@ class AllTableTypes(Enum):
     DC_EXPLAIN_PLANS = "dc_explain_plans"
     DC_QUERY_EXECUTIONS = "dc_query_executions"
     DC_REQUESTS_ISSUED = "dc_requests_issued"
+    DC_SCAN_EVENTS = "dc_scan_events"
     DC_SLOW_EVENTS = "dc_slow_events"
     EXECUTION_ENGINE_PROFILES = "execution_engine_profiles"
     EXPORT_EVENTS = "export_events"
@@ -773,6 +774,7 @@ ALL_TABLES_V1 = [
     AllTableTypes.DC_EXPLAIN_PLANS,
     AllTableTypes.DC_QUERY_EXECUTIONS,
     AllTableTypes.DC_REQUESTS_ISSUED,
+    AllTableTypes.DC_SCAN_EVENTS,
     AllTableTypes.DC_SLOW_EVENTS,
     AllTableTypes.EXECUTION_ENGINE_PROFILES,
     AllTableTypes.EXPORT_EVENTS,
@@ -787,6 +789,7 @@ ALL_TABLES_V2 = [
     AllTableTypes.DC_EXPLAIN_PLANS,
     AllTableTypes.DC_QUERY_EXECUTIONS,
     AllTableTypes.DC_REQUESTS_ISSUED,
+    AllTableTypes.DC_SCAN_EVENTS,
     AllTableTypes.DC_SLOW_EVENTS,
     AllTableTypes.EXECUTION_ENGINE_PROFILES,
     # Host resources lacks txn_id, stmt_id
@@ -860,6 +863,8 @@ def collectionTableFactory(
         return DCQueryExecutionsTable(target_schema, key)
     if table_type == AllTableTypes.DC_REQUESTS_ISSUED:
         return DCRequestsIssuedTable(target_schema, key)
+    if table_type == AllTableTypes.DC_SCAN_EVENTS:
+        return DCScanEventsTable(target_schema, key)
     if table_type == AllTableTypes.DC_SLOW_EVENTS:
         return DCSlowEventsTable(target_schema, key)
     if table_type == AllTableTypes.EXECUTION_ENGINE_PROFILES:
@@ -1263,6 +1268,101 @@ class DCRequestsIssuedTable(CollectionTable):
 
     def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
         return {"query_start_epoch": "Int64", "digest": "Int64"}
+
+
+################ dc_slow_events ###################
+class DCScanEventsTable(CollectionTable):
+    """
+    ``DCScanEventsTable`` stores data from the system table
+    dc_scan_events
+    """
+
+    def __init__(self, table_schema: str, key: str) -> None:
+        super().__init__(AllTableTypes.DC_SCAN_EVENTS, table_schema, key)
+
+    def get_create_table_sql(self) -> str:
+        return f"""
+        CREATE TABLE IF NOT EXISTS {self.get_import_name_fq()}
+        (
+            "time" timestamptz,
+            node_name varchar(128),
+            session_id varchar(128),
+            user_id int,
+            user_name varchar(128),
+            transaction_id int,
+            statement_id int,
+            request_id int,
+            plan_id int,
+            localplan_id int,
+            operator_id int,
+            table_oid int,
+            projection_oid int,
+            container_index int,
+            container_description varchar(512),
+            event_type varchar(512),
+            event_description varchar(512)
+        );
+        """
+
+    def get_create_projection_sql(self) -> str:
+        import_name = self.get_import_name()
+        fq_proj_name = self.get_super_proj_name_fq()
+        import_name_fq = self.get_import_name_fq()
+        return f"""
+        CREATE PROJECTION IF NOT EXISTS {fq_proj_name}
+        /*+basename({import_name}),createtype(A)*/
+        (
+            "time",
+            node_name,
+            session_id,
+            user_id,
+            user_name,
+            transaction_id,
+            statement_id,
+            request_id,
+            plan_id,
+            localplan_id,
+            operator_id,
+            table_oid,
+            projection_oid,
+            container_index,
+            container_description,
+            event_type,
+            event_description
+        )
+        AS
+        SELECT {import_name}."time",
+            {import_name}.node_name,
+            {import_name}.session_id,
+            {import_name}.user_id,
+            {import_name}.user_name,
+            {import_name}.transaction_id,
+            {import_name}.statement_id,
+            {import_name}.request_id,
+            {import_name}.plan_id,
+            {import_name}.localplan_id,
+            {import_name}.operator_id,
+            {import_name}.table_oid,
+            {import_name}.projection_oid,
+            {import_name}.container_index,
+            {import_name}.container_description,
+            {import_name}.event_type,
+            {import_name}.event_description
+        FROM {import_name_fq}
+        ORDER BY {import_name}.transaction_id,
+            {import_name}.statement_id,
+            {import_name}.node_name,
+            {import_name}.request_id
+        SEGMENTED BY hash({import_name}."time", 
+            {import_name}.user_id, 
+            {import_name}.transaction_id, 
+            {import_name}.statement_id, 
+            {import_name}.request_id) 
+        ALL NODES;
+        """
+
+    def get_pandas_column_type_adjustments(self) -> Mapping[str, str]:
+        return {}
 
 
 ################ dc_slow_events ###################
