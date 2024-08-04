@@ -34,6 +34,12 @@ apt install pandoc
 replacement_word = "/project/data/VerticaPy/docs"
 ```
 
+- Install `make` if it is not already installed
+
+```
+apt install make
+```
+
 ## Generating the doc
 
 Running the ``refresh.sh`` script will generate the documentation on its own. 
@@ -56,29 +62,45 @@ pip install ../.
 ```
 
 - Clean the build
+```
 make clean
+```
 
 - Create the build (this may take quite some time)
+```
 make html
+```
 
 - Removes some patterns that make the links easier to read
+```
 python3 remove_pattern.py
+```
 
 - Fix some links that for notebooks and other nested files
+```
 python3 fix_links
+```
 
 - Create a TOC tree for each page
+```
 python3 create_toc_tree.py
+```
 
 - Update notebook links (this should not be needed if ``fix_links`` works)
+```
 python3 notebook_correction.py 
+```
 
 At this point, your document will be generated. It will be inside the ``build/html`` folder. 
 
 The next steps are only to revert the changes to the python code.
 
 - Reverse the changes to the directory paths
+```
 python3 reverse_replace_sphinx_dir.py
+```
 
 - Run black to fix formatting for the python code.
+```
 black ../.
+```
