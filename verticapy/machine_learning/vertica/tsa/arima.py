@@ -3169,6 +3169,7 @@ class VAR(AR):
 
     .. ipython:: python
         :okwarning:
+        :okexcept:
 
         model = VAR(p = 2)
 
@@ -3194,6 +3195,7 @@ class VAR(AR):
 
     .. ipython:: python
         :okwarning:
+        :okexcept:
 
         model.fit(data, "month", ["GB1", "GB2", "GB3"])
 
@@ -3216,12 +3218,14 @@ class VAR(AR):
 
     .. ipython:: python
         :okwarning:
+        :okexcept:
 
         model.features_importance(idx=0)
 
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
@@ -3289,6 +3293,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.report(start = 4)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_report.html", "w")
@@ -3314,6 +3319,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.report(start = 4, npredictions = 10)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_report_pred_2.html", "w")
@@ -3337,6 +3343,7 @@ class VAR(AR):
 
     .. ipython:: python
         :okwarning:
+        :okexcept:
 
         model.score(start = 3, npredictions = 30)
 
@@ -3360,6 +3367,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.predict()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_prediction.html", "w")
@@ -3400,6 +3408,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.predict(output_estimated_ts = True)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_prediction_2.html", "w")
@@ -3433,6 +3442,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.predict(data, "month", ["GB1", "GB2", "GB3"], start = 7, npredictions = 10, output_estimated_ts = True)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_prediction_3.html", "w")
@@ -3457,6 +3467,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "month", ["GB1", "GB2", "GB3"], npredictions = 10, start = 7, width = 650)
@@ -3508,6 +3519,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.report(start = 4, method = "forecast")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_f_report.html", "w")
@@ -3528,6 +3540,7 @@ class VAR(AR):
 
     .. ipython:: python
         :okwarning:
+        :okexcept:
 
         model.score(start = 4, npredictions = 6, method = "forecast")
 
@@ -3544,6 +3557,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.predict(start = 100, npredictions = 40, method = "forecast")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_f_prediction.html", "w")
@@ -3572,6 +3586,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.predict(data, "month", ["GB1", "GB2", "GB3"], start = 4, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_var_f_prediction_3.html", "w")
@@ -3603,6 +3618,7 @@ class VAR(AR):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "month", ["GB1", "GB2", "GB3"], npredictions = 10, start = 5, method = "forecast", width = 650)
