@@ -37,6 +37,7 @@ Query Performance Interface
    QueryProfilerInterface.get_rp_status
    QueryProfilerInterface.get_table
    QueryProfilerInterface.get_version
+   QueryProfilerInterface.main_tests
    QueryProfilerInterface.next
    QueryProfilerInterface.previous
    QueryProfilerInterface.step
