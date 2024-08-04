@@ -33,6 +33,7 @@ Query Performance Interface
    QueryProfilerInterface.get_qplan_profile
    QueryProfilerInterface.get_qsteps
    QueryProfilerInterface.get_request
+   QueryProfilerInterface.get_queries
    QueryProfilerInterface.get_query_events
    QueryProfilerInterface.get_rp_status
    QueryProfilerInterface.get_table
@@ -40,7 +41,9 @@ Query Performance Interface
    QueryProfilerInterface.main_tests
    QueryProfilerInterface.next
    QueryProfilerInterface.previous
+   QueryProfilerInterface.set_position
    QueryProfilerInterface.step
+   QueryProfilerInterface.to_html
 
 Query Performance
 ^^^^^^^^^^^^^^^^^^
