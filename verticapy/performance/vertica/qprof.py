@@ -1273,6 +1273,8 @@ class QueryProfiler:
             "dc_explain_plans": "v_internal",
             "dc_query_executions": "v_internal",
             "dc_plan_activities": "v_internal",
+            "dc_scan_events": "v_internal",
+            "dc_slow_events": "v_internal",
             "execution_engine_profiles": "v_monitor",
             "host_resources": "v_monitor",
             "query_events": "v_monitor",
@@ -1285,7 +1287,6 @@ class QueryProfiler:
             # New Tables - still not used.
             "dc_lock_attempts": "v_internal",
             "dc_plan_resources": "v_internal",
-            "dc_slow_events": "v_internal",
             "configuration_parameters": "v_monitor",
             "query_consumption": "v_monitor",
             "query_events": "v_monitor",
@@ -2035,6 +2036,7 @@ class QueryProfiler:
              - dc_explain_plans
              - dc_query_executions
              - dc_requests_issued
+             - dc_scan_events
              - dc_slow_events
              - host_resources
              - query_plan_profiles
