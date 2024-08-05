@@ -20,7 +20,7 @@ register_option(
 - Open a bash terminal, cd into ``VerticaPy/docs`` and install all requirements
 
 ```
-pip install -r requirements
+pip install -r requirements.txt
 ```
 - Additionally install pandoc
 
