@@ -165,6 +165,64 @@ ARMA
 
    ARMA.object_type
 
+
+______
+
+
+
+VAR
+~~~~
+
+.. currentmodule:: verticapy.machine_learning.vertica
+   
+.. autosummary::
+   :toctree: api/
+
+   tsa.VAR
+
+.. currentmodule:: verticapy.machine_learning.vertica.tsa
+
+**Methods:**
+
+.. autosummary::
+   :toctree: api/
+
+   VAR.contour
+   VAR.deploySQL
+   VAR.does_model_exists
+   VAR.drop
+   VAR.export_models
+   VAR.features_importance
+   VAR.fit
+   VAR.get_attributes
+   VAR.get_match_index
+   VAR.get_params
+   VAR.get_plotting_lib
+   VAR.get_vertica_attributes
+   VAR.import_models
+   VAR.plot
+   VAR.predict
+   VAR.register
+   VAR.regression_report
+   VAR.report
+   VAR.score
+   VAR.set_params
+   VAR.summarize
+   VAR.to_binary
+   VAR.to_pmml
+   VAR.to_python
+   VAR.to_sql
+   VAR.to_tf
+
+
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   VAR.object_type 
+
+
 ______
 
 AR
