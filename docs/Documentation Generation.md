@@ -78,7 +78,7 @@ python3 remove_pattern.py
 
 - Fix some links that for notebooks and other nested files
 ```
-python3 fix_links
+python3 fix_links.py
 ```
 
 - Create a TOC tree for each page
