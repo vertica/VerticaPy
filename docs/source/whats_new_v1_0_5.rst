@@ -16,9 +16,15 @@ You can call the main function to perform all the tests:
 
 .. code-block::
 
-  qprof = QueryProfiler((109090909, 1))
+  qprof = QueryProfilerStats((109090909, 1))
   qprof.main_tests()
 
+It is also inherited by the QueryProfilerInterface class, so it can be used from that class as well. For example:
+
+.. code-block::
+
+  qprof = QueryProfilerInterface((109090909, 1))
+  qprof.main_tests()
 
 QueryProfiler
 -----------------------
