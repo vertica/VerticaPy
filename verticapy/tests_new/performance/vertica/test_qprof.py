@@ -1093,7 +1093,7 @@ class TestQueryProfiler:
         logger.info("<<<<<<<<<<<<<<<<<<< Expected result >>>>>>>>>>>>>>>>>>>>>>")
         logger.info(f"Expected Result: {ss2}")
 
-        #assert ss2 == ss1 test skipped, it was hardcoded.
+        assert ss2 == ss1
 
     @pytest.mark.parametrize(
         "show",
