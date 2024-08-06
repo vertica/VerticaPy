@@ -1411,14 +1411,15 @@ class PerformanceTree:
             # METRICS in the TOOLTIPS
             tooltip_metrics = "\n\nAggregated metrics:\n---------------------\n"
             has_metric = False
-            for me_val in self.metric_value:
-                metric_tmp = self.metric_value[me_val]
-                if label in metric_tmp:
-                    name = QprofUtility._get_metrics_name(me_val)
-                    tooltip_metrics += (
-                        f"\n - {name}: {format(round(metric_tmp[label], 3),',')}"
-                    )
-                    has_metric = True
+            if not (isinstance(self.metric_value, NoneType)):
+                for me_val in self.metric_value:
+                    metric_tmp = self.metric_value[me_val]
+                    if label in metric_tmp:
+                        name = QprofUtility._get_metrics_name(me_val)
+                        tooltip_metrics += (
+                            f"\n - {name}: {format(round(metric_tmp[label], 3),',')}"
+                        )
+                        has_metric = True
             if not (has_metric):
                 if isinstance(me_val, str):
                     me_val = [me_val]
