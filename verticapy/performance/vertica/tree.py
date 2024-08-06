@@ -1428,7 +1428,9 @@ class PerformanceTree:
                         if isinstance(x[i], str):
                             tooltip_metrics += f"\n - {me_j}: {x[i]}"
                         else:
-                            tooltip_metrics += f"\n - {me_j}: {format(round(x[i], 3),',')}"
+                            tooltip_metrics += (
+                                f"\n - {me_j}: {format(round(x[i], 3),',')}"
+                            )
             if tooltip_metrics[-1] == "\n":
                 tooltip_metrics = tooltip_metrics[:-1]
             me_description = self._format_metrics(label)
