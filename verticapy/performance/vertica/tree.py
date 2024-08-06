@@ -184,6 +184,8 @@ class PerformanceTree:
                     f"Found {me}."
                 )
         self.metric = copy.deepcopy(metric)
+        if not (self.metric):
+            self.metric = ["cost", "rows"]
         self.metric_value = copy.deepcopy(metric_value)
         self.metric_value_op = copy.deepcopy(metric_value_op)
         self.show_ancestors = show_ancestors
@@ -1409,16 +1411,16 @@ class PerformanceTree:
             # METRICS in the TOOLTIPS
             tooltip_metrics = "\n\nAggregated metrics:\n---------------------\n"
             has_metric = False
-            for me in self.metric_value:
-                metric_tmp = self.metric_value[me]
+            for me_val in self.metric_value:
+                metric_tmp = self.metric_value[me_val]
                 if label in metric_tmp:
-                    name = QprofUtility._get_metrics_name(me)
+                    name = QprofUtility._get_metrics_name(me_val)
                     tooltip_metrics += (
                         f"\n - {name}: {format(round(metric_tmp[label], 3),',')}"
                     )
                     has_metric = True
             if not (has_metric):
-                for j, x in enumerate(me):
+                for j, x in enumerate(me_val):
                     if not isinstance(x[i], NoneType):
                         me_j = QprofUtility._get_metrics_name(self.metric[j])
                         tooltip_metrics += f"\n - {me_j}: {format(round(x[i], 3),',')}"
