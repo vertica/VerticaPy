@@ -1422,7 +1422,10 @@ class PerformanceTree:
             if not (has_metric):
                 for j, x in enumerate(me_val):
                     if not isinstance(x[i], NoneType):
-                        me_j = QprofUtility._get_metrics_name(self.metric[j])
+                        tooltip_metrics += f"\n - {me_j}: 0"
+                    elif isinstance(x[i], str):
+                        tooltip_metrics += f"\n - {me_j}: {x[i]}"
+                    else:
                         tooltip_metrics += f"\n - {me_j}: {format(round(x[i], 3),',')}"
             if tooltip_metrics[-1] == "\n":
                 tooltip_metrics = tooltip_metrics[:-1]
