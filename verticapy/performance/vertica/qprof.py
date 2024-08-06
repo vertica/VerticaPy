@@ -3053,6 +3053,8 @@ class QueryProfiler:
         """
         Helper function to draw the Query Plan tree.
         """
+
+        # Initialization.
         if not (isinstance(idx, NoneType)):
             self.set_position(idx)
         rows = self.get_qplan(print_plan=False)
@@ -3061,36 +3063,60 @@ class QueryProfiler:
         metric_value = {}
         if isinstance(metric, (str, NoneType)):
             metric = [metric]
-        for me in metric:
-            if me not in [None, "rows", "cost"]:
-                vdf = self.get_qexecution_report()
-                query = f"""
-                    SELECT
-                        path_id,
-                        SUM({me})
-                    FROM {vdf}
-                    GROUP BY 1
-                    ORDER BY 1"""
-                res = _executeSQL(
-                    query,
-                    title="Getting the corresponding query",
-                    method="fetchall",
-                )
-                metric_value[me] = {}
-                for path_id_val, metric_val in res:
-                    if not isinstance(metric_val, NoneType):
-                        if me in [
-                            "proc_rows",
-                            "prod_rows",
-                            "rows",
-                            "rle_prod_rows",
-                            "est_rows",
-                        ]:  # Rows will always be integers
-                            metric_value[me][path_id_val] = int(metric_val)
-                        else:
-                            metric_value[me][path_id_val] = float(metric_val)
+
+        # Get the statistics.
+        vdf = self.get_qexecution_report()
+        cols = vdf.get_columns()[3:]
+        columns = [f"SUM({col}) AS {col}" for col in cols]
+        query = f"""
+            SELECT
+                operator_name,
+                path_id,
+                {", ".join(columns)}
+            FROM {vdf}
+            GROUP BY 1, 2
+            ORDER BY 1, 2, 3 DESC"""
+        res = _executeSQL(
+            query,
+            title="Getting the metrics for each operator.",
+            method="fetchall",
+        )
+
+        metric_value_op = {}
+        for me in res:
+            if me[1] not in metric_value_op:
+                metric_value_op[me[1]] = {}
+            if me[0] not in metric_value_op[me[1]]:
+                metric_value_op[me[1]][me[0]] = {}
+            for idx, col in enumerate(cols):
+                current_metric = me[2 + idx]
+                if not isinstance(current_metric, NoneType):
+                    if (current_metric == int(current_metric)) or col[1:-1] in [
+                        "proc_rows",
+                        "prod_rows",
+                        "rows",
+                        "rle_prod_rows",
+                        "est_rows",
+                    ]:
+                        current_metric = int(current_metric)
                     else:
-                        metric_value[me][path_id_val] = 0
+                        current_metric = float(current_metric)
+                else:
+                    current_metric = 0
+                metric_value_op[me[1]][me[0]][col[1:-1]] = current_metric
+
+        metric_value = {}
+        for path_id in metric_value_op:
+            for op in metric_value_op[path_id]:
+                for me in metric_value_op[path_id][op]:
+                    if me not in metric_value:
+                        metric_value[me] = {}
+                    if path_id not in metric_value[me]:
+                        metric_value[me][path_id] = metric_value_op[path_id][op][me]
+                    else:
+                        metric_value[me][path_id] += metric_value_op[path_id][op][me]
+
+        # Final.
         tree_style["temp_relation_order"] = self.get_qplan_tr_order()
         obj = PerformanceTree(
             rows,
@@ -3099,6 +3125,7 @@ class QueryProfiler:
             path_id=path_id,
             metric=metric,
             metric_value=metric_value,
+            metric_value_op=metric_value_op,
             style=tree_style,
         )
         if return_graphviz:

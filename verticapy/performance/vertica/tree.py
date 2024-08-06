@@ -136,6 +136,7 @@ class PerformanceTree:
             list[str],
         ] = "rows",
         metric_value: Optional[dict] = None,
+        metric_value_op: Optional[dict] = None,
         show_ancestors: bool = True,
         path_id_info: Optional[list] = None,
         display_operator: bool = True,
@@ -184,6 +185,7 @@ class PerformanceTree:
                 )
         self.metric = copy.deepcopy(metric)
         self.metric_value = copy.deepcopy(metric_value)
+        self.metric_value_op = copy.deepcopy(metric_value_op)
         self.show_ancestors = show_ancestors
         d = copy.deepcopy(style)
         self._set_style(d)
@@ -455,6 +457,40 @@ class PerformanceTree:
             return f"{round(nb / 1e9)}B"
         else:
             return f"{round(nb / 1e12)}T"
+
+    def _format_metrics(self, path_id: int) -> str:
+        """
+        Format the metrics for the
+        input ``path_id``.
+
+        Parameters
+        ----------
+        path_id: int
+            Path ID.
+
+        Returns
+        -------
+        str
+            formatted metrics.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        if path_id in self.metric_value_op:
+            info = ""
+            for op in self.metric_value_op[path_id]:
+                if info != "\n":
+                    info += "\n"
+                info += f"{op}:\n"
+                for me in self.metric_value_op[path_id][op]:
+                    metric_name = QprofUtility._get_metrics_name(me)
+                    info += f" - {metric_name}: {round(self.metric_value_op[path_id][op][me], 3):,}\n"
+            if len(info) > 0 and info[-1] == "\n":
+                info = info[:-1]
+            return info
+        return ""
 
     # DML: Target Projections
 
@@ -1312,7 +1348,7 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
-        n, res, me = len(self.rows), "", []
+        n, res, me, me_description = len(self.rows), "", [], []
         wh = 0.8
         if len(self.metric) > 1 and self.style["display_operator"]:
             wh = 1.22
@@ -1340,11 +1376,6 @@ class PerformanceTree:
         if self.show_ancestors:
             links += ancestors
         for i in range(n):
-            tooltip_metrics = "\n"
-            for j, x in enumerate(me):
-                if not isinstance(x[i], NoneType):
-                    me_j = QprofUtility._get_metrics_name(self.metric[j])
-                    tooltip_metrics += f"\n{me_j}: {format(x[i],',')}"
             tree_id = self.path_order[i]
             init_id = self.path_order[0]
             info_bubble = self.path_order[-1] + 1 + tree_id
@@ -1374,6 +1405,32 @@ class PerformanceTree:
             else:
                 color = self.style["fillcolor"]
             label = QprofUtility._get_label(self.rows[i], row_idx=i)
+
+            # METRICS in the TOOLTIPS
+            tooltip_metrics = "\n\nAggregated metrics:\n---------------------\n"
+            has_metric = False
+            for me in self.metric_value:
+                metric_tmp = self.metric_value[me]
+                if label in metric_tmp:
+                    name = QprofUtility._get_metrics_name(me)
+                    tooltip_metrics += (
+                        f"\n - {name}: {format(round(metric_tmp[label], 3),',')}"
+                    )
+                    has_metric = True
+            if not (has_metric):
+                for j, x in enumerate(me):
+                    if not isinstance(x[i], NoneType):
+                        me_j = QprofUtility._get_metrics_name(self.metric[j])
+                        tooltip_metrics += f"\n - {me_j}: {format(round(x[i], 3),',')}"
+            if tooltip_metrics[-1] == "\n":
+                tooltip_metrics = tooltip_metrics[:-1]
+            me_description = self._format_metrics(label)
+            if me_description != "":
+                me_description = (
+                    "\n\nMetrics per operator\n---------------------\n" + me_description
+                )
+            tooltip_metrics += me_description
+
             colors = [color]
             if len(self.metric) > 1:
                 if not (isinstance(self.metric[1], NoneType)):
