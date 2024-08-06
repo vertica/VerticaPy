@@ -1420,6 +1420,8 @@ class PerformanceTree:
                     )
                     has_metric = True
             if not (has_metric):
+                if isinstance(me_val, str):
+                    me_val = [me_val]
                 for j, x in enumerate(me_val):
                     if not isinstance(x[i], NoneType):
                         me_j = QprofUtility._get_metrics_name(self.metric[j])
