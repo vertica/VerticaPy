@@ -36,10 +36,10 @@ __description__: str = (
 )
 __url__: str = "https://github.com/vertica/verticapy/"
 __license__: str = "Apache License, Version 2.0"
-__version__: str = "1.0.4"
+__version__: str = "1.0.5"
 __iteration__: int = 1
-__date__: str = "08022024"
-__last_commit__: str = "a66e60ae1662c7b0fc7cc97e8f35e83242946ee4"
+__date__: str = "08072024"
+__last_commit__: str = "c99f5b0ff9b9781587dd0687dbb743dec79f02f2"
 __long_version__: str = f"{__version__}-{__iteration__}—{__date__}-{__last_commit__}"
 __codecov__: float = 0.8316
 

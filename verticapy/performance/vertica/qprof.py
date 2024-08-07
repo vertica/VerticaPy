@@ -2547,6 +2547,191 @@ class QueryProfiler:
 
     # Step 5: Query plan + EXPLAIN
 
+    # Utilities
+
+    def _get_qplan_tr_order(
+        self,
+    ) -> list[int]:
+        """
+        Returns the Query Plan Temp
+        Relations Order.
+        It is used to sort correctly
+        the temporary relations in
+        the final Tree.
+
+        Returns
+        -------
+        list
+            List of the different
+            temp relations index.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily call the function to get
+        the final order:
+
+            .. ipython:: python
+
+                qprof._get_qplan_tr_order()
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        query = f"""
+            SELECT 
+                REGEXP_SUBSTR(step_label, '\\d+')::INT
+            FROM v_internal.dc_plan_steps
+            WHERE 
+                transaction_id={self.transaction_id}
+            AND statement_id={self.statement_id}
+            AND step_label ILIKE '%TempRelWrite%' 
+            ORDER BY step_key ASC;"""
+        query = self._replace_schema_in_query(query)
+        try:
+            # TEST does not yet support this table.
+            res = _executeSQL(
+                query,
+                title="Getting the corresponding query",
+                method="fetchall",
+            )
+            return list(dict.fromkeys([q[0] for q in res]))
+        except:
+            return []
+
+    def _get_metric_val(self):
+        """
+        Helper function to returns the
+        operator statistics.
+        """
+        vdf = self.get_qexecution_report()
+        cols = vdf.get_columns()[3:]
+        columns = [f"SUM({col}) AS {col}" for col in cols]
+        query = f"""
+            SELECT
+                operator_name,
+                path_id,
+                {", ".join(columns)}
+            FROM {vdf}
+            GROUP BY 1, 2
+            ORDER BY 1, 2, 3 DESC"""
+        res = _executeSQL(
+            query,
+            title="Getting the metrics for each operator.",
+            method="fetchall",
+        )
+
+        metric_value_op = {}
+        for me in res:
+            if me[1] not in metric_value_op:
+                metric_value_op[me[1]] = {}
+            if me[0] not in metric_value_op[me[1]]:
+                metric_value_op[me[1]][me[0]] = {}
+            for idx, col in enumerate(cols):
+                current_metric = me[2 + idx]
+                if not isinstance(current_metric, NoneType):
+                    if (current_metric == int(current_metric)) or col[1:-1] in [
+                        "proc_rows",
+                        "prod_rows",
+                        "rows",
+                        "rle_prod_rows",
+                        "est_rows",
+                    ]:
+                        current_metric = int(current_metric)
+                    else:
+                        current_metric = float(current_metric)
+                else:
+                    current_metric = 0
+                metric_value_op[me[1]][me[0]][col[1:-1]] = current_metric
+
+        metric_value = {}
+        for path_id in metric_value_op:
+            for op in metric_value_op[path_id]:
+                for me in metric_value_op[path_id][op]:
+                    if me not in metric_value:
+                        metric_value[me] = {}
+                    if path_id not in metric_value[me]:
+                        metric_value[me][path_id] = metric_value_op[path_id][op][me]
+                    else:
+                        metric_value[me][path_id] += metric_value_op[path_id][op][me]
+        return metric_value_op, metric_value
+
+    def _get_qplan_tree(
+        self,
+        path_id: Optional[int] = None,
+        path_id_info: Optional[list] = None,
+        show_ancestors: bool = True,
+        metric: Union[
+            NoneType,
+            str,
+            tuple[str, str],
+            list[str],
+        ] = ["exec_time_us", "prod_rows"],
+        pic_path: Optional[str] = None,
+        return_graphviz: bool = False,
+        return_html: bool = True,
+        idx: Union[None, int, tuple] = None,
+        **tree_style,
+    ) -> Union["Source", str]:
+        """
+        Helper function to draw the Query Plan tree.
+        """
+
+        # Initialization.
+        if not (isinstance(idx, NoneType)):
+            self.set_position(idx)
+        rows = self.get_qplan(print_plan=False)
+        if len(rows) == "":
+            raise ValueError("The Query Plan is empty. Its data might have been lost.")
+        metric_value = {}
+        if isinstance(metric, (str, NoneType)):
+            metric = [metric]
+
+        # Get the statistics.
+        metric_value_op, metric_value = self._get_metric_val()
+
+        # Final.
+        tree_style["temp_relation_order"] = self._get_qplan_tr_order()
+        obj = PerformanceTree(
+            rows,
+            show_ancestors=show_ancestors,
+            path_id_info=path_id_info,
+            path_id=path_id,
+            metric=metric,
+            metric_value=metric_value,
+            metric_value_op=metric_value_op,
+            style=tree_style,
+        )
+        if return_graphviz:
+            return obj.to_graphviz()
+        res = obj.plot_tree(pic_path)
+        if return_html:
+            res = res.pipe(format="svg").decode("utf-8")
+            if conf.get_import_success("IPython"):
+                return HTML(res)
+        return res
+
+    # Main
+
     def get_qplan_explain(self, display_trees: bool = True) -> list:
         """
         Returns the tree's query
@@ -2617,75 +2802,6 @@ class QueryProfiler:
             method="fetchall",
         )
         return parse_explain_graphviz(rows, display_trees=display_trees)
-
-    def get_qplan_tr_order(
-        self,
-    ) -> list[int]:
-        """
-        Returns the Query Plan Temp
-        Relations Order.
-        It is used to sort correctly
-        the temporary relations in
-        the final Tree.
-
-        Returns
-        -------
-        list
-            List of the different
-            temp relations index.
-
-        Examples
-        --------
-        First, let's import the
-        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
-        object.
-
-        .. code-block:: python
-
-            from verticapy.performance.vertica import QueryProfiler
-
-        Then we can create a query:
-
-        .. code-block:: python
-
-            qprof = QueryProfiler(
-                "select transaction_id, statement_id, request, request_duration"
-                " from query_requests where start_timestamp > now() - interval'1 hour'"
-                " order by request_duration desc limit 10;"
-            )
-
-        We can easily call the function to get
-        the final order:
-
-            .. ipython:: python
-
-                qprof._get_qplan_tr_order()
-
-        .. note::
-
-            For more details, please look at
-            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
-        """
-        query = f"""
-            SELECT 
-                REGEXP_SUBSTR(step_label, '\\d+')::INT
-            FROM v_internal.dc_plan_steps
-            WHERE 
-                transaction_id={self.transaction_id}
-            AND statement_id={self.statement_id}
-            AND step_label ILIKE '%TempRelWrite%' 
-            ORDER BY step_key ASC;"""
-        query = self._replace_schema_in_query(query)
-        try:
-            # TEST does not yet support this table.
-            res = _executeSQL(
-                query,
-                title="Getting the corresponding query",
-                method="fetchall",
-            )
-            return list(dict.fromkeys([q[0] for q in res]))
-        except:
-            return []
 
     def get_qplan(
         self,
@@ -3032,83 +3148,6 @@ class QueryProfiler:
             idx=idx,
             **tree_style,
         )
-
-    def _get_qplan_tree(
-        self,
-        path_id: Optional[int] = None,
-        path_id_info: Optional[list] = None,
-        show_ancestors: bool = True,
-        metric: Union[
-            NoneType,
-            str,
-            tuple[str, str],
-            list[str],
-        ] = ["exec_time_us", "prod_rows"],
-        pic_path: Optional[str] = None,
-        return_graphviz: bool = False,
-        return_html: bool = True,
-        idx: Union[None, int, tuple] = None,
-        **tree_style,
-    ) -> Union["Source", str]:
-        """
-        Helper function to draw the Query Plan tree.
-        """
-        if not (isinstance(idx, NoneType)):
-            self.set_position(idx)
-        rows = self.get_qplan(print_plan=False)
-        if len(rows) == "":
-            raise ValueError("The Query Plan is empty. Its data might have been lost.")
-        metric_value = {}
-        if isinstance(metric, (str, NoneType)):
-            metric = [metric]
-        for me in metric:
-            if me not in [None, "rows", "cost"]:
-                vdf = self.get_qexecution_report()
-                query = f"""
-                    SELECT
-                        path_id,
-                        SUM({me})
-                    FROM {vdf}
-                    GROUP BY 1
-                    ORDER BY 1"""
-                res = _executeSQL(
-                    query,
-                    title="Getting the corresponding query",
-                    method="fetchall",
-                )
-                metric_value[me] = {}
-                for path_id_val, metric_val in res:
-                    if not isinstance(metric_val, NoneType):
-                        if me in [
-                            "proc_rows",
-                            "prod_rows",
-                            "rows",
-                            "rle_prod_rows",
-                            "est_rows",
-                        ]:  # Rows will always be integers
-                            metric_value[me][path_id_val] = int(metric_val)
-                        else:
-                            metric_value[me][path_id_val] = float(metric_val)
-                    else:
-                        metric_value[me][path_id_val] = 0
-        tree_style["temp_relation_order"] = self.get_qplan_tr_order()
-        obj = PerformanceTree(
-            rows,
-            show_ancestors=show_ancestors,
-            path_id_info=path_id_info,
-            path_id=path_id,
-            metric=metric,
-            metric_value=metric_value,
-            style=tree_style,
-        )
-        if return_graphviz:
-            return obj.to_graphviz()
-        res = obj.plot_tree(pic_path)
-        if return_html:
-            res = res.pipe(format="svg").decode("utf-8")
-            if conf.get_import_success("IPython"):
-                return HTML(res)
-        return res
 
     # Step 6: Query plan profile
     def get_qplan_profile(
