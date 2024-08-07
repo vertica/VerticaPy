@@ -151,7 +151,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             value=f"<h1><b>Query Execution Steps - [query_idx: {self.index_widget.value}]</b></h1>"
         )
 
-    def get_qplan_tree(self, use_javascript=True):
+    def get_qplan_tree(self, use_javascript=True, **style_kwargs):
         """
         Draws an interactive Query plan tree.
 
@@ -159,6 +159,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             use_javascript (bool, optional): use javascript on tree.
             Defaults to ``True``.
         """
+        self.style_kwargs = style_kwargs
         self.use_javascript = use_javascript
         # widget for choosing the metrics
         options_dropwdown = [
@@ -223,6 +224,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.tree_style = {
             "color_low": self.colors["color low"].get_child_attr("value"),
             "color_high": self.colors["color high"].get_child_attr("value"),
+            **self.style_kwargs,
         }
 
         refresh_pathids_box = widgets.HBox(
@@ -300,6 +302,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 if projection_display == "Default"
                 else True,
                 return_html=False,
+                **self.style_kwargs,
             )  # type: ignore
             html_widget = widgets.HTML(value=graph.pipe(format="svg").decode("utf-8"))
             box = widgets.HBox([html_widget])
@@ -317,6 +320,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 if projection_display == "Default"
                 else True,
                 return_html=False,
+                **self.style_kwargs,
             )
             output = read_package_file("html/index.html")
             output = replace_value(output, "var dotSrc = [];", f"var dotSrc = `{raw}`;")
@@ -414,6 +418,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.tree_style = {
             "color_low": self.colors["color low"].get_child_attr("value"),
             "color_high": self.colors["color high"].get_child_attr("value"),
+            **self.style_kwargs,
         }
         self.apply_tree.value = not self.apply_tree.value
 

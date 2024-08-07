@@ -3067,6 +3067,28 @@ class QueryProfiler:
                 to represent the ancestors
                 children when they have more
                 than 1.
+            - display_tooltip_descriptors:
+                If set to ``True``, the
+                tooltip's descriptors will
+                be displayed.
+                Default: True
+            - display_tooltip_agg_metrics:
+                If set to ``True``, the
+                tooltip's aggregated metrics
+                will be displayed.
+                Default: True
+            - display_tooltip_op_metrics:
+                If set to ``True``, the
+                tooltip's operator metrics
+                will be displayed.
+                Default: True
+            - donot_display_op_metrics_i:
+                ``dictionary`` of ``list``, each
+                key should represent an operator
+                (ex: Scan, StorageUnion, NetworkSend...)
+                and each value is a list of metrics
+                to not display.
+                Default: {}
             - temp_relation_access:
                 ``list`` of the temporary
                 tables to display. ``main``
