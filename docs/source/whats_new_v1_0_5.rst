@@ -27,12 +27,20 @@ It is also inherited by the QueryProfilerInterface class, so it can be used from
   qprof.main_tests()
 
 QueryProfiler
------------------------
+--------------
 
 - Added the following new tables to the profile information:
 
   - dc_scan_events
 
+QueryProfilerInterface
+-----------------------
+
+- Added option to toggle tooltip information. There are three new check boxes which control which information will be displayed:
+
+  - Aggregate
+  - Opeartors
+  - Descriptors
 
 Unit tests
 -----------------
