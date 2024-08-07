@@ -177,7 +177,36 @@ class QueryProfilerInterface(QueryProfilerStats):
             value="Produced row count",
             layout={"width": "260px"},
         )
-        tags = widgets.VBox([dropdown1, dropdown2])
+        tooltip_aggregated_widget = widgets.Checkbox(
+            value=True,
+            # layout={"width": "260px"},
+            description="Aggregate",
+            disabled=False,
+        )
+        tooltip_operator_widget = widgets.Checkbox(
+            value=False,
+            # layout={"width": "260px"},
+            description="Operator",
+            disabled=False,
+        )
+        tooltip_descriptor_widget = widgets.Checkbox(
+            value=False,
+            # layout={"width": "260px"},
+            description="Descriptor",
+            disabled=False,
+        )
+        tooltip_header_widget = widgets.HTML("<b>Select tooltip info:</b>")
+        tooltip_complete_widget = widgets.VBox(
+            [
+                tooltip_aggregated_widget,
+                tooltip_operator_widget,
+                tooltip_descriptor_widget,
+            ],
+            #    layout={"width": "260px"},
+        )
+        tags = widgets.VBox(
+            [dropdown1, dropdown2, tooltip_header_widget, tooltip_complete_widget]
+        )
         temp_rel_widget = widgets.ToggleButtons(
             options=["Temporary Relations", "Combined"],
             disabled=False,
@@ -250,6 +279,9 @@ class QueryProfilerInterface(QueryProfilerStats):
             "index": self.query_select_dropdown,
             "metric1": tags.children[0],
             "metric2": tags.children[1],
+            "display_tooltip_agg_metrics": tags.children[3].children[0],
+            "display_tooltip_op_metrics": tags.children[3].children[1],
+            "display_tooltip_descriptors": tags.children[3].children[2],
             "path_id": self.pathid_dropdown.get_child(),
             "apply_tree_clicked": self.apply_tree,
             "temp_display": temp_rel_widget,
@@ -273,6 +305,9 @@ class QueryProfilerInterface(QueryProfilerStats):
         self,
         metric1,
         metric2,
+        display_tooltip_agg_metrics,
+        display_tooltip_op_metrics,
+        display_tooltip_descriptors,
         index,
         path_id,
         apply_tree_clicked,
@@ -302,6 +337,9 @@ class QueryProfilerInterface(QueryProfilerStats):
                 if projection_display == "Default"
                 else True,
                 return_html=False,
+                display_tooltip_agg_metrics=display_tooltip_agg_metrics,
+                display_tooltip_op_metrics=display_tooltip_op_metrics,
+                display_tooltip_descriptors=display_tooltip_descriptors,
                 **self.style_kwargs,
             )  # type: ignore
             html_widget = widgets.HTML(value=graph.pipe(format="svg").decode("utf-8"))
@@ -320,6 +358,9 @@ class QueryProfilerInterface(QueryProfilerStats):
                 if projection_display == "Default"
                 else True,
                 return_html=False,
+                display_tooltip_agg_metrics=display_tooltip_agg_metrics,
+                display_tooltip_op_metrics=display_tooltip_op_metrics,
+                display_tooltip_descriptors=display_tooltip_descriptors,
                 **self.style_kwargs,
             )
             output = read_package_file("html/index.html")
