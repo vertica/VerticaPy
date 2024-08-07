@@ -282,6 +282,14 @@ class PerformanceTree:
             d["display_proj"] = True
         if "display_etc" not in d:
             d["display_etc"] = True
+        if "display_tooltip_descriptors" not in d:
+            d["display_tooltip_descriptors"] = True
+        if "display_tooltip_agg_metrics" not in d:
+            d["display_tooltip_agg_metrics"] = True
+        if "display_tooltip_op_metrics" not in d:
+            d["display_tooltip_op_metrics"] = True
+        if "donot_display_op_metrics_i" not in d:
+            d["donot_display_op_metrics_i"] = {}
         if "network_edge" not in d:
             d["network_edge"] = True
         if "network_edge" not in d:
@@ -491,8 +499,10 @@ class PerformanceTree:
                     info += "\n"
                 info += f"{op}:\n"
                 for me in self.metric_value_op[path_id][op]:
-                    metric_name = QprofUtility._get_metrics_name(me)
-                    info += f" - {metric_name}: {round(self.metric_value_op[path_id][op][me], 3):,}\n"
+                    d_op = self.style["donot_display_op_metrics_i"]
+                    if op not in d_op or me not in d_op[op]:
+                        metric_name = QprofUtility._get_metrics_name(me)
+                        info += f" - {metric_name}: {round(self.metric_value_op[path_id][op][me], 3):,}\n"
             if len(info) > 0 and info[-1] == "\n":
                 info = info[:-1]
             return info
@@ -1435,14 +1445,19 @@ class PerformanceTree:
                     else:
                         tooltip_metrics += f"\n - {me_j}: {format(round(x[i], 3),',')}"
 
-            if tooltip_metrics[-1] == "\n":
-                tooltip_metrics = tooltip_metrics[:-1]
-            me_description = self._format_metrics(label)
-            if me_description != "":
-                me_description = (
-                    "\n\nMetrics per operator\n---------------------\n" + me_description
-                )
-            tooltip_metrics += me_description
+            if not (self.style["display_tooltip_agg_metrics"]):
+                tooltip_metrics = ""
+
+            if self.style["display_tooltip_op_metrics"]:
+                if len(tooltip_metrics) > 0 and tooltip_metrics[-1] == "\n":
+                    tooltip_metrics = tooltip_metrics[:-1]
+                me_description = self._format_metrics(label)
+                if me_description != "":
+                    me_description = (
+                        "\n\nMetrics per operator\n---------------------\n"
+                        + me_description
+                    )
+                tooltip_metrics += me_description
 
             colors = [color]
             if len(self.metric) > 1:
@@ -1459,6 +1474,7 @@ class PerformanceTree:
                 colors,
                 operator=row,
             )
+
             if tree_id in links and display_tr:
                 tooltip = row
                 if "ARRAY" in row:
@@ -1466,7 +1482,14 @@ class PerformanceTree:
                     if "(ARRAY[...]" in tooltip:
                         tooltip += ")"
                 ns_icon = QprofUtility._get_no_statistics(tooltip)
-                params = f'width={wh}, height={wh}, tooltip="{tooltip}{tooltip_metrics}", fixedsize=true, URL="#path_id={tree_id}", xlabel="{ns_icon}"'
+                # Final Tooltip.
+                description = "\n\nDescriptors\n------------\n" + "\n".join(
+                    tooltip.split("\n")[1:]
+                )
+                tooltip = tooltip.split("\n")[0] + tooltip_metrics
+                if self.style["display_tooltip_descriptors"]:
+                    tooltip += description
+                params = f'width={wh}, height={wh}, tooltip="{tooltip}", fixedsize=true, URL="#path_id={tree_id}", xlabel="{ns_icon}"'
                 res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
                     info_color = self.style["info_color"]
