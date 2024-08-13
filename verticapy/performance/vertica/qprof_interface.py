@@ -471,7 +471,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.query_display.children[0].value = current_query
         self.query_display_info.value = f"""
         <b>Query Execution Success:</b> {self.success_html if self.query_success else self.failure_html} <br>
-        <b>Execution Time:</b> {self.get_qduration()} <br>
+        <b>Execution Time:</b> {self.get_qduration()} (seconds)<br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
         <b>Statement ID:</b> {self.statement_id} <br>
