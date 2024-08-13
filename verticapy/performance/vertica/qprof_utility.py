@@ -170,16 +170,16 @@ class QprofUtility:
     def _get_metrics_name(metric: str, inv: bool = False) -> str:
         look_up_table = {
             "bytes_spilled": "Number of bytes spilled",
-            "clock_time_us": "Clock time in \u00b5s",
+            "clock_time_us": "AVG Clock time per node in \u00b5s",
             "cost": "Query plan cost",
-            "cstall_us": "Network consumer stall time in \u00b5s",
-            "exec_time_us": "Execution time in \u00b5s",
+            "cstall_us": "AVG Network consumer stall time per node in \u00b5s",
+            "exec_time_us": "AVG Execution time per node in \u00b5s",
             "est_rows": "Estimated row count",
             "mem_res_b": "Reserved memory size in B",
             "mem_all_b": "Allocated memory size in B",
             "proc_rows": "Processed row count",
             "prod_rows": "Produced row count",
-            "pstall_us": "Network producer stall time in \u00b5s",
+            "pstall_us": "AVG Network producer stall time per node in \u00b5s",
             "rle_prod_rows": "Produced RLE row count",
             "rows": "Row count",
         }
