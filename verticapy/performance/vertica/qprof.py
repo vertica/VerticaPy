@@ -2626,9 +2626,7 @@ class QueryProfiler:
         vdf = self.get_qexecution_report()
         cols = vdf.get_columns()[3:]
         columns = [
-            f"AVG({col}) AS {col}"
-            if "_us" in col
-            else f"SUM({col}) AS {col}"
+            f"AVG({col}) AS {col}" if "_us" in col else f"SUM({col}) AS {col}"
             for col in cols
         ]
         query = f"""
