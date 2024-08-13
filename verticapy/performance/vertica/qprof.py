@@ -2625,7 +2625,12 @@ class QueryProfiler:
         """
         vdf = self.get_qexecution_report()
         cols = vdf.get_columns()[3:]
-        columns = [f"SUM({col}) AS {col}" for col in cols]
+        columns = [
+            f"APPROXIMATE_MEDIAN({col}) AS {col}"
+            if "_us" in col
+            else f"SUM({col}) AS {col}"
+            for col in cols
+        ]
         query = f"""
             SELECT
                 operator_name,
@@ -2933,8 +2938,8 @@ class QueryProfiler:
             - cstall_us
             - exec_time_us (default)
             - est_rows
-            - mem_all_mb
-            - mem_res_mb
+            - mem_all_b
+            - mem_res_b
             - proc_rows
             - prod_rows
             - pstall_us
@@ -3752,8 +3757,8 @@ class QueryProfiler:
                 node_name,
                 operator_name,
                 path_id,
-                ROUND(SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
-                    counter_value ELSE NULL END) / 1000, 3.0) AS exec_time_us,
+                SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
+                    counter_value ELSE NULL END) AS exec_time_us,
                 SUM(CASE TRIM(counter_name) WHEN 'estimated rows produced' THEN
                     counter_value ELSE NULL END) AS est_rows,
                 SUM(CASE TRIM(counter_name) WHEN 'rows processed' THEN
@@ -3768,18 +3773,17 @@ class QueryProfiler:
                     counter_value ELSE NULL END) AS pstall_us,
                 SUM(CASE TRIM(counter_name) WHEN 'clock time (us)' THEN
                     counter_value ELSE NULL END) AS clock_time_us,
-                ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
-                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_res_mb,
-                ROUND(SUM(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
-                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb,
+                SUM(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
+                    counter_value ELSE NULL END) AS mem_res_b,
+                SUM(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
+                    counter_value ELSE NULL END) AS mem_all_b,
                 SUM(CASE TRIM(counter_name) WHEN 'bytes spilled' THEN
                     counter_value ELSE NULL END) AS bytes_spilled
             FROM
                 v_monitor.execution_engine_profiles
             WHERE
                 transaction_id={self.transaction_id} AND
-                statement_id={self.statement_id} AND
-                counter_value / 1000000 > 0
+                statement_id={self.statement_id}
             GROUP BY
                 1, 2, 3
             ORDER BY
@@ -3842,8 +3846,8 @@ class QueryProfiler:
             - cstall_us
             - exec_time_us (default)
             - est_rows
-            - mem_all_mb
-            - mem_res_mb
+            - mem_all_b
+            - mem_res_b
             - proc_rows
             - prod_rows
             - pstall_us

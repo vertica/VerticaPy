@@ -67,8 +67,8 @@ class PerformanceTree:
         - cstall_us
         - exec_time_us (default)
         - est_rows
-        - mem_all_mb
-        - mem_res_mb
+        - mem_all_b
+        - mem_res_b
         - proc_rows
         - prod_rows
         - pstall_us
@@ -825,6 +825,8 @@ class PerformanceTree:
                     return "C"
                 elif "FILTER" in operator or "Filter" in operator:
                     return "F"
+                elif "LOAD" in operator:
+                    return "L"
             else:
                 if "TEMP RELATION ACCESS" in operator:
                     return "⏳"
@@ -856,6 +858,8 @@ class PerformanceTree:
                     return "📋"
                 elif "FILTER" in operator or "Filter" in operator:
                     return "🔍"
+                elif "LOAD" in operator:
+                    "💾"
             return "?"
         return None
 
