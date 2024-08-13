@@ -1747,7 +1747,8 @@ class PerformanceTree:
         all_metrics = []
         for me in metric:
             all_metrics += [
-                math.log(1 + self._get_metric(self.rows[i], me, i)) for i in range(n)
+                math.log(1 + max(self._get_metric(self.rows[i], me, i), 0.0))
+                for i in range(n)
             ]
         m_min, m_max = min(all_metrics), max(all_metrics)
         if m_min == m_max:
