@@ -1379,10 +1379,10 @@ class PerformanceTree:
                 [self._get_metric(self.rows[i], self.metric[j], i) for i in range(n)]
             ]
         if not (isinstance(self.metric[0], NoneType)):
-            all_metrics = [math.log(1 + me[0][i]) for i in range(n)]
+            all_metrics = [math.log(1 + max(me[0][i], 0.0)) for i in range(n)]
             m_min, m_max = min(all_metrics), max(all_metrics)
         if len(self.metric) > 1 and not (isinstance(self.metric[1], NoneType)):
-            all_metrics_2 = [math.log(1 + me[1][i]) for i in range(n)]
+            all_metrics_2 = [math.log(1 + max(me[1][i], 0.0)) for i in range(n)]
             m_min_2, m_max_2 = min(all_metrics_2), max(all_metrics_2)
             if not (self.style["two_legend"]):
                 m_min = min(m_min, m_min_2)
