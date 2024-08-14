@@ -3781,7 +3781,8 @@ class QueryProfiler:
                 v_monitor.execution_engine_profiles
             WHERE
                 transaction_id={self.transaction_id} AND
-                statement_id={self.statement_id}
+                statement_id={self.statement_id} AND
+                counter_value >= 0
             GROUP BY
                 1, 2, 3
             ORDER BY
