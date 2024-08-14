@@ -993,8 +993,8 @@ class TestQueryProfiler:
             "clock_time_us",
             # "cstall_us", # ZeroDivisionError
             # "pstall_us", # ZeroDivisionError
-            "mem_res_mb",
-            # "mem_all_mb",  # ZeroDivisionError
+            "mem_res_b",
+            # "mem_all_b",  # ZeroDivisionError
         ],
     )
     def test_get_qplan_tree(
@@ -1475,8 +1475,8 @@ class TestQueryProfiler:
             # "clock_time_us",
             # "cstall_us",
             # "pstall_us",
-            # "mem_res_mb",
-            # "mem_all_mb",
+            # "mem_res_b",
+            # "mem_all_b",
         ],
     )
     @pytest.mark.parametrize(
