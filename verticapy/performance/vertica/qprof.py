@@ -2640,7 +2640,7 @@ class QueryProfiler:
                 {", ".join(columns)}
             FROM {vdf}
             GROUP BY 1, 2
-            ORDER BY 1, 2, 3 DESC"""
+            ORDER BY 1, 2"""
         res = _executeSQL(
             query,
             title="Getting the metrics for each operator.",
@@ -2703,6 +2703,8 @@ class QueryProfiler:
         )
         metric_value = {}
         for me in res:
+            if me[0] not in metric_value:
+                metric_value[me[0]] = {}
             for idx, col in enumerate(cols):
                 current_metric = me[1 + idx]
                 if not isinstance(current_metric, NoneType):
@@ -2728,7 +2730,7 @@ class QueryProfiler:
                         current_metric = float(current_metric)
                 else:
                     current_metric = 0
-                metric_value_op[me[0]][col[1:-1]] = current_metric
+                metric_value[me[0]][col[1:-1]] = current_metric
 
         return metric_value_op, metric_value
 
@@ -2754,12 +2756,12 @@ class QueryProfiler:
         # Summary per operator
         query = f"""
             SELECT
-                operator_name,
                 path_id,
+                operator_name,
                 {", ".join(columns)}
             FROM {vdf2}
             GROUP BY 1, 2
-            ORDER BY 1, 2, 3 DESC"""
+            ORDER BY 1, 2"""
         vdf3 = vDataFrame(query)
 
         # Table 4
