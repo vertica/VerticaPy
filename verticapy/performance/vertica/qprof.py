@@ -3895,7 +3895,7 @@ class QueryProfiler:
             5 DESC
         """
         if not (summarize):
-            other_cols = " baseplan_id, operator_id,"
+            other_cols = " localplan_id, operator_id,"
             gb = ", 4, 5"
             order_by = "1, 3, 4, 5"
         query = f"""
