@@ -2633,10 +2633,10 @@ class QueryProfiler:
         )
         metric_value_op = {}
         for me in res:
-            if me[2] not in metric_value_op:
-                metric_value_op[me[2]] = {}
-            if me[0] not in metric_value_op[me[2]]:
-                metric_value_op[me[2]][me[0]] = {}
+            if me[0] not in metric_value_op:
+                metric_value_op[me[0]] = {}
+            if me[2] not in metric_value_op[me[0]]:
+                metric_value_op[me[0]][me[2]] = {}
             for idx, col in enumerate(cols):
                 current_metric = me[3 + idx]
                 if not isinstance(current_metric, NoneType):
@@ -2646,7 +2646,7 @@ class QueryProfiler:
                         current_metric = float(current_metric)
                 else:
                     current_metric = 0
-                metric_value_op[me[2]][me[0]][col] = current_metric
+                metric_value_op[me[0]][me[2]][col] = current_metric
 
         # Summary
         query = self.get_qexecution_report(granularity=2, genSQL=True)
@@ -3823,44 +3823,54 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        cols = [
+            "exec_time_us",
+            "est_rows",
+            "proc_rows",
+            "prod_rows",
+            "rle_prod_rows",
+            "cstall_us",
+            "pstall_us",
+            "clock_time_us",
+            "mem_res_b",
+            "mem_all_b",
+            "bytes_spilled",
+            "blocks_filtered_sip",
+            "blocks_analyzed_sip",
+            "container_rows_filtered_sip",
+            "container_rows_filtered_pred",
+            "container_rows_pruned_sip",
+            "container_rows_pruned_pred",
+            "container_rows_pruned_valindex",
+            "hash_tables_spilled_sort",
+            "join_inner_clock_time_us",
+            "join_inner_exec_time_us",
+            "join_outer_clock_time_us",
+            "join_outer_exec_time_us",
+            "network_wait_us",
+            "producer_stall_us",
+            "producer_wait_us",
+            "request_wait_us",
+            "response_wait_us",
+            "recv_net_time_us",
+            "recv_wait_us",
+            "rows_filtered_sip",
+            "rows_pruned_valindex",
+            "rows_processed_sip",
+            "total_rows_read_join_sort",
+            "total_rows_read_sort",
+        ]
+        max_agg = [f"MAX({col}) AS {col}" for col in cols]
+        max_agg_str = ", ".join(max_agg)
+        max_sum_agg = [
+            f"MAX({col}) AS {col}"
+            if "bytes" in col or "_us" in col or "mem_" in col
+            else f"SUM({col}) AS {col}"
+            for col in cols
+        ]
+        max_sum_agg_str = ", ".join(max_sum_agg_str)
         if return_cols:
-            return [
-                "exec_time_us",
-                "est_rows",
-                "proc_rows",
-                "prod_rows",
-                "rle_prod_rows",
-                "cstall_us",
-                "pstall_us",
-                "clock_time_us",
-                "mem_res_b",
-                "mem_all_b",
-                "bytes_spilled",
-                "blocks_filtered_sip",
-                "blocks_analyzed_sip",
-                "container_rows_filtered_sip",
-                "container_rows_filtered_pred",
-                "container_rows_pruned_sip",
-                "container_rows_pruned_pred",
-                "container_rows_pruned_valindex",
-                "hash_tables_spilled_sort",
-                "join_inner_clock_time_us",
-                "join_inner_exec_time_us",
-                "join_outer_clock_time_us",
-                "join_outer_exec_time_us",
-                "network_wait_us",
-                "producer_stall_us",
-                "producer_wait_us",
-                "request_wait_us",
-                "response_wait_us",
-                "recv_net_time_us",
-                "recv_wait_us",
-                "rows_filtered_sip",
-                "rows_pruned_valindex",
-                "rows_processed_sip",
-                "total_rows_read_join_sort",
-                "total_rows_read_sort",
-            ]
+            return cols
         query = f"""
             SELECT
                 node_name,
@@ -3954,41 +3964,7 @@ class QueryProfiler:
                     path_id,
                     localplan_id,
                     operator_name,
-                    MAX(exec_time_us) AS exec_time_us,
-                    MAX(est_rows) AS est_rows,
-                    MAX(proc_rows) AS proc_rows,
-                    MAX(prod_rows) AS prod_rows,
-                    MAX(rle_prod_rows) AS rle_prod_rows,
-                    MAX(cstall_us) AS cstall_us,
-                    MAX(pstall_us) AS pstall_us,
-                    MAX(clock_time_us) AS clock_time_us,
-                    MAX(mem_res_b) AS mem_res_b,
-                    MAX(mem_all_b) AS mem_all_b,
-                    MAX(bytes_spilled) AS bytes_spilled,
-                    MAX(blocks_filtered_sip) AS blocks_filtered_sip,
-                    MAX(blocks_analyzed_sip) AS blocks_analyzed_sip,
-                    MAX(container_rows_filtered_sip) AS container_rows_filtered_sip,
-                    MAX(container_rows_filtered_pred) AS container_rows_filtered_pred,
-                    MAX(container_rows_pruned_sip) AS container_rows_pruned_sip,
-                    MAX(container_rows_pruned_pred) AS container_rows_pruned_pred,
-                    MAX(container_rows_pruned_valindex) AS container_rows_pruned_valindex,
-                    MAX(hash_tables_spilled_sort) AS hash_tables_spilled_sort,
-                    MAX(join_inner_clock_time_us) AS join_inner_clock_time_us,
-                    MAX(join_inner_exec_time_us) AS join_inner_exec_time_us,
-                    MAX(join_outer_clock_time_us) AS join_outer_clock_time_us,
-                    MAX(join_outer_exec_time_us) AS join_outer_exec_time_us,
-                    MAX(network_wait_us) AS network_wait_us,
-                    MAX(producer_stall_us) AS producer_stall_us,
-                    MAX(producer_wait_us) AS producer_wait_us,
-                    MAX(request_wait_us) AS request_wait_us,
-                    MAX(response_wait_us) AS response_wait_us,
-                    MAX(recv_net_time_us) AS recv_net_time_us,
-                    MAX(recv_wait_us) AS recv_wait_us,
-                    MAX(rows_filtered_sip) AS rows_filtered_sip,
-                    MAX(rows_pruned_valindex) AS rows_pruned_valindex,
-                    MAX(rows_processed_sip) AS rows_processed_sip,
-                    MAX(total_rows_read_join_sort) AS total_rows_read_join_sort,
-                    MAX(total_rows_read_sort) AS total_rows_read_sort
+                    {max_agg_str}
                 FROM
                     ({query}) q0
                 GROUP BY
@@ -4000,41 +3976,7 @@ class QueryProfiler:
             query = f"""
                 SELECT
                     path_id,
-                    MAX(exec_time_us) AS exec_time_us,
-                    MAX(est_rows) AS est_rows,
-                    MAX(proc_rows) AS proc_rows,
-                    MAX(prod_rows) AS prod_rows,
-                    MAX(rle_prod_rows) AS rle_prod_rows,
-                    MAX(cstall_us) AS cstall_us,
-                    MAX(pstall_us) AS pstall_us,
-                    MAX(clock_time_us) AS clock_time_us,
-                    MAX(mem_res_b) AS mem_res_b,
-                    MAX(mem_all_b) AS mem_all_b,
-                    MAX(bytes_spilled) AS bytes_spilled,
-                    MAX(blocks_filtered_sip) AS blocks_filtered_sip,
-                    MAX(blocks_analyzed_sip) AS blocks_analyzed_sip,
-                    MAX(container_rows_filtered_sip) AS container_rows_filtered_sip,
-                    MAX(container_rows_filtered_pred) AS container_rows_filtered_pred,
-                    MAX(container_rows_pruned_sip) AS container_rows_pruned_sip,
-                    MAX(container_rows_pruned_pred) AS container_rows_pruned_pred,
-                    MAX(container_rows_pruned_valindex) AS container_rows_pruned_valindex,
-                    MAX(hash_tables_spilled_sort) AS hash_tables_spilled_sort,
-                    MAX(join_inner_clock_time_us) AS join_inner_clock_time_us,
-                    MAX(join_inner_exec_time_us) AS join_inner_exec_time_us,
-                    MAX(join_outer_clock_time_us) AS join_outer_clock_time_us,
-                    MAX(join_outer_exec_time_us) AS join_outer_exec_time_us,
-                    MAX(network_wait_us) AS network_wait_us,
-                    MAX(producer_stall_us) AS producer_stall_us,
-                    MAX(producer_wait_us) AS producer_wait_us,
-                    MAX(request_wait_us) AS request_wait_us,
-                    MAX(response_wait_us) AS response_wait_us,
-                    MAX(recv_net_time_us) AS recv_net_time_us,
-                    MAX(recv_wait_us) AS recv_wait_us,
-                    MAX(rows_filtered_sip) AS rows_filtered_sip,
-                    MAX(rows_pruned_valindex) AS rows_pruned_valindex,
-                    MAX(rows_processed_sip) AS rows_processed_sip,
-                    MAX(total_rows_read_join_sort) AS total_rows_read_join_sort,
-                    MAX(total_rows_read_sort) AS total_rows_read_sort
+                    {max_agg_str}
                 FROM
                     ({query}) q1
                 GROUP BY
