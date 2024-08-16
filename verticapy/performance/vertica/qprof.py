@@ -2763,7 +2763,7 @@ class QueryProfiler:
             FROM {vdf2}
             GROUP BY 1, 2
             ORDER BY 1, 2"""
-        vdf3 = vDataFrame(query)
+        vdf3 = vDataFrame(query).sort(["path_id"])
 
         # Table 4
         query = f"""
@@ -2782,7 +2782,30 @@ class QueryProfiler:
             ) q0
             GROUP BY 1
             ORDER BY 1"""
-        vdf4 = vDataFrame(query)
+        vdf4 = vDataFrame(query).sort(["path_id"])
+
+        # Adjustement
+        query = f"""
+            SELECT 
+                node_name, 
+                path_id, 
+                localplan_id, 
+                operator_id,
+                operator_name,
+                {", ".join(cols)} 
+            FROM {vdf1}"""
+        vdf1 = vDataFrame(query).sort(
+            ["node_name", "path_id", "localplan_id", "operator_id"]
+        )
+
+        query = f"""
+            SELECT 
+                node_name, 
+                path_id, 
+                operator_name,
+                {", ".join(cols)} 
+            FROM {vdf2}"""
+        vdf2 = vDataFrame(query).sort(["node_name", "path_id"])
 
         return vdf1, vdf2, vdf3, vdf4
 
@@ -3216,6 +3239,11 @@ class QueryProfiler:
                 tooltip's operator metrics
                 will be displayed.
                 Default: True
+            - display_metrics_i:
+                ``list`` of metrics to display.
+                Default: ['exec_time_us', 'clock_time_us',
+                          'mem_res_b', 'mem_all_b',
+                          'proc_rows', 'prod_rows']
             - donot_display_op_metrics_i:
                 ``dictionary`` of ``list``, each
                 key should represent an operator
