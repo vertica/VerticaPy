@@ -3868,7 +3868,7 @@ class QueryProfiler:
             else f"SUM({col}) AS {col}"
             for col in cols
         ]
-        max_sum_agg_str = ", ".join(max_sum_agg_str)
+        max_sum_agg_str = ", ".join(max_sum_agg)
         if return_cols:
             return cols
         query = f"""
