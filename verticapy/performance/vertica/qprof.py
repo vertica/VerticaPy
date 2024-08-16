@@ -2646,7 +2646,7 @@ class QueryProfiler:
                         current_metric = float(current_metric)
                 else:
                     current_metric = 0
-                metric_value_op[me[2]][me[0]][col[1:-1]] = current_metric
+                metric_value_op[me[2]][me[0]][col] = current_metric
 
         # Summary
         query = self.get_qexecution_report(granularity=2, genSQL=True)
@@ -2658,9 +2658,8 @@ class QueryProfiler:
         metric_value = {}
         for me in res:
             for idx, col in enumerate(cols):
-                me_n = col[1:-1]
-                if me_n not in metric_value:
-                    metric_value[me_n] = {}
+                if col not in metric_value:
+                    metric_value[col] = {}
                 current_metric = me[1 + idx]
                 if not isinstance(current_metric, NoneType):
                     if current_metric == int(current_metric):
@@ -2669,7 +2668,7 @@ class QueryProfiler:
                         current_metric = float(current_metric)
                 else:
                     current_metric = 0
-                metric_value[me_n][me[0]] = current_metric
+                metric_value[col][me[0]] = current_metric
 
         return metric_value_op, metric_value
 
@@ -3746,7 +3745,7 @@ class QueryProfiler:
 
     # Step 14A: Query execution report
     def get_qexecution_report(
-        self, granularity: int = 0, genSQL: bool = False
+        self, granularity: int = 0, genSQL: bool = False, return_cols: bool = False
     ) -> vDataFrame:
         """
         Returns the Query execution report.
@@ -3928,7 +3927,7 @@ class QueryProfiler:
             GROUP BY
                 1, 2, 3, 4
             ORDER BY
-                1, 2, 3, 4;"""
+                1, 2, 3, 4"""
         if granularity > 0:
             query = f"""
                 SELECT
@@ -3975,7 +3974,7 @@ class QueryProfiler:
                 GROUP BY
                     1, 2, 3
                 ORDER BY
-                    1, 2, 3;
+                    1, 2, 3
             """
         if granularity > 1:
             query = f"""
@@ -4021,7 +4020,7 @@ class QueryProfiler:
                 GROUP BY
                     1
                 ORDER BY
-                    1;
+                    1
             """
 
         query = self._replace_schema_in_query(query)
