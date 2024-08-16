@@ -2703,9 +2703,10 @@ class QueryProfiler:
         )
         metric_value = {}
         for me in res:
-            if me[0] not in metric_value:
-                metric_value[me[0]] = {}
             for idx, col in enumerate(cols):
+                me_n = col[1:-1]
+                if me_n not in metric_value:
+                    metric_value[me_n] = {}
                 current_metric = me[1 + idx]
                 if not isinstance(current_metric, NoneType):
                     if (current_metric == int(current_metric)) or col[1:-1] in [
@@ -2730,7 +2731,7 @@ class QueryProfiler:
                         current_metric = float(current_metric)
                 else:
                     current_metric = 0
-                metric_value[me[0]][col[1:-1]] = current_metric
+                metric_value[me_n][me[0]] = current_metric
 
         return metric_value_op, metric_value
 
@@ -2812,7 +2813,6 @@ class QueryProfiler:
         rows = self.get_qplan(print_plan=False)
         if len(rows) == "":
             raise ValueError("The Query Plan is empty. Its data might have been lost.")
-        metric_value = {}
         if isinstance(metric, (str, NoneType)):
             metric = [metric]
 
