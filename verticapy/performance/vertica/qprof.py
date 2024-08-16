@@ -2679,14 +2679,34 @@ class QueryProfiler:
         """
         # Table 1
         vdf1 = self.get_qexecution_report(granularity=0)
+        vdf1 = vdf1.sort(
+            [
+                "node_name",
+                "path_id",
+                "localplan_id",
+                "operator_name",
+            ]
+        )
 
         # Table 2
         vdf2 = self.get_qexecution_report(granularity=1)
+        vdf2 = vdf2.sort(
+            [
+                "path_id",
+                "localplan_id",
+                "operator_name",
+            ]
+        )
 
         # Table 3
         vdf3 = self.get_qexecution_report(granularity=2)
+        vdf3 = vdf3.sort(
+            [
+                "path_id",
+            ]
+        )
 
-        return vdf1, vdf2, vdf3, vdf4
+        return vdf1, vdf2, vdf3
 
     def _get_qplan_tree(
         self,
