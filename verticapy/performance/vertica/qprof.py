@@ -2624,23 +2624,8 @@ class QueryProfiler:
         operator statistics.
         """
         # Init
-        vdf = self.get_qexecution_report()
-        cols = vdf.get_columns()[3:]
-        columns = [
-            f"AVG({col}) AS {col}" if "_us" in col else f"SUM({col}) AS {col}"
-            for col in cols
-        ]
-        columns_sum = [f"SUM({col}) AS {col}" for col in cols]
-
-        # Summary per operator
-        query = f"""
-            SELECT
-                operator_name,
-                path_id,
-                {", ".join(columns)}
-            FROM {vdf}
-            GROUP BY 1, 2
-            ORDER BY 1, 2"""
+        query = self.get_qexecution_report(granularity=1, genSQL=True)
+        cols = self.get_qexecution_report(return_cols=True)
         res = _executeSQL(
             query,
             title="Getting the metrics for each operator.",
@@ -2648,54 +2633,23 @@ class QueryProfiler:
         )
         metric_value_op = {}
         for me in res:
-            if me[1] not in metric_value_op:
-                metric_value_op[me[1]] = {}
-            if me[0] not in metric_value_op[me[1]]:
-                metric_value_op[me[1]][me[0]] = {}
+            if me[2] not in metric_value_op:
+                metric_value_op[me[2]] = {}
+            if me[0] not in metric_value_op[me[2]]:
+                metric_value_op[me[2]][me[0]] = {}
             for idx, col in enumerate(cols):
-                current_metric = me[2 + idx]
+                current_metric = me[3 + idx]
                 if not isinstance(current_metric, NoneType):
-                    if (current_metric == int(current_metric)) or col[1:-1] in [
-                        "proc_rows",
-                        "prod_rows",
-                        "rows",
-                        "rle_prod_rows",
-                        "est_rows",
-                        "rows_filtered_sip",
-                        "rows_pruned_valindex",
-                        "rows_processed_sip",
-                        "total_rows_read_join_sort",
-                        "total_rows_read_sort",
-                        "container_rows_filtered_sip",
-                        "container_rows_filtered_pred",
-                        "container_rows_pruned_sip",
-                        "container_rows_pruned_pred",
-                        "container_rows_pruned_valindex",
-                    ]:
+                    if current_metric == int(current_metric):
                         current_metric = int(current_metric)
                     else:
                         current_metric = float(current_metric)
                 else:
                     current_metric = 0
-                metric_value_op[me[1]][me[0]][col[1:-1]] = current_metric
+                metric_value_op[me[2]][me[0]][col[1:-1]] = current_metric
 
         # Summary
-        query = f"""
-            SELECT
-                path_id,
-                {", ".join(columns)}
-            FROM
-            (
-                SELECT
-                    path_id,
-                    node_name,
-                    {", ".join(columns_sum)}
-                FROM {vdf}
-                GROUP BY 1, 2
-                ORDER BY 1, 2
-            ) q0
-            GROUP BY 1
-            ORDER BY 1"""
+        query = self.get_qexecution_report(granularity=2, genSQL=True)
         res = _executeSQL(
             query,
             title="Getting the final summary.",
@@ -2709,23 +2663,7 @@ class QueryProfiler:
                     metric_value[me_n] = {}
                 current_metric = me[1 + idx]
                 if not isinstance(current_metric, NoneType):
-                    if (current_metric == int(current_metric)) or col[1:-1] in [
-                        "proc_rows",
-                        "prod_rows",
-                        "rows",
-                        "rle_prod_rows",
-                        "est_rows",
-                        "rows_filtered_sip",
-                        "rows_pruned_valindex",
-                        "rows_processed_sip",
-                        "total_rows_read_join_sort",
-                        "total_rows_read_sort",
-                        "container_rows_filtered_sip",
-                        "container_rows_filtered_pred",
-                        "container_rows_pruned_sip",
-                        "container_rows_pruned_pred",
-                        "container_rows_pruned_valindex",
-                    ]:
+                    if current_metric == int(current_metric):
                         current_metric = int(current_metric)
                     else:
                         current_metric = float(current_metric)
@@ -2741,71 +2679,13 @@ class QueryProfiler:
         Query profiler statistics.
         """
         # Table 1
-        vdf1 = self.get_qexecution_report(summarize=False)
+        vdf1 = self.get_qexecution_report(granularity=0)
 
         # Table 2
-        vdf2 = self.get_qexecution_report()
+        vdf2 = self.get_qexecution_report(granularity=1)
 
         # Table 3
-        cols = vdf2.get_columns()[3:]
-        columns = [
-            f"AVG({col}) AS {col}" if "_us" in col else f"SUM({col}) AS {col}"
-            for col in cols
-        ]
-        columns_sum = [f"SUM({col}) AS {col}" for col in cols]
-
-        # Summary per operator
-        query = f"""
-            SELECT
-                path_id,
-                operator_name,
-                {", ".join(columns)}
-            FROM {vdf2}
-            GROUP BY 1, 2
-            ORDER BY 1, 2"""
-        vdf3 = vDataFrame(query).sort(["path_id"])
-
-        # Table 4
-        query = f"""
-            SELECT
-                path_id,
-                {", ".join(columns)}
-            FROM
-            (
-                SELECT
-                    path_id,
-                    node_name,
-                    {", ".join(columns_sum)}
-                FROM {vdf2}
-                GROUP BY 1, 2
-                ORDER BY 1, 2
-            ) q0
-            GROUP BY 1
-            ORDER BY 1"""
-        vdf4 = vDataFrame(query).sort(["path_id"])
-
-        # Adjustement
-        query = f"""
-            SELECT 
-                node_name, 
-                path_id, 
-                localplan_id, 
-                operator_id,
-                operator_name,
-                {", ".join(cols)} 
-            FROM {vdf1}"""
-        vdf1 = vDataFrame(query).sort(
-            ["node_name", "path_id", "localplan_id", "operator_id"]
-        )
-
-        query = f"""
-            SELECT 
-                node_name, 
-                path_id, 
-                operator_name,
-                {", ".join(cols)} 
-            FROM {vdf2}"""
-        vdf2 = vDataFrame(query).sort(["node_name", "path_id"])
+        vdf3 = self.get_qexecution_report(granularity=2)
 
         return vdf1, vdf2, vdf3, vdf4
 
@@ -3865,16 +3745,24 @@ class QueryProfiler:
         return vdf
 
     # Step 14A: Query execution report
-    def get_qexecution_report(self, summarize: bool = True) -> vDataFrame:
+    def get_qexecution_report(
+        self, granularity: int = 0, genSQL: bool = False
+    ) -> vDataFrame:
         """
         Returns the Query execution report.
 
         Parameters
         ----------
-        summarize: bool, optional
-            If set to True, a summary is
-            computed instead of having
-            a more granular report.
+        granularity: int, optional
+            0: Pivot Table of metrics.
+            1: Summary accross nodes.
+            2: Summary accross steps.
+        genSQL: bool, optional
+            If set to ``True``, returns
+            the SQL statement.
+        return_cols: bool, optional
+            If set to ``True``, returns
+            all the metrics names.
 
         Returns
         -------
@@ -3916,22 +3804,51 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
-        other_cols, gb = "", ""
-        order_by = """
-            CASE WHEN SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
-            counter_value ELSE NULL END) IS NULL THEN 1 ELSE 0 END ASC,
-            5 DESC
-        """
-        if not (summarize):
-            other_cols = " localplan_id, operator_id,"
-            gb = ", 4, 5"
-            order_by = "1, 3, 4, 5"
+        if return_cols:
+            return [
+                "exec_time_us",
+                "est_rows",
+                "proc_rows",
+                "prod_rows",
+                "rle_prod_rows",
+                "cstall_us",
+                "pstall_us",
+                "clock_time_us",
+                "mem_res_b",
+                "mem_all_b",
+                "bytes_spilled",
+                "blocks_filtered_sip",
+                "blocks_analyzed_sip",
+                "container_rows_filtered_sip",
+                "container_rows_filtered_pred",
+                "container_rows_pruned_sip",
+                "container_rows_pruned_pred",
+                "container_rows_pruned_valindex",
+                "hash_tables_spilled_sort",
+                "join_inner_clock_time_us",
+                "join_inner_exec_time_us",
+                "join_outer_clock_time_us",
+                "join_outer_exec_time_us",
+                "network_wait_us",
+                "producer_stall_us",
+                "producer_wait_us",
+                "request_wait_us",
+                "response_wait_us",
+                "recv_net_time_us",
+                "recv_wait_us",
+                "rows_filtered_sip",
+                "rows_pruned_valindex",
+                "rows_processed_sip",
+                "total_rows_read_join_sort",
+                "total_rows_read_sort",
+            ]
         query = f"""
             SELECT
                 node_name,
+                path_id,
+                localplan_id,
                 operator_name,
-                path_id,{other_cols}
-                SUM(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
                     counter_value ELSE NULL END) AS exec_time_us,
                 SUM(CASE TRIM(counter_name) WHEN 'estimated rows produced' THEN
                     counter_value ELSE NULL END) AS est_rows,
@@ -3941,17 +3858,17 @@ class QueryProfiler:
                     counter_value ELSE NULL END) AS prod_rows,
                 SUM(CASE TRIM(counter_name) WHEN 'rle rows produced' THEN
                     counter_value ELSE NULL END) AS rle_prod_rows,
-                SUM(CASE TRIM(counter_name) WHEN 'consumer stall (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'consumer stall (us)' THEN
                     counter_value ELSE NULL END) AS cstall_us,
-                SUM(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
                     counter_value ELSE NULL END) AS pstall_us,
-                SUM(CASE TRIM(counter_name) WHEN 'clock time (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'clock time (us)' THEN
                     counter_value ELSE NULL END) AS clock_time_us,
-                SUM(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
                     counter_value ELSE NULL END) AS mem_res_b,
-                SUM(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
+                MAX(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
                     counter_value ELSE NULL END) AS mem_all_b,
-                SUM(CASE TRIM(counter_name) WHEN 'bytes spilled' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'bytes spilled' THEN
                     counter_value ELSE NULL END) AS bytes_spilled,
                 SUM(CASE TRIM(counter_name) WHEN 'blocks filtered by SIPs expression' THEN
                     counter_value ELSE NULL END) AS blocks_filtered_sip,
@@ -3969,27 +3886,27 @@ class QueryProfiler:
                     counter_value ELSE NULL END) AS container_rows_pruned_valindex,
                 SUM(CASE TRIM(counter_name) WHEN 'hash tables spilled to sort' THEN
                     counter_value ELSE NULL END) AS hash_tables_spilled_sort,
-                SUM(CASE TRIM(counter_name) WHEN 'join inner clock time (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'join inner clock time (us)' THEN
                     counter_value ELSE NULL END) AS join_inner_clock_time_us,
-                SUM(CASE TRIM(counter_name) WHEN 'join inner execution time (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'join inner execution time (us)' THEN
                     counter_value ELSE NULL END) AS join_inner_exec_time_us,
-                SUM(CASE TRIM(counter_name) WHEN 'join outer clock time (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'join outer clock time (us)' THEN
                     counter_value ELSE NULL END) AS join_outer_clock_time_us,
-                SUM(CASE TRIM(counter_name) WHEN 'join outer execution time (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'join outer execution time (us)' THEN
                     counter_value ELSE NULL END) AS join_outer_exec_time_us,
-                SUM(CASE TRIM(counter_name) WHEN 'network wait (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'network wait (us)' THEN
                     counter_value ELSE NULL END) AS network_wait_us,
-                SUM(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
                     counter_value ELSE NULL END) AS producer_stall_us,
-                SUM(CASE TRIM(counter_name) WHEN 'producer wait (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'producer wait (us)' THEN
                     counter_value ELSE NULL END) AS producer_wait_us,
-                SUM(CASE TRIM(counter_name) WHEN 'request wait (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'request wait (us)' THEN
                     counter_value ELSE NULL END) AS request_wait_us,
-                SUM(CASE TRIM(counter_name) WHEN 'response wait (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'response wait (us)' THEN
                     counter_value ELSE NULL END) AS response_wait_us,
-                SUM(CASE TRIM(counter_name) WHEN 'recv net time (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'recv net time (us)' THEN
                     counter_value ELSE NULL END) AS recv_net_time_us,
-                SUM(CASE TRIM(counter_name) WHEN 'recv wait (us)' THEN
+                MAX(CASE TRIM(counter_name) WHEN 'recv wait (us)' THEN
                     counter_value ELSE NULL END) AS recv_wait_us,
                 SUM(CASE TRIM(counter_name) WHEN 'rows filtered by SIPs expression' THEN
                     counter_value ELSE NULL END) AS rows_filtered_sip,
@@ -4006,12 +3923,112 @@ class QueryProfiler:
             WHERE
                 transaction_id={self.transaction_id} AND
                 statement_id={self.statement_id} AND
-                counter_value >= 0
+                counter_value >= 0 AND 
+                operator_id IS NOT NULL
             GROUP BY
-                1, 2, 3{gb}
+                1, 2, 3, 4
             ORDER BY
-                {order_by};"""
+                1, 2, 3, 4;"""
+        if granularity > 0:
+            query = f"""
+                SELECT
+                    path_id,
+                    localplan_id,
+                    operator_name,
+                    MAX(exec_time_us) AS exec_time_us,
+                    MAX(est_rows) AS est_rows,
+                    MAX(proc_rows) AS proc_rows,
+                    MAX(prod_rows) AS prod_rows,
+                    MAX(rle_prod_rows) AS rle_prod_rows,
+                    MAX(cstall_us) AS cstall_us,
+                    MAX(pstall_us) AS pstall_us,
+                    MAX(clock_time_us) AS clock_time_us,
+                    MAX(mem_res_b) AS mem_res_b,
+                    MAX(mem_all_b) AS mem_all_b,
+                    MAX(bytes_spilled) AS bytes_spilled,
+                    MAX(blocks_filtered_sip) AS blocks_filtered_sip,
+                    MAX(blocks_analyzed_sip) AS blocks_analyzed_sip,
+                    MAX(container_rows_filtered_sip) AS container_rows_filtered_sip,
+                    MAX(container_rows_filtered_pred) AS container_rows_filtered_pred,
+                    MAX(container_rows_pruned_sip) AS container_rows_pruned_sip,
+                    MAX(container_rows_pruned_pred) AS container_rows_pruned_pred,
+                    MAX(container_rows_pruned_valindex) AS container_rows_pruned_valindex,
+                    MAX(hash_tables_spilled_sort) AS hash_tables_spilled_sort,
+                    MAX(join_inner_clock_time_us) AS join_inner_clock_time_us,
+                    MAX(join_inner_exec_time_us) AS join_inner_exec_time_us,
+                    MAX(join_outer_clock_time_us) AS join_outer_clock_time_us,
+                    MAX(join_outer_exec_time_us) AS join_outer_exec_time_us,
+                    MAX(network_wait_us) AS network_wait_us,
+                    MAX(producer_stall_us) AS producer_stall_us,
+                    MAX(producer_wait_us) AS producer_wait_us,
+                    MAX(request_wait_us) AS request_wait_us,
+                    MAX(response_wait_us) AS response_wait_us,
+                    MAX(recv_net_time_us) AS recv_net_time_us,
+                    MAX(recv_wait_us) AS recv_wait_us,
+                    MAX(rows_filtered_sip) AS rows_filtered_sip,
+                    MAX(rows_pruned_valindex) AS rows_pruned_valindex,
+                    MAX(rows_processed_sip) AS rows_processed_sip,
+                    MAX(total_rows_read_join_sort) AS total_rows_read_join_sort,
+                    MAX(total_rows_read_sort) AS total_rows_read_sort
+                FROM
+                    ({query}) q0
+                GROUP BY
+                    1, 2, 3
+                ORDER BY
+                    1, 2, 3;
+            """
+        if granularity > 1:
+            query = f"""
+                SELECT
+                    path_id,
+                    MAX(exec_time_us) AS exec_time_us,
+                    MAX(est_rows) AS est_rows,
+                    MAX(proc_rows) AS proc_rows,
+                    MAX(prod_rows) AS prod_rows,
+                    MAX(rle_prod_rows) AS rle_prod_rows,
+                    MAX(cstall_us) AS cstall_us,
+                    MAX(pstall_us) AS pstall_us,
+                    MAX(clock_time_us) AS clock_time_us,
+                    MAX(mem_res_b) AS mem_res_b,
+                    MAX(mem_all_b) AS mem_all_b,
+                    MAX(bytes_spilled) AS bytes_spilled,
+                    MAX(blocks_filtered_sip) AS blocks_filtered_sip,
+                    MAX(blocks_analyzed_sip) AS blocks_analyzed_sip,
+                    MAX(container_rows_filtered_sip) AS container_rows_filtered_sip,
+                    MAX(container_rows_filtered_pred) AS container_rows_filtered_pred,
+                    MAX(container_rows_pruned_sip) AS container_rows_pruned_sip,
+                    MAX(container_rows_pruned_pred) AS container_rows_pruned_pred,
+                    MAX(container_rows_pruned_valindex) AS container_rows_pruned_valindex,
+                    MAX(hash_tables_spilled_sort) AS hash_tables_spilled_sort,
+                    MAX(join_inner_clock_time_us) AS join_inner_clock_time_us,
+                    MAX(join_inner_exec_time_us) AS join_inner_exec_time_us,
+                    MAX(join_outer_clock_time_us) AS join_outer_clock_time_us,
+                    MAX(join_outer_exec_time_us) AS join_outer_exec_time_us,
+                    MAX(network_wait_us) AS network_wait_us,
+                    MAX(producer_stall_us) AS producer_stall_us,
+                    MAX(producer_wait_us) AS producer_wait_us,
+                    MAX(request_wait_us) AS request_wait_us,
+                    MAX(response_wait_us) AS response_wait_us,
+                    MAX(recv_net_time_us) AS recv_net_time_us,
+                    MAX(recv_wait_us) AS recv_wait_us,
+                    MAX(rows_filtered_sip) AS rows_filtered_sip,
+                    MAX(rows_pruned_valindex) AS rows_pruned_valindex,
+                    MAX(rows_processed_sip) AS rows_processed_sip,
+                    MAX(total_rows_read_join_sort) AS total_rows_read_join_sort,
+                    MAX(total_rows_read_sort) AS total_rows_read_sort
+                FROM
+                    ({query}) q1
+                GROUP BY
+                    1
+                ORDER BY
+                    1;
+            """
+
         query = self._replace_schema_in_query(query)
+
+        if genSQL:
+            return query
+
         return vDataFrame(query)
 
     # Step 14B: Query execution chart
