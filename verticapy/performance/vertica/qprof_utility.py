@@ -83,9 +83,41 @@ class QprofUtility:
         row: str,
     ) -> Union[str, int]:
         """
-        Returns if the row
-        includes or does not
-        include statistics.
+        Returns an icon if
+        the row includes
+        statistics, nothing
+        otherwise.
+
+        Parameters
+        ----------
+        row: str
+            Tree row.
+
+        Returns
+        -------
+        str
+            icon.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.qprof_utility`
+        for more information.
+        """
+        if "NO STATISTICS" in row:
+            return "🚫"
+        else:
+            return ""
+
+    @staticmethod
+    def _get_execute_on(
+        row: str,
+    ) -> Union[str, int]:
+        """
+        Returns an icon if
+        the execution is on
+        all nodes or query
+        initiator, nothing
+        otherwise.
 
         Parameters
         ----------
@@ -95,16 +127,17 @@ class QprofUtility:
         Returns
         -------
         bool
-            True if the row
-            has statistics.
+            icon.
 
         Examples
         --------
         See :py:meth:`~verticapy.performance.vertica.qprof_utility`
         for more information.
         """
-        if "NO STATISTICS" in row:
-            return "🚫"
+        if "Execute on: Query Initiator" in row:
+            return "🟢"
+        elif "Execute on: All Nodes" in row:
+            return "🌐"
         else:
             return ""
 

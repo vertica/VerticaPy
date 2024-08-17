@@ -1514,6 +1514,9 @@ class PerformanceTree:
                     if "(ARRAY[...]" in tooltip:
                         tooltip += ")"
                 ns_icon = QprofUtility._get_no_statistics(tooltip)
+                if ns_icon != "":
+                    ns_icon += " "
+                ns_icon += QprofUtility._get_execute_on(tooltip)
                 # Final Tooltip.
                 description = "\n\nDescriptors\n------------\n" + "\n".join(
                     tooltip.split("\n")[1:]
@@ -1558,6 +1561,9 @@ class PerformanceTree:
                         if "(ARRAY[...]" in tooltip:
                             tooltip += ")"
                     ns_icon = QprofUtility._get_no_statistics(tooltip)
+                    if ns_icon != "":
+                        ns_icon += " "
+                    ns_icon += QprofUtility._get_execute_on(tooltip)
                     res += f'\t{100000 - tree_id} [label="...", tooltip="{tooltip}", xlabel="{ns_icon}"];\n'
             if self._is_temp_relation_access(row):
                 children = self._find_children(tree_id, relationships)
@@ -1738,6 +1744,14 @@ class PerformanceTree:
                 all_legend[
                     "NO STATISTICS"
                 ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">🚫</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">NO STATISTICS</FONT></td></tr>'
+            if "EXECUTE ON: QUERY INITIATOR".upper() in row_tmp:
+                all_legend[
+                    "QUERY INITIATOR"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">🟢</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">QUERY INITIATOR</FONT></td></tr>'
+            if "EXECUTE ON: ALL NODES" in row_tmp:
+                all_legend[
+                    "ALL NODES"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">🌐</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">ALL NODES</FONT></td></tr>'
 
         res = ""
         for op in all_legend:
