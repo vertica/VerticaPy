@@ -328,6 +328,15 @@ class PerformanceTree:
             d["temp_relation_order"] = []
         if "display_projections_dml" not in d:
             d["display_projections_dml"] = True
+        if "display_metrics_i" not in d:
+            d["display_metrics_i"] = [
+                "exec_time_us",
+                "clock_time_us",
+                "mem_res_b",
+                "mem_all_b",
+                "proc_rows",
+                "prod_rows",
+            ]
         self.style = d
 
     # Utils
@@ -524,7 +533,10 @@ class PerformanceTree:
                 info += f"{op}:\n"
                 for me in self.metric_value_op[path_id][op]:
                     d_op = self.style["donot_display_op_metrics_i"]
-                    if op not in d_op or me not in d_op[op]:
+                    if (op not in d_op or me not in d_op[op]) and (
+                        not (self.style["display_metrics_i"])
+                        or me in self.style["display_metrics_i"]
+                    ):
                         metric_name = QprofUtility._get_metrics_name(me)
                         info += f" - {metric_name}: {round(self.metric_value_op[path_id][op][me], 3):,}\n"
             if len(info) > 0 and info[-1] == "\n":
@@ -1456,22 +1468,14 @@ class PerformanceTree:
             # Main
             for me_val in self.metric_value:
                 metric_tmp = self.metric_value[me_val]
-                if label in metric_tmp:
+                if label in metric_tmp and (
+                    not (self.style["display_metrics_i"])
+                    or me_val in self.style["display_metrics_i"]
+                ):
                     name = QprofUtility._get_metrics_name(me_val)
                     tooltip_metrics += (
                         f"\n - {name}: {format(round(metric_tmp[label], 3),',')}"
                     )
-
-            # Parsing the node
-            if isinstance(me, str):
-                me = [me]
-            for j, x in enumerate(me):
-                if not isinstance(x[i], NoneType):
-                    me_j = QprofUtility._get_metrics_name(self.metric[j])
-                    if isinstance(x[i], str):
-                        tooltip_metrics += f"\n - {me_j}: {x[i]}"
-                    else:
-                        tooltip_metrics += f"\n - {me_j}: {format(round(x[i], 3),',')}"
 
             if not (self.style["display_tooltip_agg_metrics"]):
                 tooltip_metrics = ""
