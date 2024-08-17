@@ -3823,130 +3823,66 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
-        cols = [
-            "exec_time_us",
-            "est_rows",
-            "proc_rows",
-            "prod_rows",
-            "rle_prod_rows",
-            "cstall_us",
-            "pstall_us",
-            "clock_time_us",
-            "mem_res_b",
-            "mem_all_b",
-            "bytes_spilled",
-            "blocks_filtered_sip",
-            "blocks_analyzed_sip",
-            "container_rows_filtered_sip",
-            "container_rows_filtered_pred",
-            "container_rows_pruned_sip",
-            "container_rows_pruned_pred",
-            "container_rows_pruned_valindex",
-            "hash_tables_spilled_sort",
-            "join_inner_clock_time_us",
-            "join_inner_exec_time_us",
-            "join_outer_clock_time_us",
-            "join_outer_exec_time_us",
-            "network_wait_us",
-            "producer_stall_us",
-            "producer_wait_us",
-            "request_wait_us",
-            "response_wait_us",
-            "recv_net_time_us",
-            "recv_wait_us",
-            "rows_filtered_sip",
-            "rows_pruned_valindex",
-            "rows_processed_sip",
-            "total_rows_read_join_sort",
-            "total_rows_read_sort",
-        ]
-        max_agg = [f"MAX({col}) AS {col}" for col in cols]
-        max_agg_str = ", ".join(max_agg)
-        max_sum_agg = [
-            f"MAX({col}) AS {col}"
-            if "bytes" in col or "_us" in col or "mem_" in col
-            else f"SUM({col}) AS {col}"
+        # Columns and Definition
+        cols = {
+            "exec_time_us": "execution time (us)",
+            "est_rows": "estimated rows produced",
+            "proc_rows": "rows processed",
+            "prod_rows": "rows produced",
+            "rle_prod_rows": "rle rows produced",
+            "cstall_us": "consumer stall (us)",
+            "pstall_us": "producer stall (us)",
+            "clock_time_us": "clock time (us)",
+            "mem_res_b": "memory reserved (bytes)",
+            "mem_all_b": "memory allocated (bytes)",
+            "bytes_spilled": "bytes spilled",
+            "blocks_filtered_sip": "blocks filtered by SIPs expression",
+            "blocks_analyzed_sip": "blocks analyzed by SIPs expression",
+            "container_rows_filtered_sip": "container rows filtered by SIPs expression",
+            "container_rows_filtered_pred": "container rows filtered by query predicates",
+            "container_rows_pruned_sip": "container rows pruned by SIPs expression",
+            "container_rows_pruned_pred": "container rows pruned by query predicates",
+            "container_rows_pruned_valindex": "container rows pruned by valindex",
+            "hash_tables_spilled_sort": "hash tables spilled to sort",
+            "join_inner_clock_time_us": "join inner clock time (us)",
+            "join_inner_exec_time_us": "join inner execution time (us)",
+            "join_outer_clock_time_us": "join outer clock time (us)",
+            "join_outer_exec_time_us": "join outer execution time (us)",
+            "network_wait_us": "network wait (us)",
+            "producer_stall_us": "producer stall (us)",
+            "producer_wait_us": "producer wait (us)",
+            "request_wait_us": "request wait (us)",
+            "response_wait_us": "response wait (us)",
+            "recv_net_time_us": "recv net time (us)",
+            "recv_wait_us": "recv wait (us)",
+            "rows_filtered_sip": "rows filtered by SIPs expression",
+            "rows_pruned_valindex": "rows pruned by valindex",
+            "rows_processed_sip": "rows processed by SIPs expression",
+            "total_rows_read_join_sort": "total rows read in join sort",
+            "total_rows_read_sort": "total rows read in sort",
+        }
+        if return_cols:
+            return [col for col in cols]
+
+        # Granularity 0
+        pivot_cols = [
+            f"(CASE TRIM(counter_name) WHEN '{cols[col]}' THEN counter_value ELSE NULL END) AS {col}"
             for col in cols
         ]
-        max_sum_agg_str = ", ".join(max_sum_agg)
-        if return_cols:
-            return cols
+        pivot_cols_agg = [
+            f"MAX{expr}"
+            if "bytes" in expr or "_us" in expr or "mem_" in expr
+            else f"SUM{expr}"
+            for expr in pivot_cols
+        ]
+        pivot_cols_agg_str = ", ".join(pivot_cols_agg)
         query = f"""
             SELECT
                 node_name,
                 path_id,
                 localplan_id,
                 operator_name,
-                MAX(CASE TRIM(counter_name) WHEN 'execution time (us)' THEN
-                    counter_value ELSE NULL END) AS exec_time_us,
-                SUM(CASE TRIM(counter_name) WHEN 'estimated rows produced' THEN
-                    counter_value ELSE NULL END) AS est_rows,
-                SUM(CASE TRIM(counter_name) WHEN 'rows processed' THEN
-                    counter_value ELSE NULL END) AS proc_rows,
-                SUM(CASE TRIM(counter_name) WHEN 'rows produced' THEN
-                    counter_value ELSE NULL END) AS prod_rows,
-                SUM(CASE TRIM(counter_name) WHEN 'rle rows produced' THEN
-                    counter_value ELSE NULL END) AS rle_prod_rows,
-                MAX(CASE TRIM(counter_name) WHEN 'consumer stall (us)' THEN
-                    counter_value ELSE NULL END) AS cstall_us,
-                MAX(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
-                    counter_value ELSE NULL END) AS pstall_us,
-                MAX(CASE TRIM(counter_name) WHEN 'clock time (us)' THEN
-                    counter_value ELSE NULL END) AS clock_time_us,
-                MAX(CASE TRIM(counter_name) WHEN 'memory reserved (bytes)' THEN
-                    counter_value ELSE NULL END) AS mem_res_b,
-                MAX(CASE TRIM(counter_name) WHEN 'memory allocated (bytes)' THEN 
-                    counter_value ELSE NULL END) AS mem_all_b,
-                MAX(CASE TRIM(counter_name) WHEN 'bytes spilled' THEN
-                    counter_value ELSE NULL END) AS bytes_spilled,
-                SUM(CASE TRIM(counter_name) WHEN 'blocks filtered by SIPs expression' THEN
-                    counter_value ELSE NULL END) AS blocks_filtered_sip,
-                SUM(CASE TRIM(counter_name) WHEN 'blocks analyzed by SIPs expression' THEN
-                    counter_value ELSE NULL END) AS blocks_analyzed_sip,
-                SUM(CASE TRIM(counter_name) WHEN 'container rows filtered by SIPs expression' THEN
-                    counter_value ELSE NULL END) AS container_rows_filtered_sip,
-                SUM(CASE TRIM(counter_name) WHEN 'container rows filtered by query predicates' THEN
-                    counter_value ELSE NULL END) AS container_rows_filtered_pred,
-                SUM(CASE TRIM(counter_name) WHEN 'container rows pruned by SIPs expression' THEN
-                    counter_value ELSE NULL END) AS container_rows_pruned_sip,
-                SUM(CASE TRIM(counter_name) WHEN 'container rows pruned by query predicates' THEN
-                    counter_value ELSE NULL END) AS container_rows_pruned_pred,
-                SUM(CASE TRIM(counter_name) WHEN 'container rows pruned by valindex' THEN
-                    counter_value ELSE NULL END) AS container_rows_pruned_valindex,
-                SUM(CASE TRIM(counter_name) WHEN 'hash tables spilled to sort' THEN
-                    counter_value ELSE NULL END) AS hash_tables_spilled_sort,
-                MAX(CASE TRIM(counter_name) WHEN 'join inner clock time (us)' THEN
-                    counter_value ELSE NULL END) AS join_inner_clock_time_us,
-                MAX(CASE TRIM(counter_name) WHEN 'join inner execution time (us)' THEN
-                    counter_value ELSE NULL END) AS join_inner_exec_time_us,
-                MAX(CASE TRIM(counter_name) WHEN 'join outer clock time (us)' THEN
-                    counter_value ELSE NULL END) AS join_outer_clock_time_us,
-                MAX(CASE TRIM(counter_name) WHEN 'join outer execution time (us)' THEN
-                    counter_value ELSE NULL END) AS join_outer_exec_time_us,
-                MAX(CASE TRIM(counter_name) WHEN 'network wait (us)' THEN
-                    counter_value ELSE NULL END) AS network_wait_us,
-                MAX(CASE TRIM(counter_name) WHEN 'producer stall (us)' THEN
-                    counter_value ELSE NULL END) AS producer_stall_us,
-                MAX(CASE TRIM(counter_name) WHEN 'producer wait (us)' THEN
-                    counter_value ELSE NULL END) AS producer_wait_us,
-                MAX(CASE TRIM(counter_name) WHEN 'request wait (us)' THEN
-                    counter_value ELSE NULL END) AS request_wait_us,
-                MAX(CASE TRIM(counter_name) WHEN 'response wait (us)' THEN
-                    counter_value ELSE NULL END) AS response_wait_us,
-                MAX(CASE TRIM(counter_name) WHEN 'recv net time (us)' THEN
-                    counter_value ELSE NULL END) AS recv_net_time_us,
-                MAX(CASE TRIM(counter_name) WHEN 'recv wait (us)' THEN
-                    counter_value ELSE NULL END) AS recv_wait_us,
-                SUM(CASE TRIM(counter_name) WHEN 'rows filtered by SIPs expression' THEN
-                    counter_value ELSE NULL END) AS rows_filtered_sip,
-                SUM(CASE TRIM(counter_name) WHEN 'rows pruned by valindex' THEN
-                    counter_value ELSE NULL END) AS rows_pruned_valindex,
-                SUM(CASE TRIM(counter_name) WHEN 'rows processed by SIPs expression' THEN
-                    counter_value ELSE NULL END) AS rows_processed_sip,
-                SUM(CASE TRIM(counter_name) WHEN 'total rows read in join sort' THEN
-                    counter_value ELSE NULL END) AS total_rows_read_join_sort,
-                SUM(CASE TRIM(counter_name) WHEN 'total rows read in sort' THEN
-                    counter_value ELSE NULL END) AS total_rows_read_sort
+                {pivot_cols_agg_str}
             FROM
                 v_monitor.execution_engine_profiles
             WHERE
@@ -3958,7 +3894,11 @@ class QueryProfiler:
                 1, 2, 3, 4
             ORDER BY
                 1, 2, 3, 4"""
+
+        # Granularity 1
         if granularity > 0:
+            max_agg = [f"MAX({col}) AS {col}" for col in cols]
+            max_agg_str = ", ".join(max_agg)
             query = f"""
                 SELECT
                     path_id,
@@ -3972,7 +3912,16 @@ class QueryProfiler:
                 ORDER BY
                     1, 2, 3
             """
+
+        # Granularity 2
         if granularity > 1:
+            max_sum_agg = [
+                f"MAX({col}) AS {col}"
+                if "bytes" in col or "_us" in col or "mem_" in col
+                else f"SUM({col}) AS {col}"
+                for col in cols
+            ]
+            max_sum_agg_str = ", ".join(max_sum_agg)
             query = f"""
                 SELECT
                     path_id,
@@ -3985,6 +3934,7 @@ class QueryProfiler:
                     1
             """
 
+        # Final
         query = self._replace_schema_in_query(query)
 
         if genSQL:
