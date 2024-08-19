@@ -3884,10 +3884,22 @@ class QueryProfiler:
                 path_id,
                 localplan_id,
                 operator_name,
-                COUNT(operator_id) AS thread_count,
+                MAX(thread_count) AS thread_count,
                 {pivot_cols_agg_str}
             FROM
-                v_monitor.execution_engine_profiles
+                (
+                    SELECT
+                        *,
+                        COUNT(operator_id) OVER (
+                            PARTITION BY node_name, 
+                                         path_id, 
+                                         localplan_id, 
+                                         operator_name, 
+                                         counter_name
+                        ) AS thread_count
+                    FROM
+                        v_monitor.execution_engine_profiles
+                ) AS q0
             WHERE
                 transaction_id={self.transaction_id} AND
                 statement_id={self.statement_id} AND
@@ -3911,7 +3923,7 @@ class QueryProfiler:
                     operator_name,
                     {max_agg_str}
                 FROM
-                    ({query}) q0
+                    ({query}) AS q1
                 GROUP BY
                     1, 2, 3
                 ORDER BY
@@ -3925,7 +3937,7 @@ class QueryProfiler:
                     path_id,
                     {max_agg_str}
                 FROM
-                    ({query}) q1
+                    ({query}) AS q2
                 GROUP BY
                     1
                 ORDER BY
