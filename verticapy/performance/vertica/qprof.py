@@ -3899,12 +3899,12 @@ class QueryProfiler:
                         ) AS thread_count
                     FROM
                         v_monitor.execution_engine_profiles
+                    WHERE
+                        transaction_id={self.transaction_id} AND
+                        statement_id={self.statement_id} AND
+                        counter_value >= 0 AND 
+                        operator_id IS NOT NULL
                 ) AS q0
-            WHERE
-                transaction_id={self.transaction_id} AND
-                statement_id={self.statement_id} AND
-                counter_value >= 0 AND 
-                operator_id IS NOT NULL
             GROUP BY
                 1, 2, 3, 4
             ORDER BY
