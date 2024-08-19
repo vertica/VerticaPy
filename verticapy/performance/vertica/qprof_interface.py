@@ -168,7 +168,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         dropdown1 = widgets.Dropdown(
             options=options_dropwdown,
             description="Metric # 1:",
-            value="AVG Execution time per node in \u00b5s",
+            value="Execution time in \u00b5s",
             layout={"width": "260px"},
         )
         dropdown2 = widgets.Dropdown(
