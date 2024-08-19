@@ -2959,6 +2959,7 @@ class QueryProfiler:
 
             - None (no specific color)
 
+            - count_operator
             - bytes_spilled
             - clock_time_us
             - cost
@@ -3142,7 +3143,8 @@ class QueryProfiler:
                 ``list`` of metrics to display.
                 Default: ['exec_time_us', 'clock_time_us',
                           'mem_res_b', 'mem_all_b',
-                          'proc_rows', 'prod_rows']
+                          'proc_rows', 'prod_rows',
+                          'count_operator',]
             - donot_display_op_metrics_i:
                 ``dictionary`` of ``list``, each
                 key should represent an operator
@@ -3862,7 +3864,7 @@ class QueryProfiler:
             "total_rows_read_sort": "total rows read in sort",
         }
         if return_cols:
-            return [col for col in cols]
+            return ["count_operator"] + [col for col in cols]
 
         # Granularity 0
         pivot_cols = [
@@ -3882,6 +3884,7 @@ class QueryProfiler:
                 path_id,
                 localplan_id,
                 operator_name,
+                COUNT(operator_name) AS count_operator,
                 {pivot_cols_agg_str}
             FROM
                 v_monitor.execution_engine_profiles
@@ -3897,7 +3900,9 @@ class QueryProfiler:
 
         # Granularity 1
         if granularity > 0:
-            max_agg = [f"MAX({col}) AS {col}" for col in cols]
+            max_agg = ["MAX(count_operator) AS count_operator"] + [
+                f"MAX({col}) AS {col}" for col in cols
+            ]
             max_agg_str = ", ".join(max_agg)
             query = f"""
                 SELECT
@@ -3915,13 +3920,6 @@ class QueryProfiler:
 
         # Granularity 2
         if granularity > 1:
-            max_sum_agg = [
-                f"MAX({col}) AS {col}"
-                if "bytes" in col or "_us" in col or "mem_" in col
-                else f"SUM({col}) AS {col}"
-                for col in cols
-            ]
-            max_sum_agg_str = ", ".join(max_sum_agg)
             query = f"""
                 SELECT
                     path_id,
@@ -3990,6 +3988,7 @@ class QueryProfiler:
         metric: str, optional
             Metric to use. One of the following:
             - all (all metrics are used).
+            - count_operator
             - bytes_spilled
             - clock_time_us
             - cstall_us

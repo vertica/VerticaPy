@@ -62,6 +62,7 @@ class PerformanceTree:
         The following metrics work only
         if ``metric_value is not None``:
 
+        - count_operator
         - bytes_spilled
         - clock_time_us
         - cstall_us
@@ -336,6 +337,7 @@ class PerformanceTree:
                 "mem_all_b",
                 "proc_rows",
                 "prod_rows",
+                "count_operator",
             ]
         self.style = d
 
