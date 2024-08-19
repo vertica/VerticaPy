@@ -2959,7 +2959,7 @@ class QueryProfiler:
 
             - None (no specific color)
 
-            - count_operator
+            - thread_count
             - bytes_spilled
             - clock_time_us
             - cost
@@ -3144,7 +3144,7 @@ class QueryProfiler:
                 Default: ['exec_time_us', 'clock_time_us',
                           'mem_res_b', 'mem_all_b',
                           'proc_rows', 'prod_rows',
-                          'count_operator',]
+                          'thread_count',]
             - donot_display_op_metrics_i:
                 ``dictionary`` of ``list``, each
                 key should represent an operator
@@ -3864,7 +3864,7 @@ class QueryProfiler:
             "total_rows_read_sort": "total rows read in sort",
         }
         if return_cols:
-            return ["count_operator"] + [col for col in cols]
+            return ["thread_count"] + [col for col in cols]
 
         # Granularity 0
         pivot_cols = [
@@ -3884,7 +3884,7 @@ class QueryProfiler:
                 path_id,
                 localplan_id,
                 operator_name,
-                COUNT(operator_name) AS count_operator,
+                COUNT(operator_id) AS thread_count,
                 {pivot_cols_agg_str}
             FROM
                 v_monitor.execution_engine_profiles
@@ -3900,7 +3900,7 @@ class QueryProfiler:
 
         # Granularity 1
         if granularity > 0:
-            max_agg = ["MAX(count_operator) AS count_operator"] + [
+            max_agg = ["MAX(thread_count) AS thread_count"] + [
                 f"MAX({col}) AS {col}" for col in cols
             ]
             max_agg_str = ", ".join(max_agg)
@@ -3988,7 +3988,7 @@ class QueryProfiler:
         metric: str, optional
             Metric to use. One of the following:
             - all (all metrics are used).
-            - count_operator
+            - thread_count
             - bytes_spilled
             - clock_time_us
             - cstall_us
