@@ -184,6 +184,7 @@ class QprofUtility:
         """
         return [
             None,
+            "thread_count",
             "bytes_spilled",
             "clock_time_us",
             "cost",
@@ -226,6 +227,7 @@ class QprofUtility:
     @staticmethod
     def _get_metrics_name(metric: str, inv: bool = False) -> str:
         look_up_table = {
+            "thread_count": "Number of threads",
             "bytes_spilled": "Number of bytes spilled",
             "clock_time_us": "Clock time in \u00b5s",
             "cost": "Query plan cost",

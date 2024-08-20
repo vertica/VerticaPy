@@ -2959,6 +2959,7 @@ class QueryProfiler:
 
             - None (no specific color)
 
+            - thread_count
             - bytes_spilled
             - clock_time_us
             - cost
@@ -3142,7 +3143,8 @@ class QueryProfiler:
                 ``list`` of metrics to display.
                 Default: ['exec_time_us', 'clock_time_us',
                           'mem_res_b', 'mem_all_b',
-                          'proc_rows', 'prod_rows']
+                          'proc_rows', 'prod_rows',
+                          'thread_count',]
             - donot_display_op_metrics_i:
                 ``dictionary`` of ``list``, each
                 key should represent an operator
@@ -3862,7 +3864,7 @@ class QueryProfiler:
             "total_rows_read_sort": "total rows read in sort",
         }
         if return_cols:
-            return [col for col in cols]
+            return ["thread_count"] + [col for col in cols]
 
         # Granularity 0
         pivot_cols = [
@@ -3882,14 +3884,27 @@ class QueryProfiler:
                 path_id,
                 localplan_id,
                 operator_name,
+                MAX(thread_count) AS thread_count,
                 {pivot_cols_agg_str}
             FROM
-                v_monitor.execution_engine_profiles
-            WHERE
-                transaction_id={self.transaction_id} AND
-                statement_id={self.statement_id} AND
-                counter_value >= 0 AND 
-                operator_id IS NOT NULL
+                (
+                    SELECT
+                        *,
+                        COUNT(operator_id) OVER (
+                            PARTITION BY node_name, 
+                                         path_id, 
+                                         localplan_id, 
+                                         operator_name, 
+                                         counter_name
+                        ) AS thread_count
+                    FROM
+                        v_monitor.execution_engine_profiles
+                    WHERE
+                        transaction_id={self.transaction_id} AND
+                        statement_id={self.statement_id} AND
+                        counter_value >= 0 AND 
+                        operator_id IS NOT NULL
+                ) AS q0
             GROUP BY
                 1, 2, 3, 4
             ORDER BY
@@ -3897,7 +3912,9 @@ class QueryProfiler:
 
         # Granularity 1
         if granularity > 0:
-            max_agg = [f"MAX({col}) AS {col}" for col in cols]
+            max_agg = ["MAX(thread_count) AS thread_count"] + [
+                f"MAX({col}) AS {col}" for col in cols
+            ]
             max_agg_str = ", ".join(max_agg)
             query = f"""
                 SELECT
@@ -3906,7 +3923,7 @@ class QueryProfiler:
                     operator_name,
                     {max_agg_str}
                 FROM
-                    ({query}) q0
+                    ({query}) AS q1
                 GROUP BY
                     1, 2, 3
                 ORDER BY
@@ -3915,19 +3932,12 @@ class QueryProfiler:
 
         # Granularity 2
         if granularity > 1:
-            max_sum_agg = [
-                f"MAX({col}) AS {col}"
-                if "bytes" in col or "_us" in col or "mem_" in col
-                else f"SUM({col}) AS {col}"
-                for col in cols
-            ]
-            max_sum_agg_str = ", ".join(max_sum_agg)
             query = f"""
                 SELECT
                     path_id,
                     {max_agg_str}
                 FROM
-                    ({query}) q1
+                    ({query}) AS q2
                 GROUP BY
                     1
                 ORDER BY
@@ -3990,6 +4000,7 @@ class QueryProfiler:
         metric: str, optional
             Metric to use. One of the following:
             - all (all metrics are used).
+            - thread_count
             - bytes_spilled
             - clock_time_us
             - cstall_us
