@@ -1577,7 +1577,6 @@ class QueryProfiler:
                                 transaction_id = {tr_id}
                             AND statement_id = {st_id}
                             LIMIT 1"""
-                        query = self._replace_schema_in_query(query)
                         res = _executeSQL(
                             query,
                             title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
