@@ -1612,7 +1612,6 @@ class QueryProfiler:
                 + " FROM "
                 + " FULL JOIN ".join(jointables)
             )
-            query = self._replace_schema_in_query(query)
             res = _executeSQL(
                 query,
                 title=f"Checking all transactions.",
