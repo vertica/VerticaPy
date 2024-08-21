@@ -165,7 +165,7 @@ class QueryProfiler:
             tables using many parameters. It will
             make the process much more expensive.
     ignore_operators_check: bool, optional
-        If set to ``True`` additional tests are done
+        If set to ``False`` additional tests are done
         on ``operator_id``s.
     iterchecks: bool, optional
         If set to ``True``, the checks are done
