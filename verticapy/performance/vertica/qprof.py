@@ -164,6 +164,9 @@ class QueryProfiler:
             This parameter will aggregate on many
             tables using many parameters. It will
             make the process much more expensive.
+    ignore_operators_check: bool, optional
+        If set to ``True`` additional tests are done
+        on ``operator_id``s.
     iterchecks: bool, optional
         If set to ``True``, the checks are done
         iteratively instead of using a unique
@@ -954,6 +957,7 @@ class QueryProfiler:
         overwrite: bool = False,
         add_profile: bool = True,
         check_tables: bool = True,
+        ignore_operators_check: bool = True,
         iterchecks: bool = False,
         print_info: bool = True,
     ) -> None:
@@ -1129,6 +1133,7 @@ class QueryProfiler:
         self._set_request_qd()
 
         # WARNING MESSAGES.
+        self.ignore_operators_check = ignore_operators_check
         if check_tables:
             self._check_v_table(iterchecks=iterchecks)
 
@@ -1572,6 +1577,7 @@ class QueryProfiler:
                                 transaction_id = {tr_id}
                             AND statement_id = {st_id}
                             LIMIT 1"""
+                        query = self._replace_schema_in_query(query)
                         res = _executeSQL(
                             query,
                             title=f"Checking transaction: ({tr_id}, {st_id}); relation: {sc}.{tb}.",
@@ -1607,6 +1613,7 @@ class QueryProfiler:
                 + " FROM "
                 + " FULL JOIN ".join(jointables)
             )
+            query = self._replace_schema_in_query(query)
             res = _executeSQL(
                 query,
                 title=f"Checking all transactions.",
@@ -1663,6 +1670,32 @@ class QueryProfiler:
             warning_message += (
                 "\nSome data types are inconsistent:\n\n" + inconsistent_dt + "\n"
             )
+        if not (self.ignore_operators_check):
+            transactions_str = ", ".join(
+                [f"'{tr[0]}-{tr[1]}'" for tr in self.transactions]
+            )
+            query = f"""
+                SELECT
+                    COUNT(*)
+                FROM
+                    v_monitor.execution_engine_profiles
+                WHERE
+                    transaction_id || '-' || statement_id
+                    IN ({transactions_str}) AND
+                    operator_id IS NULL
+            """
+            query = self._replace_schema_in_query(query)
+            res = _executeSQL(
+                query,
+                title=f"Checking all operator_ids.",
+                method="fetchfirstelem",
+            )
+            if res > 0:
+                warning_message += (
+                    "\nSome operator IDs are undefined, which "
+                    "should not be the case. This issue with "
+                    "assignment is unusual; please investigate.\n\n"
+                )
         if len(warning_message) > 0:
             warning_message += (
                 "This could potentially lead to incorrect computations or "
@@ -2645,7 +2678,7 @@ class QueryProfiler:
                     else:
                         current_metric = float(current_metric)
                 else:
-                    current_metric = 0
+                    current_metric = -1
                 metric_value_op[me[0]][me[2]][col] = current_metric
 
         # Summary
@@ -2667,7 +2700,7 @@ class QueryProfiler:
                     else:
                         current_metric = float(current_metric)
                 else:
-                    current_metric = 0
+                    current_metric = -1
                 metric_value[col][me[0]] = current_metric
 
         return metric_value_op, metric_value
@@ -3049,6 +3082,11 @@ class QueryProfiler:
                 Color used as the upper
                 bound of the gradient.
                 Default: '#FF0000' (red)
+            - color_null:
+                Color used to represent
+                NULL values.
+                Default: '#EFEFEF' (light
+                gray)
             - fontcolor:
                 Font color.
                 Default (light-m): #000000 (black)
@@ -3902,8 +3940,7 @@ class QueryProfiler:
                     WHERE
                         transaction_id={self.transaction_id} AND
                         statement_id={self.statement_id} AND
-                        counter_value >= 0 AND 
-                        operator_id IS NOT NULL
+                        counter_value >= 0
                 ) AS q0
             GROUP BY
                 1, 2, 3, 4
