@@ -267,6 +267,8 @@ class PerformanceTree:
             elif isinstance(d[color], str):
                 d[color] = self._color_string_to_tuple(d[color])
         d["bgcolor"] = default_params["bgcolor"]
+        d["hasnull_0"] = False
+        d["hasnull_1"] = False
         if "fillcolor" not in d:
             d["fillcolor"] = default_params["fillcolor"]
         if "shape" not in d:
@@ -287,6 +289,8 @@ class PerformanceTree:
             d["info_color"] = "#DFDFDF"
         if "info_fontcolor" not in d:
             d["info_fontcolor"] = "#000000"
+        if "color_null" not in d:
+            d["color_null"] = "#EFEFEF"
         if "info_rowsize" not in d:
             d["info_rowsize"] = 30
         if "info_fontsize" not in d:
@@ -537,10 +541,15 @@ class PerformanceTree:
                     d_op = self.style["donot_display_op_metrics_i"]
                     if (op not in d_op or me not in d_op[op]) and (
                         not (self.style["display_metrics_i"])
-                        or me in self.style["display_metrics_i"]
+                        or me in self.style["display_metrics_i"] + self.metric
                     ):
+                        me_val_str = self.metric_value_op[path_id][op][me]
+                        if me_val_str == -1:
+                            me_val_str = "NULL"
+                        else:
+                            me_val_str = format(round(me_val_str, 3), ",")
                         metric_name = QprofUtility._get_metrics_name(me)
-                        info += f" - {metric_name}: {round(self.metric_value_op[path_id][op][me], 3):,}\n"
+                        info += f" - {metric_name}: {me_val_str}\n"
             if len(info) > 0 and info[-1] == "\n":
                 info = info[:-1]
             return info
@@ -1042,10 +1051,10 @@ class PerformanceTree:
                 else:
                     res = self.metric_value[metric][path_id]
                 if isinstance(res, NoneType):
-                    return 0
+                    return -1
                 return res
             else:
-                return 0
+                return -1
         if res[-1] in ("]",):
             res = res[:-1]
         unit = self._map_unit(res[-1])
@@ -1417,10 +1426,16 @@ class PerformanceTree:
                 [self._get_metric(self.rows[i], self.metric[j], i) for i in range(n)]
             ]
         if not (isinstance(self.metric[0], NoneType)):
-            all_metrics = [math.log(1 + max(me[0][i], 0.0)) for i in range(n)]
+            all_metrics = [
+                -1 if me[0][i] == -1 else math.log(1 + max(me[0][i], 0.0))
+                for i in range(n)
+            ]
             m_min, m_max = min(all_metrics), max(all_metrics)
         if len(self.metric) > 1 and not (isinstance(self.metric[1], NoneType)):
-            all_metrics_2 = [math.log(1 + max(me[1][i], 0.0)) for i in range(n)]
+            all_metrics_2 = [
+                -1 if me[1][i] == -1 else math.log(1 + max(me[1][i], 0.0))
+                for i in range(n)
+            ]
             m_min_2, m_max_2 = min(all_metrics_2), max(all_metrics_2)
             if not (self.style["two_legend"]):
                 m_min = min(m_min, m_min_2)
@@ -1455,14 +1470,31 @@ class PerformanceTree:
             row = self._format_row(self.rows[i].replace('"', "'"))
             operator_icon = self._get_operator_icon(row)
             if not (isinstance(self.metric[0], NoneType)):
-                if m_max - m_min != 0:
-                    alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                if all_metrics[i] >= 0:
+                    if m_max - m_min != 0:
+                        alpha = (all_metrics[i] - m_min) / (m_max - m_min)
+                    else:
+                        alpha = 1.0
+                    color = self._generate_gradient_color(alpha)
                 else:
-                    alpha = 1.0
-                color = self._generate_gradient_color(alpha)
+                    color = self.style["color_null"]
+                    self.style["hasnull_0"] = True
             else:
                 color = self.style["fillcolor"]
             label = QprofUtility._get_label(self.rows[i], row_idx=i)
+
+            # Current_metrics
+            current_me = ""
+            for me_val in self.metric_value:
+                metric_tmp = self.metric_value[me_val]
+                if label in metric_tmp and (me_val in self.metric):
+                    me_val_str = metric_tmp[label]
+                    if me_val_str == -1:
+                        me_val_str = "NULL"
+                    else:
+                        me_val_str = format(round(me_val_str, 3), ",")
+                    name = QprofUtility._get_metrics_name(me_val)
+                    current_me += f"\n * {name}: {me_val_str}"
 
             # METRICS in the TOOLTIPS
             tooltip_metrics = "\n\nAggregated metrics:\n---------------------\n"
@@ -1472,12 +1504,15 @@ class PerformanceTree:
                 metric_tmp = self.metric_value[me_val]
                 if label in metric_tmp and (
                     not (self.style["display_metrics_i"])
-                    or me_val in self.style["display_metrics_i"]
+                    or me_val in self.style["display_metrics_i"] + self.metric
                 ):
+                    me_val_str = metric_tmp[label]
+                    if me_val_str == -1:
+                        me_val_str = "NULL"
+                    else:
+                        me_val_str = format(round(me_val_str, 3), ",")
                     name = QprofUtility._get_metrics_name(me_val)
-                    tooltip_metrics += (
-                        f"\n - {name}: {format(round(metric_tmp[label], 3),',')}"
-                    )
+                    tooltip_metrics += f"\n - {name}: {me_val_str}"
 
             if not (self.style["display_tooltip_agg_metrics"]):
                 tooltip_metrics = ""
@@ -1496,11 +1531,15 @@ class PerformanceTree:
             colors = [color]
             if len(self.metric) > 1:
                 if not (isinstance(self.metric[1], NoneType)):
-                    if m_max_2 - m_min_2 != 0:
-                        alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
+                    if all_metrics_2[i] >= 0:
+                        if m_max_2 - m_min_2 != 0:
+                            alpha = (all_metrics_2[i] - m_min_2) / (m_max_2 - m_min_2)
+                        else:
+                            alpha = 1.0
+                        colors += [self._generate_gradient_color(alpha)]
                     else:
-                        alpha = 1.0
-                    colors += [self._generate_gradient_color(alpha)]
+                        colors += [self.style["color_null"]]
+                        self.style["hasnull_1"] = True
                 else:
                     colors += [self.style["fillcolor"]]
             label = self._gen_label_table(
@@ -1523,7 +1562,7 @@ class PerformanceTree:
                 description = "\n\nDescriptors\n------------\n" + "\n".join(
                     tooltip.split("\n")[1:]
                 )
-                tooltip = tooltip.split("\n")[0] + tooltip_metrics
+                tooltip = tooltip.split("\n")[0] + current_me + tooltip_metrics
                 if self.style["display_tooltip_descriptors"]:
                     tooltip += description
                 params = f'width={wh}, height={wh}, tooltip="{tooltip}", fixedsize=true, URL="#path_id={tree_id}", xlabel="{ns_icon}"'
@@ -1819,6 +1858,11 @@ class PerformanceTree:
         bgcolor = default_params["legend_bgcolor"]
         fontcolor = default_params["legend_fontcolor"]
         res += f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">{legend}</FONT></td></tr>'
+        null_color = self.style["color_null"]
+        if idx == 0 and self.style["hasnull_0"]:
+            res += f'<tr><td BGCOLOR="{null_color}"><FONT COLOR="{fontcolor}">NULL</FONT></td></tr>'
+        if idx == 1 and self.style["hasnull_1"]:
+            res += f'<tr><td BGCOLOR="{null_color}"><FONT COLOR="{fontcolor}">NULL</FONT></td></tr>'
         res += f'<tr><td BGCOLOR="{alpha0}"><FONT COLOR="{fontcolor}">{cats[0]}</FONT></td></tr>'
         res += f'<tr><td BGCOLOR="{alpha025}"><FONT COLOR="{fontcolor}">{cats[1]}</FONT></td></tr>'
         res += f'<tr><td BGCOLOR="{alpha050}"><FONT COLOR="{fontcolor}">{cats[2]}</FONT></td></tr>'
@@ -1842,6 +1886,7 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
+        # Parameters
         bgcolor = self.style["bgcolor"]
         fillcolor = self.style["fillcolor"]
         shape = self.style["shape"]
@@ -1863,6 +1908,29 @@ class PerformanceTree:
         else:
             res += f"\tnode [shape=plaintext, fillcolor=white]"
         res += f'\tedge [color="{edge_color}", style={edge_style}];\n'
+
+        # Main Tree
+        main_tree = ""
+        if self.style["temp_relation_order"]:
+            TR_tmp = [f"TREL{i}" for i in self.style["temp_relation_order"]] + ["main"]
+            TR_final = []
+            for tr in TR_tmp:
+                if (
+                    not (self.style["temp_relation_access"])
+                    or tr in self.style["temp_relation_access"]
+                ):
+                    TR_final += [tr]
+            tmp_copy = copy.deepcopy(self)
+            tmp_copy.style["display_legend"] = False
+            for tr in TR_final:
+                tmp_copy.style["temp_relation_access"] = [tr]
+                main_tree += tmp_copy._gen_labels() + "\n"
+                main_tree += tmp_copy._gen_links() + "\n"
+        else:
+            main_tree += self._gen_labels() + "\n"
+            main_tree += self._gen_links() + "\n"
+
+        # Legend and Annotations
         if self.style["display_annotations"]:
             res += self._gen_legend_annotations() + "\n"
         if (
@@ -1877,24 +1945,8 @@ class PerformanceTree:
                 res += self._gen_legend(metric=self.metric)
         else:
             res += "\n"
-        if self.style["temp_relation_order"]:
-            TR_tmp = [f"TREL{i}" for i in self.style["temp_relation_order"]] + ["main"]
-            TR_final = []
-            for tr in TR_tmp:
-                if (
-                    not (self.style["temp_relation_access"])
-                    or tr in self.style["temp_relation_access"]
-                ):
-                    TR_final += [tr]
-            tmp_copy = copy.deepcopy(self)
-            tmp_copy.style["display_legend"] = False
-            for tr in TR_final:
-                tmp_copy.style["temp_relation_access"] = [tr]
-                res += tmp_copy._gen_labels() + "\n"
-                res += tmp_copy._gen_links() + "\n"
-        else:
-            res += self._gen_labels() + "\n"
-            res += self._gen_links() + "\n"
+
+        res += main_tree
         res += "}"
         return res
 
