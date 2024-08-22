@@ -1133,9 +1133,10 @@ class QueryProfiler:
         self._set_request_qd()
 
         # WARNING MESSAGES.
-        self.ignore_operators_check = ignore_operators_check
         if check_tables:
-            self._check_v_table(iterchecks=iterchecks)
+            self._check_v_table(
+                iterchecks=iterchecks, ignore_operators_check=ignore_operators_check
+            )
 
     # Tools
 
@@ -1530,7 +1531,9 @@ class QueryProfiler:
                 )
                 warnings.warn(warning_message, Warning)
 
-    def _check_v_table(self, iterchecks: bool = True) -> None:
+    def _check_v_table(
+        self, iterchecks: bool = True, ignore_operators_check: bool = True
+    ) -> None:
         """
         Checks if all the transactions
         exist in all the different
@@ -1543,6 +1546,9 @@ class QueryProfiler:
             iteratively instead of using a unique
             SQL query. Usually checks are faster
             when this parameter is set to ``False``.
+        ignore_operators_check: bool, optional
+            If set to ``False`` additional tests are done
+            on ``operator_id``s.
 
             .. note::
 
@@ -1668,7 +1674,7 @@ class QueryProfiler:
             warning_message += (
                 "\nSome data types are inconsistent:\n\n" + inconsistent_dt + "\n"
             )
-        if not (self.ignore_operators_check):
+        if not (ignore_operators_check):
             transactions_str = ", ".join(
                 [f"'{tr[0]}-{tr[1]}'" for tr in self.transactions]
             )
