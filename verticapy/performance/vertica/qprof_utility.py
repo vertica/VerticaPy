@@ -147,6 +147,13 @@ class QprofUtility:
         ...
         """
         qplan = rows.split("\n")
+        if (
+            len(qplan) > 0
+            and len(qplan[0]) > 0
+            and qplan[0][0] != "+"
+            and "PATH ID" not in qplan[0]
+        ):
+            qplan = qplan[1:]
         current_id = -1
         for idx, row in enumerate(qplan):
             if (

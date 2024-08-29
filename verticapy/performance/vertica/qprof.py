@@ -141,6 +141,13 @@ class QueryProfiler:
         used to map all the Vertica DC tables.
         If the tables do not exist, VerticaPy
         will try to create them automatically.
+    session_control: dict | list, optional
+        List of parameters used to alter the
+        session. Example: ``[{"param1": "val1"},
+        {"param2": "val2"}, {"param3": "val3"},]``.
+        Please note that each input query will
+        be executed with the different sets of
+        parameters.
     overwrite: bool, optional
         If set to ``True`` overwrites the
         existing performance tables.
@@ -954,6 +961,7 @@ class QueryProfiler:
         key_id: Optional[str] = None,
         resource_pool: Optional[str] = None,
         target_schema: Union[None, str, dict] = None,
+        session_control: Union[None, dict, list[dict]] = None,
         overwrite: bool = False,
         add_profile: bool = True,
         check_tables: bool = True,
@@ -1055,46 +1063,89 @@ class QueryProfiler:
                 )
 
         # LOOKING AT A POSSIBLE QUERY TO EXECUTE.
+        self.session_control_params = [{}]
+
         if len(requests) > 0:
-            for request in requests:
-                if not (isinstance(resource_pool, NoneType)):
+            # ALTER SESSION PARAMETERS
+            if not (session_control):
+                session_control = [{}]
+            elif isinstance(session_control, dict):
+                session_control = [session_control]
+            session_control_loop = []
+            for sc in session_control:
+                is_correct = True
+                if isinstance(sc, dict):
+                    for key in sc:
+                        if not (isinstance(key, str)):
+                            is_correct = False
+                            break
+                else:
+                    is_correct = False
+                if not (is_correct):
+                    raise TypeError(
+                        "Wrong type for parameter 'session_control'. Expecting "
+                        f"a dict of key | values with ``str`` keys. Found '{key}'"
+                        f"which is of type '{type(key)}'."
+                    )
+                session_control_loop += [sc]
+            if session_control_loop[0] != {}:
+                session_control_loop = [{}] + session_control_loop
+            session_control_loop_all = []
+            for sc in session_control_loop:
+                if sc != {}:
+                    query = ""
+                    for key in sc:
+                        val = sc[key]
+                        if isinstance(val, str):
+                            val = f"'{val}'"
+                        query += f"ALTER SESSION SET {key} = {val};"
                     _executeSQL(
-                        f"SET SESSION RESOURCE POOL {resource_pool} ;",
-                        title="Setting the resource pool.",
+                        query,
+                        title="Alter Session.",
                         method="cursor",
                     )
-                if add_profile:
-                    fword = clean_query(request).strip().split()[0].lower()
-                    if fword != "profile":
-                        request = "PROFILE " + request
-                _executeSQL(
-                    request,
-                    title="Executing the query.",
-                    method="cursor",
-                )
-                query = """
-                    SELECT
-                        transaction_id,
-                        statement_id
-                    FROM QUERY_REQUESTS 
-                    WHERE session_id = (SELECT current_session())
-                      AND is_executing='f'
-                    ORDER BY start_timestamp DESC LIMIT 1;"""
-                res = _executeSQL(
-                    query,
-                    title="Getting transaction_id, statement_id.",
-                    method="fetchrow",
-                )
-                if not isinstance(res, NoneType):
-                    transaction_id, statement_id = res[0], res[1]
-                    self.transactions += [(transaction_id, statement_id)]
-                else:
-                    warning_message = (
-                        f"No transaction linked to query: {request}."
-                        "\nIt might be still running. This transaction"
-                        " will be skipped."
+                for request in requests:
+                    session_control_loop_all += [sc]
+                    if not (isinstance(resource_pool, NoneType)):
+                        _executeSQL(
+                            f"SET SESSION RESOURCE POOL {resource_pool} ;",
+                            title="Setting the resource pool.",
+                            method="cursor",
+                        )
+                    if add_profile:
+                        fword = clean_query(request).strip().split()[0].lower()
+                        if fword != "profile":
+                            request = "PROFILE " + request
+                    _executeSQL(
+                        request,
+                        title="Executing the query.",
+                        method="cursor",
                     )
-                    warnings.warn(warning_message, Warning)
+                    query = """
+                        SELECT
+                            transaction_id,
+                            statement_id
+                        FROM QUERY_REQUESTS 
+                        WHERE session_id = (SELECT current_session())
+                          AND is_executing='f'
+                        ORDER BY start_timestamp DESC LIMIT 1;"""
+                    res = _executeSQL(
+                        query,
+                        title="Getting transaction_id, statement_id.",
+                        method="fetchrow",
+                    )
+                    if not isinstance(res, NoneType):
+                        transaction_id, statement_id = res[0], res[1]
+                        self.transactions += [(transaction_id, statement_id)]
+                    else:
+                        warning_message = (
+                            f"No transaction linked to query: {request}."
+                            "\nIt might be still running. This transaction"
+                            " will be skipped."
+                        )
+                        warnings.warn(warning_message, Warning)
+
+            self.session_control_params = session_control_loop_all
 
         if len(self.transactions) == 0 and isinstance(key_id, NoneType):
             raise ValueError("No transactions found.")
@@ -3809,7 +3860,11 @@ class QueryProfiler:
 
     # Step 14A: Query execution report
     def get_qexecution_report(
-        self, granularity: int = 0, genSQL: bool = False, return_cols: bool = False
+        self,
+        granularity: int = 0,
+        genSQL: bool = False,
+        return_cols: bool = False,
+        return_useful_cols: bool = False,
     ) -> vDataFrame:
         """
         Returns the Query execution report.
@@ -3826,6 +3881,9 @@ class QueryProfiler:
         return_cols: bool, optional
             If set to ``True``, returns
             all the metrics names.
+        return_useful_cols: bool, optional
+            If set to ``True``, returns
+            all the useful metrics names.
 
         Returns
         -------
@@ -3905,6 +3963,29 @@ class QueryProfiler:
             "total_rows_read_join_sort": "total rows read in join sort",
             "total_rows_read_sort": "total rows read in sort",
         }
+        if return_useful_cols:
+            query = f"""
+                SELECT
+                    LOWER(TRIM(counter_name)) AS counter_name
+                FROM
+                    v_monitor.execution_engine_profiles
+                WHERE
+                    transaction_id = {self.transaction_id} AND
+                    statement_id = {self.statement_id} AND
+                    counter_value >= 0 AND
+                    counter_value IS NOT NULL
+            """
+            query = self._replace_schema_in_query(query)
+            vdf = vDataFrame(query)
+            unique = vdf["counter_name"].distinct()
+            rev_cols, res = {}, []
+            for me in cols:
+                rev_cols[cols[me]] = me
+            for counter in unique:
+                if counter in rev_cols:
+                    res += [rev_cols[counter]]
+            return res
+
         if return_cols:
             return ["thread_count"] + [col for col in cols]
 
@@ -3942,8 +4023,8 @@ class QueryProfiler:
                     FROM
                         v_monitor.execution_engine_profiles
                     WHERE
-                        transaction_id={self.transaction_id} AND
-                        statement_id={self.statement_id} AND
+                        transaction_id = {self.transaction_id} AND
+                        statement_id = {self.statement_id} AND
                         counter_value >= 0
                 ) AS q0
             GROUP BY
