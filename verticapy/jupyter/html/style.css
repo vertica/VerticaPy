@@ -3,7 +3,9 @@ table td {
     overflow: hidden;
     text-align: center !important;
     background-color: #FAFAFA;
+    white-space: nowrap !important;
 }
+
 table tr:nth-child(1)  {
     background-color: #FFFFFF;
 }
