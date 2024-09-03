@@ -220,18 +220,6 @@ def clean_data(data: ArrayLike) -> ArrayLike:
                         val = "{:,}".format(val)
                     except:
                         pass
-                if isinstance(val, bool) is False and not isinstance(val, NoneType):
-                    data[i][
-                        j
-                    ] = f"""
-                        <div style="background-color: transparent;
-                             border: none; text-align: center; 
-                             width: 100%; scrollbar-width: none; 
-                             overflow-x: scroll; white-space: nowrap;">
-                            {val}
-                        </div>"""
-                    continue
-
                 if isinstance(val, bool):
                     val = (
                         "<center>&#9989;</center>"
