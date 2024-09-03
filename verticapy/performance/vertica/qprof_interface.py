@@ -50,7 +50,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         print_info: bool = True,
     ) -> None:
         super().__init__(
-            transactions=transactions   ,
+            transactions=transactions,
             key_id=key_id,
             resource_pool=resource_pool,
             target_schema=target_schema,
