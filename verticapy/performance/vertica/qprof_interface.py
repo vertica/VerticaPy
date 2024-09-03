@@ -50,15 +50,15 @@ class QueryProfilerInterface(QueryProfilerStats):
         print_info: bool = True,
     ) -> None:
         super().__init__(
-            transactions,
-            key_id,
-            resource_pool,
-            target_schema,
-            overwrite,
-            add_profile,
-            check_tables,
-            iterchecks,
-            print_info,
+            transactions=transactions   ,
+            key_id=key_id,
+            resource_pool=resource_pool,
+            target_schema=target_schema,
+            overwrite=overwrite,
+            add_profile=add_profile,
+            check_tables=check_tables,
+            iterchecks=iterchecks,
+            print_info=print_info,
         )
 
         self.apply_tree = widgets.Checkbox(
