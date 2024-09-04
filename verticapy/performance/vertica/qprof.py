@@ -1075,7 +1075,7 @@ class QueryProfiler:
                     is_str = False
             if is_str:
                 session_control = (
-                    "; ".join([ss.trim() for ss in session_control])
+                    "; ".join([ss.strip() for ss in session_control[0].split(";")])
                 ).replace(";;", ";")
         if isinstance(session_control, str):
             self.session_control_params = ""
