@@ -2808,7 +2808,7 @@ class QueryProfiler:
         vdf2 = vdf2.sort(
             [
                 "path_id",
-                "localplan_id",
+                "baseplanplan_id",
                 "operator_name",
             ]
         )
