@@ -1074,7 +1074,9 @@ class QueryProfiler:
                 if not (isinstance(session, str)):
                     is_str = False
             if is_str:
-                session_control = "; ".join(session_control)
+                session_control = (
+                    "; ".join([ss.trim() for ss in session_control])
+                ).replace(";;", ";")
         if isinstance(session_control, str):
             self.session_control_params = ""
         else:
