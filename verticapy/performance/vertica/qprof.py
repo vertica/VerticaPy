@@ -141,13 +141,18 @@ class QueryProfiler:
         used to map all the Vertica DC tables.
         If the tables do not exist, VerticaPy
         will try to create them automatically.
-    session_control: dict | list, optional
+    session_control: str | dict | list, optional
         List of parameters used to alter the
         session. Example: ``[{"param1": "val1"},
         {"param2": "val2"}, {"param3": "val3"},]``.
         Please note that each input query will
         be executed with the different sets of
         parameters.
+
+        It can also be a ``list`` of ``str`` each
+        one representing a query to execute before
+        running the main ones. Example: ``ALTER
+        SESSION SET param = val``
     overwrite: bool, optional
         If set to ``True`` overwrites the
         existing performance tables.
@@ -961,7 +966,7 @@ class QueryProfiler:
         key_id: Optional[str] = None,
         resource_pool: Optional[str] = None,
         target_schema: Union[None, str, dict] = None,
-        session_control: Union[None, dict, list[dict]] = None,
+        session_control: Union[None, dict, list[dict], str, list[str]] = None,
         overwrite: bool = False,
         add_profile: bool = True,
         check_tables: bool = True,
@@ -1063,8 +1068,17 @@ class QueryProfiler:
                 )
 
         # LOOKING AT A POSSIBLE QUERY TO EXECUTE.
-        self.session_control_params = [{}]
-
+        if isinstance(session_control, list) and len(session_control) > 0:
+            is_str = True
+            for session in session_control:
+                if not (isinstance(session, str)):
+                    is_str = False
+            if is_str:
+                session_control = "; ".join(session_control)
+        if isinstance(session_control, str):
+            self.session_control_params = ""
+        else:
+            self.session_control_params = [{}]
         if len(requests) > 0:
             # ALTER SESSION PARAMETERS
             if not (session_control):
@@ -1072,33 +1086,44 @@ class QueryProfiler:
             elif isinstance(session_control, dict):
                 session_control = [session_control]
             session_control_loop = []
-            for sc in session_control:
-                is_correct = True
-                if isinstance(sc, dict):
-                    for key in sc:
-                        if not (isinstance(key, str)):
-                            is_correct = False
-                            break
-                else:
-                    is_correct = False
-                if not (is_correct):
-                    raise TypeError(
-                        "Wrong type for parameter 'session_control'. Expecting "
-                        f"a dict of key | values with ``str`` keys. Found '{key}'"
-                        f"which is of type '{type(key)}'."
-                    )
-                session_control_loop += [sc]
-            if session_control_loop[0] != {}:
+            if not (isinstance(session_control, str)):
+                for sc in session_control:
+                    is_correct = True
+                    if isinstance(sc, dict):
+                        for key in sc:
+                            if not (isinstance(key, str)):
+                                is_correct = False
+                                break
+                    else:
+                        is_correct = False
+                    if not (is_correct):
+                        raise TypeError(
+                            "Wrong type for parameter 'session_control'. Expecting "
+                            f"a ``str`` or a dict of key | values with ``str`` keys. "
+                            f"Found '{key}' which is of type '{type(key)}'."
+                        )
+                    session_control_loop += [sc]
+            else:
+                session_control_loop = [session_control]
+            if (
+                isinstance(session_control_loop[0], dict)
+                and session_control_loop[0] != {}
+            ):
                 session_control_loop = [{}] + session_control_loop
+            else:
+                session_control_loop = [""] + session_control_loop
             session_control_loop_all = []
             for sc in session_control_loop:
-                if sc != {}:
-                    query = ""
-                    for key in sc:
-                        val = sc[key]
-                        if isinstance(val, str):
-                            val = f"'{val}'"
-                        query += f"ALTER SESSION SET {key} = {val};"
+                if sc not in ({}, ""):
+                    if isinstance(sc, dict):
+                        query = ""
+                        for key in sc:
+                            val = sc[key]
+                            if isinstance(val, str):
+                                val = f"'{val}'"
+                            query += f"ALTER SESSION SET {key} = {val};"
+                    else:
+                        query = sc
                     _executeSQL(
                         query,
                         title="Alter Session.",
@@ -4034,6 +4059,36 @@ class QueryProfiler:
 
         # Granularity 1
         if granularity > 0:
+            query = f"""
+                SELECT
+                    node_name,
+                    path_id,
+                    baseplan_id,
+                    operator_name,
+                    MAX(thread_count) AS thread_count,
+                    {pivot_cols_agg_str}
+                FROM
+                    (
+                        SELECT
+                            *,
+                            COUNT(operator_id) OVER (
+                                PARTITION BY node_name, 
+                                             path_id, 
+                                             localplan_id, 
+                                             operator_name, 
+                                             counter_name
+                            ) AS thread_count
+                        FROM
+                            v_monitor.execution_engine_profiles
+                        WHERE
+                            transaction_id = {self.transaction_id} AND
+                            statement_id = {self.statement_id} AND
+                            counter_value >= 0
+                    ) AS q0
+                GROUP BY
+                    1, 2, 3, 4
+                ORDER BY
+                    1, 2, 3, 4"""
             max_agg = ["MAX(thread_count) AS thread_count"] + [
                 f"MAX({col}) AS {col}" for col in cols
             ]
@@ -4041,7 +4096,7 @@ class QueryProfiler:
             query = f"""
                 SELECT
                     path_id,
-                    localplan_id,
+                    baseplan_id,
                     operator_name,
                     {max_agg_str}
                 FROM
