@@ -1083,37 +1083,39 @@ class QueryProfiler:
             self.session_control_params = [{}]
         if len(requests) > 0:
             # ALTER SESSION PARAMETERS
-            if not (session_control):
-                session_control = [{}]
+            if session_control is None:
+                session_control_loop = [""]
             elif isinstance(session_control, dict):
-                session_control = [session_control]
-            session_control_loop = []
-            if not (isinstance(session_control, str)):
-                for sc in session_control:
-                    is_correct = True
-                    if isinstance(sc, dict):
-                        for key in sc:
-                            if not (isinstance(key, str)):
-                                is_correct = False
-                                break
-                    else:
-                        is_correct = False
-                    if not (is_correct):
-                        raise TypeError(
-                            "Wrong type for parameter 'session_control'. Expecting "
-                            f"a ``str`` or a dict of key | values with ``str`` keys. "
-                            f"Found '{key}' which is of type '{type(key)}'."
-                        )
-                    session_control_loop += [sc]
+                session_control_loop = [{}, session_control]
+            elif isinstance(session_control, str):
+                session_control_loop = ["", session_control]
             else:
-                session_control_loop = [session_control]
-            if (
-                isinstance(session_control_loop[0], dict)
-                and session_control_loop[0] != {}
-            ):
+                session_control_loop = []
+                if not isinstance(session_control, str):
+                    for sc in session_control:
+                        is_correct = True
+                        if isinstance(sc, dict):
+                            for key in sc:
+                                if not isinstance(key, str):
+                                    is_correct = False
+                                    break
+                        else:
+                            is_correct = False
+                        if not is_correct:
+                            raise TypeError(
+                                "Wrong type for parameter 'session_control'. Expecting "
+                                f"a ``str`` or a dict of key | values with ``str`` keys. "
+                                f"Found '{key}' which is of type '{type(key)}'."
+                            )
+                        session_control_loop.append(sc)
+                else:
+                    session_control_loop = [session_control]
+            
+            if session_control_loop and isinstance(session_control_loop[0], dict) and session_control_loop[0] != {}:
                 session_control_loop = [{}] + session_control_loop
-            else:
-                session_control_loop = [""] + session_control_loop
+            elif not session_control_loop:
+                session_control_loop = [""]
+            
             session_control_loop_all = []
             for sc in session_control_loop:
                 if sc not in ({}, ""):
