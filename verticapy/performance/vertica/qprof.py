@@ -1110,12 +1110,16 @@ class QueryProfiler:
                         session_control_loop.append(sc)
                 else:
                     session_control_loop = [session_control]
-            
-            if session_control_loop and isinstance(session_control_loop[0], dict) and session_control_loop[0] != {}:
+
+            if (
+                session_control_loop
+                and isinstance(session_control_loop[0], dict)
+                and session_control_loop[0] != {}
+            ):
                 session_control_loop = [{}] + session_control_loop
             elif not session_control_loop:
                 session_control_loop = [""]
-            
+
             session_control_loop_all = []
             for sc in session_control_loop:
                 if sc not in ({}, ""):
