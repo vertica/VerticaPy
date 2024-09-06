@@ -31,7 +31,7 @@ class TestTree:
         test function for plot_tree
         """
         qprof = QueryProfiler(QPROF_SQL2)
-        tree = PerformanceTree(qprof.get_qplan())
+        tree = PerformanceTree(qprof.get_qplan(print_plan=False))
         res = tree.to_graphviz()
 
         assert "digraph Tree {\n\tgraph" in res and "0 -> 1" in res
@@ -42,7 +42,7 @@ class TestTree:
         test function for plot_tree
         """
         qprof = QueryProfiler(QPROF_SQL2)
-        tree = PerformanceTree(qprof.get_qplan())
+        tree = PerformanceTree(qprof.get_qplan(print_plan=False))
         res = tree.plot_tree()
 
         assert (
