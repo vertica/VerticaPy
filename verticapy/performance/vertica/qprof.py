@@ -2841,6 +2841,7 @@ class QueryProfiler:
             list[str],
         ] = ["exec_time_us", "prod_rows"],
         pic_path: Optional[str] = None,
+        return_tree_obj: bool = False,
         return_graphviz: bool = False,
         return_html: bool = True,
         idx: Union[None, int, tuple] = None,
@@ -2874,6 +2875,8 @@ class QueryProfiler:
             metric_value_op=metric_value_op,
             style=tree_style,
         )
+        if return_tree_obj:
+            return obj
         if return_graphviz:
             return obj.to_graphviz()
         res = obj.plot_tree(pic_path)
@@ -3051,6 +3054,7 @@ class QueryProfiler:
             list[str],
         ] = ["exec_time_us", "prod_rows"],
         pic_path: Optional[str] = None,
+        return_tree_obj: bool = False,
         return_graphviz: bool = False,
         return_html: bool = True,
         idx: Union[None, int, tuple] = None,
@@ -3125,6 +3129,9 @@ class QueryProfiler:
         pic_path: str, optional
             Absolute path to save
             the image of the tree.
+        return_tree_obj: bool, optional
+            If set to ``True``, the
+            ``Tree`` object is returned.
         return_graphviz: bool, optional
             If set to ``True``, the
             ``str`` Graphviz tree is
@@ -3146,21 +3153,15 @@ class QueryProfiler:
             ``dictionary`` used to
             customize the tree.
 
+            - orientation:
+                ``horizontal`` or
+                ``vertical``.
+                Default: ``vertical``
             - two_legend:
                 If set to ``True``
                 and two metrics are
                 used, two legends will
                 be drawn.
-                Default: True
-            - display_legend:
-                If set to ``True``
-                the legend is
-                displayed.
-                Default: True
-            - display_annotations:
-                If set to ``True``
-                the annotations are
-                displayed.
                 Default: True
             - color_low:
                 Color used as the lower
@@ -3230,6 +3231,36 @@ class QueryProfiler:
                 dotted for BROADCAST,
                 dashed for RESEGMENT
                 else solid.
+            - display_tree:
+                If set to ``True``
+                the entire tree is
+                displayed.
+                Default: True
+            - display_legend:
+                If set to ``True``
+                the legend is
+                displayed.
+                Default: True
+            - display_legend1:
+                If set to ``True``
+                the first legend is
+                displayed.
+                Default: True
+            - display_legend2:
+                If set to ``True``
+                the second legend is
+                displayed.
+                Default: True
+            - display_path_transition:
+                If set to ``True``
+                the path transition
+                legend is displayed.
+                Default: True
+            - display_annotations:
+                If set to ``True``
+                the annotations are
+                displayed.
+                Default: True
             - display_operator:
                 If set to ``True`` the
                 PATH ID operator of each
@@ -3271,6 +3302,11 @@ class QueryProfiler:
                           'mem_res_b', 'mem_all_b',
                           'proc_rows', 'prod_rows',
                           'thread_count',]
+            - display_projections_dml:
+                If set to ``True`` and
+                the operation is a DML
+                all the target projections
+                are displayed.
             - donot_display_op_metrics_i:
                 ``dictionary`` of ``list``, each
                 key should represent an operator
@@ -3288,11 +3324,6 @@ class QueryProfiler:
                 temporary relation 8
                 and the main relation.
                 Default: []
-            - display_projections_dml:
-                If set to ``True`` and
-                the operation is a DML
-                all the target projections
-                are displayed.
 
         Returns
         -------
@@ -3354,6 +3385,7 @@ class QueryProfiler:
             show_ancestors=show_ancestors,
             metric=metric,
             pic_path=pic_path,
+            return_tree_obj=return_tree_obj,
             return_graphviz=return_graphviz,
             return_html=return_html,
             idx=idx,
