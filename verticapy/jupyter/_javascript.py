@@ -220,6 +220,9 @@ def clean_data(data: ArrayLike) -> ArrayLike:
                         val = "{:,}".format(val)
                     except:
                         pass
+                if isinstance(val, bool) is False and not isinstance(val, NoneType):
+                    data[i][j] = val
+                    continue
                 if isinstance(val, bool):
                     val = (
                         "<center>&#9989;</center>"
