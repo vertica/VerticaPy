@@ -347,4 +347,8 @@ class ProfileImport:
                 self.logger.info(f"Skipping missing file {expected_file_path}")
                 continue
             pd_dataframe = pd.read_parquet(expected_file_path)
+            if "running_time" in pd_dataframe.columns:
+                pd_dataframe["running_time"] = pd.to_timedelta(
+                    pd_dataframe["running_time"], unit="s"
+                )
             ctable.copy_from_pandas_dataframe(pd_dataframe)

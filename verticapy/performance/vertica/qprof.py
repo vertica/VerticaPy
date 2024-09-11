@@ -2130,7 +2130,9 @@ class QueryProfiler:
                 "statement_id": [tr[1] for tr in self.transactions],
                 "request_label": copy.deepcopy(self.request_labels),
                 "request": copy.deepcopy(self.requests),
-                "qduration": [qd / 1000000 for qd in self.qdurations],
+                "qduration": [
+                    qd / 1000000 if qd is not None else None for qd in self.qdurations
+                ],
                 "start_timestamp": self.start_timestamp,
                 "end_timestamp": self.end_timestamp,
             },
