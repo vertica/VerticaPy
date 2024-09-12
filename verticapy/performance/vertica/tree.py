@@ -303,8 +303,25 @@ class PerformanceTree:
             d["display_operator_edge"] = True
         if "two_legend" not in d:
             d["two_legend"] = True
+        if (
+            "orientation" in d
+            and isinstance(d["orientation"], str)
+            and len(d["orientation"]) > 0
+            and d["orientation"][0] == "h"
+        ):
+            d["orientation"] = False
+        else:
+            d["orientation"] = True
+        if "display_tree" not in d:
+            d["display_tree"] = True
         if "display_legend" not in d:
             d["display_legend"] = True
+        if "display_legend1" not in d:
+            d["display_legend1"] = True
+        if "display_legend2" not in d:
+            d["display_legend2"] = True
+        if "display_path_transition" not in d:
+            d["display_path_transition"] = True
         if "display_annotations" not in d:
             d["display_annotations"] = True
         if "display_proj" not in d:
@@ -1897,6 +1914,8 @@ class PerformanceTree:
         edge_color = self.style["edge_color"]
         edge_style = self.style["edge_style"]
         res = "digraph Tree {\n"
+        if not (self.style["orientation"]):
+            res += '\trankdir="LR";\n'
         res += f'\tgraph [bgcolor="{bgcolor}"]\n'
         if not (self.style["display_operator"]):
             res += (
@@ -1911,38 +1930,43 @@ class PerformanceTree:
 
         # Main Tree
         main_tree = ""
-        if self.style["temp_relation_order"]:
-            TR_tmp = [f"TREL{i}" for i in self.style["temp_relation_order"]] + ["main"]
-            TR_final = []
-            for tr in TR_tmp:
-                if (
-                    not (self.style["temp_relation_access"])
-                    or tr in self.style["temp_relation_access"]
-                ):
-                    TR_final += [tr]
-            tmp_copy = copy.deepcopy(self)
-            tmp_copy.style["display_legend"] = False
-            for tr in TR_final:
-                tmp_copy.style["temp_relation_access"] = [tr]
-                main_tree += tmp_copy._gen_labels() + "\n"
-                main_tree += tmp_copy._gen_links() + "\n"
-        else:
-            main_tree += self._gen_labels() + "\n"
-            main_tree += self._gen_links() + "\n"
+        if self.style["display_tree"]:
+            if self.style["temp_relation_order"]:
+                TR_tmp = [f"TREL{i}" for i in self.style["temp_relation_order"]] + [
+                    "main"
+                ]
+                TR_final = []
+                for tr in TR_tmp:
+                    if (
+                        not (self.style["temp_relation_access"])
+                        or tr in self.style["temp_relation_access"]
+                    ):
+                        TR_final += [tr]
+                tmp_copy = copy.deepcopy(self)
+                tmp_copy.style["display_legend"] = False
+                for tr in TR_final:
+                    tmp_copy.style["temp_relation_access"] = [tr]
+                    main_tree += tmp_copy._gen_labels() + "\n"
+                    main_tree += tmp_copy._gen_links() + "\n"
+            else:
+                main_tree += self._gen_labels() + "\n"
+                main_tree += self._gen_links() + "\n"
 
         # Legend and Annotations
-        if self.style["display_annotations"]:
+        if self.style["display_annotations"] and self.style["display_path_transition"]:
             res += self._gen_legend_annotations() + "\n"
         if (
             len(self.metric) > 1 or not (isinstance(self.metric[0], NoneType))
         ) and self.style["display_legend"]:
             if self.style["two_legend"] and len(self.metric) > 1:
-                if self.metric[0]:
+                if self.metric[0] and self.style["display_legend1"]:
                     res += self._gen_legend(metric=[self.metric[0]], idx=0)
-                if self.metric[1]:
+                if self.metric[1] and self.style["display_legend2"]:
                     res += self._gen_legend(metric=[self.metric[1]], idx=1)
-            else:
+            elif self.style["display_legend1"]:
                 res += self._gen_legend(metric=self.metric)
+            else:
+                res += "\n"
         else:
             res += "\n"
 
