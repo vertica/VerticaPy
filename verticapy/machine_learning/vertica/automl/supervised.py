@@ -402,7 +402,7 @@ class AutoML(VerticaModel):
                         self.parameters["estimator"] += [XGBClassifier(self.model_name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
-                            LinearSVC(self.model_name),
+                            # LinearSVC(self.model_name),
                             RandomForestClassifier(self.model_name),
                         ]
                 if estimator_method == "all":
