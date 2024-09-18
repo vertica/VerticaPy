@@ -33,6 +33,9 @@ if conf.get_import_success("graphviz"):
     import graphviz
     from graphviz import Source
 
+if conf.get_import_success("IPython"):
+    from IPython.display import HTML
+
 
 class PerformanceTree:
     """
@@ -114,6 +117,9 @@ class PerformanceTree:
         List of nodes for which
         a tooltip node will be
         created.
+    pic_path: str, optional
+        Absolute path to save
+        the image of the tree.
     style: dict, optional
         Style of the overall tree.
 
@@ -164,7 +170,7 @@ class PerformanceTree:
         metric_value_op: Optional[dict] = None,
         show_ancestors: bool = True,
         path_id_info: Optional[list] = None,
-        display_operator: bool = True,
+        pic_path: Optional[str] = None,
         style: dict = {},
     ) -> None:
         if len(rows) == 0 or (
@@ -220,6 +226,7 @@ class PerformanceTree:
         self.show_ancestors = show_ancestors
         d = copy.deepcopy(style)
         self._set_style(d)
+        self.pic_path = pic_path
         self.path_id_info = []
         if isinstance(path_id_info, int):
             path_id_info = [path_id_info]
@@ -318,8 +325,28 @@ class PerformanceTree:
             d["display_legend"] = True
         if "display_legend1" not in d:
             d["display_legend1"] = True
+        if "legend1_min" not in d or not (isinstance(d["legend1_min"], int)):
+            d["legend1_min"] = None
+        elif d["legend1_min"] < 0:
+            d["legend1_min"] = 0
+        if "legend1_max" not in d or not (isinstance(d["legend1_max"], int)):
+            d["legend1_max"] = None
+        elif d["legend1_max"] < 0:
+            d["legend1_max"] = 0
+        else:
+            d["legend1_max"] += 1
         if "display_legend2" not in d:
             d["display_legend2"] = True
+        if "legend2_min" not in d or not (isinstance(d["legend2_min"], int)):
+            d["legend2_min"] = None
+        elif d["legend2_min"] < 0:
+            d["legend2_min"] = 0
+        if "legend2_max" not in d or not (isinstance(d["legend2_max"], int)):
+            d["legend2_max"] = None
+        elif d["legend2_max"] < 0:
+            d["legend2_max"] = 0
+        else:
+            d["legend2_max"] += 1
         if "display_path_transition" not in d:
             d["display_path_transition"] = True
         if "display_annotations" not in d:
@@ -361,6 +388,105 @@ class PerformanceTree:
                 "thread_count",
             ]
         self.style = d
+
+    def set_style(self, d: dict) -> None:
+        """
+        Modify the current tree style.
+
+        Parameters
+        ----------
+        d: dict
+            Styling ``dict``.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        self._set_style({**self.style, **d})
+
+    # Get methods (Used to get individual elements)
+
+    def get_tree(self, **tree_style) -> ...:
+        """
+        Returns the Tree without
+        any additional information.
+        """
+        obj = copy.deepcopy(self)
+        obj.set_style(tree_style)
+        obj.style["display_path_transition"] = False
+        obj.style["display_legend"] = False
+        obj.style["display_legend1"] = False
+        obj.style["display_legend2"] = False
+        obj.style["display_tree"] = True
+        return obj.to_html()
+
+    def get_legend1(self, **tree_style) -> ...:
+        """
+        Returns the Legend 1 without
+        any additional information.
+        """
+        obj = copy.deepcopy(self)
+        obj.set_style(tree_style)
+        obj.style["display_path_transition"] = False
+        obj.style["display_legend"] = True
+        obj.style["display_legend1"] = True
+        obj.style["display_legend2"] = False
+        obj.style["display_tree"] = False
+        return obj.to_html()
+
+    def get_legend2(self, **tree_style) -> ...:
+        """
+        Returns the Legend 2 without
+        any additional information.
+        """
+        obj = copy.deepcopy(self)
+        obj.set_style(tree_style)
+        obj.style["display_path_transition"] = False
+        obj.style["display_legend"] = True
+        obj.style["display_legend1"] = False
+        obj.style["display_legend2"] = True
+        obj.style["display_tree"] = False
+        return obj.to_html()
+
+    def get_path_transition(self, **tree_style) -> ...:
+        """
+        Returns the Path Transition
+        legend without any additional
+        information.
+        """
+        obj = copy.deepcopy(self)
+        obj.set_style(tree_style)
+        obj.style["display_path_transition"] = True
+        obj.style["display_legend"] = False
+        obj.style["display_legend1"] = False
+        obj.style["display_legend2"] = False
+        obj.style["display_tree"] = False
+        return obj.to_html()
+
+    def get_metric1_minmax(self) -> tuple:
+        """
+        Returns the metric 1 min and max.
+        """
+        if len(self.metric) == 0:
+            return None
+        all_metrics = [
+            self._get_metric(self.rows[i], self.metric[0], i)
+            for i in range(len(self.rows))
+        ]
+        return min(all_metrics), max(all_metrics)
+
+    def get_metric2_minmax(self) -> tuple:
+        """
+        Returns the metric 2 min and max.
+        """
+        if len(self.metric) < 2:
+            return None
+        all_metrics = [
+            self._get_metric(self.rows[i], self.metric[1], i)
+            for i in range(len(self.rows))
+        ]
+        return min(all_metrics), max(all_metrics)
 
     # Utils
 
@@ -1448,12 +1574,46 @@ class PerformanceTree:
                 for i in range(n)
             ]
             m_min, m_max = min(all_metrics), max(all_metrics)
+            if isinstance(self.style["legend1_min"], int):
+                m_min = math.log(1 + self.style["legend1_min"])
+            if isinstance(self.style["legend1_max"], int):
+                m_max = math.log(1 + self.style["legend1_max"])
+
+            # Legend Custom
+            for idx_1, val_1 in enumerate(all_metrics):
+                if isinstance(self.style["legend1_min"], int) and val_1 < math.log(
+                    1 + self.style["legend1_min"]
+                ):
+                    all_metrics[idx_1] = math.log(1 + self.style["legend1_min"])
+                if isinstance(self.style["legend1_max"], int) and val_1 > math.log(
+                    1 + self.style["legend1_max"]
+                ):
+                    all_metrics[idx_1] = math.log(1 + self.style["legend1_max"])
+
         if len(self.metric) > 1 and not (isinstance(self.metric[1], NoneType)):
             all_metrics_2 = [
                 -1 if me[1][i] == -1 else math.log(1 + max(me[1][i], 0.0))
                 for i in range(n)
             ]
+
             m_min_2, m_max_2 = min(all_metrics_2), max(all_metrics_2)
+            if isinstance(self.style["legend2_min"], int):
+                m_min_2 = math.log(1 + self.style["legend2_min"])
+            if isinstance(self.style["legend2_max"], int):
+                m_max_2 = math.log(1 + self.style["legend2_max"])
+
+            # Legend Custom
+            for idx_2, val_2 in enumerate(all_metrics_2):
+                if isinstance(self.style["legend2_min"], int) and val_2 < math.log(
+                    1 + self.style["legend2_min"]
+                ):
+                    all_metrics_2[idx_2] = math.log(1 + self.style["legend2_min"])
+                if isinstance(self.style["legend2_max"], int) and val_2 > math.log(
+                    1 + self.style["legend2_max"]
+                ):
+                    all_metrics_2[idx_2] = math.log(1 + self.style["legend2_max"])
+
+            # Two legends
             if not (self.style["two_legend"]):
                 m_min = min(m_min, m_min_2)
                 m_min_2 = m_min
@@ -1853,6 +2013,14 @@ class PerformanceTree:
         m_min, m_max = min(all_metrics), max(all_metrics)
         if m_min == m_max:
             m_min = 0
+        if idx == 0 and isinstance(self.style["legend1_min"], int):
+            m_min = math.log(1 + self.style["legend1_min"])
+        if idx == 0 and isinstance(self.style["legend1_max"], int):
+            m_max = math.log(1 + self.style["legend1_max"])
+        if idx == 1 and isinstance(self.style["legend2_min"], int):
+            m_min = math.log(1 + self.style["legend2_min"])
+        if idx == 1 and isinstance(self.style["legend2_max"], int):
+            m_max = math.log(1 + self.style["legend2_max"])
         cats = [0.0, 0.25, 0.5, 0.75, 1.0]
         cats = [
             self._format_number(int(math.exp(x * (m_max - m_min) + m_min) - 1))
@@ -1888,10 +2056,31 @@ class PerformanceTree:
         res += "</table>>]\n\n"
         return res
 
+    def to_html(self) -> ...:
+        """
+        Exports the object
+        to HTML.
+
+        Returns
+        -------
+        HTML
+            ``HTML`` tree representation.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        res = self.plot_tree()
+        res = res.pipe(format="svg").decode("utf-8")
+        if conf.get_import_success("IPython"):
+            return HTML(res)
+        return res
+
     def to_graphviz(self) -> str:
         """
         Exports the object
-        the Graphviz.
+        to Graphviz.
 
         Returns
         -------
@@ -1976,18 +2165,11 @@ class PerformanceTree:
 
     def plot_tree(
         self,
-        pic_path: Optional[str] = None,
     ) -> "Source":
         """
         Draws the tree.
         Requires the graphviz
         module.
-
-        Parameters
-        ----------
-        pic_path: str, optional
-            Absolute path to save
-            the image of the tree.
 
         Returns
         -------
@@ -2009,6 +2191,6 @@ class PerformanceTree:
                 "the module."
             )
         res = graphviz.Source(self.to_graphviz())
-        if pic_path:
-            res.render(filename=pic_path)
+        if self.pic_path:
+            res.render(filename=self.pic_path)
         return res

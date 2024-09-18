@@ -46,9 +46,6 @@ from verticapy.sql.dtypes import get_data_types
 if TYPE_CHECKING and conf.get_import_success("graphviz"):
     from graphviz import Source
 
-if conf.get_import_success("IPython"):
-    from IPython.display import HTML
-
 
 class QueryProfiler:
     """
@@ -2876,17 +2873,15 @@ class QueryProfiler:
             metric_value=metric_value,
             metric_value_op=metric_value_op,
             style=tree_style,
+            pic_path=pic_path,
         )
         if return_tree_obj:
             return obj
         if return_graphviz:
             return obj.to_graphviz()
-        res = obj.plot_tree(pic_path)
         if return_html:
-            res = res.pipe(format="svg").decode("utf-8")
-            if conf.get_import_success("IPython"):
-                return HTML(res)
-        return res
+            return obj.to_html()
+        return obj.plot_tree()
 
     # Main
 
@@ -3248,11 +3243,19 @@ class QueryProfiler:
                 the first legend is
                 displayed.
                 Default: True
+            - legend1_min:
+                Legend 1 minimum.
+            - legend1_max:
+                Legend 1 maximum.
             - display_legend2:
                 If set to ``True``
                 the second legend is
                 displayed.
                 Default: True
+            - legend2_min:
+                Legend 2 minimum.
+            - legend2_max:
+                Legend 2 maximum.
             - display_path_transition:
                 If set to ``True``
                 the path transition
