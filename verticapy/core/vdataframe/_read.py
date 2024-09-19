@@ -139,11 +139,15 @@ class vDFRead(vDFUtils):
             conf.set_option("sql_on", False)
             try:
                 res = TableSample().read_sql(
-                    f"{query} LIMIT {limit}", _clean_query=self._vars["clean_query"]
+                    f"{query} LIMIT {limit}",
+                    _clean_query=self._vars["clean_query"],
+                    _formats=self._get_all_formats(),
                 )
             except QueryError:
                 res = TableSample().read_sql(
-                    query, _clean_query=self._vars["clean_query"]
+                    query,
+                    _clean_query=self._vars["clean_query"],
+                    _formats=self._get_all_formats(),
                 )
             finally:
                 conf.set_option("sql_on", sql_on_init)

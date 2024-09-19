@@ -459,6 +459,7 @@ class vDCUtils:
         ----------
         how: str, optional
             How to format the string.
+            Use '-' for no formatting.
         """
         if (isinstance(how, str) and len(how) == 1) or isinstance(how, NoneType):
             self._format = how
