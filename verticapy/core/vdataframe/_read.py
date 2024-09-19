@@ -1050,7 +1050,7 @@ class vDCRead(vDCUtils):
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
             _clean_query=self._parent._vars["clean_query"],
-            _formats=self._get_all_formats(),
+            _formats=self._parent._get_all_formats(),
         )
         tail.count = self._parent.shape()[0]
         tail.offset = offset
@@ -1144,7 +1144,7 @@ class vDCRead(vDCUtils):
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
             _clean_query=self._parent._vars["clean_query"],
-            _formats=self._get_all_formats(),
+            _formats=self._parent._get_all_formats(),
         )
 
     @save_verticapy_logs
@@ -1232,7 +1232,7 @@ class vDCRead(vDCUtils):
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
             _clean_query=self._parent._vars["clean_query"],
-            _formats=self._get_all_formats(),
+            _formats=self._parent._get_all_formats(),
         )
 
     def tail(self, limit: int = 5) -> TableSample:
