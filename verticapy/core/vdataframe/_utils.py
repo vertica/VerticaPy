@@ -18,6 +18,7 @@ import copy
 from abc import abstractmethod
 from typing import Optional, Union
 
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._typing import NoneType, SQLExpression
 from verticapy.errors import MissingColumn
@@ -425,10 +426,10 @@ class vDFUtils(PlottingUtils):
                 return True
         return False
 
-    def _get_all_formats(self):
+    def _get_all_formats(self) -> list[Optional[str]]:
         """
         Returns all the `vDataColumn``
-        format attribute.
+        format attributes.
         """
         columns = self.get_columns()
         res = []
@@ -451,8 +452,8 @@ class vDCUtils:
     def format(self, how: Optional[str] = ","):
         """
         This method can be used to format
-        the ``vDataColumn`` when displaying
-        it.
+        the ``vDataColumn`` whenever you
+        need to displaying it.
 
         Parameters
         ----------
