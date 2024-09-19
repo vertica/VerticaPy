@@ -771,10 +771,7 @@ class QueryProfilerComparison:
 
         # Capture and display the trees inside the Output widgets
         with output_tree1:
-            self.qprof1.get_qplan_tree(
-                # hide_settings=True,
-                return_tree=True
-            )
+            self.qprof1.get_qplan_tree(hide_settings=True)
         with output_tree2:
             self.qprof2.get_qplan_tree(hide_settings=True)
 
