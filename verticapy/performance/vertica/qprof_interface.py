@@ -746,65 +746,87 @@ class QueryProfilerInterface(QueryProfilerStats):
 
 
 class QueryProfilerComparison:
+    """
+    Initializes a QueryProfilerComparison object with two QueryProfilerInterface instances for side-by-side comparison.
+
+    Parameters:
+    qprof1 (QueryProfilerInterface): The first QueryProfilerInterface instance for comparison.
+    qprof2 (QueryProfilerInterface): The second QueryProfilerInterface instance for comparison.
+    """
+
     def __init__(self, qprof1, qprof2):
         self.qprof1 = qprof1
         self.qprof2 = qprof2
 
-        # Create the side-by-side view of the query plan trees
-        self.trees_view = self._create_tree_view()
-
-        # Create the side-by-side view of the accordions (controls)
-        self.controls = self._create_controls()
-
-        # Create the side-by-side view of the query information
         self.query_info = self._create_query_info()
 
-        # Combine everything into a single UI
-        self.side_by_side_ui = widgets.VBox([self.trees_view, self.controls])
-
-    def _create_tree_view(self):
-        # Create Output widgets for each tree and set their layout
-        output_tree1 = widgets.Output()
-        output_tree1.layout = widgets.Layout(width="50%", border="1px solid black")
-        output_tree2 = widgets.Output()
-        output_tree2.layout = widgets.Layout(width="50%", border="1px solid black")
-
-        # Capture and display the trees inside the Output widgets
-        with output_tree1:
-            self.qprof1.get_qplan_tree(hide_settings=True)
-        with output_tree2:
-            self.qprof2.get_qplan_tree(hide_settings=True)
-
-        # Return an HBox containing the two trees side by side
-        return widgets.HBox([output_tree1, output_tree2])
-
-    def _create_controls(self):
-        # Initialize the accordions but do not display
+        # Initial update of the trees
         nooutput = widgets.Output()
         with nooutput:
             self.qprof1.get_qplan_tree()
             self.qprof2.get_qplan_tree()
-        # Collapse the accordions for qprof1 and qprof2 and set their width
+
+        self.controls = self._create_controls()
+        self.side_by_side_ui = widgets.VBox([self.query_info, self.controls])
+
+    def _create_controls(self):
+        def create_interactive_controls(qprof):
+            controls = {
+                "index": qprof.query_select_dropdown,
+                "metric1": qprof.accordions.children[0].children[0],
+                "metric2": qprof.accordions.children[0].children[1],
+                "display_tooltip_agg_metrics": qprof.accordions.children[0]
+                .children[3]
+                .children[0],
+                "display_tooltip_op_metrics": qprof.accordions.children[0]
+                .children[3]
+                .children[1],
+                "display_tooltip_descriptors": qprof.accordions.children[0]
+                .children[3]
+                .children[2],
+                "path_id": qprof.pathid_dropdown.get_child(),
+                "apply_tree_clicked": qprof.apply_tree,
+                "temp_display": qprof.accordions.children[2].children[0],
+                "projection_display": qprof.accordions.children[2].children[1],
+            }
+            return widgets.interactive_output(qprof.update_qplan_tree, controls)
+
         q1_control = self.qprof1.accordions
         q1_control.selected_index = None
         q1_control.layout.width = "50%"
+        q1_interactive = create_interactive_controls(self.qprof1)
+        q1_interactive = widgets.HBox(
+            [q1_interactive],
+            layout=widgets.Layout(width="50%", border="1px solid black"),
+        )
 
         q2_control = self.qprof2.accordions
         q2_control.selected_index = None
         q2_control.layout.width = "50%"
+        q2_interactive = create_interactive_controls(self.qprof2)
+        q2_interactive = widgets.HBox(
+            [q2_interactive],
+            layout=widgets.Layout(width="50%", border="1px solid black"),
+        )
 
-        # Return an HBox containing the two accordions side by side
-        return widgets.HBox([q1_control, q2_control])
+        return widgets.VBox(
+            [
+                widgets.HBox([q1_control, q2_control]),
+                widgets.HBox([q1_interactive, q2_interactive]),
+            ]
+        )
 
     def _create_query_info(self):
         # Get and set the layout for the query display info for both qprof1 and qprof2
         q1_info = self.qprof1.query_display_info
         q1_info.layout.display = "block"
         q1_info.layout.width = "50%"
+        q1_info.layout.border = "1px solid black"
 
         q2_info = self.qprof2.query_display_info
         q2_info.layout.display = "block"
         q2_info.layout.width = "50%"
+        q2_info.layout.border = "1px solid black"
 
         # Return an HBox containing the query display information side by side
         return widgets.HBox([q1_info, q2_info])
