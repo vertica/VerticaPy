@@ -36,7 +36,7 @@ from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.core.vdataframe._utils import vDFUtils
+from verticapy.core.vdataframe._utils import vDFUtils, vDCUtils
 
 if conf.get_import_success("IPython"):
     from IPython.display import HTML, display
@@ -442,6 +442,7 @@ class vDFRead(vDFUtils):
             "sql_push_ext": self._vars["sql_push_ext"],
             "symbol": self._vars["symbol"],
             "_clean_query": self._vars["clean_query"],
+            "_formats": self._get_all_formats(),
         }
         if self._vars["has_dpnames"]:
             kwargs[
@@ -759,16 +760,7 @@ class vDFRead(vDFUtils):
         return create_new_vdf(query)
 
 
-class vDCRead:
-    def __init__(self):
-        """Must be overridden in final class"""
-        self._parent = create_new_vdf(_empty=True)
-        self._alias = ""
-        self._transf = []
-        self._catalog = {}
-        self._init_transf = ""
-        self._init = False
-
+class vDCRead(vDCUtils):
     def __getitem__(self, index) -> Any:
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
@@ -1054,6 +1046,7 @@ class vDCRead:
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
             _clean_query=self._parent._vars["clean_query"],
+            _formats=self._get_all_formats(),
         )
         tail.count = self._parent.shape()[0]
         tail.offset = offset
@@ -1147,6 +1140,7 @@ class vDCRead:
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
             _clean_query=self._parent._vars["clean_query"],
+            _formats=self._get_all_formats(),
         )
 
     @save_verticapy_logs
@@ -1234,6 +1228,7 @@ class vDCRead:
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
             _clean_query=self._parent._vars["clean_query"],
+            _formats=self._get_all_formats(),
         )
 
     def tail(self, limit: int = 5) -> TableSample:

@@ -34,6 +34,7 @@ def print_table(
     return_html: bool = False,
     dtype: Optional[dict] = None,
     percent: Optional[dict] = None,
+    col_formats: Optional[list[str]] = None,
 ) -> str:
     """
     Returns the HTML code or string used to display the final
@@ -231,6 +232,18 @@ def print_table(
                     try:
                         float(val)
                         val = "{:,}".format(val)
+                    except:
+                        pass
+                if (
+                    isinstance(col_formats, list)
+                    and len(col_formats) == m - 1
+                    and j > 0
+                    and isinstance(col_formats[j - 1], str)
+                    and len(col_formats[j - 1]) == 1
+                ):
+                    try:
+                        format_col = "{:" + col_formats[j - 1] + "}"
+                        val = format_col.format(val)
                     except:
                         pass
                 if (j == 0) or (i == 0):

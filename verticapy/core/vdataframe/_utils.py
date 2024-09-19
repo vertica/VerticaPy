@@ -424,3 +424,40 @@ class vDFUtils(PlottingUtils):
             if column == quote_ident(col).lower():
                 return True
         return False
+
+    def _get_all_formats(self):
+        """
+        Returns all the `vDataColumn``
+        format attribute.
+        """
+        columns = self.get_columns()
+        res = []
+        for col in columns:
+            res += [self[col]._format]
+        return res
+
+
+class vDCUtils:
+    def __init__(self):
+        """Must be overridden in final class"""
+        self._parent = create_new_vdf(_empty=True)
+        self._alias = ""
+        self._transf = []
+        self._catalog = {}
+        self._init_transf = ""
+        self._init = False
+        self._format = None
+
+    def format(self, how: Optional[str] = ","):
+        """
+        This method can be used to format
+        the ``vDataColumn`` when displaying
+        it.
+
+        Parameters
+        ----------
+        how: str, optional
+            How to format the string.
+        """
+        if (isinstance(how, str) and len(how) == 1) or isinstance(how, NoneType):
+            self._format = how
