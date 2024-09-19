@@ -1076,6 +1076,7 @@ class QueryProfiler:
                 )
 
         # LOOKING AT A POSSIBLE QUERY TO EXECUTE.
+        session_control_init = copy.deepcopy(session_control)
         if isinstance(session_control, list) and len(session_control) > 0:
             is_str = True
             for session in session_control:
@@ -1133,6 +1134,14 @@ class QueryProfiler:
                 and len(session_control_loop) > 1
                 and session_control_loop[0] in ("", {})
                 and run_only_session
+                and (
+                    isinstance(session_control_init, (str, dict))
+                    or (
+                        isinstance(session_control_init, (tuple, list))
+                        and len(session_control_init) > 0
+                        and session_control_init[0] not in ("", {})
+                    )
+                )
             ):
                 session_control_loop = session_control_loop[1:]
 
