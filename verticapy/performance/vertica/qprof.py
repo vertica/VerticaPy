@@ -186,6 +186,16 @@ class QueryProfiler:
 
             This parameter is used only when
             ``check_tables is True``.
+    run_only_session: bool, optional
+        If set to ``True``, the queries will
+        not be run using the current session
+        parameters. They will be altered using
+        ``session_control`` parameter first.
+
+        .. note::
+
+            This parameter is used only when
+            ``session_control is not None``.
 
     Attributes
     ----------
@@ -970,6 +980,7 @@ class QueryProfiler:
         ignore_operators_check: bool = True,
         iterchecks: bool = False,
         print_info: bool = True,
+        run_only_session: bool = True,
     ) -> None:
         # TRANSACTIONS ARE STORED AS A LIST OF (tr_id, st_id) AND
         # AN INDEX USED TO NAVIGATE THROUGH THE DIFFERENT tuples.
@@ -1117,7 +1128,16 @@ class QueryProfiler:
             elif not session_control_loop:
                 session_control_loop = [""]
 
+            if (
+                session_control
+                and len(session_control_loop) > 1
+                and session_control_loop[0] in ("", {})
+                and run_only_session
+            ):
+                session_control_loop = session_control_loop[1:]
+
             session_control_loop_all = []
+
             for sc in session_control_loop:
                 if sc not in ({}, ""):
                     if isinstance(sc, dict):
