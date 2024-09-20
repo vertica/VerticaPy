@@ -34,6 +34,7 @@ def print_table(
     return_html: bool = False,
     dtype: Optional[dict] = None,
     percent: Optional[dict] = None,
+    col_formats: Optional[list[str]] = None,
 ) -> str:
     """
     Returns the HTML code or string used to display the final
@@ -227,10 +228,23 @@ def print_table(
                 html_table += (
                     f"min-width: {cell_width[j]}px; " f'max-width: {cell_width[j]}px;"'
                 )
-                if conf.get_option("insert_comma_numbers"):
+                is_f = (
+                    isinstance(col_formats, list)
+                    and len(col_formats) == m - 1
+                    and j > 0
+                    and isinstance(col_formats[j - 1], str)
+                    and len(col_formats[j - 1]) == 1
+                )
+                if conf.get_option("insert_comma_numbers") and not (is_f):
                     try:
                         float(val)
                         val = "{:,}".format(val)
+                    except:
+                        pass
+                if is_f and col_formats[j - 1] != "-":
+                    try:
+                        format_col = "{:" + col_formats[j - 1] + "}"
+                        val = format_col.format(val)
                     except:
                         pass
                 if (j == 0) or (i == 0):

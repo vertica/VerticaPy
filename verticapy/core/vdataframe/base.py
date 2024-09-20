@@ -931,3 +931,4 @@ class vDataColumn(vDCPlot, StringSQL):
         if self._init_transf == "___VERTICAPY_UNDEFINED___":
             self._init_transf = self._alias
         self._init = True
+        self._format = None

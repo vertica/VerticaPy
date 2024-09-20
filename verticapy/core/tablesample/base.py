@@ -80,6 +80,8 @@ class TableSample:
         display the percent bars)
     max_columns: int, optional
         Maximum number of columns to display.
+    col_formats: list, optional
+        How to format the different columns.
 
     Attributes
     ----------
@@ -163,6 +165,7 @@ class TableSample:
         offset: int = 0,
         percent: Optional[dict] = None,
         max_columns: int = -1,
+        col_formats: Optional[list[str]] = None,
     ) -> None:
         self.values = format_type(values, dtype=dict)
         self.dtype = format_type(dtype, dtype=dict)
@@ -170,6 +173,7 @@ class TableSample:
         self.offset = offset
         self.percent = format_type(percent, dtype=dict)
         self.max_columns = max_columns
+        self.col_formats = col_formats
         for column in self.values:
             if column not in self.dtype:
                 self.dtype[column] = "undefined"
@@ -214,6 +218,7 @@ class TableSample:
             return_html=False,
             dtype=dtype,
             percent=self.percent,
+            col_formats=self.col_formats,
         )
         start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
         if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
@@ -283,6 +288,7 @@ class TableSample:
                 return_html=True,
                 dtype=dtype,
                 percent=percent,
+                col_formats=self.col_formats,
             )
         if conf.get_option("footer_on"):
             formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
@@ -975,6 +981,7 @@ class TableSample:
         sql_push_ext: bool = False,
         symbol: str = "$",
         _clean_query: bool = True,
+        _formats: Optional[list[str]] = None,
     ) -> "TableSample":
         """
         Returns the result of a SQL query
@@ -1097,6 +1104,7 @@ class TableSample:
             values=values,
             dtype=dtype,
             max_columns=max_columns,
+            col_formats=_formats,
         ).decimal_to_float()
 
     def shape(self) -> tuple[int, int]:
