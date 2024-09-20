@@ -449,7 +449,9 @@ class PerformanceTree:
         obj.style["display_tree"] = False
         return obj.to_html()
 
-    def get_path_transition(self, **tree_style) -> ...:
+    def get_path_transition(
+        self, rows_path_transition: Optional[list] = None, **tree_style
+    ) -> ...:
         """
         Returns the Path Transition
         legend without any additional
@@ -462,6 +464,8 @@ class PerformanceTree:
         obj.style["display_legend1"] = False
         obj.style["display_legend2"] = False
         obj.style["display_tree"] = False
+        if isinstance(rows_path_transition, list):
+            obj.rows_path_transition = rows_path_transition
         return obj.to_html()
 
     def get_metric1_minmax(self) -> tuple:
@@ -469,7 +473,7 @@ class PerformanceTree:
         Returns the metric 1 min and max.
         """
         if len(self.metric) == 0:
-            return None
+            return None, None
         all_metrics = [
             self._get_metric(self.rows[i], self.metric[0], i)
             for i in range(len(self.rows))
@@ -481,7 +485,7 @@ class PerformanceTree:
         Returns the metric 2 min and max.
         """
         if len(self.metric) < 2:
-            return None
+            return None, None
         all_metrics = [
             self._get_metric(self.rows[i], self.metric[1], i)
             for i in range(len(self.rows))
@@ -1901,14 +1905,37 @@ class PerformanceTree:
                 )
         return res
 
-    def _gen_legend_annotations(self):
-        """ """
+    def _gen_legend_annotations(self, rows: Optional[list] = None):
+        """
+        Generates the Path
+        Transitions Legend.
+
+        Parameters
+        ----------
+        rows: list, optional
+            ``list`` of ``str`` used
+            to create the final legend.
+
+        Returns
+        -------
+        str
+            Path Transitions Legend.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
         default_params = get_default_graphviz_options()
         bgcolor = default_params["legend_bgcolor"]
         fontcolor = default_params["legend_fontcolor"]
         fillcolor = default_params["fillcolor"]
         all_legend = {}
-        for row in self.rows:
+        if hasattr(self, "rows_path_transition"):
+            rows = self.rows_path_transition
+        elif not (rows):
+            rows = self.rows
+        for row in rows:
             row_tmp = row.upper()
             if "OUTER ->" in row_tmp:
                 all_legend[

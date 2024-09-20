@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import re
 from typing import Union, Set
 
+from verticapy._typing import NoneType
 from verticapy._utils._sql._sys import _executeSQL
 
 
@@ -25,6 +26,91 @@ class QprofUtility:
     A class that contains a collection
     of static methods for QPROF.
     """
+
+    # Tree Comparaison Functions
+    @staticmethod
+    def get_tree_elements(qprof1: ..., qprof2: ..., **qplan_tree_params) -> ...:
+        """
+        For 2 ``QueryProfiler`` objects. This
+        Function will return the two trees and
+        the unified legends.
+
+        Parameters
+        ----------
+        qprof1: QueryProfiler
+            ``QueryProfiler`` object.
+        qprof2: QueryProfiler
+            ``QueryProfiler`` object.
+        **qplan_tree_params
+            Parameters to pass to the
+            ``get_qplan_tree`` method.
+
+        Returns
+        -------
+        dict
+            ``dict`` of ``Tree`` objects.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.qprof_utility`
+        for more information.
+        """
+
+        # Trees
+        tree1 = qprof1.get_qplan_tree(return_tree_obj=True, **qplan_tree_params)
+        tree2 = qprof2.get_qplan_tree(return_tree_obj=True, **qplan_tree_params)
+        tree1_html = tree1.get_tree()
+        tree2_html = tree2.get_tree()
+
+        # Unifying the legends
+        min1, max1 = tree1.get_metric1_minmax()
+        min2, max2 = tree2.get_metric1_minmax()
+        if isinstance(min2, NoneType):
+            min2 = min1
+        if isinstance(max2, NoneType):
+            max2 = max1
+        if not (isinstance(max2, NoneType)) and not (isinstance(min2, NoneType)):
+            minf1, maxf1 = min(min1, min2), max(max1, max2)
+        else:
+            minf1, maxf1 = 0, 0
+        min1, max1 = tree1.get_metric2_minmax()
+        min2, max2 = tree2.get_metric2_minmax()
+        if isinstance(min2, NoneType):
+            min2 = min1
+        if isinstance(max2, NoneType):
+            max2 = max1
+        if not (isinstance(max2, NoneType)) and not (isinstance(min2, NoneType)):
+            minf2, maxf2 = min(min1, min2), max(max1, max2)
+        else:
+            minf2, maxf2 = 0, 0
+
+        # Handling Missing Values
+        hasnull_1 = tree1.style["hasnull_0"] or tree2.style["hasnull_0"]
+        hasnull_2 = tree1.style["hasnull_1"] or tree2.style["hasnull_1"]
+
+        # Final Legends
+        legend1_html = tree1.get_legend1(
+            legend1_min=minf1, legend1_max=maxf1, hasnull_0=hasnull_1
+        )
+        legend2_html = tree1.get_legend2(
+            legend2_min=minf2, legend2_max=maxf2, hasnull_1=hasnull_2
+        )
+
+        # Path Transition
+        path_transition = tree1.get_path_transition(
+            rows_path_transition=tree1.rows + tree2.rows
+        )
+
+        return {
+            "tree1": tree1_html,
+            "tree2": tree2_html,
+            "legend1": legend1_html,
+            "legend2": legend2_html,
+            "path_transition": path_transition,
+            "initial_objects": [tree1, tree2],
+        }
+
+    # Utils
 
     @staticmethod
     def _get_label(
