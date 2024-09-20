@@ -72,6 +72,8 @@ class QueryProfilerInterface(QueryProfilerStats):
             value=False, description="Qsteps switch", disabled=False, indent=False
         )
 
+        self.accordions = None
+
         # buttons to navigate through transactions
         next_button = widgets.Button(description="Next Query")
         prev_button = widgets.Button(description="Previous Query")
@@ -153,7 +155,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             value=f"<h1><b>Query Execution Steps - [query_idx: {self.index_widget.value}]</b></h1>"
         )
 
-    def get_qplan_tree(self, use_javascript=True, **style_kwargs):
+    def get_qplan_tree(self, use_javascript=True, hide_settings=False, **style_kwargs):
         """
         Draws an interactive Query plan tree.
 
@@ -270,10 +272,10 @@ class QueryProfilerInterface(QueryProfilerStats):
             "Query text": self.query_display,
         }
         query_text_index = list(accordion_items.keys()).index("Query text")
-        accordions = Visualizer._accordion(
+        self.accordions = Visualizer._accordion(
             list(accordion_items.values()), accordion_items.keys()
         )
-        accordions.selected_index = query_text_index
+        self.accordions.selected_index = query_text_index
         header_box = widgets.HBox(
             [self.qpt_header], layout={"justify_content": "center"}
         )
@@ -292,14 +294,21 @@ class QueryProfilerInterface(QueryProfilerStats):
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
         )
+        if hide_settings:
+            self.accordions.layout.display = "none"
+            self.transaction_buttons.layout.display = "none"
+            self.query_select_dropdown.layout.display = "none"
+            self.query_display_info.layout.display = "none"
         settings = [
-            accordions,
+            self.accordions,
             self.transaction_buttons,
             self.query_select_dropdown,
             self.query_display_info,
         ]
         viz = Visualizer(
-            settings_wids=settings, graph_wids=[header_box, interactive_output]
+            settings_wids=settings,
+            graph_wids=[header_box, interactive_output],
+            orientation="v" if hide_settings else "h",
         )
         viz.display()
 
@@ -533,7 +542,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             list(accordion_items.values()), accordion_items.keys()
         )
         qsteps_settings = [
-            accordions,
+            self.accordions,
             self.transaction_buttons,
         ]
 
@@ -734,3 +743,94 @@ class QueryProfilerInterface(QueryProfilerStats):
             20: self.get_rp_status,
             21: self.get_cluster_config,
         }
+
+
+class QueryProfilerComparison:
+    """
+    Initializes a QueryProfilerComparison object with two QueryProfilerInterface instances for side-by-side comparison.
+
+    Parameters:
+    qprof1 (QueryProfilerInterface): The first QueryProfilerInterface instance for comparison.
+    qprof2 (QueryProfilerInterface): The second QueryProfilerInterface instance for comparison.
+    """
+
+    def __init__(self, qprof1, qprof2):
+        self.qprof1 = qprof1
+        self.qprof2 = qprof2
+
+        self.query_info = self._create_query_info()
+
+        # Initial update of the trees
+        nooutput = widgets.Output()
+        with nooutput:
+            self.qprof1.get_qplan_tree()
+            self.qprof2.get_qplan_tree()
+
+        self.controls = self._create_controls()
+        self.side_by_side_ui = widgets.VBox([self.query_info, self.controls])
+
+    def _create_controls(self):
+        def create_interactive_controls(qprof):
+            controls = {
+                "index": qprof.query_select_dropdown,
+                "metric1": qprof.accordions.children[0].children[0],
+                "metric2": qprof.accordions.children[0].children[1],
+                "display_tooltip_agg_metrics": qprof.accordions.children[0]
+                .children[3]
+                .children[0],
+                "display_tooltip_op_metrics": qprof.accordions.children[0]
+                .children[3]
+                .children[1],
+                "display_tooltip_descriptors": qprof.accordions.children[0]
+                .children[3]
+                .children[2],
+                "path_id": qprof.pathid_dropdown.get_child(),
+                "apply_tree_clicked": qprof.apply_tree,
+                "temp_display": qprof.accordions.children[2].children[0],
+                "projection_display": qprof.accordions.children[2].children[1],
+            }
+            return widgets.interactive_output(qprof.update_qplan_tree, controls)
+
+        q1_control = self.qprof1.accordions
+        q1_control.selected_index = None
+        q1_control.layout.width = "50%"
+        q1_interactive = create_interactive_controls(self.qprof1)
+        q1_interactive = widgets.HBox(
+            [q1_interactive],
+            layout=widgets.Layout(width="50%", border="1px solid black"),
+        )
+
+        q2_control = self.qprof2.accordions
+        q2_control.selected_index = None
+        q2_control.layout.width = "50%"
+        q2_interactive = create_interactive_controls(self.qprof2)
+        q2_interactive = widgets.HBox(
+            [q2_interactive],
+            layout=widgets.Layout(width="50%", border="1px solid black"),
+        )
+
+        return widgets.VBox(
+            [
+                widgets.HBox([q1_control, q2_control]),
+                widgets.HBox([q1_interactive, q2_interactive]),
+            ]
+        )
+
+    def _create_query_info(self):
+        # Get and set the layout for the query display info for both qprof1 and qprof2
+        q1_info = self.qprof1.query_display_info
+        q1_info.layout.display = "block"
+        q1_info.layout.width = "50%"
+        q1_info.layout.border = "1px solid black"
+
+        q2_info = self.qprof2.query_display_info
+        q2_info.layout.display = "block"
+        q2_info.layout.width = "50%"
+        q2_info.layout.border = "1px solid black"
+
+        # Return an HBox containing the query display information side by side
+        return widgets.HBox([q1_info, q2_info])
+
+    def display(self):
+        # Display the final side-by-side UI
+        display(self.side_by_side_ui)

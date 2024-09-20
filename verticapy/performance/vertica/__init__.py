@@ -15,5 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.performance.vertica.qprof import QueryProfiler
-from verticapy.performance.vertica.qprof_interface import QueryProfilerInterface
+from verticapy.performance.vertica.qprof_interface import (
+    QueryProfilerInterface,
+    QueryProfilerComparison,
+)
 from verticapy.performance.vertica.qprof_stats_tests import QueryProfilerStats
