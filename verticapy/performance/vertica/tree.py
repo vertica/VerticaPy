@@ -347,6 +347,10 @@ class PerformanceTree:
             d["legend2_max"] = 0
         else:
             d["legend2_max"] += 1
+        if "threshold_metric1" not in d:
+            d["threshold_metric1"] = None
+        if "threshold_metric2" not in d:
+            d["threshold_metric2"] = None
         if "display_path_transition" not in d:
             d["display_path_transition"] = True
         if "display_annotations" not in d:
@@ -1458,6 +1462,7 @@ class PerformanceTree:
         label: Union[int, str],
         colors: list,
         operator: Optional[str] = None,
+        legend_metrics: Optional[list] = None,
     ) -> str:
         """
         Generates the Graphviz
@@ -1485,16 +1490,59 @@ class PerformanceTree:
         See :py:meth:`~verticapy.performance.vertica.tree`
         for more information.
         """
-        if isinstance(label, int) and label < 0:
-            label = self._get_special_operator(operator)
-        if not (self.style["display_operator"]) and len(colors) == 1:
-            return f'"{label}", style="filled", fillcolor="{colors[0]}"'
+
+        # Init.
         fontcolor = self.style["fontcolor"]
         fontsize = self.style["fontsize"]
         fillcolor = self.style["fillcolor"]
         width = self.style["width"] * 30
         height = self.style["height"] * 60
         operator_icon = self._get_operator_icon(operator)
+
+        # Getting the label.
+        if isinstance(label, int) and label < 0:
+            label = self._get_special_operator(operator)
+
+        # Metrics Init.
+        display_path_id = True
+
+        if isinstance(legend_metrics, list) and len(legend_metrics) > 0:
+            metric_1 = legend_metrics[0]
+        else:
+            metric_1 = None
+        if isinstance(legend_metrics, list) and len(legend_metrics) > 1:
+            metric_2 = legend_metrics[1]
+        else:
+            metric_2 = None
+
+        metric_1_t = self.style["threshold_metric1"]
+        metric_2_t = self.style["threshold_metric2"]
+
+        if not (isinstance(metric_1_t, NoneType)):
+            if isinstance(metric_1, NoneType) or metric_1 < metric_1_t:
+                display_path_id = False
+
+        if not (isinstance(metric_2_t, NoneType)):
+            if isinstance(metric_2, NoneType) or metric_2 < metric_2_t:
+                display_path_id = False
+
+        # Special Display.
+        if not (display_path_id):
+            return (
+                '<<TABLE border="1" cellborder="1" cellspacing="0" '
+                f'cellpadding="0"><TR><TD WIDTH="{width * 2}" '
+                f'HEIGHT="{height * 1}" BGCOLOR="{fillcolor}">'
+                f'<FONT POINT-SIZE="{fontsize}" COLOR="{fontcolor}">'
+                f"{label}</FONT></TD></TR></TABLE>>",
+                display_path_id,
+            )
+        if not (self.style["display_operator"]) and len(colors) == 1:
+            return (
+                f'"{label}", style="filled", fillcolor="{colors[0]}"',
+                display_path_id,
+            )
+
+        # Main.
         if len(colors) > 1:
             second_color = (
                 f'<TD WIDTH="{width}" HEIGHT="{height}" '
@@ -1545,7 +1593,7 @@ class PerformanceTree:
             f'COLOR="{fontcolor}">{label}</FONT></TD>{operator_icon}{second_color}'
             f"</TR>{proj}</TABLE>>"
         )
-        return label
+        return label, display_path_id
 
     def _gen_labels(self) -> str:
         """
@@ -1710,6 +1758,7 @@ class PerformanceTree:
                 tooltip_metrics += me_description
 
             colors = [color]
+            legend_metrics = [self._get_metric(self.rows[i], self.metric[0], i)]
             if len(self.metric) > 1:
                 if not (isinstance(self.metric[1], NoneType)):
                     if all_metrics_2[i] >= 0:
@@ -1723,10 +1772,12 @@ class PerformanceTree:
                         self.style["hasnull_1"] = True
                 else:
                     colors += [self.style["fillcolor"]]
-            label = self._gen_label_table(
+                legend_metrics += [self._get_metric(self.rows[i], self.metric[1], i)]
+            label, display_path_id = self._gen_label_table(
                 label,
                 colors,
                 operator=row,
+                legend_metrics=legend_metrics,
             )
 
             if tree_id in links and display_tr:
@@ -1739,6 +1790,8 @@ class PerformanceTree:
                 if ns_icon != "":
                     ns_icon += " "
                 ns_icon += QprofUtility._get_execute_on(tooltip)
+                if not (display_path_id):
+                    ns_icon = ""
                 # Final Tooltip.
                 description = "\n\nDescriptors\n------------\n" + "\n".join(
                     tooltip.split("\n")[1:]
@@ -1957,6 +2010,9 @@ class PerformanceTree:
                 all_legend[
                     "BROADCAST"
                 ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">B</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
+                all_legend[
+                    "..."
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">...</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">BROADCAST</FONT></td></tr>'
             if "GLOBAL RESEGMENT" in row_tmp and "LOCAL RESEGMENT" in row_tmp:
                 all_legend[
                     "GLR"
@@ -1973,6 +2029,10 @@ class PerformanceTree:
                 all_legend[
                     "RESEGMENT"
                 ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">R</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
+            if "RESEGMENT" in row_tmp and "BROADCAST" not in row_tmp:
+                all_legend[
+                    "---"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">---</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT | NO BROADCAST</FONT></td></tr>'
             if "HASH" in row_tmp:
                 all_legend[
                     "HASH"
@@ -1998,14 +2058,51 @@ class PerformanceTree:
                     "ALL NODES"
                 ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">🌐</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">ALL NODES</FONT></td></tr>'
 
+        trans_sort = [
+            "CROSS JOIN",
+            "INNER",
+            "OUTER",
+            "MERGE",
+            "FILTER",
+            "PIPELINED",
+            "BROADCAST",
+            "GLR",
+            "GR",
+            "LR",
+            "RESEGMENT",
+        ]
+        trans_links_sort = [
+            "...",
+            "---",
+        ]
+        trans_info_sort = [
+            "NO STATISTICS",
+            "QUERY INITIATOR",
+            "ALL NODES",
+        ]
+
         res = ""
-        for op in all_legend:
-            res += all_legend[op]
+        for idx, trans_list in enumerate(
+            [trans_sort, trans_links_sort, trans_info_sort]
+        ):
+            res_trans = ""
+            if idx == 0:
+                name_tmp = "Path transition"
+            elif idx == 1:
+                name_tmp = "Link"
+            elif idx == 2:
+                name_tmp = "Information"
+            for op in trans_list:
+                if op in all_legend:
+                    res_trans += all_legend[op]
+            if res_trans:
+                res += (
+                    f'<tr><td BGCOLOR="{fillcolor}"></td><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">{name_tmp}</FONT></td></tr>'
+                    + res_trans
+                )
 
         if res:
-            res_f = f'\tlegend_annotations [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">'
-            res = f'{res_f}<tr><td BGCOLOR="{bgcolor}"></td><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">Path transition</FONT></td></tr>{res}'
-            res += "</table>>]\n\n"
+            res = f'\tlegend_annotations [shape=plaintext, fillcolor=white, label=<<table border="0" cellborder="1" cellspacing="0">{res}</table>>]\n\n'
         return res
 
     def _gen_legend(self, metric: Optional[list] = None, idx: int = 0) -> str:

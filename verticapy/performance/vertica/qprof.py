@@ -1223,6 +1223,10 @@ class QueryProfiler:
             else:
                 self.statement_id = 1
 
+        # To store metrics and not recompute them.
+        self.transaction_all_metrics = {}
+        self.transaction_tr_order_all = {}
+
         # BUILDING THE target_schema.
         if target_schema == "v_temp_schema":
             self.target_schema = self._v_temp_schema_dict()
@@ -2746,6 +2750,9 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        current_tuple = (self.transaction_id, self.statement_id)
+        if current_tuple in self.transaction_tr_order_all:
+            return self.transaction_tr_order_all[current_tuple]
         query = f"""
             SELECT 
                 REGEXP_SUBSTR(step_label, '\\d+')::INT
@@ -2763,16 +2770,26 @@ class QueryProfiler:
                 title="Getting the corresponding query",
                 method="fetchall",
             )
-            return list(dict.fromkeys([q[0] for q in res]))
+            res = list(dict.fromkeys([q[0] for q in res]))
         except:
-            return []
+            res = []
+
+        # Storing the metrics.
+        self.transaction_tr_order_all[current_tuple] = res
+
+        return res
 
     def _get_metric_val(self):
         """
         Helper function to returns the
         operator statistics.
         """
-        # Init
+        # If stored, we return the value.
+        current_tuple = (self.transaction_id, self.statement_id)
+        if current_tuple in self.transaction_all_metrics:
+            return self.transaction_all_metrics[current_tuple]
+
+        # Init.
         query = self.get_qexecution_report(granularity=1, genSQL=True)
         cols = self.get_qexecution_report(return_cols=True)
         res = _executeSQL(
@@ -2797,7 +2814,7 @@ class QueryProfiler:
                     current_metric = -1
                 metric_value_op[me[0]][me[2]][col] = current_metric
 
-        # Summary
+        # Summary.
         query = self.get_qexecution_report(granularity=2, genSQL=True)
         res = _executeSQL(
             query,
@@ -2819,6 +2836,10 @@ class QueryProfiler:
                     current_metric = -1
                 metric_value[col][me[0]] = current_metric
 
+        # Storing the metrics.
+        self.transaction_all_metrics[current_tuple] = metric_value_op, metric_value
+
+        # Returning the metric.
         return metric_value_op, metric_value
 
     def _get_vdf_summary(self):
@@ -3202,6 +3223,26 @@ class QueryProfiler:
                 NULL values.
                 Default: '#EFEFEF' (light
                 gray)
+            - threshold_metric1:
+                Threshold used to disable
+                some specific ``path_id``
+                based on the first metric.
+                If the ``path_id`` value
+                is under this value: A
+                minimalist representation
+                of the corresponding
+                ``path_id`` will be used.
+                Default: None
+            - threshold_metric2:
+                Threshold used to disable
+                some specific ``path_id``
+                based on the first metric.
+                If the ``path_id`` value
+                is under this value: A
+                minimalist representation
+                of the corresponding
+                ``path_id`` will be used.
+                Default: None
             - fontcolor:
                 Font color.
                 Default (light-m): #000000 (black)
