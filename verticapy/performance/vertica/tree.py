@@ -2032,7 +2032,7 @@ class PerformanceTree:
             if "RESEGMENT" in row_tmp and "BROADCAST" not in row_tmp:
                 all_legend[
                     "---"
-                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">---</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT | NO BROADCAST</FONT></td></tr>'
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">---</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
             if "HASH" in row_tmp:
                 all_legend[
                     "HASH"
@@ -2087,9 +2087,9 @@ class PerformanceTree:
         ):
             res_trans = ""
             if idx == 0:
-                name_tmp = "Path transition"
+                name_tmp = "Path transitions"
             elif idx == 1:
-                name_tmp = "Link"
+                name_tmp = "Links"
             elif idx == 2:
                 name_tmp = "Information"
             for op in trans_list:

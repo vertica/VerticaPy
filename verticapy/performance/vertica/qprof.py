@@ -225,6 +225,8 @@ class QueryProfiler:
         Current Transaction ID.
     statement_id: int
         Current Statement ID.
+    session_params_current: dict
+        Current Session Parameters.
     target_schema: dict
         Name of the schema used to store
         all the Vertica monitor and internal
@@ -239,6 +241,9 @@ class QueryProfiler:
     tables_dtypes: list
         Datatypes of all the loaded
         performance tables.
+    session_params: list
+        Non Default Session Parameters used
+        to run the transactions.
     overwrite: bool
         If set to ``True`` overwrites the
         existing performance tables.
@@ -1146,6 +1151,7 @@ class QueryProfiler:
                 session_control_loop = session_control_loop[1:]
 
             session_control_loop_all = []
+            session_params = []
 
             for sc in session_control_loop:
                 if sc not in ({}, ""):
@@ -1203,8 +1209,10 @@ class QueryProfiler:
                             " will be skipped."
                         )
                         warnings.warn(warning_message, Warning)
+                    session_params += [self._get_current_session_params()]
 
             self.session_control_params = session_control_loop_all
+            self.session_params = session_params
 
         if len(self.transactions) == 0 and isinstance(key_id, NoneType):
             raise ValueError("No transactions found.")
@@ -1252,7 +1260,37 @@ class QueryProfiler:
                 iterchecks=iterchecks, ignore_operators_check=ignore_operators_check
             )
 
+        # CORRECTING WRONG ATTRIBUTES
+        if not (hasattr(self, "session_params")) or not (self.session_params):
+            self.session_params = [{} for x in self.transactions]
+        try:
+            self.session_params_current = self.session_params[0]
+        except:
+            self.session_params_current = {}
+
     # Tools
+
+    @staticmethod
+    def _get_current_session_params():
+        """
+        Returns a ``dict`` of the current
+        session parameters.
+        """
+        query = """
+            SELECT 
+                parameter_name,
+                current_value 
+            FROM v_monitor.configuration_parameters 
+            WHERE current_level != 'DEFAULT';"""
+        res = _executeSQL(
+            query,
+            title="Getting transaction_id, statement_id.",
+            method="fetchall",
+        )
+        params = {}
+        for key, val in res:
+            params[key] = val
+        return params
 
     def _check_kind(self, kind: str, kind_list: list) -> str:
         """
@@ -2024,6 +2062,10 @@ class QueryProfiler:
                 self.request = self.requests[idx]
                 self.qduration = self.qdurations[idx]
                 self.query_success = self.query_successes[idx]
+                try:
+                    self.session_params_current = self.session_params[idx]
+                except:
+                    self.session_params_current = {}
             else:
                 raise TypeError(
                     "Wrong type for parameter 'idx'. Expecting: int or tuple."
@@ -2047,6 +2089,10 @@ class QueryProfiler:
         self.statement_id = self.transactions[idx][1]
         self.request = self.requests[idx]
         self.qduration = self.qdurations[idx]
+        try:
+            self.session_params_current = self.session_params[idx]
+        except:
+            self.session_params_current = {}
 
     def previous(self) -> None:
         """
@@ -2065,6 +2111,10 @@ class QueryProfiler:
         self.statement_id = self.transactions[idx][1]
         self.request = self.requests[idx]
         self.qduration = self.qdurations[idx]
+        try:
+            self.session_params_current = self.session_params[idx]
+        except:
+            self.session_params_current = {}
 
     # Main Method
 
