@@ -225,8 +225,9 @@ class QueryProfiler:
         Current Transaction ID.
     statement_id: int
         Current Statement ID.
-    session_params_current: dict
-        Current Session Parameters.
+    session_params_non_default_current: dict
+        Non Default Session Parameters used
+        to run the current/active query.
     target_schema: dict
         Name of the schema used to store
         all the Vertica monitor and internal
@@ -241,9 +242,10 @@ class QueryProfiler:
     tables_dtypes: list
         Datatypes of all the loaded
         performance tables.
-    session_params: list
-        Non Default Session Parameters used
-        to run the transactions.
+    session_params_non_default: list
+        ``list`` of Non Default Session
+        Parameters used all the queries
+        that are profiled.
     overwrite: bool
         If set to ``True`` overwrites the
         existing performance tables.
@@ -1151,7 +1153,7 @@ class QueryProfiler:
                 session_control_loop = session_control_loop[1:]
 
             session_control_loop_all = []
-            session_params = []
+            session_params_non_default = []
 
             for sc in session_control_loop:
                 if sc not in ({}, ""):
@@ -1209,10 +1211,12 @@ class QueryProfiler:
                             " will be skipped."
                         )
                         warnings.warn(warning_message, Warning)
-                    session_params += [self._get_current_session_params()]
+                    session_params_non_default += [
+                        self._get_current_session_params_non_default()
+                    ]
 
             self.session_control_params = session_control_loop_all
-            self.session_params = session_params
+            self.session_params_non_default = session_params_non_default
 
         if len(self.transactions) == 0 and isinstance(key_id, NoneType):
             raise ValueError("No transactions found.")
@@ -1261,17 +1265,19 @@ class QueryProfiler:
             )
 
         # CORRECTING WRONG ATTRIBUTES
-        if not (hasattr(self, "session_params")) or not (self.session_params):
-            self.session_params = [{} for x in self.transactions]
+        if not (hasattr(self, "session_params_non_default")) or not (
+            self.session_params_non_default
+        ):
+            self.session_params_non_default = [{} for x in self.transactions]
         try:
-            self.session_params_current = self.session_params[0]
+            self.session_params_non_default_current = self.session_params_non_default[0]
         except:
-            self.session_params_current = {}
+            self.session_params_non_default_current = {}
 
     # Tools
 
     @staticmethod
-    def _get_current_session_params():
+    def _get_current_session_params_non_default():
         """
         Returns a ``dict`` of the current
         session parameters.
@@ -2063,9 +2069,11 @@ class QueryProfiler:
                 self.qduration = self.qdurations[idx]
                 self.query_success = self.query_successes[idx]
                 try:
-                    self.session_params_current = self.session_params[idx]
+                    self.session_params_non_default_current = (
+                        self.session_params_non_default[idx]
+                    )
                 except:
-                    self.session_params_current = {}
+                    self.session_params_non_default_current = {}
             else:
                 raise TypeError(
                     "Wrong type for parameter 'idx'. Expecting: int or tuple."
@@ -2090,9 +2098,11 @@ class QueryProfiler:
         self.request = self.requests[idx]
         self.qduration = self.qdurations[idx]
         try:
-            self.session_params_current = self.session_params[idx]
+            self.session_params_non_default_current = self.session_params_non_default[
+                idx
+            ]
         except:
-            self.session_params_current = {}
+            self.session_params_non_default_current = {}
 
     def previous(self) -> None:
         """
@@ -2112,9 +2122,11 @@ class QueryProfiler:
         self.request = self.requests[idx]
         self.qduration = self.qdurations[idx]
         try:
-            self.session_params_current = self.session_params[idx]
+            self.session_params_non_default_current = self.session_params_non_default[
+                idx
+            ]
         except:
-            self.session_params_current = {}
+            self.session_params_non_default_current = {}
 
     # Main Method
 
