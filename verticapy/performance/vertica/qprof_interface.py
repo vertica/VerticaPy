@@ -760,11 +760,23 @@ class QueryProfilerComparison:
 
         self.query_info = self._create_query_info()
 
+        self.dual_effect = True
+
+
         # Initial update of the trees
         nooutput = widgets.Output()
         with nooutput:
             self.qprof1.get_qplan_tree()
             self.qprof2.get_qplan_tree()
+
+        if self.dual_effect:
+            # Replace the children tuple of qprof2 with a new one that copies qprof1's first accordion child
+            self.qprof2.accordions.children = (
+                (self.qprof1.accordions.children[0],) + self.qprof2.accordions.children[1:]
+            )
+
+            # Sync the accordion selection between qprof1 and qprof2
+            self._sync_accordion_selection()
 
         self.controls = self._create_controls()
         self.side_by_side_ui = widgets.VBox([self.query_info, self.controls])
@@ -815,6 +827,22 @@ class QueryProfilerComparison:
                 widgets.HBox([q1_interactive, q2_interactive]),
             ]
         )
+
+    def _sync_accordion_selection(self):
+        """
+        Synchronizes the accordion selection of qprof1 and qprof2.
+        When an accordion is selected in qprof1, it automatically updates the selection in qprof2.
+        """
+
+        def on_accordion_change(change):
+            """
+            Callback function to update qprof2's accordion selection when qprof1's accordion selection changes.
+            """
+            if change['name'] == 'selected_index' and change['new'] is not None:
+                self.qprof2.accordions.selected_index = change['new']
+
+        # Observe changes in the selected_index of qprof1's accordion
+        self.qprof1.accordions.observe(on_accordion_change, names='selected_index')
 
     def _create_query_info(self):
         # Get and set the layout for the query display info for both qprof1 and qprof2
