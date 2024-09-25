@@ -225,6 +225,8 @@ class QueryProfiler:
         Current Transaction ID.
     statement_id: int
         Current Statement ID.
+    session_params_current: dict
+        Current Session Parameters.
     target_schema: dict
         Name of the schema used to store
         all the Vertica monitor and internal
@@ -241,7 +243,7 @@ class QueryProfiler:
         performance tables.
     session_params: list
         Non Default Session Parameters used
-        to run the corresponding transaction.
+        to run the transactions.
     overwrite: bool
         If set to ``True`` overwrites the
         existing performance tables.
@@ -1261,6 +1263,10 @@ class QueryProfiler:
         # CORRECTING WRONG ATTRIBUTES
         if not (hasattr(self, "session_params")) or not (self.session_params):
             self.session_params = [{} for x in self.transactions]
+        try:
+            self.session_params_current = self.session_params[0]
+        except:
+            self.session_params_current = {}
 
     # Tools
 
@@ -2056,6 +2062,10 @@ class QueryProfiler:
                 self.request = self.requests[idx]
                 self.qduration = self.qdurations[idx]
                 self.query_success = self.query_successes[idx]
+                try:
+                    self.session_params_current = self.session_params[idx]
+                except:
+                    self.session_params_current = {}
             else:
                 raise TypeError(
                     "Wrong type for parameter 'idx'. Expecting: int or tuple."
@@ -2079,6 +2089,10 @@ class QueryProfiler:
         self.statement_id = self.transactions[idx][1]
         self.request = self.requests[idx]
         self.qduration = self.qdurations[idx]
+        try:
+            self.session_params_current = self.session_params[idx]
+        except:
+            self.session_params_current = {}
 
     def previous(self) -> None:
         """
@@ -2097,6 +2111,10 @@ class QueryProfiler:
         self.statement_id = self.transactions[idx][1]
         self.request = self.requests[idx]
         self.qduration = self.qdurations[idx]
+        try:
+            self.session_params_current = self.session_params[idx]
+        except:
+            self.session_params_current = {}
 
     # Main Method
 
