@@ -3320,21 +3320,21 @@ class QueryProfiler:
                 Default: None
             - op_filter:
                 ``list`` of operators used
-                to disable some specific 
+                to disable some specific
                 ``path_id``. If the ``path_id``
                 does not include all the
                 operators of the ``op_filter``
                 list: A minimalist representation
-                of the corresponding ``path_id`` 
+                of the corresponding ``path_id``
                 will be used.
                 Default: None
             - tooltip_filter:
-                ``str`` used to disable some 
-                specific ``path_id``. If the 
-                ``path_id`` description does 
-                not include the input information: 
+                ``str`` used to disable some
+                specific ``path_id``. If the
+                ``path_id`` description does
+                not include the input information:
                 A minimalist representation
-                of the corresponding ``path_id`` 
+                of the corresponding ``path_id``
                 will be used.
                 Default: None
             - fontcolor:

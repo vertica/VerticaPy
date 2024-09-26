@@ -764,7 +764,7 @@ class PerformanceTree:
         for more information.
         """
         op_filter = self.style["op_filter"]
-        if not(op_filter):
+        if not (op_filter):
             return True
         path_id_op = self._get_operators_path_id(path_id)
         path_id_op = [str(op).lower().strip() for op in path_id_op]
@@ -1599,13 +1599,13 @@ class PerformanceTree:
                 display_path_id = False
 
         # Filter based on the operator.
-        filter_op = not(self._is_op_in_path_id(label))
+        filter_op = not (self._is_op_in_path_id(label))
         if filter_op:
             display_path_id = False
 
         # Filter based on the tooptip.
         tooptip_description = str(tooptip_description).lower().strip()
-        if not(isinstance(self.style["tooltip_filter"], NoneType)):
+        if not (isinstance(self.style["tooltip_filter"], NoneType)):
             tooltip_filter = str(self.style["tooltip_filter"]).lower().strip()
             filter_tooltip = tooltip_filter not in tooptip_description
             if filter_tooltip:
@@ -1876,7 +1876,7 @@ class PerformanceTree:
                 if ns_icon != "":
                     ns_icon += " "
                 ns_icon += QprofUtility._get_execute_on(tooltip)
-                if not (display_path_id) or not(self._is_op_in_path_id(label)):
+                if not (display_path_id) or not (self._is_op_in_path_id(label)):
                     ns_icon = ""
                 # Final Tooltip.
                 description = "\n\nDescriptors\n------------\n" + "\n".join(
