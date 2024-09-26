@@ -353,6 +353,8 @@ class PerformanceTree:
             d["threshold_metric2"] = None
         if "op_filter" not in d:
             d["op_filter"] = None
+        elif isinstance(d["op_filter"], str):
+            d["op_filter"] = [d["op_filter"]]
         if "tooltip_filter" not in d:
             d["tooltip_filter"] = None
         if "display_path_transition" not in d:
