@@ -54,6 +54,15 @@ class LinearModel:
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "features_importance_"]
 
+    # Utils
+
+    def _get_att_coeff_name(self) -> str:
+        """
+        Returns the coeff attribute
+        name in the details table.
+        """
+        return "coefficient"
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -61,8 +70,9 @@ class LinearModel:
         Computes the model's attributes.
         """
         details = self.get_vertica_attributes("details")
-        self.coef_ = np.array(details["coefficient"][1:])
-        self.intercept_ = details["coefficient"][0]
+        coeff = self._get_att_coeff_name()
+        self.coef_ = np.array(details[coeff][1:])
+        self.intercept_ = details[coeff][0]
 
     # Features Importance Methods.
 
@@ -71,14 +81,15 @@ class LinearModel:
         Computes the features importance.
         """
         vertica_version(condition=[8, 1, 1])
+        coeff = self._get_att_coeff_name()
         query = f"""
         SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
             predictor, 
             sign * ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance
         FROM (SELECT 
                 stat.predictor AS predictor, 
-                ABS(coefficient * (max - min))::float AS importance, 
-                SIGN(coefficient)::int AS sign 
+                ABS({coeff} * (max - min))::float AS importance, 
+                SIGN({coeff})::int AS sign 
               FROM (SELECT 
                         LOWER("column") AS predictor, 
                         min, 
@@ -2242,6 +2253,489 @@ class LinearRegression(LinearModel, Regressor):
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+
+
+class PLSRegression(LinearModel, Regressor):
+    """
+    Creates an ``PLSRegression``
+    object using the Vertica PLS
+    Regression algorithm.
+
+    Parameters
+    ----------
+    name: str, optional
+        Name of the model. The model
+        is stored in the database.
+    overwrite_model: bool, optional
+        If set to ``True``, training a
+        model with the same name as an
+        existing model overwrites the
+        existing model.
+    n_components: int, optional
+        Number of components to keep.
+        Should be in ``[1, n_features]``.
+    scale: bool, optional
+        Boolean, whether to standardize
+        the response and predictor columns.
+
+    Attributes
+    ----------
+    Many attributes are created
+    during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:meth:`~verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:meth:`~verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes`
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:meth:`~verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes`
+        method.
+
+    Examples
+    --------
+
+    The following examples provide a
+    basic understanding of usage.
+    For more detailed examples, please
+    refer to the :ref:`user_guide.machine_learning`
+    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import :py:mod:`verticapy`:
+
+    .. code-block:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended without
+        interfering with functions from other libraries.
+
+    For this example, we will
+    use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample
+        datasets that are ideal for training
+        and testing purposes. You can explore
+        the full list of available datasets in
+        the :ref:`api.datasets`, which provides
+        detailed information on each dataset and
+        how to use them effectively. These datasets
+        are invaluable resources for honing your
+        data analysis and machine learning skills
+        within the VerticaPy environment.
+
+    You can easily divide your dataset
+    into training and testing subsets
+    using the
+    ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.train_test_split`
+    method. This is a crucial step when
+    preparing your data for machine learning,
+    as it allows you to evaluate the
+    performance of your models accurately.
+
+    .. code-block:: python
+
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    .. warning::
+
+        In this case, VerticaPy utilizes seeded
+        randomization to guarantee the reproducibility
+        of your data split. However, please be aware
+        that this approach may lead to reduced
+        performance. For a more efficient data split,
+        you can use the ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.to_db`
+        method to save your results into ``tables``
+        or ``temporary tables``. This will help
+        enhance the overall performance of the
+        process.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``PLSRegression`` model:
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import PLSRegression
+
+    Then we can create the model:
+
+    .. code-block::
+
+        model = PLSRegression(
+            tol = 1e-6,
+            penalty = 'L2',
+            C = 1,
+            max_iter = 100,
+            fit_intercept = True,
+        )
+
+    .. hint::
+
+        In :py:mod:`verticapy` 1.0.x and higher,
+        you do not need to specify the model name,
+        as the name is automatically assigned. If
+        you need to re-use the model, you can fetch
+        the model name from the model's attributes.
+
+    .. important::
+
+        The model name is crucial for the model
+        management system and versioning. It's
+        highly recommended to provide a name if
+        you plan to reuse the model later.
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import PLSRegression
+        model = PLSRegression(
+            tol = 1e-6,
+            penalty = 'L2',
+            C = 1,
+            max_iter = 100,
+            fit_intercept = True,
+        )
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(
+            train,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            "quality",
+            test,
+        )
+
+    .. important::
+
+        To train a model, you can directly use the
+        :py:class:`~vDataFrame` or the name of the
+        relation stored in the database. The test
+        set is optional and is only used to compute
+        the test metrics. In :py:mod:`verticapy`, we
+        don't work using ``X`` matrices and ``y``
+        vectors. Instead, we work directly with lists
+        of predictors and the response name.
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the entire report using:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_pls_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.report()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_pls_report.html
+
+    .. important::
+
+        Most metrics are computed using a single SQL query, but some of them might
+        require multiple SQL queries. Selecting only the necessary metrics in the
+        report can help optimize performance.
+        E.g. ``model.report(metrics = ["mse", "r2"])``.
+
+    For ``LinearModel``, we can easily get the ANOVA table using:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.report(metrics = "anova")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_pls_report_anova.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.report(metrics = "anova")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_pls_report_anova.html
+
+    You can also use the ``LinearModel.score`` function to compute the R-squared
+    value:
+
+    .. ipython:: python
+
+        model.score()
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            "prediction",
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_pls_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_pls_prediction.html
+
+    .. note::
+
+        Predictions can be made automatically
+        using the test set, in which case you
+        don't need to specify the predictors.
+        Alternatively, you can pass only the
+        :py:class:`~vDataFrame` to the
+        :py:meth:`~verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        function, but in this case, it's
+        essential that the column names of
+        the :py:class:`~vDataFrame` match the
+        predictors and response name in the
+        model.
+
+    Plots
+    ^^^^^^
+
+    If the model allows, you can also
+    generate relevant plots. For example,
+    regression plots can be found in the
+    :ref:`chart_gallery.regression_plot`.
+
+    .. code-block:: python
+
+        model.plot()
+
+    .. important::
+
+        The plotting feature is typically
+        suitable for models with fewer than
+        three predictors.
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'scale': True})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model
+    for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to
+    :ref:`/notebooks/ml/model_tracking_versioning/index.ipynb`
+    for more details on model
+    tracking and versioning.
+
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
+
+    **To Memmodel**
+
+    .. code-block:: python
+
+        model.to_memmodel()
+
+    .. note::
+
+        ``MemModel`` objects serve as in-memory
+        representations of machine learning models.
+        They can be used for both in-database and
+        in-memory prediction tasks. These objects
+        can be pickled in the same way that you
+        would pickle a ``scikit-learn`` model.
+
+    The following methods for exporting the model
+    use ``MemModel``, and it is recommended to use
+    ``MemModel`` directly.
+
+    **To SQL**
+
+    You can get the SQL code by:
+
+    .. ipython:: python
+
+        model.to_sql()
+
+    **To Python**
+
+    To obtain the prediction function in
+    Python syntax, use the following code:
+
+    .. ipython:: python
+
+        X = [[4.2, 0.17, 0.36, 1.8, 0.029, 0.9899]]
+        model.to_python()(X)
+
+    .. hint::
+
+        The
+        :py:meth:`~verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        method is used to retrieve predictions,
+        probabilities, or cluster distances. For
+        specific details on how to use this method
+        for different model types, refer to the
+        relevant documentation for each model.
+    """
+
+    # Properties.
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["PLS_REG"]:
+        return "PLS_REG"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_PLS_REG"]:
+        return "PREDICT_PLS_REG"
+
+    @property
+    def _model_subcategory(self) -> Literal["REGRESSOR"]:
+        return "REGRESSOR"
+
+    @property
+    def _model_type(self) -> Literal["PLSRegression"]:
+        return "PLSRegression"
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        n_components: int = 2,
+        scale: bool = True,
+    ) -> None:
+        super().__init__(name, overwrite_model)
+        self.parameters = {
+            "n_components": int(n_components),
+            "scale": bool(scale),
+        }
+
+    # Utils
+
+    def _get_att_coeff_name(self) -> str:
+        """
+        Returns the coeff attribute
+        name in the details table.
+        """
+        return "coefficient_0"
 
 
 class PoissonRegressor(LinearModel, Regressor):
