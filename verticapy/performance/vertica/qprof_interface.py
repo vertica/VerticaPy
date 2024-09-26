@@ -535,7 +535,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         Updates the Session parameter display text widget with the current query.
         """
         rows = []
-        dict_list = self.session_params_current
+        dict_list = self.session_params_non_default_current
         if isinstance(dict_list, dict):
             dict_list = [dict_list]
         for dictionary in dict_list:
