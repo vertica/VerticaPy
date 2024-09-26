@@ -113,6 +113,45 @@ class QprofUtility:
     # Utils
 
     @staticmethod
+    def dict_diff(dict1: dict, dict2: dict) -> dict:
+        """
+        Returns a ``dict`` of the
+        differences between two
+        dictionaries.
+
+        Parameters
+        ----------
+        dict1: dict
+            First ``dict``
+        dict2: dict
+            Second ``dict``.
+
+        Returns
+        -------
+        dict
+            ``dict`` including the
+            differences.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.qprof_utility`
+        for more information.
+        """
+        diff = {}
+
+        # Check for keys in dict1 that are different or not in dict2
+        for key in dict1:
+            if key not in dict2 or dict1[key] != dict2[key]:
+                diff[key] = dict1[key]
+
+        # Check for keys in dict2 that are not in dict1
+        for key in dict2:
+            if key not in dict1:
+                diff[key] = dict2[key]
+
+        return diff
+
+    @staticmethod
     def _get_label(
         row: str, return_path_id: bool = True, row_idx: int = 0
     ) -> Union[str, int]:
