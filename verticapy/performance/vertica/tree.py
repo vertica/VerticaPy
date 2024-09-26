@@ -351,6 +351,8 @@ class PerformanceTree:
             d["threshold_metric1"] = None
         if "threshold_metric2" not in d:
             d["threshold_metric2"] = None
+        if "op_filter" not in d:
+            d["op_filter"] = None
         if "display_path_transition" not in d:
             d["display_path_transition"] = True
         if "display_annotations" not in d:
@@ -705,6 +707,69 @@ class PerformanceTree:
                 info = info[:-1]
             return info
         return ""
+
+    def _get_operators_path_id(self, path_id: Union[str, int]) -> list:
+        """
+        Returns the ``list``
+        of operators for a
+        specific ``path_id``.
+
+        Parameters
+        ----------
+        path_id: str | int
+            PATH ID.
+
+        Returns
+        -------
+        list
+            All the ``path_id`` operators.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        try:
+            path_id = int(path_id)
+        except:
+            pass
+        if path_id in self.metric_value_op:
+            return [op for op in self.metric_value_op[path_id]]
+        return []
+
+    def _is_op_in_path_id(self, path_id: Union[str, int]) -> bool:
+        """
+        Returns the ``True``
+        if all the input
+        ``path_id`` operators
+        are in the ``op_filter``
+        ``list``.
+
+        Parameters
+        ----------
+        path_id: str | int
+            PATH ID.
+
+        Returns
+        -------
+        bool
+            Result of the
+            comparaison.
+
+        Examples
+        --------
+        See :py:meth:`~verticapy.performance.vertica.tree`
+        for more information.
+        """
+        op_filter = self.style["op_filter"]
+        if not (op_filter):
+            return True
+        path_id_op = self._get_operators_path_id(path_id)
+        path_id_op = [str(op).lower().strip() for op in path_id_op]
+        for op in op_filter:
+            if str(op).lower().strip() not in path_id_op:
+                return False
+        return True
 
     # DML: Target Projections
 
@@ -1526,8 +1591,11 @@ class PerformanceTree:
             if isinstance(metric_2, NoneType) or metric_2 < metric_2_t:
                 display_path_id = False
 
+        # Filter based on the operator.
+        filter_op = self._is_op_in_path_id(label)
+
         # Special Display.
-        if not (display_path_id):
+        if not (display_path_id) or not (filter_op):
             return (
                 '<<TABLE border="1" cellborder="1" cellspacing="0" '
                 f'cellpadding="0"><TR><TD WIDTH="{width * 2}" '
@@ -1790,7 +1858,7 @@ class PerformanceTree:
                 if ns_icon != "":
                     ns_icon += " "
                 ns_icon += QprofUtility._get_execute_on(tooltip)
-                if not (display_path_id):
+                if not (display_path_id) or not (self._is_op_in_path_id(label)):
                     ns_icon = ""
                 # Final Tooltip.
                 description = "\n\nDescriptors\n------------\n" + "\n".join(

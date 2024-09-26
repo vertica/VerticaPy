@@ -3305,6 +3305,16 @@ class QueryProfiler:
                 of the corresponding
                 ``path_id`` will be used.
                 Default: None
+            - op_filter:
+                ``list`` of operators used
+                to disable some specific
+                ``path_id``. If the ``path_id``
+                does not include all the
+                operators of the ``op_filter``
+                list: A minimalist representation
+                of the corresponding ``path_id``
+                will be used.
+                Default: None
             - fontcolor:
                 Font color.
                 Default (light-m): #000000 (black)
