@@ -125,7 +125,8 @@ class QueryProfilerInterface(QueryProfilerStats):
             ]
         )
         self.update_query_display()
-
+        self.session_param_display = []
+        self.update_session_param_display()
         self.index_widget = widgets.IntText(
             description="Index:", value=self.transactions_idx
         )
@@ -270,6 +271,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             ),
             "Tree style": widgets.VBox(tree_settings),
             "Query text": self.query_display,
+            "Session Parameters": self.session_param_display,
         }
         query_text_index = list(accordion_items.keys()).index("Query text")
         self.accordions = Visualizer._accordion(
@@ -490,6 +492,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.step_idx.value = selection
         self.set_position(selection)
         self.update_query_display()
+        self.update_session_param_display()
 
     def refresh_clicked(self, button):
         """
@@ -526,6 +529,39 @@ class QueryProfilerInterface(QueryProfilerStats):
         <b>Statement ID:</b> {self.statement_id} <br>
         <b>Key ID:</b> {self.key_id}
         """
+
+    def update_session_param_display(self):
+        """
+        Updates the Session parameter display text widget with the current query.
+        """
+        rows = []
+        dict_list = self.session_params_current
+        if isinstance(dict_list, dict):
+            dict_list = [dict_list]
+        for dictionary in dict_list:
+            for key, value in dictionary.items():
+                # Create a key-value pair layout
+                key_label = widgets.HTML(
+                    value=f"<b>{key}:</b>",
+                    # layout=widgets.Layout(width='200px', text_align='right')
+                )
+                value_label = widgets.HTML(
+                    value=f"{value}",
+                    # layout=widgets.Layout(width='200px', text_align='left')
+                )
+                # Arrange key and value side by side in a horizontal box
+                row = widgets.HBox(
+                    [key_label, value_label], layout=widgets.Layout(padding="5px")
+                )
+                rows.append(row)
+
+        # Add a centered title to the widget display
+        title = widgets.HTML(
+            value="<h4 style='background-color: #f0f0f0; padding: 5px; border-radius: 5px; margin: 0; text-align: center;'>Non-default Parameters</h4>"
+        )
+
+        # Create a VBox for the entire display (title + key-value pairs)
+        self.session_param_display = widgets.VBox([title] + rows)
 
     ##########################################################################
 
