@@ -353,6 +353,8 @@ class PerformanceTree:
             d["threshold_metric2"] = None
         if "op_filter" not in d:
             d["op_filter"] = None
+        if "tooltip_filter" not in d:
+            d["tooltip_filter"] = None
         if "display_path_transition" not in d:
             d["display_path_transition"] = True
         if "display_annotations" not in d:
@@ -1528,6 +1530,7 @@ class PerformanceTree:
         colors: list,
         operator: Optional[str] = None,
         legend_metrics: Optional[list] = None,
+        tooptip_description: Optional[str] = None,
     ) -> str:
         """
         Generates the Graphviz
@@ -1537,13 +1540,17 @@ class PerformanceTree:
 
         Parameters
         ----------
-        label: int / str
+        label: int | str
             The node label.
         colors: list
             A ``list`` of one or
             two colors.
         operator: str, optional
             Operator Icon.
+        legend_metrics: list, optional
+            Metrics values.
+        tooptip_description: str, optional
+            Tooltip Description.
 
         Returns
         -------
@@ -1592,10 +1599,20 @@ class PerformanceTree:
                 display_path_id = False
 
         # Filter based on the operator.
-        filter_op = self._is_op_in_path_id(label)
+        filter_op = not (self._is_op_in_path_id(label))
+        if filter_op:
+            display_path_id = False
+
+        # Filter based on the tooptip.
+        tooptip_description = str(tooptip_description).lower().strip()
+        if not (isinstance(self.style["tooltip_filter"], NoneType)):
+            tooltip_filter = str(self.style["tooltip_filter"]).lower().strip()
+            filter_tooltip = tooltip_filter not in tooptip_description
+            if filter_tooltip:
+                display_path_id = False
 
         # Special Display.
-        if not (display_path_id) or not (filter_op):
+        if not (display_path_id):
             return (
                 '<<TABLE border="1" cellborder="1" cellspacing="0" '
                 f'cellpadding="0"><TR><TD WIDTH="{width * 2}" '
@@ -1846,6 +1863,7 @@ class PerformanceTree:
                 colors,
                 operator=row,
                 legend_metrics=legend_metrics,
+                tooptip_description=row,
             )
 
             if tree_id in links and display_tr:

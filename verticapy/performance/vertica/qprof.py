@@ -2841,7 +2841,7 @@ class QueryProfiler:
 
         return res
 
-    def _get_metric_val(self):
+    def _get_metric_val(self) -> tuple:
         """
         Helper function to returns the
         operator statistics.
@@ -2903,6 +2903,19 @@ class QueryProfiler:
 
         # Returning the metric.
         return metric_value_op, metric_value
+
+    def _get_all_op(self) -> list[str]:
+        """
+        Returns the input ``transaction``
+        operators.
+        """
+        all_metrics_op = self._get_metric_val()[0]
+        all_op = []
+        for path_id in all_metrics_op:
+            for op in all_metrics_op[path_id]:
+                if op not in all_op:
+                    all_op += [op]
+        return all_op
 
     def _get_vdf_summary(self):
         """
@@ -3312,6 +3325,15 @@ class QueryProfiler:
                 does not include all the
                 operators of the ``op_filter``
                 list: A minimalist representation
+                of the corresponding ``path_id``
+                will be used.
+                Default: None
+            - tooltip_filter:
+                ``str`` used to disable some
+                specific ``path_id``. If the
+                ``path_id`` description does
+                not include the input information:
+                A minimalist representation
                 of the corresponding ``path_id``
                 will be used.
                 Default: None
