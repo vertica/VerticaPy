@@ -2498,6 +2498,8 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
+        if isinstance(self.qduration, NoneType):
+            return None
         return float(self.qduration / self._get_interval(unit))
 
     # Step 3: Query execution steps
