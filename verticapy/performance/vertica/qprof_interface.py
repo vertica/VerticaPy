@@ -328,15 +328,37 @@ class QueryProfilerInterface(QueryProfilerStats):
         """
         Callback function that displays the Query Plan Tree.
         """
+        # Create an output widget to hold the hourglass and the tree
+        output = widgets.Output()
+        display(output)
+
+        # Show hourglass in the output before starting long-running task
+        with output:
+            output.clear_output(wait=True)  # Clear any previous content
+            # Create the hourglass icon
+            hourglass_icon = widgets.HTML(
+                value='<i class="fa fa-hourglass-half" style="font-size:48px;color:gray;"></i>',
+                layout=widgets.Layout(display="flex", justify_content="center"),
+            )
+            vbox = widgets.VBox(
+                [hourglass_icon],
+                layout=widgets.Layout(justify_content="center", align_items="center"),
+            )
+            display(vbox)
+
+        # Processing the inputs and generate the tree (long running task)
         metric = [
             QprofUtility._get_metrics_name(i, inv=True) for i in [metric1, metric2]
         ]
         if len(metric) == 0:
             metric = ["rows"]
+
         graph_id = "g" + str(uuid.uuid4())
         self.query_select_button_selected(index)
         if self.pathid_dropdown.get_child_attr("disabled"):
             path_id = None
+
+        # Ensure the hourglass stays displayed during the processing of get_qplan_tree
         if self.use_javascript == False:
             graph = super().get_qplan_tree(
                 metric=metric,
@@ -353,10 +375,18 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 **self.style_kwargs,
             )  # type: ignore
-            html_widget = widgets.HTML(value=graph.pipe(format="svg").decode("utf-8"))
-            box = widgets.HBox([html_widget])
-            box.layout.justify_content = "center"
-            display(box)
+
+            # After long-running task is done, update output with the result
+            with output:
+                output.clear_output(
+                    wait=True
+                )  # Clear the hourglass before displaying the tree
+                html_widget = widgets.HTML(
+                    value=graph.pipe(format="svg").decode("utf-8")
+                )
+                box = widgets.HBox([html_widget])
+                box.layout.justify_content = "center"
+                display(box)
         else:
             raw = super().get_qplan_tree(
                 metric=metric,
@@ -374,11 +404,19 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 **self.style_kwargs,
             )
-            output = read_package_file("html/index.html")
-            output = replace_value(output, "var dotSrc = [];", f"var dotSrc = `{raw}`;")
-            output = replace_value(output, 'id="graph"', f'id="{graph_id}"')
-            output = replace_value(output, "#graph", f"#{graph_id}")
-            display(HTML(output))
+
+            output_html = read_package_file("html/index.html")
+            output_html = replace_value(
+                output_html, "var dotSrc = [];", f"var dotSrc = `{raw}`;"
+            )
+            output_html = replace_value(output_html, 'id="graph"', f'id="{graph_id}"')
+            output_html = replace_value(output_html, "#graph", f"#{graph_id}")
+
+            with output:
+                output.clear_output(wait=True)  # Clear the hourglass
+                display(HTML(output_html))
+
+        # Update the header after the tree is displayed
         self.qpt_header.value = (
             f"<h1><b>Query Plan Tree - [query_idx: {index}]</b></h1>"
         )
@@ -762,7 +800,6 @@ class QueryProfilerComparison:
 
         self.dual_effect = True
 
-
         # Initial update of the trees
         nooutput = widgets.Output()
         with nooutput:
@@ -772,8 +809,8 @@ class QueryProfilerComparison:
         if self.dual_effect:
             # Replace the children tuple of qprof2 with a new one that copies qprof1's first accordion child
             self.qprof2.accordions.children = (
-                (self.qprof1.accordions.children[0],) + self.qprof2.accordions.children[1:]
-            )
+                self.qprof1.accordions.children[0],
+            ) + self.qprof2.accordions.children[1:]
 
             # Sync the accordion selection between qprof1 and qprof2
             self._sync_accordion_selection()
@@ -838,11 +875,11 @@ class QueryProfilerComparison:
             """
             Callback function to update qprof2's accordion selection when qprof1's accordion selection changes.
             """
-            if change['name'] == 'selected_index' and change['new'] is not None:
-                self.qprof2.accordions.selected_index = change['new']
+            if change["name"] == "selected_index" and change["new"] is not None:
+                self.qprof2.accordions.selected_index = change["new"]
 
         # Observe changes in the selected_index of qprof1's accordion
-        self.qprof1.accordions.observe(on_accordion_change, names='selected_index')
+        self.qprof1.accordions.observe(on_accordion_change, names="selected_index")
 
     def _create_query_info(self):
         # Get and set the layout for the query display info for both qprof1 and qprof2
