@@ -40,6 +40,7 @@ from verticapy.machine_learning.vertica.linear_model import (
     Lasso,
     LinearRegression,
     LogisticRegression,
+    PLSRegression,
     PoissonRegressor,
     Ridge,
 )
@@ -500,6 +501,7 @@ def load_model(
         "svm_regressor": LinearSVR,
         "svm_classifier": LinearSVC,
         "linear_reg": LinearRegression,
+        "pls_reg": PLSRegression,
         "poisson_reg": PoissonRegressor,
         "kmeans": KMeans,
         "kprototypes": KPrototypes,
