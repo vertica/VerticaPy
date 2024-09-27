@@ -142,7 +142,14 @@ class QueryProfilerInterface(QueryProfilerStats):
         # button to apply the path id settings on the tree
         self.refresh_pathids = widgets.Button(description="Refresh")
         self.refresh_pathids.on_click(self.refresh_clicked)
-
+        self.operator_search_checkbox_dict = {}
+        self.search_opeartor_options = self._get_all_op()
+        print("OPTIONS",self.search_opeartor_options)
+        self.op_filter_widget = widgets.Text(value='')
+        self.operator_search_widget = self.operator_search_create_checkboxes(self.search_opeartor_options)
+        self.operator_search_submit_button = widgets.Button(description="Search for Paths")
+        self.operator_search_submit_button.on_click(self.operator_search_on_button_click)
+        self.operator_search_widget_complete = widgets.VBox([self.operator_search_widget, self.operator_search_submit_button])
         self.step_idx = widgets.IntText(description="Index:", value=0)
 
         # graph headers
@@ -267,7 +274,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         accordion_items = {
             "Metrics": tags,
             "Path ID": widgets.VBox(
-                [self.pathid_dropdown.get_item(), refresh_pathids_box]
+                [self.pathid_dropdown.get_item(), refresh_pathids_box, self.operator_search_widget_complete]
             ),
             "Tree style": widgets.VBox(tree_settings),
             "Query text": self.query_display,
@@ -292,6 +299,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             "apply_tree_clicked": self.apply_tree,
             "temp_display": temp_rel_widget,
             "projection_display": projections_dml_widget,
+            "op_filter": self.op_filter_widget
         }
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
@@ -326,6 +334,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         apply_tree_clicked,
         temp_display,
         projection_display,
+        op_filter
     ):
         """
         Callback function that displays the Query Plan Tree.
@@ -376,6 +385,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 **self.style_kwargs,
+                op_filter = eval(op_filter) if op_filter != '' else None
             )  # type: ignore
 
             # After long-running task is done, update output with the result
@@ -405,6 +415,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 **self.style_kwargs,
+                op_filter = eval(op_filter) if op_filter != '' else None
             )
 
             output_html = read_package_file("html/index.html")
@@ -504,6 +515,39 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.pathid_dropdown.set_child_attr("options", options)
         self.pathid_dropdown.set_child_attr("disabled", False)
 
+    def operator_search_create_checkboxes(self, options):
+        """Create checkboxes based on provided options."""
+        checkbox_widgets = []
+        for option in options:
+            checkbox = widgets.Checkbox(value=False, description=option)
+            self.operator_search_checkbox_dict[option] = checkbox  # Store checkbox with its option as the key
+            checkbox_widgets.append(checkbox)
+        return widgets.VBox(checkbox_widgets)
+
+    def get_selected_values(self):
+        """Return the values of selected checkboxes."""
+        return [key for key, checkbox in self.operator_search_checkbox_dict.items() if checkbox.value]
+
+    def operator_search_on_button_click(self, button):
+        """Method called when the button is clicked."""
+        print("o")
+        button.disabled = True
+        print("aho")
+        # Update the op_filter_widget
+        selected_values = self.get_selected_values()
+        print("SELECTED VALUES ARE:",selected_values)
+        if isinstance(selected_values, list):
+            # For a list of strings, format it as a JSON-like array
+            if len(selected_values)>0:
+                self.op_filter_widget.value = str(selected_values)
+        else:
+            # For a single string, just assign it directly
+            self.op_filter_widget.value = selected_values
+        print("Transfered values are:",self.op_filter_widget.value)
+        self.apply_tree.value = not self.apply_tree.value
+        button.disabled = False
+
+
     def apply_tree_settings(self, _):
         """
         ...
@@ -535,7 +579,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         Updates the Session parameter display text widget with the current query.
         """
         rows = []
-        dict_list = self.session_params_current
+        dict_list = self.session_params_non_default_current
         if isinstance(dict_list, dict):
             dict_list = [dict_list]
         for dictionary in dict_list:
