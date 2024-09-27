@@ -142,7 +142,37 @@ class QueryProfilerInterface(QueryProfilerStats):
         # button to apply the path id settings on the tree
         self.refresh_pathids = widgets.Button(description="Refresh")
         self.refresh_pathids.on_click(self.refresh_clicked)
+        # Tooltip search
+        self.tooltip_search_widget_text = widgets.Text(
+            placeholder="Enter part of tooltip to search"
+        )
+        self.tooltip_search_widget_button = widgets.Button(
+            description="Search by Tooltip",
+            layout=widgets.Layout(width="200px"),  # Optionally specify the button width
+        )
+        self.tooltip_search_dummy = widgets.Text()
 
+        # Button click event
+        self.tooltip_search_widget_button.on_click(
+            self.tooltip_search_widget_button_action
+        )
+
+        # Horizontal line with explicit width
+        horizontal_line = widgets.HTML(
+            value="<hr style='border: 1px solid black; width: 100px;'>"
+        )
+
+        # VBox with centered alignment
+        self.tooltip_search_widget = widgets.VBox(
+            [
+                horizontal_line,
+                self.tooltip_search_widget_text,
+                self.tooltip_search_widget_button,
+            ],
+            layout=widgets.Layout(
+                justify_content="center", align_items="center", width="100%"
+            ),
+        )
         self.step_idx = widgets.IntText(description="Index:", value=0)
 
         # graph headers
@@ -267,7 +297,11 @@ class QueryProfilerInterface(QueryProfilerStats):
         accordion_items = {
             "Metrics": tags,
             "Path ID": widgets.VBox(
-                [self.pathid_dropdown.get_item(), refresh_pathids_box]
+                [
+                    self.pathid_dropdown.get_item(),
+                    refresh_pathids_box,
+                    self.tooltip_search_widget,
+                ]
             ),
             "Tree style": widgets.VBox(tree_settings),
             "Query text": self.query_display,
@@ -292,6 +326,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             "apply_tree_clicked": self.apply_tree,
             "temp_display": temp_rel_widget,
             "projection_display": projections_dml_widget,
+            "tooltip_filter": self.tooltip_search_dummy,
         }
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
@@ -326,6 +361,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         apply_tree_clicked,
         temp_display,
         projection_display,
+        tooltip_filter,
     ):
         """
         Callback function that displays the Query Plan Tree.
@@ -375,6 +411,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_agg_metrics=display_tooltip_agg_metrics,
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
+                tooltip_filter=tooltip_filter,
                 **self.style_kwargs,
             )  # type: ignore
 
@@ -404,6 +441,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_agg_metrics=display_tooltip_agg_metrics,
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
+                tooltip_filter=tooltip_filter,
                 **self.style_kwargs,
             )
 
@@ -475,6 +513,11 @@ class QueryProfilerInterface(QueryProfilerStats):
         # self.index_widget.value = (self.index_widget.value - 1) % len(self.transactions)
         # self.step_idx.value = self.index_widget.value
         # self.update_query_display()
+        button.disabled = False
+
+    def tooltip_search_widget_button_action(self, button):
+        button.disabled = True
+        self.tooltip_search_dummy.value = self.tooltip_search_widget_text.value
         button.disabled = False
 
     def query_select_button_selected(self, selection):
