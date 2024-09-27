@@ -540,6 +540,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             previous = (current - 1) % (total - 1)
         self.query_select_dropdown.value = previous
         self.previous()
+        self.refresh_dropwdown_inside_path_id()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
         # self.index_widget.value = (self.index_widget.value - 1) % len(self.transactions)
