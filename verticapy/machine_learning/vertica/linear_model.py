@@ -54,13 +54,8 @@ class LinearModel:
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "features_importance_"]
 
-    # Utils
-
-    def _get_att_coeff_name(self) -> str:
-        """
-        Returns the coeff attribute
-        name in the details table.
-        """
+    @property
+    def _get_att_coeff_name(self) -> Literal["coefficient"]:
         return "coefficient"
 
     # Attributes Methods.
@@ -70,7 +65,7 @@ class LinearModel:
         Computes the model's attributes.
         """
         details = self.get_vertica_attributes("details")
-        coeff = self._get_att_coeff_name()
+        coeff = self._get_att_coeff_name
         self.coef_ = np.array(details[coeff][1:])
         self.intercept_ = details[coeff][0]
 
@@ -81,7 +76,7 @@ class LinearModel:
         Computes the features importance.
         """
         vertica_version(condition=[8, 1, 1])
-        coeff = self._get_att_coeff_name()
+        coeff = self._get_att_coeff_name
         query = f"""
         SELECT /*+LABEL('learn.VerticaModel.features_importance')*/
             predictor, 
@@ -2711,6 +2706,10 @@ class PLSRegression(LinearModel, Regressor):
     def _model_type(self) -> Literal["PLSRegression"]:
         return "PLSRegression"
 
+    @property
+    def _get_att_coeff_name(self) -> Literal["coefficient_0"]:
+        return "coefficient_0"
+
     # System & Special Methods.
 
     @check_minimum_version
@@ -2730,12 +2729,222 @@ class PLSRegression(LinearModel, Regressor):
 
     # Utils
 
-    def _get_att_coeff_name(self) -> str:
+    def _get_non_norm_coeff(self):
         """
-        Returns the coeff attribute
-        name in the details table.
+        Returns the non normalized
+        coefficients.
         """
-        return "coefficient_0"
+        if self.get_params()["scale"]:
+            agg = (
+                vDataFrame(self.input_relation)[self.X + [self.y]]
+                .agg(["std", "mean"])
+                .to_numpy()
+            )
+            std = agg[:, 0][:-1]
+            mean = agg[:, 1][:-1]
+            y_std = agg[:, 0][-1]
+            y_mean = agg[:, 1][:1]
+            intercept = np.sum(-mean * self.coef_ / std) + self.intercept_
+            coef = self.coef_ / std
+            return (coef, intercept)
+        return (self.coef_, self.intercept_)
+
+    # Features Importance Methods.
+
+    def _compute_features_importance(self) -> None:
+        """
+        Computes the features importance.
+        """
+        if not (self.get_params()["scale"]):
+            super()._compute_features_importance()
+        else:
+            res_sum = sum(abs(self.coef_))
+            if res_sum != 0:
+                self.features_importance_ = 100 * (self.coef_) / sum(abs(self.coef_))
+            else:
+                self.features_importance_ = np.array([100.0 for x in self.coef_])
+
+    # I/O Methods.
+
+    def to_memmodel(self) -> mm.LinearModel:
+        """
+        Converts the model to an InMemory object
+        that can be used for different types of
+        predictions.
+
+        Returns
+        -------
+        InMemoryModel
+            Representation of the model.
+
+        Examples
+        --------
+        If we consider that you've built a model named
+        ``model``, then it is easy to export it using
+        the following syntax.
+
+        .. code-block:: python
+
+            model.to_memmodel()
+
+        .. note::
+
+            ``MemModel`` objects serve as in-memory
+            representations of machine learning models.
+            They can be used for both in-database and
+            in-memory prediction tasks. These objects
+            can be pickled in the same way that you
+            would pickle a ``scikit-learn`` model.
+
+        .. note::
+
+            Look at
+            :py:class:`~verticapy.machine_learning.memmodel.linear_model.LinearModel`
+            for more information.
+        """
+        coef, intercept = self._get_non_norm_coeff()
+        return mm.LinearModel(coef, intercept)
+
+    # Plotting Methods.
+
+    def plot(
+        self,
+        max_nb_points: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        max_nb_points: int
+            Maximum number of
+            points to display.
+        chart: PlottingObject, optional
+            The chart object
+            to plot on.
+        **style_kwargs
+            Any optional parameter to
+            pass to the Plotting functions.
+
+        Returns
+        -------
+        object
+            Plotting Object.
+
+        Examples
+        --------
+        We import :py:mod:`verticapy`:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        For this example, we will
+        use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        Divide your dataset into training
+        and testing subsets.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        Let's import the model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'newton',
+                fit_intercept = True,
+            )
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density",
+                ],
+                "quality",
+                test,
+            )
+
+        If the model allows, you can also
+        generate relevant plots. For example,
+        regression plots can be found in
+        the :ref:`chart_gallery.regression_plot`.
+
+        .. code-block:: python
+
+            model.plot()
+
+        .. important::
+
+            For this example, a specific model is
+            utilized, and it may not correspond
+            exactly to the model you are working
+            with. To see a comprehensive example
+            specific to your class of interest,
+            please refer to that particular class.
+        """
+        coef, intercept = self._get_non_norm_coeff()
+        vpy_plt, kwargs = self.get_plotting_lib(
+            class_name="RegressionPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.RegressionPlot(
+            vdf=vDataFrame(self.input_relation),
+            columns=self.X + [self.y],
+            max_nb_points=max_nb_points,
+            misc_data={"coef": np.concatenate(([intercept], coef))},
+        ).draw(**kwargs)
 
 
 class PoissonRegressor(LinearModel, Regressor):
