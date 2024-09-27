@@ -389,8 +389,8 @@ class QueryProfilerInterface(QueryProfilerStats):
         apply_tree_clicked,
         temp_display,
         projection_display,
-        tooltip_filter,
-        op_filter,
+        tooltip_filter=None,
+        op_filter=None,
     ):
         """
         Callback function that displays the Query Plan Tree.
@@ -441,7 +441,9 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 tooltip_filter=tooltip_filter,
-                op_filter=eval(op_filter) if op_filter != "" else None,
+                op_filter=eval(op_filter)
+                if op_filter != "" and op_filter != None
+                else None,
                 **self.style_kwargs,
             )  # type: ignore
 
@@ -472,7 +474,9 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 tooltip_filter=tooltip_filter,
-                op_filter=eval(op_filter) if op_filter != "" else None,
+                op_filter=eval(op_filter)
+                if op_filter != "" and op_filter != None
+                else None,
                 **self.style_kwargs,
             )
 
@@ -979,6 +983,8 @@ class QueryProfilerComparison:
                 "apply_tree_clicked": qprof.apply_tree,
                 "temp_display": qprof.accordions.children[2].children[0],
                 "projection_display": qprof.accordions.children[2].children[1],
+                "op_filter": qprof.search_operator_dummy,
+                "tooltip_filter": qprof.tooltip_search_dummy,
             }
             return widgets.interactive_output(qprof.update_qplan_tree, controls)
 
