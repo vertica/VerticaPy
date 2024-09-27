@@ -148,26 +148,52 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
         self.tooltip_search_widget_button = widgets.Button(
             description="Search by Tooltip",
-            layout=widgets.Layout(width="200px"),  # Optionally specify the button width
+            layout=widgets.Layout(width="200px"),
         )
         self.tooltip_search_dummy = widgets.Text()
-
-        # Button click event
         self.tooltip_search_widget_button.on_click(
             self.tooltip_search_widget_button_action
         )
-
-        # Horizontal line with explicit width
         horizontal_line = widgets.HTML(
             value="<hr style='border: 1px solid black; width: 100px;'>"
         )
-
-        # VBox with centered alignment
         self.tooltip_search_widget = widgets.VBox(
             [
                 horizontal_line,
                 self.tooltip_search_widget_text,
                 self.tooltip_search_widget_button,
+            ],
+            layout=widgets.Layout(
+                justify_content="center", align_items="center", width="100%"
+            ),
+        )
+
+        # Opeartor Search
+        self.search_operator_dummy = widgets.Text()
+        self.search_operator_options = self._get_all_op()
+        self.search_operator_dropdown1 = widgets.Dropdown(
+            options=[None] + self.search_operator_options,
+            description="Critera # 1:",
+            value=None,
+            layout={"width": "260px"},
+        )
+        self.search_operator_dropdown2 = widgets.Dropdown(
+            options=[None] + self.search_operator_options,
+            description="Critera # 2:",
+            value=None,
+            layout={"width": "260px"},
+        )
+        self.search_operator_button = widgets.Button(
+            description="Search by operators",
+            layout=widgets.Layout(width="200px"),
+        )
+        self.search_operator_button.on_click(self.search_operator_button_button_action)
+        self.search_operator_widget = widgets.VBox(
+            [
+                horizontal_line,
+                self.search_operator_dropdown1,
+                self.search_operator_dropdown2,
+                self.search_operator_button,
             ],
             layout=widgets.Layout(
                 justify_content="center", align_items="center", width="100%"
@@ -301,6 +327,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                     self.pathid_dropdown.get_item(),
                     refresh_pathids_box,
                     self.tooltip_search_widget,
+                    self.search_operator_widget,
                 ]
             ),
             "Tree style": widgets.VBox(tree_settings),
@@ -327,6 +354,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             "temp_display": temp_rel_widget,
             "projection_display": projections_dml_widget,
             "tooltip_filter": self.tooltip_search_dummy,
+            "op_filter": self.search_operator_dummy,
         }
         interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
@@ -362,6 +390,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         temp_display,
         projection_display,
         tooltip_filter,
+        op_filter,
     ):
         """
         Callback function that displays the Query Plan Tree.
@@ -412,6 +441,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 tooltip_filter=tooltip_filter,
+                op_filter=eval(op_filter) if op_filter != "" else None,
                 **self.style_kwargs,
             )  # type: ignore
 
@@ -442,6 +472,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 tooltip_filter=tooltip_filter,
+                op_filter=eval(op_filter) if op_filter != "" else None,
                 **self.style_kwargs,
             )
 
@@ -518,6 +549,22 @@ class QueryProfilerInterface(QueryProfilerStats):
     def tooltip_search_widget_button_action(self, button):
         button.disabled = True
         self.tooltip_search_dummy.value = self.tooltip_search_widget_text.value
+        button.disabled = False
+
+    def search_operator_button_button_action(self, button):
+        button.disabled = True
+        values = None
+        value1 = self.search_operator_dropdown1.value
+        value2 = self.search_operator_dropdown2.value
+        if value1 != None:
+            if value2 != None:
+                values = [value1, value2]
+            else:
+                values = [value1]
+        else:
+            if value2 != None:
+                values = [value2]
+        self.search_operator_dummy.value = str(values) if not None else ""
         button.disabled = False
 
     def query_select_button_selected(self, selection):
