@@ -325,7 +325,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             "Path ID": widgets.VBox(
                 [
                     self.pathid_dropdown.get_item(),
-                    refresh_pathids_box,
+                    # refresh_pathids_box,
                     self.tooltip_search_widget,
                     self.search_operator_widget,
                 ]
@@ -512,6 +512,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         else:
             next = 1
         self.query_select_dropdown.value = next
+        self.refresh_dropwdown_inside_path_id()
         # self.next()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
@@ -593,6 +594,20 @@ class QueryProfilerInterface(QueryProfilerStats):
         options = [None] + QprofUtility._get_path_order(rows)
         self.pathid_dropdown.set_child_attr("options", options)
         self.pathid_dropdown.set_child_attr("disabled", False)
+
+    def refresh_dropwdown_inside_path_id(self):
+        """
+        ...
+        """
+        # Update path id dropdown options
+        rows = QprofUtility._get_rows(self.get_qplan(print_plan=False))
+        options = [None] + QprofUtility._get_path_order(rows)
+        self.pathid_dropdown.set_child_attr("options", options)
+        self.pathid_dropdown.set_child_attr("disabled", False)
+        # Update Search dropdown options
+        self.search_operator_options = self._get_all_op()
+        self.search_operator_dropdown1.options = [None] + self.search_operator_options
+        self.search_operator_dropdown2.options = [None] + self.search_operator_options
 
     def apply_tree_settings(self, _):
         """
