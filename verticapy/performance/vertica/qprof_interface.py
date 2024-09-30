@@ -72,14 +72,14 @@ class QueryProfilerInterface(QueryProfilerStats):
             value=False, description="Qsteps switch", disabled=False, indent=False
         )
 
-        self.accordions = None
+        self._accordions = None
 
         # buttons to navigate through transactions
         next_button = widgets.Button(description="Next Query")
         prev_button = widgets.Button(description="Previous Query")
         # self.test_output = widgets.Output()
-        next_button.on_click(self.next_button_clicked)
-        prev_button.on_click(self.prev_button_clicked)
+        next_button.on_click(self._next_button_clicked)
+        prev_button.on_click(self._prev_button_clicked)
         self.transaction_buttons = widgets.VBox(
             [widgets.HBox([prev_button, next_button])]
         )
@@ -90,22 +90,22 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
         self.query_select_dropdown.style.description_width = "100px"
         # Success and Failure HTML
-        self.success_html = """
+        self._success_html = """
         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'>
             <circle cx='12' cy='12' r='12' fill='#4CAF50'/>
             <path d='M9 19c-.256 0-.512-.098-.707-.293l-5-5c-.39-.39-.39-1.024 0-1.414s1.024-.39 1.414 0L9 16.586l10.293-10.293c.39-.39 1.024-.39 1.414 0s.39 1.024 0 1.414l-11 11c-.195.195-.451.293-.707.293z' fill='white'/>
         </svg>
         """
-        self.failure_html = """
+        self._failure_html = """
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
             <circle cx="12" cy="12" r="12" fill="#F44336"/>
             <path d="M15.5355 8.46447a1 1 0 0 0-1.4142 0L12 10.5858 9.87868 8.46447a1 1 0 0 0-1.4142 1.4142L10.5858 12 8.46447 14.1213a1 1 0 0 0 1.4142 1.4142L12 13.4142l2.1213 2.1213a1 1 0 0 0 1.4142-1.4142L13.4142 12l2.1213-2.1213a1 1 0 0 0 0-1.4142z" fill="white"/>
         </svg>
         """
         # Query Inofrmation - Query Text & Time
-        self.query_display_info = widgets.HTML(
+        self._query_display_info = widgets.HTML(
             value=f"""
-        <b>Query Execution Success:</b> {self.success_html if self.query_success else self.failure_html} <br>
+        <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html} <br>
         <b>Execution Time:</b> {self.get_qduration()} (seconds)<br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
@@ -113,7 +113,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         <b>Key ID:</b> {self.key_id}
         """
         )
-        self.query_display = widgets.VBox(
+        self._query_display = widgets.VBox(
             [
                 widgets.HTML(
                     layout={
@@ -124,10 +124,10 @@ class QueryProfilerInterface(QueryProfilerStats):
                 )
             ]
         )
-        self.update_query_display()
+        self._update_query_display()
         self.session_param_display = []
-        self.update_session_param_display()
-        self.index_widget = widgets.IntText(
+        self._update_session_param_display()
+        self._index_widget = widgets.IntText(
             description="Index:", value=self.transactions_idx
         )
         # build the path_order array and set up a dropdown menu
@@ -141,27 +141,27 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
         # button to apply the path id settings on the tree
         self.refresh_pathids = widgets.Button(description="Refresh")
-        self.refresh_pathids.on_click(self.refresh_clicked)
+        self.refresh_pathids.on_click(self._refresh_clicked)
         # Tooltip search
-        self.tooltip_search_widget_text = widgets.Text(
+        self._tooltip_search_widget_text = widgets.Text(
             placeholder="Enter part of tooltip to search"
         )
-        self.tooltip_search_widget_button = widgets.Button(
+        self._tooltip_search_widget_button = widgets.Button(
             description="Search by Tooltip",
             layout=widgets.Layout(width="200px"),
         )
-        self.tooltip_search_dummy = widgets.Text()
-        self.tooltip_search_widget_button.on_click(
-            self.tooltip_search_widget_button_action
+        self._tooltip_search_dummy = widgets.Text()
+        self._tooltip_search_widget_button.on_click(
+            self._tooltip_search_widget_button_action
         )
         horizontal_line = widgets.HTML(
             value="<hr style='border: 1px solid black; width: 100px;'>"
         )
-        self.tooltip_search_widget = widgets.VBox(
+        self._tooltip_search_widget = widgets.VBox(
             [
                 horizontal_line,
-                self.tooltip_search_widget_text,
-                self.tooltip_search_widget_button,
+                self._tooltip_search_widget_text,
+                self._tooltip_search_widget_button,
             ],
             layout=widgets.Layout(
                 justify_content="center", align_items="center", width="100%"
@@ -169,47 +169,49 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
 
         # Opeartor Search
-        self.search_operator_dummy = widgets.Text()
-        self.search_operator_options = self._get_all_op()
-        self.search_operator_dropdown1 = widgets.Dropdown(
-            options=[None] + self.search_operator_options,
+        self._search_operator_dummy = widgets.Text()
+        self._search_operator_options = self._get_all_op()
+        self._search_operator_dropdown1 = widgets.Dropdown(
+            options=[None] + self._search_operator_options,
             description="Critera # 1:",
             value=None,
             layout={"width": "260px"},
         )
-        self.search_operator_dropdown2 = widgets.Dropdown(
-            options=[None] + self.search_operator_options,
+        self._search_operator_dropdown2 = widgets.Dropdown(
+            options=[None] + self._search_operator_options,
             description="Critera # 2:",
             value=None,
             layout={"width": "260px"},
         )
-        self.search_operator_button = widgets.Button(
+        self._search_operator_button = widgets.Button(
             description="Search by operators",
             layout=widgets.Layout(width="200px"),
         )
-        self.search_operator_button.on_click(self.search_operator_button_button_action)
-        self.search_operator_widget = widgets.VBox(
+        self._search_operator_button.on_click(
+            self._search_operator_button_button_action
+        )
+        self._search_operator_widget = widgets.VBox(
             [
                 horizontal_line,
-                self.search_operator_dropdown1,
-                self.search_operator_dropdown2,
-                self.search_operator_button,
+                self._search_operator_dropdown1,
+                self._search_operator_dropdown2,
+                self._search_operator_button,
             ],
             layout=widgets.Layout(
                 justify_content="center", align_items="center", width="100%"
             ),
         )
-        self.step_idx = widgets.IntText(description="Index:", value=0)
+        self._step_idx = widgets.IntText(description="Index:", value=0)
 
         # graph headers
-        self.cpu_header = widgets.HTML(
-            value=f"<h1><b>CPU Time by node and path_id - [query_idx: {self.index_widget.value}]</b></h1>"
+        self._cpu_header = widgets.HTML(
+            value=f"<h1><b>CPU Time by node and path_id - [query_idx: {self._index_widget.value}]</b></h1>"
         )
-        self.qpt_header = widgets.HTML(
-            value=f"<h1><b>Query Plan Tree - [query_idx: {self.index_widget.value}]</b></h1>"
+        self._qpt_header = widgets.HTML(
+            value=f"<h1><b>Query Plan Tree - [query_idx: {self._index_widget.value}]</b></h1>"
         )
-        self.qsteps_header = widgets.HTML(
-            value=f"<h1><b>Query Execution Steps - [query_idx: {self.index_widget.value}]</b></h1>"
+        self._qsteps_header = widgets.HTML(
+            value=f"<h1><b>Query Execution Steps - [query_idx: {self._index_widget.value}]</b></h1>"
         )
 
     def get_qplan_tree(self, use_javascript=True, hide_settings=False, **style_kwargs):
@@ -300,7 +302,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
 
         tree_button = widgets.Button(description="Apply")
-        tree_button.on_click(self.apply_tree_settings)
+        tree_button.on_click(self._apply_tree_settings)
         tree_button_box = widgets.HBox(
             [tree_button], layout={"justify_content": "center"}
         )
@@ -326,21 +328,21 @@ class QueryProfilerInterface(QueryProfilerStats):
                 [
                     self.pathid_dropdown.get_item(),
                     # refresh_pathids_box,
-                    self.tooltip_search_widget,
-                    self.search_operator_widget,
+                    self._tooltip_search_widget,
+                    self._search_operator_widget,
                 ]
             ),
             "Tree style": widgets.VBox(tree_settings),
-            "Query text": self.query_display,
+            "Query text": self._query_display,
             "Session Parameters": self.session_param_display,
         }
         query_text_index = list(accordion_items.keys()).index("Query text")
-        self.accordions = Visualizer._accordion(
+        self._accordions = Visualizer._accordion(
             list(accordion_items.values()), accordion_items.keys()
         )
-        self.accordions.selected_index = query_text_index
+        self._accordions.selected_index = query_text_index
         header_box = widgets.HBox(
-            [self.qpt_header], layout={"justify_content": "center"}
+            [self._qpt_header], layout={"justify_content": "center"}
         )
         controls = {
             "index": self.query_select_dropdown,
@@ -353,31 +355,31 @@ class QueryProfilerInterface(QueryProfilerStats):
             "apply_tree_clicked": self.apply_tree,
             "temp_display": temp_rel_widget,
             "projection_display": projections_dml_widget,
-            "tooltip_filter": self.tooltip_search_dummy,
-            "op_filter": self.search_operator_dummy,
+            "tooltip_filter": self._tooltip_search_dummy,
+            "op_filter": self._search_operator_dummy,
         }
-        self.interactive_output = widgets.interactive_output(
-            self.update_qplan_tree, controls
+        self._interactive_output = widgets.interactive_output(
+            self._update_qplan_tree, controls
         )
         if hide_settings:
-            self.accordions.layout.display = "none"
+            self._accordions.layout.display = "none"
             self.transaction_buttons.layout.display = "none"
             self.query_select_dropdown.layout.display = "none"
-            self.query_display_info.layout.display = "none"
+            self._query_display_info.layout.display = "none"
         settings = [
-            self.accordions,
+            self._accordions,
             self.transaction_buttons,
             self.query_select_dropdown,
-            self.query_display_info,
+            self._query_display_info,
         ]
         viz = Visualizer(
             settings_wids=settings,
-            graph_wids=[header_box, self.interactive_output],
+            graph_wids=[header_box, self._interactive_output],
             orientation="v" if hide_settings else "h",
         )
         viz.display()
 
-    def update_qplan_tree(
+    def _update_qplan_tree(
         self,
         metric1,
         metric2,
@@ -420,7 +422,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             metric = ["rows"]
 
         graph_id = "g" + str(uuid.uuid4())
-        self.query_select_button_selected(index)
+        self._query_select_button_selected(index)
         if self.pathid_dropdown.get_child_attr("disabled"):
             path_id = None
 
@@ -491,12 +493,12 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display(HTML(output_html))
 
         # Update the header after the tree is displayed
-        self.qpt_header.value = (
+        self._qpt_header.value = (
             f"<h1><b>Query Plan Tree - [query_idx: {index}]</b></h1>"
         )
 
     # Event handlers for the buttons
-    def next_button_clicked(self, button):
+    def _next_button_clicked(self, button):
         """
         Callback function triggered when
         the user click on the button to
@@ -515,16 +517,16 @@ class QueryProfilerInterface(QueryProfilerStats):
         else:
             next = 1
         self.query_select_dropdown.value = next
-        self.refresh_dropwdown_inside_path_id()
+        self._refresh_dropwdown_inside_path_id()
         # self.next()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
-        # self.index_widget.value = (self.index_widget.value + 1) % len(self.transactions)
-        # self.step_idx.value = self.index_widget.value
-        # self.update_query_display()
+        # self._index_widget.value = (self._index_widget.value + 1) % len(self.transactions)
+        # self._step_idx.value = self._index_widget.value
+        # self._update_query_display()
         button.disabled = False
 
-    def prev_button_clicked(self, button):
+    def _prev_button_clicked(self, button):
         """
         Callback function triggered
         when the user click on the
@@ -543,24 +545,24 @@ class QueryProfilerInterface(QueryProfilerStats):
             previous = (current - 1) % (total - 1)
         self.query_select_dropdown.value = previous
         self.previous()
-        self.refresh_dropwdown_inside_path_id()
+        self._refresh_dropwdown_inside_path_id()
         # self.pathid_dropdown.set_child_attr("disabled", True)
         # self.refresh_pathids.disabled = False
-        # self.index_widget.value = (self.index_widget.value - 1) % len(self.transactions)
-        # self.step_idx.value = self.index_widget.value
-        # self.update_query_display()
+        # self._index_widget.value = (self._index_widget.value - 1) % len(self.transactions)
+        # self._step_idx.value = self._index_widget.value
+        # self._update_query_display()
         button.disabled = False
 
-    def tooltip_search_widget_button_action(self, button):
+    def _tooltip_search_widget_button_action(self, button):
         button.disabled = True
-        self.tooltip_search_dummy.value = self.tooltip_search_widget_text.value
+        self._tooltip_search_dummy.value = self._tooltip_search_widget_text.value
         button.disabled = False
 
-    def search_operator_button_button_action(self, button):
+    def _search_operator_button_button_action(self, button):
         button.disabled = True
         values = None
-        value1 = self.search_operator_dropdown1.value
-        value2 = self.search_operator_dropdown2.value
+        value1 = self._search_operator_dropdown1.value
+        value2 = self._search_operator_dropdown2.value
         if value1 != None:
             if value2 != None:
                 values = [value1, value2]
@@ -569,10 +571,10 @@ class QueryProfilerInterface(QueryProfilerStats):
         else:
             if value2 != None:
                 values = [value2]
-        self.search_operator_dummy.value = str(values) if not None else ""
+        self._search_operator_dummy.value = str(values) if not None else ""
         button.disabled = False
 
-    def query_select_button_selected(self, selection):
+    def _query_select_button_selected(self, selection):
         """
         Callback function triggered
         when the user selects the index of
@@ -583,13 +585,13 @@ class QueryProfilerInterface(QueryProfilerStats):
         """
         # self.pathid_dropdown.set_child_attr("disabled", True)
         self.refresh_pathids.disabled = False
-        self.index_widget.value = selection
-        self.step_idx.value = selection
+        self._index_widget.value = selection
+        self._step_idx.value = selection
         self.set_position(selection)
-        self.update_query_display()
-        self.update_session_param_display()
+        self._update_query_display()
+        self._update_session_param_display()
 
-    def refresh_clicked(self, button):
+    def _refresh_clicked(self, button):
         """
         ...
         """
@@ -599,7 +601,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.pathid_dropdown.set_child_attr("options", options)
         self.pathid_dropdown.set_child_attr("disabled", False)
 
-    def refresh_dropwdown_inside_path_id(self):
+    def _refresh_dropwdown_inside_path_id(self):
         """
         ...
         """
@@ -609,11 +611,11 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.pathid_dropdown.set_child_attr("options", options)
         self.pathid_dropdown.set_child_attr("disabled", False)
         # Update Search dropdown options
-        self.search_operator_options = self._get_all_op()
-        self.search_operator_dropdown1.options = [None] + self.search_operator_options
-        self.search_operator_dropdown2.options = [None] + self.search_operator_options
+        self._search_operator_options = self._get_all_op()
+        self._search_operator_dropdown1.options = [None] + self._search_operator_options
+        self._search_operator_dropdown2.options = [None] + self._search_operator_options
 
-    def apply_tree_settings(self, _):
+    def _apply_tree_settings(self, _):
         """
         ...
         """
@@ -624,14 +626,14 @@ class QueryProfilerInterface(QueryProfilerStats):
         }
         self.apply_tree.value = not self.apply_tree.value
 
-    def update_query_display(self):
+    def _update_query_display(self):
         """
         Updates the query display text widget with the current query.
         """
         current_query = self.get_request(print_sql=False, return_html=True)
-        self.query_display.children[0].value = current_query
-        self.query_display_info.value = f"""
-        <b>Query Execution Success:</b> {self.success_html if self.query_success else self.failure_html} <br>
+        self._query_display.children[0].value = current_query
+        self._query_display_info.value = f"""
+        <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html} <br>
         <b>Execution Time:</b> {self.get_qduration()} (seconds)<br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
@@ -639,7 +641,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         <b>Key ID:</b> {self.key_id}
         """
 
-    def update_session_param_display(self):
+    def _update_session_param_display(self):
         """
         Updates the Session parameter display text widget with the current query.
         """
@@ -725,18 +727,18 @@ class QueryProfilerInterface(QueryProfilerStats):
             list(accordion_items.values()), accordion_items.keys()
         )
         qsteps_settings = [
-            self.accordions,
+            self._accordions,
             self.transaction_buttons,
         ]
 
         controls = {
-            "query_idx": self.index_widget,
+            "query_idx": self._index_widget,
             "clicked": self.qsteps_switch,
         }
 
         interactive_output = widgets.interactive_output(self.update_qsteps, controls)
         header_box = widgets.HBox(
-            [self.qsteps_header], layout={"justify_content": "center"}
+            [self._qsteps_header], layout={"justify_content": "center"}
         )
         settings_layout = {}
         graph_layout = {}
@@ -767,7 +769,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 categoryorder=self.qsteps_controls["categoryorder"],
             )
         )
-        self.qsteps_header.value = (
+        self._qsteps_header.value = (
             f"<h1><b>Query Execution Steps - [query_idx: {query_idx}]</b></h1>"
         )
 
@@ -805,13 +807,13 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
 
         controls = {
-            "query_idx": self.index_widget,
+            "query_idx": self._index_widget,
             "kind": cpu_items["kind"].get_child(),
             "categoryorder": cpu_items["categoryorder"].get_child(),
         }
         interactive_output = widgets.interactive_output(self.update_cpu_time, controls)
         header_box = widgets.HBox(
-            [self.cpu_header], layout={"justify_content": "center"}
+            [self._cpu_header], layout={"justify_content": "center"}
         )
         cpu_settings = [
             cpu_items["kind"].get_item(),
@@ -841,7 +843,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 categoryorder=categoryorder,
             )
         )
-        self.cpu_header.value = (
+        self._cpu_header.value = (
             f"<h1><b>CPU Time by node and path_id - [query_idx: {query_idx}]</b></h1>"
         )
 
@@ -856,12 +858,12 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.number_of_steps = len(steps_id)
         next_step = widgets.Button(description="Next step")
         previous_step = widgets.Button(description="Previous step")
-        next_step.on_click(self.next_step_clicked)
-        previous_step.on_click(self.prev_step_clicked)
-        self.step_text = widgets.HTML(value=f"Step {self.step_idx.value}")
+        next_step.on_click(self._next_step_clicked)
+        previous_step.on_click(self._prev_step_clicked)
+        self.step_text = widgets.HTML(value=f"Step {self._step_idx.value}")
         step_navigation = widgets.HBox([previous_step, self.step_text, next_step])
         interactive_output = widgets.interactive_output(
-            self.update_step, {"step_idx": self.step_idx}
+            self.update_step, {"step_idx": self._step_idx}
         )
         out = widgets.Output()
         with out:
@@ -882,20 +884,20 @@ class QueryProfilerInterface(QueryProfilerStats):
             display(steps_id[step_idx]())
         self.step_text.value = f"Step {step_idx}"
 
-    def next_step_clicked(self, button):
+    def _next_step_clicked(self, button):
         """
         ...
         """
         button.disabled = True
-        self.step_idx.value = (self.step_idx.value + 1) % self.number_of_steps
+        self._step_idx.value = (self._step_idx.value + 1) % self.number_of_steps
         button.disabled = False
 
-    def prev_step_clicked(self, button):
+    def _prev_step_clicked(self, button):
         """
         ...
         """
         button.disabled = True
-        self.step_idx.value = (self.step_idx.value - 1) % self.number_of_steps
+        self._step_idx.value = (self._step_idx.value - 1) % self.number_of_steps
         button.disabled = False
 
     def get_step_funcs(self):
@@ -927,6 +929,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             21: self.get_cluster_config,
         }
 
+
 class QueryProfilerComparison:
     """
     Initializes a QueryProfilerComparison object with two QueryProfilerInterface instances for side-by-side comparison.
@@ -952,9 +955,9 @@ class QueryProfilerComparison:
 
         if self.dual_effect:
             # Replace the children tuple of qprof2 with a new one that copies qprof1's first accordion child
-            self.qprof2.accordions.children = (
-                self.qprof1.accordions.children[0],
-            ) + self.qprof2.accordions.children[1:]
+            self.qprof2._accordions.children = (
+                self.qprof1._accordions.children[0],
+            ) + self.qprof2._accordions.children[1:]
 
             # Sync the accordion selection between qprof1 and qprof2
             self._sync_accordion_selection()
@@ -967,25 +970,31 @@ class QueryProfilerComparison:
         """
         Creates interactive controls for qprof1.
         """
-        interactive_output = self.qprof1.interactive_output
-        return widgets.HBox([interactive_output], layout=widgets.Layout(width="50%", border="1px solid black"))
+        interactive_output = self.qprof1._interactive_output
+        return widgets.HBox(
+            [interactive_output],
+            layout=widgets.Layout(width="50%", border="1px solid black"),
+        )
 
     def _create_qprof2_controls(self):
         """
         Creates interactive controls for qprof2.
         """
-        interactive_output = self.qprof2.interactive_output
-        return widgets.HBox([interactive_output], layout=widgets.Layout(width="50%", border="1px solid black"))
+        interactive_output = self.qprof2._interactive_output
+        return widgets.HBox(
+            [interactive_output],
+            layout=widgets.Layout(width="50%", border="1px solid black"),
+        )
 
     def _create_controls(self):
         """
         Creates side-by-side controls for both qprof1 and qprof2.
         """
-        q1_control = self.qprof1.accordions
+        q1_control = self.qprof1._accordions
         q1_control.selected_index = None
         q1_control.layout.width = "50%"
 
-        q2_control = self.qprof2.accordions
+        q2_control = self.qprof2._accordions
         q2_control.selected_index = None
         q2_control.layout.width = "50%"
 
@@ -993,10 +1002,12 @@ class QueryProfilerComparison:
         q1_interactive = self._create_qprof1_controls()
         q2_interactive = self._create_qprof2_controls()
 
-        return widgets.VBox([
-            widgets.HBox([q1_control, q2_control]),
-            widgets.HBox([q1_interactive, q2_interactive]),
-        ])
+        return widgets.VBox(
+            [
+                widgets.HBox([q1_control, q2_control]),
+                widgets.HBox([q1_interactive, q2_interactive]),
+            ]
+        )
 
     def _sync_accordion_selection(self):
         """
@@ -1009,21 +1020,21 @@ class QueryProfilerComparison:
             Callback function to update qprof2's accordion selection when qprof1's accordion selection changes.
             """
             if change["name"] == "selected_index" and change["new"] is not None:
-                self.qprof2.accordions.selected_index = change["new"]
+                self.qprof2._accordions.selected_index = change["new"]
 
         # Observe changes in the selected_index of qprof1's accordion
-        self.qprof1.accordions.observe(on_accordion_change, names="selected_index")
+        self.qprof1._accordions.observe(on_accordion_change, names="selected_index")
 
     def _create_query_info(self):
         """
         Creates the query information display for both qprof1 and qprof2 side by side.
         """
-        q1_info = self.qprof1.query_display_info
+        q1_info = self.qprof1._query_display_info
         q1_info.layout.display = "block"
         q1_info.layout.width = "50%"
         q1_info.layout.border = "1px solid black"
 
-        q2_info = self.qprof2.query_display_info
+        q2_info = self.qprof2._query_display_info
         q2_info.layout.display = "block"
         q2_info.layout.width = "50%"
         q2_info.layout.border = "1px solid black"
