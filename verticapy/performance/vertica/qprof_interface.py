@@ -62,7 +62,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             iterchecks=iterchecks,
             print_info=print_info,
         )
-
+        self.output = widgets.Output()
         self.apply_tree = widgets.Checkbox(
             value=False, description="Apply tree", disabled=False, indent=False
         )
@@ -356,7 +356,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             "tooltip_filter": self.tooltip_search_dummy,
             "op_filter": self.search_operator_dummy,
         }
-        interactive_output = widgets.interactive_output(
+        self.interactive_output = widgets.interactive_output(
             self.update_qplan_tree, controls
         )
         if hide_settings:
@@ -372,7 +372,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         ]
         viz = Visualizer(
             settings_wids=settings,
-            graph_wids=[header_box, interactive_output],
+            graph_wids=[header_box, self.interactive_output],
             orientation="v" if hide_settings else "h",
         )
         viz.display()
@@ -396,12 +396,11 @@ class QueryProfilerInterface(QueryProfilerStats):
         Callback function that displays the Query Plan Tree.
         """
         # Create an output widget to hold the hourglass and the tree
-        output = widgets.Output()
-        display(output)
+        display(self.output)
 
         # Show hourglass in the output before starting long-running task
-        with output:
-            output.clear_output(wait=True)  # Clear any previous content
+        with self.output:
+            self.output.clear_output(wait=True)  # Clear any previous content
             # Create the hourglass icon
             hourglass_icon = widgets.HTML(
                 value='<i class="fa fa-hourglass-half" style="font-size:48px;color:gray;"></i>',
@@ -448,8 +447,8 @@ class QueryProfilerInterface(QueryProfilerStats):
             )  # type: ignore
 
             # After long-running task is done, update output with the result
-            with output:
-                output.clear_output(
+            with self.output:
+                self.output.clear_output(
                     wait=True
                 )  # Clear the hourglass before displaying the tree
                 html_widget = widgets.HTML(
@@ -487,8 +486,8 @@ class QueryProfilerInterface(QueryProfilerStats):
             output_html = replace_value(output_html, 'id="graph"', f'id="{graph_id}"')
             output_html = replace_value(output_html, "#graph", f"#{graph_id}")
 
-            with output:
-                output.clear_output(wait=True)  # Clear the hourglass
+            with self.output:
+                self.output.clear_output(wait=True)  # Clear the hourglass
                 display(HTML(output_html))
 
         # Update the header after the tree is displayed
@@ -928,7 +927,6 @@ class QueryProfilerInterface(QueryProfilerStats):
             21: self.get_cluster_config,
         }
 
-
 class QueryProfilerComparison:
     """
     Initializes a QueryProfilerComparison object with two QueryProfilerInterface instances for side-by-side comparison.
@@ -961,57 +959,44 @@ class QueryProfilerComparison:
             # Sync the accordion selection between qprof1 and qprof2
             self._sync_accordion_selection()
 
+        # Separate control creation for qprof1 and qprof2
         self.controls = self._create_controls()
         self.side_by_side_ui = widgets.VBox([self.query_info, self.controls])
 
-    def _create_controls(self):
-        def create_interactive_controls(qprof):
-            controls = {
-                "index": qprof.query_select_dropdown,
-                "metric1": qprof.accordions.children[0].children[0],
-                "metric2": qprof.accordions.children[0].children[1],
-                "display_tooltip_agg_metrics": qprof.accordions.children[0]
-                .children[3]
-                .children[0],
-                "display_tooltip_op_metrics": qprof.accordions.children[0]
-                .children[3]
-                .children[1],
-                "display_tooltip_descriptors": qprof.accordions.children[0]
-                .children[3]
-                .children[2],
-                "path_id": qprof.pathid_dropdown.get_child(),
-                "apply_tree_clicked": qprof.apply_tree,
-                "temp_display": qprof.accordions.children[2].children[0],
-                "projection_display": qprof.accordions.children[2].children[1],
-                "op_filter": qprof.search_operator_dummy,
-                "tooltip_filter": qprof.tooltip_search_dummy,
-            }
-            return widgets.interactive_output(qprof.update_qplan_tree, controls)
+    def _create_qprof1_controls(self):
+        """
+        Creates interactive controls for qprof1.
+        """
+        interactive_output = self.qprof1.interactive_output
+        return widgets.HBox([interactive_output], layout=widgets.Layout(width="50%", border="1px solid black"))
 
+    def _create_qprof2_controls(self):
+        """
+        Creates interactive controls for qprof2.
+        """
+        interactive_output = self.qprof2.interactive_output
+        return widgets.HBox([interactive_output], layout=widgets.Layout(width="50%", border="1px solid black"))
+
+    def _create_controls(self):
+        """
+        Creates side-by-side controls for both qprof1 and qprof2.
+        """
         q1_control = self.qprof1.accordions
         q1_control.selected_index = None
         q1_control.layout.width = "50%"
-        q1_interactive = create_interactive_controls(self.qprof1)
-        q1_interactive = widgets.HBox(
-            [q1_interactive],
-            layout=widgets.Layout(width="50%", border="1px solid black"),
-        )
 
         q2_control = self.qprof2.accordions
         q2_control.selected_index = None
         q2_control.layout.width = "50%"
-        q2_interactive = create_interactive_controls(self.qprof2)
-        q2_interactive = widgets.HBox(
-            [q2_interactive],
-            layout=widgets.Layout(width="50%", border="1px solid black"),
-        )
 
-        return widgets.VBox(
-            [
-                widgets.HBox([q1_control, q2_control]),
-                widgets.HBox([q1_interactive, q2_interactive]),
-            ]
-        )
+        # Use separate functions to create the interactive controls
+        q1_interactive = self._create_qprof1_controls()
+        q2_interactive = self._create_qprof2_controls()
+
+        return widgets.VBox([
+            widgets.HBox([q1_control, q2_control]),
+            widgets.HBox([q1_interactive, q2_interactive]),
+        ])
 
     def _sync_accordion_selection(self):
         """
@@ -1030,7 +1015,9 @@ class QueryProfilerComparison:
         self.qprof1.accordions.observe(on_accordion_change, names="selected_index")
 
     def _create_query_info(self):
-        # Get and set the layout for the query display info for both qprof1 and qprof2
+        """
+        Creates the query information display for both qprof1 and qprof2 side by side.
+        """
         q1_info = self.qprof1.query_display_info
         q1_info.layout.display = "block"
         q1_info.layout.width = "50%"
@@ -1041,9 +1028,10 @@ class QueryProfilerComparison:
         q2_info.layout.width = "50%"
         q2_info.layout.border = "1px solid black"
 
-        # Return an HBox containing the query display information side by side
         return widgets.HBox([q1_info, q2_info])
 
     def display(self):
-        # Display the final side-by-side UI
+        """
+        Displays the final side-by-side UI.
+        """
         display(self.side_by_side_ui)
