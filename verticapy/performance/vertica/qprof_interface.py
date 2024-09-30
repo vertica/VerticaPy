@@ -148,6 +148,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
         self._tooltip_search_widget_button = widgets.Button(
             description="Search by Tooltip",
+            icon='search',
             layout=widgets.Layout(width="200px"),
         )
         self._tooltip_search_dummy = widgets.Text()
@@ -185,6 +186,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
         self._search_operator_button = widgets.Button(
             description="Search by operators",
+            icon='search',
             layout=widgets.Layout(width="200px"),
         )
         self._search_operator_button.on_click(
@@ -201,6 +203,25 @@ class QueryProfilerInterface(QueryProfilerStats):
                 justify_content="center", align_items="center", width="100%"
             ),
         )
+
+        # Reset all search metrics
+        self._reset_search_button = widgets.Button(
+            description="Reset",
+            layout=widgets.Layout(width="100px"),
+            button_style='warning',
+            icon='refresh',
+        )
+        self._reset_search_button.on_click(self._reset_search_button_action)
+        self._reset_search_button_widget = widgets.VBox(
+            [
+                horizontal_line,
+                self._reset_search_button,
+            ],
+            layout=widgets.Layout(
+                justify_content="center", align_items="center", width="100%"
+            ),
+        )
+
         self._step_idx = widgets.IntText(description="Index:", value=0)
 
         # graph headers
@@ -330,6 +351,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                     # refresh_pathids_box,
                     self._tooltip_search_widget,
                     self._search_operator_widget,
+                    self._reset_search_button_widget,
                 ]
             ),
             "Tree style": widgets.VBox(tree_settings),
@@ -572,6 +594,16 @@ class QueryProfilerInterface(QueryProfilerStats):
             if value2 != None:
                 values = [value2]
         self._search_operator_dummy.value = str(values) if not None else ""
+        button.disabled = False
+
+    def _reset_search_button_action(self, button):
+        button.disabled = True
+        self._search_operator_dropdown1.value = None
+        self._search_operator_dropdown2.value = None
+        self._tooltip_search_widget_text.value = ""
+        self._search_operator_dummy.value = ""
+        self._tooltip_search_dummy.value = ""
+        self.pathid_dropdown.set_child_attr("value", None)
         button.disabled = False
 
     def _query_select_button_selected(self, selection):
