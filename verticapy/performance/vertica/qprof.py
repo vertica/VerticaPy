@@ -3022,7 +3022,7 @@ class QueryProfiler:
             else:
                 params += (tree_style[key],)
         if hasattr(self, "_tree_storage") and params in self._tree_storage:
-            obj = self._tree_storage[params]
+            obj = self._tree_storage[params]["obj"]
         else:
             obj = PerformanceTree(
                 rows,
@@ -3037,14 +3037,30 @@ class QueryProfiler:
             )
             if not (hasattr(self, "_tree_storage")):
                 self._tree_storage = {}
-            self._tree_storage[params] = obj
+            self._tree_storage[params] = {}
+            self._tree_storage[params]["obj"] = obj
         if return_tree_obj:
             return obj
         if return_graphviz:
-            return obj.to_graphviz()
+            if "graphviz" not in self._tree_storage[params]:
+                res = obj.to_graphviz()
+                self._tree_storage[params]["graphviz"] = res
+            else:
+                res = self._tree_storage[params]["graphviz"]
+            return res
         if return_html:
-            return obj.to_html()
-        return obj.plot_tree()
+            if "html" not in self._tree_storage[params]:
+                res = obj.to_html()
+                self._tree_storage[params]["html"] = res
+            else:
+                res = self._tree_storage[params]["html"]
+            return res
+        if "tree" not in self._tree_storage[params]:
+            res = obj.plot_tree()
+            self._tree_storage[params]["tree"] = res
+        else:
+            res = self._tree_storage[params]["tree"]
+        return res
 
     # Main
 
