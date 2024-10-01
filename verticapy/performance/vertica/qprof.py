@@ -1273,6 +1273,7 @@ class QueryProfiler:
             self.session_params_non_default_current = self.session_params_non_default[0]
         except:
             self.session_params_non_default_current = {}
+        self._tree_storage = {}
 
     # Tools
 
