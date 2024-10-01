@@ -3010,17 +3010,34 @@ class QueryProfiler:
 
         # Final.
         tree_style["temp_relation_order"] = self._get_qplan_tr_order()
-        obj = PerformanceTree(
-            rows,
-            show_ancestors=show_ancestors,
-            path_id_info=path_id_info,
-            path_id=path_id,
-            metric=metric,
-            metric_value=metric_value,
-            metric_value_op=metric_value_op,
-            style=tree_style,
-            pic_path=pic_path,
-        )
+        params = (path_id, path_id_info, show_ancestors, pic_path)
+        if isinstance(metric, (list, tuple)):
+            for met in metric:
+                params += (met,)
+        for key in tree_style:
+            params += (key,)
+            if isinstance(tree_style[key], (tuple, list)):
+                for val in tree_style[key]:
+                    params += (val,)
+            else:
+                params += (tree_style[key],)
+        if hasattr(self, "_tree_storage") and params in self._tree_storage:
+            obj = self._tree_storage[params]
+        else:
+            obj = PerformanceTree(
+                rows,
+                show_ancestors=show_ancestors,
+                path_id_info=path_id_info,
+                path_id=path_id,
+                metric=metric,
+                metric_value=metric_value,
+                metric_value_op=metric_value_op,
+                style=tree_style,
+                pic_path=pic_path,
+            )
+            if not (hasattr(self, "_tree_storage")):
+                self._tree_storage = {}
+            self._tree_storage[params] = obj
         if return_tree_obj:
             return obj
         if return_graphviz:
