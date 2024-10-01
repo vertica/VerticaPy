@@ -148,7 +148,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
         self._tooltip_search_widget_button = widgets.Button(
             description="Search by Tooltip",
-            icon='search',
+            icon="search",
             layout=widgets.Layout(width="200px"),
         )
         self._tooltip_search_dummy = widgets.Text()
@@ -186,7 +186,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         )
         self._search_operator_button = widgets.Button(
             description="Search by operators",
-            icon='search',
+            icon="search",
             layout=widgets.Layout(width="200px"),
         )
         self._search_operator_button.on_click(
@@ -208,8 +208,8 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._reset_search_button = widgets.Button(
             description="Reset",
             layout=widgets.Layout(width="100px"),
-            button_style='warning',
-            icon='refresh',
+            button_style="warning",
+            icon="refresh",
         )
         self._reset_search_button.on_click(self._reset_search_button_action)
         self._reset_search_button_widget = widgets.VBox(
