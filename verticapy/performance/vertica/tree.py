@@ -247,6 +247,8 @@ class PerformanceTree:
                 "It should be a list of integers.\n"
                 f"Found: {type(path_id_info)}."
             )
+        # Tooltips
+        self.tooltips = {}
 
     # Styling
 
@@ -501,6 +503,20 @@ class PerformanceTree:
             for i in range(len(self.rows))
         ]
         return min(all_metrics), max(all_metrics)
+
+    def get_tooltips(self, path_id: Optional[int] = None) -> Union[None, str, dict]:
+        """
+        Returns the corresponding
+        tooltip.
+        """
+        if self.tooltips == {}:
+            self.to_html()
+        if isinstance(path_id, NoneType):
+            return self.tooltips
+        elif path_id in self.tooltips:
+            return self.tooltips[path_id]
+        else:
+            return None
 
     # Utils
 
@@ -1887,6 +1903,7 @@ class PerformanceTree:
                 tooltip = tooltip.split("\n")[0] + current_me + tooltip_metrics
                 if self.style["display_tooltip_descriptors"]:
                     tooltip += description
+                self.tooltips[tree_id] = tooltip
                 params = f'width={wh}, height={wh}, tooltip="{tooltip}", fixedsize=true, URL="#path_id={tree_id}", xlabel="{ns_icon}"'
                 res += f"\t{tree_id} [{params}, label={label}];\n"
                 if tree_id in self.path_id_info:
@@ -2121,6 +2138,10 @@ class PerformanceTree:
                 all_legend[
                     "---"
                 ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">---</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">RESEGMENT</FONT></td></tr>'
+            if "RESEGMENT" not in row_tmp and "BROADCAST" not in row_tmp:
+                all_legend[
+                    "___"
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">___</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">NO RESEGMENT | NO BROADCAST</FONT></td></tr>'
             if "HASH" in row_tmp:
                 all_legend[
                     "HASH"
@@ -2162,6 +2183,7 @@ class PerformanceTree:
         trans_links_sort = [
             "...",
             "---",
+            "___",
         ]
         trans_info_sort = [
             "NO STATISTICS",
