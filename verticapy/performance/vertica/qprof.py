@@ -1989,7 +1989,7 @@ class QueryProfiler:
         Returns the corresponding
         tooltip.
         """
-        return self.get_qplan_tree(metric=metric, return_tree_obj=True).get_tooltips(
+        return self._get_qplan_tree(metric=metric, return_tree_obj=True).get_tooltips(
             path_id
         )
 
