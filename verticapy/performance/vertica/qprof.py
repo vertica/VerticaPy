@@ -1974,17 +1974,23 @@ class QueryProfiler:
         return [nd[0] for nd in nodes] + ["Query Initiator"]
 
     # Tooltips
-    def _get_tooltips(self, metric: Union[
+    def _get_tooltips(
+        self,
+        metric: Union[
             NoneType,
             str,
             tuple[str, str],
             list[str],
-        ] = ["exec_time_us", "prod_rows"], path_id: Optional[int] = None) -> Union[None, str, dict]:
+        ] = ["exec_time_us", "prod_rows"],
+        path_id: Optional[int] = None,
+    ) -> Union[None, str, dict]:
         """
         Returns the corresponding
         tooltip.
         """
-        return self.get_qplan_tree(metric=metric, return_tree_obj=True).get_tooltips(path_id)
+        return self.get_qplan_tree(metric=metric, return_tree_obj=True).get_tooltips(
+            path_id
+        )
 
     # Insertion
 
