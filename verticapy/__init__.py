@@ -39,7 +39,7 @@ __license__: str = "Apache License, Version 2.0"
 __version__: str = "1.0.5"
 __iteration__: int = 2
 __date__: str = "01102024"
-__last_commit__: str = "7a6490bfc614d3268b34096663758dca407ea889"
+__last_commit__: str = "c4fa73aaaf54051fb35b325a5dd77573ba9b3f4c"
 __long_version__: str = f"{__version__}-{__iteration__}—{__date__}-{__last_commit__}"
 __codecov__: float = 0.84
 

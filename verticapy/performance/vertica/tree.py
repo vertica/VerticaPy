@@ -2141,7 +2141,7 @@ class PerformanceTree:
             if "RESEGMENT" not in row_tmp and "BROADCAST" not in row_tmp:
                 all_legend[
                     "___"
-                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">___</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">NO RESEGMENT | NO BROADCAST</FONT></td></tr>'
+                ] = f'<tr><td BGCOLOR="{bgcolor}"><FONT COLOR="{fontcolor}">___</FONT></td><td BGCOLOR="{fillcolor}"><FONT COLOR="{fontcolor}">LOCAL</FONT></td></tr>'
             if "HASH" in row_tmp:
                 all_legend[
                     "HASH"
