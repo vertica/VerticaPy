@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 
 import time
-import warnings
 from typing import Optional, Literal, Union
 
 from IPython.core.magic import needs_local_scope
@@ -26,6 +25,7 @@ from vertica_highcharts import Highstock, Highchart
 
 import verticapy._config.config as conf
 from verticapy._typing import PlottingObject
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 
@@ -721,7 +721,7 @@ def chart_magic(
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't exist - skipping."
             )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "Warning")
 
     if "-f" in options and "-c" in options:
         raise ValueError(

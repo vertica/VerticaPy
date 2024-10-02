@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
-
 def verticapy_logo_html(size: str = "50%") -> str:
     """
     Generates the HTML code
@@ -88,7 +87,7 @@ def verticapy_logo_str() -> str:
         logo = verticapy_logo_str()
 
         # printing the result
-        print(logo)
+        print_message(logo)
 
     .. note::
 

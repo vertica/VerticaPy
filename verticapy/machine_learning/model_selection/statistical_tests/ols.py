@@ -23,6 +23,7 @@ from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns, SQLRelation
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._gen import gen_tmp_name
@@ -168,7 +169,7 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+        print_message(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
     As the noise was not heteroscedestic, we got higher
     p_value scores and lower statistics score.
@@ -278,7 +279,7 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+        print_message(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
     .. note::
 
@@ -440,7 +441,7 @@ def het_goldfeldquandt(
 
     .. ipython:: python
 
-        print(statistic, pvalue)
+        print_message(statistic, pvalue)
 
     As the noise was not heteroscedestic, we got higher
     p_value scores and lower statistics score.
@@ -527,7 +528,7 @@ def het_goldfeldquandt(
 
     .. ipython:: python
 
-        print(statistic, pvalue)
+        print_message(statistic, pvalue)
 
     .. note::
 
@@ -717,7 +718,7 @@ def het_white(
 
     .. ipython:: python
 
-        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+        print_message(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
     As the noise was not heteroscedestic, we got higher
     p_value scores and lower statistics score.
@@ -827,7 +828,7 @@ def het_white(
 
     .. ipython:: python
 
-        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+        print_message(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
     .. note::
 

@@ -18,12 +18,11 @@ permissions and limitations under the License.
 from __future__ import print_function, division, absolute_import, annotations
 
 import requests
-import warnings
 
-from urllib3.poolmanager import PoolManager
 from requests.adapters import HTTPAdapter
+from urllib3.poolmanager import PoolManager
 
-
+from verticapy._utils._print import print_message
 from verticapy.connection.errors import (
     OAuthTokenRefreshError,
     OAuthConfigurationError,
@@ -66,7 +65,7 @@ class OAuthManager:
             for k, v in configs.items():
                 if k not in valid_keys:
                     invalid_key = f"Unrecognized OAuth config property: {k}"
-                    warnings.warn(invalid_key)
+                    print_message(invalid_key, "Warning")
                     continue
                 if v is None or v == "":  # ignore empty value
                     continue

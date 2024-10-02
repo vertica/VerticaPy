@@ -16,14 +16,13 @@ permissions and limitations under the License.
 """
 import html
 import shutil
-from typing import Optional
+from typing import Literal, Optional
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._logo import verticapy_logo_html
-
 
 def print_table(
     data_columns,

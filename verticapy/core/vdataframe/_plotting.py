@@ -16,13 +16,11 @@ permissions and limitations under the License.
 """
 
 import math
-import warnings
 from collections.abc import Iterable
 from typing import Callable, Literal, Optional, Union
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._utils._object import get_vertica_mllib
 from verticapy._typing import (
     ArrayLike,
     ColorType,
@@ -34,6 +32,8 @@ from verticapy._typing import (
     SQLColumns,
 )
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._object import get_vertica_mllib
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
@@ -3752,7 +3752,7 @@ class vDCPlot(vDCScaler):
                 f"The Virtual Column {self._alias} is not "
                 "numerical. A bar chart will be drawn instead."
             )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "Warning")
             if by:
                 return self._parent.bar(
                     columns=[self._alias, by],

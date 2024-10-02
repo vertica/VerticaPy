@@ -20,6 +20,7 @@ from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike, SQLColumns, SQLRelation
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 
 from verticapy.machine_learning.model_selection import best_k
@@ -175,7 +176,7 @@ class AutoClustering(VerticaModel):
         else:
             self._is_already_stored(raise_error=True)
         if self.parameters["print_info"]:
-            print(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
+            print_message(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
         if self.parameters["preprocess_data"]:
             model_preprocess = AutoDataPrep(**self.parameters["preprocess_dict"])
             model_preprocess.fit(input_relation, X=X)
@@ -186,7 +187,7 @@ class AutoClustering(VerticaModel):
             self.preprocess_ = None
         if not self.parameters["n_cluster"]:
             if self.parameters["print_info"]:
-                print(
+                print_message(
                     f"\033[1m\033[4mFinding a suitable number of clusters\033[0m\033[0m\n"
                 )
             self.parameters["n_cluster"] = best_k(
@@ -202,7 +203,7 @@ class AutoClustering(VerticaModel):
                 tqdm=self.parameters["print_info"],
             )
         if self.parameters["print_info"]:
-            print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
+            print_message(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
         if conf.get_option("tqdm") and self.parameters["print_info"]:
             loop = tqdm(range(1))
         else:

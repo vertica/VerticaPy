@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
 from typing import Literal, Optional
 
 from matplotlib.axes import Axes
@@ -23,6 +22,7 @@ from plotly.graph_objs._figure import Figure
 from vertica_highcharts import Highchart, Highstock
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import format_type
 from verticapy._typing import PlottingObject
 
@@ -103,7 +103,7 @@ class PlottingUtils:
                 "function.\nThe following example sets matplotlib as graphical library:\n"
                 "import verticapy\nverticapy.set_option('plotting_lib', 'matplotlib')"
             )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "Warning")
         if lib == "plotly":
             vpy_plt = vpy_plotly_plt
             kwargs = {"fig": chart, **plotly_kwargs, **style_kwargs}

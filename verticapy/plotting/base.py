@@ -17,7 +17,6 @@ permissions and limitations under the License.
 import copy
 import math
 import random
-import warnings
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 
 import numpy as np
@@ -35,6 +34,7 @@ from verticapy._typing import (
     SQLColumns,
 )
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -863,7 +863,7 @@ class PlottingBase(PlottingBaseSQL):
                     f"The Virtual Column {col} is not numerical."
                     " Its histogram will not be drawn."
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "Warning")
         if not columns_:
             raise ValueError("No quantitative feature to plot.")
         columns_, by = vdf.format_colnames(columns_, by)

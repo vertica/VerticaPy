@@ -17,13 +17,13 @@ permissions and limitations under the License.
 import copy
 import sys
 import time
-import warnings
 from typing import Any, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._object import create_new_vdc
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, indent_vpy_sql, quote_ident
@@ -269,7 +269,7 @@ class vDFSystem(vDFTyping):
                         f"Method of {column_name} must be in (asc, desc), "
                         f"found '{columns[col].lower()}'\nThis column was ignored."
                     )
-                    warnings.warn(warning_message, Warning)
+                    print_message(warning_message, "Warning")
                 else:
                     order_by += [f"{column_name} {columns[col].upper()}"]
         else:
@@ -404,7 +404,7 @@ class vDFSystem(vDFTyping):
 
         .. ipython:: python
 
-            print(vdf.current_relation())
+            print_message(vdf.current_relation())
 
         If we make any changes to the :py:class:`~vDataFrame`,
         those will also be reflected in the ``current_relation``.
@@ -418,7 +418,7 @@ class vDFSystem(vDFTyping):
 
         .. ipython:: python
 
-            print(vdf.current_relation())
+            print_message(vdf.current_relation())
 
         .. seealso::
 
@@ -789,7 +789,7 @@ class vDFSystem(vDFTyping):
 
         .. ipython:: python
 
-            print(vdf.explain())
+            print_message(vdf.explain())
 
         .. seealso::
 

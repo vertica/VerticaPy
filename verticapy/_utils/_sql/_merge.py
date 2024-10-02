@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Optional
 
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import format_type, quote_ident
 
 
@@ -565,7 +566,7 @@ def gen_coalesce(group_dict: dict) -> str:
 
         # Creating the dictionary.
         d = group_similar_names(names, skip_word = word)
-        print(d)
+        print_message(d)
 
         # Example
         gen_coalesce(d)

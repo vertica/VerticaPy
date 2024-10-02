@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 import collections
 from typing import Literal, Optional, Union
-import warnings
 
 import numpy as np
 
@@ -25,6 +24,7 @@ import pandas as pd
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._typing import SQLColumns
 from verticapy._utils._object import read_pd
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_dql
@@ -689,7 +689,7 @@ class vDataFrame(vDFAnimatedPlot):
                     "resolve this issue, provide aliases to your "
                     "queries."
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "Warning")
                 self._vars["has_dpnames"] = True
 
             # Creating the vDataColumns

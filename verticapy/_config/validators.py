@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Any, Callable, Literal, Optional
 
+from verticapy._utils._print import print_message
 from verticapy._typing import NoneType
 
 
@@ -58,8 +59,8 @@ def bool_validator(val: bool) -> Literal[True]:
         try:
             bool_validator('Hello')
         except ValueError as e:
-            print('Error raised:')
-            print(e)
+            print_message('Error raised:')
+            print_message(e)
 
     .. seealso::
 
@@ -113,8 +114,8 @@ def in_validator(values: list) -> Callable[[Any], Literal[True]]:
         try:
             in_validator_ABC('D')
         except ValueError as e:
-            print('Error raised:')
-            print(e)
+            print_message('Error raised:')
+            print_message(e)
 
     .. seealso::
 
@@ -172,8 +173,8 @@ def optional_bool_validator(val: Optional[bool]) -> Literal[True]:
         try:
             optional_bool_validator('Hello')
         except ValueError as e:
-            print('Error raised:')
-            print(e)
+            print_message('Error raised:')
+            print_message(e)
 
     .. seealso::
 
@@ -227,8 +228,8 @@ def optional_positive_int_validator(val: Optional[int]) -> Literal[True]:
         try:
             optional_positive_int_validator(-3)
         except ValueError as e:
-            print('Error raised:')
-            print(e)
+            print_message('Error raised:')
+            print_message(e)
 
     .. seealso::
 
@@ -282,8 +283,8 @@ def optional_str_validator(val: Optional[str]) -> Literal[True]:
         try:
             optional_str_validator(7)
         except ValueError as e:
-            print('Error raised:')
-            print(e)
+            print_message('Error raised:')
+            print_message(e)
 
     .. seealso::
 
@@ -334,8 +335,8 @@ def str_validator(val: str) -> Literal[True]:
         try:
             str_validator(-1)
         except ValueError as e:
-            print('Error raised:')
-            print(e)
+            print_message('Error raised:')
+            print_message(e)
 
     .. seealso::
 
@@ -386,8 +387,8 @@ def st_positive_int_validator(val: int) -> Literal[True]:
         try:
             st_positive_int_validator(-1)
         except ValueError as e:
-            print('Error raised:')
-            print(e)
+            print_message('Error raised:')
+            print_message(e)
 
     .. seealso::
 

@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-import warnings
 from typing import Any, Iterable, Literal, Optional
 
 import numpy as np
@@ -24,6 +23,7 @@ import pandas as pd
 
 import verticapy._config.config as conf
 from verticapy._utils._object import read_pd
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy.errors import ParsingError
@@ -554,8 +554,8 @@ def _format_keys(
         sql, html_sql = _format_keys(
             SQL_KEYWORDS, sql, html_sql, KEYWORDS_TAG_L, KEYWORDS_TAG_R
         )
-        print(sql)
-        print(html_sql)
+        print_message(sql)
+        print_message(html_sql)
 
     .. note::
 
@@ -700,7 +700,7 @@ def format_query(
     if indent_sql:
         res = indent_vpy_sql(res)
     if print_sql:
-        print(res)
+        print_message(res)
     if only_html:
         return html_res
     elif display_success:
@@ -748,7 +748,7 @@ def clean_query(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print(clean_query(sql))
+        print_message(clean_query(sql))
 
     .. note::
 
@@ -803,7 +803,7 @@ def erase_comment(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print(erase_comment(sql))
+        print_message(erase_comment(sql))
 
     .. note::
 
@@ -847,7 +847,7 @@ def erase_label(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print(erase_label(sql))
+        print_message(erase_label(sql))
 
     .. note::
 
@@ -892,7 +892,7 @@ def extract_subquery(query: SQLExpression) -> SQLExpression:
         sql += "subtable -- simple query example) subtable2;"
 
         # Example.
-        print(extract_subquery(sql))
+        print_message(extract_subquery(sql))
 
     .. note::
 
@@ -941,7 +941,7 @@ def extract_and_rename_subquery(query: SQLExpression, alias: str) -> SQLExpressi
         sql += "subtable -- simple query example) subtable2;"
 
         # Example.
-        print(
+        print_message(
             extract_and_rename_subquery(
                 sql,
                 alias = 'new_alias',
@@ -1252,7 +1252,7 @@ def indent_vpy_sql(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print(indent_vpy_sql(sql))
+        print_message(indent_vpy_sql(sql))
 
     .. note::
 
@@ -1447,7 +1447,7 @@ def replace_label(
         sql += "subtable; -- simple query example"
 
         # Example.
-        print(
+        print_message(
             indent_vpy_sql(
                 sql,
                 new_label = 'label_test',
@@ -1532,7 +1532,7 @@ def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpress
         }
 
         # Example.
-        print(replace_vars_in_query(sql, locals_dict = vars))
+        print_message(replace_vars_in_query(sql, locals_dict = vars))
 
     .. note::
 
@@ -1574,7 +1574,7 @@ def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpress
                 warning_message = (
                     f"Failed to replace variables in the query.\nError: {e}"
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "Warning")
                 fail = True
         if not fail:
             object_type = None

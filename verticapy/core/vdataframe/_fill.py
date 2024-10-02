@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 import copy
 import datetime
-import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
 from vertica_python.errors import QueryError
@@ -30,6 +29,7 @@ from verticapy._typing import (
     SQLColumns,
 )
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -881,7 +881,7 @@ class vDCFill(vDCMath):
                     f"The vDataColumn {self} has no mode "
                     "(only missing values).\nNothing was filled."
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "Warning")
                 return self._parent
         if isinstance(val, str):
             val = val.replace("'", "''")
@@ -997,13 +997,13 @@ class vDCFill(vDCMath):
             total = int(total)
             conj = "s were " if total > 1 else " was "
             if conf.get_option("print_info"):
-                print(f"{total} element{conj}filled.")
+                print_message(f"{total} element{conj}filled.")
             self._parent._add_to_history(
                 f"[Fillna]: {total} {self} missing value{conj} filled."
             )
         else:
             if conf.get_option("print_info"):
-                print("Nothing was filled.")
+                print_message("Nothing was filled.")
             self._transf = [t for t in copy_trans]
             for s in sauv:
                 self._catalog[s] = sauv[s]

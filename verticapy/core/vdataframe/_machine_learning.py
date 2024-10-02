@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 import math
 import random
-import warnings
 from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
@@ -25,6 +24,7 @@ import scipy.stats as scipy_st
 import verticapy._config.config as conf
 from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -695,7 +695,7 @@ class vDFMachineLearning(vDFScaler):
                             f"vDataColumn '{col}' has a too high cardinality "
                             f"(> {max_cardinality}). This vDataColumn was ignored."
                         )
-                    warnings.warn(warning_message, Warning)
+                    print_message(warning_message, "Warning")
         for col in remove_cols:
             columns_tmp.remove(col)
         return columns_tmp

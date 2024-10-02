@@ -22,6 +22,7 @@ import numpy as np
 import verticapy as vp
 from verticapy._typing import PlottingObject, NoneType
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -240,7 +241,7 @@ def gen_rst_summary_table() -> str:
         from verticapy._utils._inspect_statistics import gen_rst_summary_table
 
         # Example.
-        print(gen_rst_summary_table())
+        print_message(gen_rst_summary_table())
 
     .. note::
 

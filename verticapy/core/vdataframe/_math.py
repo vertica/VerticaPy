@@ -24,6 +24,7 @@ from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
@@ -415,7 +416,7 @@ class vDFMath(vDFFilter):
             "sem",
         ) or ("%" in func):
             if order_by and not conf.get_option("print_info"):
-                print(
+                print_message(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"
                 )
@@ -605,7 +606,7 @@ class vDFMath(vDFFilter):
                 )
         elif func in ("corr", "cov", "beta"):
             if order_by:
-                print(
+                print_message(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"
                 )

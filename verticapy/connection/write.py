@@ -16,10 +16,11 @@ permissions and limitations under the License.
 """
 
 from getpass import getpass
-import warnings
 import vertica_python
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
+
 from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.oauth_manager import OAuthManager
@@ -182,7 +183,7 @@ def delete_connection(name: str) -> bool:
         return True
 
     else:
-        warnings.warn(f"The connection {name} does not exist.", Warning)
+        print_message(f"The connection {name} does not exist.", "Warning")
 
         return False
 
@@ -294,7 +295,7 @@ def new_connection(
 
     def _printInfo(info):
         if doPrintInfo:
-            print(info)
+            print_message(info)
 
     path = get_connection_file()
     confparser = get_confparser()
@@ -334,7 +335,7 @@ def new_connection(
             conn_info["oauth_access_token"] = oauth_manager.do_token_refresh()
             conn_info["oauth_refresh_token"] = oauth_manager.refresh_token
     except OAuthTokenRefreshError as error:
-        print("An error occured while refreshing your OAuth token")
+        print_message("An error occured while refreshing your OAuth token")
         raise error
 
     for c in conn_info:
@@ -354,7 +355,7 @@ def new_connection(
                 vertica_python.connect(**read_dsn(name, path)), name, path
             )
         except OAuthTokenRefreshError as e:
-            print(
+            print_message(
                 "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
             )
             new_connection(
@@ -365,12 +366,12 @@ def new_connection(
                     vertica_python.connect(**read_dsn(name, path)), name, path
                 )
                 if doPrintInfo:
-                    print("Connected Successfully!")
+                    print_message("Connected Successfully!")
             except OAuthTokenRefreshError as error:
-                print("Error persists:")
+                print_message("Error persists:")
                 raise error
         except ConnectionError as error:
-            print(
+            print_message(
                 "A connection error occured. Common reasons may be an invalid host, port, or, if requiring "
                 "OAuth and token refresh, this may be due to an incorrect or malformed token url."
             )

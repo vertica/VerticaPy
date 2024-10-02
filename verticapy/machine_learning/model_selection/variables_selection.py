@@ -31,6 +31,7 @@ from verticapy._typing import (
     SQLColumns,
     SQLRelation,
 )
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
@@ -488,7 +489,7 @@ def randomized_features_search_cv(
                         )
                     ]
                     if print_info:
-                        print(
+                        print_message(
                             f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
                             f"Features: {config}; \033[91mTest_score: "
                             f"{current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score:"
@@ -506,7 +507,7 @@ def randomized_features_search_cv(
                         )
                     ]
                     if print_info:
-                        print(
+                        print_message(
                             f"Model: {str(estimator.__class__).split('.')[-1][:-2]};"
                             f" Features: {config}; \033[91mTest_score: "
                             f"{current_cv[keys[1]][cv]}\033[0m; \033[94mTime:"
@@ -514,7 +515,7 @@ def randomized_features_search_cv(
                         )
             except Exception as e:
                 if skip_error and skip_error != "no_print":
-                    print(e)
+                    print_message(e)
                 elif not skip_error:
                     raise e
     if not data:
@@ -567,8 +568,8 @@ def randomized_features_search_cv(
         if print_info and (
             "final_print" not in kwargs or kwargs["final_print"] != "no_print"
         ):
-            print("\033[1mRandomized Features Search Selected Model\033[0m")
-            print(
+            print_message("\033[1mRandomized Features Search Selected Model\033[0m")
+            print_message(
                 f"{str(estimator.__class__).split('.')[-1][:-2]}; Features:"
                 f" {res['features'][0]}; \033[91mTest_score: "
                 f"{res['avg_score'][0]}\033[0m; \033[92mTrain_score: "
@@ -587,8 +588,8 @@ def randomized_features_search_cv(
         if print_info and (
             "final_print" not in kwargs or kwargs["final_print"] != "no_print"
         ):
-            print("\033[1mRandomized Features Search Selected Model\033[0m")
-            print(
+            print_message("\033[1mRandomized Features Search Selected Model\033[0m")
+            print_message(
                 f"{str(estimator.__class__).split('.')[-1][:-2]}; Features:"
                 f" {res['features'][0]}; \033[91mTest_score: "
                 f"{res['avg_score'][0]}\033[0m; \033[94mTime: "
@@ -809,7 +810,7 @@ def stepwise(
         if direction == "backward":
             X.reverse()
     if print_info:
-        print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
+        print_message("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
     if conf.get_option("tqdm") and print_info:
         loop = tqdm(range(len(X)))
     else:
@@ -828,7 +829,7 @@ def stepwise(
         X_current = copy.deepcopy(X)
         for idx in loop:
             if print_info and idx == 0:
-                print(
+                print_message(
                     f"\033[1m[Model 0]\033[0m \033[92m{criterion}: "
                     f"{current_score}\033[0m; Variables: {X_current}"
                 )
@@ -854,7 +855,7 @@ def stepwise(
                 current_score = test_score
                 X_current.remove(X[idx])
                 if print_info:
-                    print(
+                    print_message(
                         f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: "
                         f"{test_score}\033[0m; \033[91m(-) Variable: {X[idx]}\033[0m"
                     )
@@ -868,7 +869,7 @@ def stepwise(
         X_current = []
         for idx in loop:
             if print_info and idx == 0:
-                print(
+                print_message(
                     f"\033[1m[Model 0]\033[0m \033[92m{criterion}: "
                     f"{current_score}\033[0m; Variables: {X_current}"
                 )
@@ -890,7 +891,7 @@ def stepwise(
                 current_score = test_score
                 X_current += [X[idx]]
                 if print_info:
-                    print(
+                    print_message(
                         f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}:"
                         f" {test_score}\033[0m; \033[91m(+) Variable: {X[idx]}\033[0m"
                     )
@@ -899,8 +900,8 @@ def stepwise(
             res += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
             current_step += 1
     if print_info:
-        print(f"\033[1m\033[4mSelected Model\033[0m\033[0m\n")
-        print(
+        print_message(f"\033[1m\033[4mSelected Model\033[0m\033[0m\n")
+        print_message(
             f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}:"
             f" {current_score}\033[0m; Variables: {X_current}"
         )

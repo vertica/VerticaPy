@@ -17,9 +17,9 @@ permissions and limitations under the License.
 import io
 import os
 from typing import List
-import warnings
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import list_strip
 
 if conf.get_import_success("graphviz"):
@@ -104,7 +104,7 @@ def get_header_names(
                     "to CSV while retaining its indexes.\nTip: Use "
                     "index=False when exporting with pandas.DataFrame.to_csv."
                 )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "Warning")
     return list_strip(file_header)
 
 
@@ -183,7 +183,7 @@ def get_first_record_as_list(path: str, sep: str, record_terminator: str) -> Lis
         # with a first line that looks like
         # col1,col2,col3
         cols = get_first_record_as_list('test.csv', ',', '\\n')
-        print(cols)
+        print_message(cols)
         # Should print
         #    ['col1', 'col2', 'col3']
 
@@ -223,7 +223,7 @@ def read_first_record(path: str, record_terminator: str) -> str:
         # col1,col2,col3;
         # 100,abc,3.14;
         r = read_first_record('test.csv', ',', ';')
-        print(r)
+        print_message(r)
         # Should print
         #    'col1,col2,col3;'
     """
@@ -330,7 +330,7 @@ def parse_explain_graphviz(rows: list[str], display_trees: bool = True) -> list:
     if display_trees:
         for row in result:
             if isinstance(row, str) or not (conf.get_import_success("IPython")):
-                print(row)
+                print_message(row)
             else:
                 display(row)
     return result

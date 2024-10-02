@@ -23,6 +23,7 @@ from typing import Mapping, List, Any
 
 import pandas as pd
 
+from verticapy._utils._print import print_message
 from verticapy.core.parsers.pandas import read_pandas
 from verticapy.core.vdataframe import vDataFrame
 
@@ -130,7 +131,7 @@ class TableMetadata:
 
     .. code-block:: python
 
-        print(f"JSON obj = {tmd.to_json()}")
+        print_message(f"JSON obj = {tmd.to_json()}")
 
     The output will be:
 
@@ -188,7 +189,7 @@ class TableMetadata:
 
         .. code-block:: python
 
-            print(f"JSON obj = {tmd.to_json()}")
+            print_message(f"JSON obj = {tmd.to_json()}")
 
         The output will be:
 
@@ -251,7 +252,7 @@ class TableMetadata:
 
         .. code-block:: python
 
-            print(f"JSON obj = {tmd.to_json()}")
+            print_message(f"JSON obj = {tmd.to_json()}")
 
         The output will be:
 
@@ -319,7 +320,7 @@ class ExportMetadata:
 
     .. code-block:: python
 
-        print(f"JSON obj = {exp_md.to_json()}")
+        print_message(f"JSON obj = {exp_md.to_json()}")
 
     The output will be:
 
@@ -389,7 +390,7 @@ class ExportMetadata:
 
         .. code-block:: python
 
-            print(f"JSON obj = {exp_md.to_json()}")
+            print_message(f"JSON obj = {exp_md.to_json()}")
 
         The output will be:
 
@@ -464,7 +465,7 @@ class ExportMetadata:
 
         .. code-block:: python
 
-            print(f"JSON obj = {exp_md.to_json()}")
+            print_message(f"JSON obj = {exp_md.to_json()}")
 
         The output will be:
 
@@ -538,7 +539,7 @@ class ExportMetadata:
 
             exp_md.write_to_file()
             with open("export_meta.json", "r") as readf:
-                print(f"JSON obj = {readf.read()}")
+                print_message(f"JSON obj = {readf.read()}")
 
         The output will be:
 

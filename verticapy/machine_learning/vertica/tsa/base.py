@@ -30,6 +30,7 @@ from verticapy._typing import (
     SQLRelation,
 )
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import (
     clean_query,
     format_type,
@@ -331,7 +332,7 @@ class TimeSeriesModelBase(VerticaModel):
             if return_report:
                 return report
             if conf.get_option("print_info"):
-                print(report)
+                print_message(report)
         else:
             self._compute_attributes()
         return None
