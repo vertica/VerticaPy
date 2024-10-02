@@ -51,7 +51,7 @@ def get_str_from_dtype(dtype, is_input, idx):
         sys.exit()
 
     in_or_out = "Input" if is_input else "Output"
-    print_message(in_or_out, str(idx), "is of type:", dtype_str)
+    print_message(in_or_out + str(idx) + "is of type:" + dtype_str)
 
     return dtype_str
 
@@ -66,7 +66,7 @@ def freeze_model(model, save_dir, column_type):
         # Convert Keras model to ConcreteFunction
         full_model = tf.function(lambda x: model(x))
 
-        print_message("Model Input:", model.input)
+        print_message("Model Input:" + str(model.input))
 
         if isinstance(model.input, list):
             no_of_inputs = len(model.input)
