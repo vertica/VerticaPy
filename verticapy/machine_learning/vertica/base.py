@@ -1194,7 +1194,7 @@ class VerticaModel(PlottingUtils):
                 warning_message = (
                     f"parameter 'parameters' got an unexpected keyword argument '{p}'"
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
             new_parameters[p] = parameters[p]
         self.__init__(name=self.model_name, **new_parameters)
 

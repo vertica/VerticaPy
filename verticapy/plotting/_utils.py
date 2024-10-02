@@ -103,7 +103,7 @@ class PlottingUtils:
                 "function.\nThe following example sets matplotlib as graphical library:\n"
                 "import verticapy\nverticapy.set_option('plotting_lib', 'matplotlib')"
             )
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
         if lib == "plotly":
             vpy_plt = vpy_plotly_plt
             kwargs = {"fig": chart, **plotly_kwargs, **style_kwargs}

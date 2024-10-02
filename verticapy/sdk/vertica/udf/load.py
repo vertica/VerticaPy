@@ -140,7 +140,7 @@ def import_lib_udf(
             _executeSQL(query, title=f"UDF installation. [step {idx}]")
         return True
     except Exception as e:
-        print_message(e, "Warning")
+        print_message(e, "warning")
         return False
     finally:
         os.remove(f"{directory}/{file_name}")

@@ -65,7 +65,7 @@ class OAuthManager:
             for k, v in configs.items():
                 if k not in valid_keys:
                     invalid_key = f"Unrecognized OAuth config property: {k}"
-                    print_message(invalid_key, "Warning")
+                    print_message(invalid_key, "warning")
                     continue
                 if v is None or v == "":  # ignore empty value
                     continue

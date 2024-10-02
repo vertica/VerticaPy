@@ -20,7 +20,6 @@ This script runs the Vertica Machine Learning Pipeline Transforming.
 """
 from queue import Queue
 
-from verticapy._utils._print import print_message
 from verticapy.core.vdataframe.base import vDataFrame
 
 
@@ -138,7 +137,7 @@ def transformation(transform: dict, table: str) -> vDataFrame:
         transformed_vdf = transformation(transform, table)
 
         # Display the transformed vDataFrame
-        print_message(transformed_vdf)
+        print(transformed_vdf)
     """
     vdf = vDataFrame(table)
     column_queue = Queue()

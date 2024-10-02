@@ -679,7 +679,7 @@ def sql_magic(
     .. ipython:: python
 
         file = open("titanic_age_clean.csv", "r")
-        print_message(file.read())
+        print(file.read())
         file.close()
 
     To export the results of
@@ -718,7 +718,7 @@ def sql_magic(
     .. ipython:: python
 
         file = open("titanic_age_clean.json", "r")
-        print_message(file.read())
+        print(file.read())
         file.close()
 
     Execute SQL files
@@ -822,7 +822,7 @@ def sql_magic(
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
 
         if "-f" in options and "-c" in options:
             raise ValueError(
@@ -865,7 +865,7 @@ def sql_magic(
             )
 
             if external_queries:
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
 
         n, i, all_split = len(queries), 0, []
 

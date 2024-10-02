@@ -721,7 +721,7 @@ def chart_magic(
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't exist - skipping."
             )
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
 
     if "-f" in options and "-c" in options:
         raise ValueError(

@@ -455,7 +455,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
         )
 
     except Exception as e:
-        print_message(str(e), "Warning")
+        print_message(str(e), "warning")
         return False
 
     return True

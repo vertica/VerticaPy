@@ -269,7 +269,7 @@ class vDFSystem(vDFTyping):
                         f"Method of {column_name} must be in (asc, desc), "
                         f"found '{columns[col].lower()}'\nThis column was ignored."
                     )
-                    print_message(warning_message, "Warning")
+                    print_message(warning_message, "warning")
                 else:
                     order_by += [f"{column_name} {columns[col].upper()}"]
         else:
@@ -404,7 +404,7 @@ class vDFSystem(vDFTyping):
 
         .. ipython:: python
 
-            print_message(vdf.current_relation())
+            print(vdf.current_relation())
 
         If we make any changes to the :py:class:`~vDataFrame`,
         those will also be reflected in the ``current_relation``.
@@ -418,7 +418,7 @@ class vDFSystem(vDFTyping):
 
         .. ipython:: python
 
-            print_message(vdf.current_relation())
+            print(vdf.current_relation())
 
         .. seealso::
 
@@ -789,7 +789,7 @@ class vDFSystem(vDFTyping):
 
         .. ipython:: python
 
-            print_message(vdf.explain())
+            print(vdf.explain())
 
         .. seealso::
 

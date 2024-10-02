@@ -24,6 +24,7 @@ from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._logo import verticapy_logo_html
 
+
 def print_table(
     data_columns,
     is_finished: bool = True,

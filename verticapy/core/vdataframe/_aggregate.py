@@ -1028,7 +1028,7 @@ class vDFAgg(vDFEval):
                             "\nTo get statistical information about all different "
                             "variables, please use the parameter method = 'categorical'."
                         )
-                        print_message(warning_message, "Warning")
+                        print_message(warning_message, "warning")
                 for column in columns:
                     if column not in col_to_compute:
                         values["index"] += [column.replace('"', "")]

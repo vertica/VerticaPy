@@ -476,7 +476,7 @@ def read_file(
         extract_col_dt = extract_col_dt_from_query(result[0], col)
         if extract_col_dt is None:
             warning_message = f"The column '{col}' was not found.\nIt will be skipped."
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
         else:
             column, ctype = extract_col_dt
             result[0] = result[0].replace(

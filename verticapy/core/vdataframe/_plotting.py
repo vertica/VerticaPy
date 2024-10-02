@@ -3752,7 +3752,7 @@ class vDCPlot(vDCScaler):
                 f"The Virtual Column {self._alias} is not "
                 "numerical. A bar chart will be drawn instead."
             )
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
             if by:
                 return self._parent.bar(
                     columns=[self._alias, by],

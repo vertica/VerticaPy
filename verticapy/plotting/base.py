@@ -863,7 +863,7 @@ class PlottingBase(PlottingBaseSQL):
                     f"The Virtual Column {col} is not numerical."
                     " Its histogram will not be drawn."
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
         if not columns_:
             raise ValueError("No quantitative feature to plot.")
         columns_, by = vdf.format_colnames(columns_, by)

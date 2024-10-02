@@ -1188,7 +1188,7 @@ class vDFFilter(vDFAgg):
                         f"The expression '{conditions}' is incorrect.\n"
                         "Nothing was filtered."
                     )
-                    print_message(warning_message, "Warning")
+                    print_message(warning_message, "warning")
                 if raise_error:
                     raise (e)
                 return self

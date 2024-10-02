@@ -425,13 +425,13 @@ class QueryProfiler:
 
         tid = qprof.transaction_id
         sid = qprof.statement_id
-        print_message(f"tid={tid};sid={sid}")
+        print(f"tid={tid};sid={sid}")
 
     Or simply:
 
     .. ipython:: python
 
-        print_message(qprof.transactions)
+        print(qprof.transactions)
 
     To avoid recomputing a query, you
     can also directly use its statement
@@ -1070,7 +1070,7 @@ class QueryProfiler:
                     "supported. A new key will be then generated: "
                     f"{self.key_id}"
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
         else:
             if isinstance(key_id, int):
                 self.key_id = str(key_id)
@@ -1210,7 +1210,7 @@ class QueryProfiler:
                             "\nIt might be still running. This transaction"
                             " will be skipped."
                         )
-                        print_message(warning_message, "Warning")
+                        print_message(warning_message, "warning")
                     session_params_non_default += [
                         self._get_current_session_params_non_default()
                     ]
@@ -1562,7 +1562,9 @@ class QueryProfiler:
                         print_message(
                             f"The key used to build up the tables is: {self.key_id}\n"
                         )
-                        print_message("You can access the key by using the 'key_id' attribute.")
+                        print_message(
+                            "You can access the key by using the 'key_id' attribute."
+                        )
                     exists = False
                     idx += 1
 
@@ -1599,7 +1601,7 @@ class QueryProfiler:
                             " to skip the table creation and to use the existing "
                             "ones.\n\nError Details:\n" + str(e)
                         )
-                        print_message(warning_message, "Warning")
+                        print_message(warning_message, "warning")
         self.target_tables = target_tables
 
     def _insert_copy_v_table(
@@ -1671,7 +1673,7 @@ class QueryProfiler:
                             f"{transactions} in the relation {new_schema}.{new_table}.\n"
                             "\n\nError Details:\n" + str(e)
                         )
-                        print_message(warning_message, "Warning")
+                        print_message(warning_message, "warning")
             self.__init__(
                 key_id=self.key_id,
                 target_schema=self.target_schema,
@@ -1688,7 +1690,7 @@ class QueryProfiler:
                     f"{transactions}\n"
                     "Are you sure that they exist?"
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
 
     def _check_v_table(
         self, iterchecks: bool = True, ignore_operators_check: bool = True
@@ -1770,7 +1772,9 @@ class QueryProfiler:
                     jointables += [current_table]
                     relations += [f"{sc}.{tb}"]
             if conf.get_option("print_info"):
-                print_message("Checking all the tables consistency using a single SQL query...")
+                print_message(
+                    "Checking all the tables consistency using a single SQL query..."
+                )
             query = (
                 "SELECT "
                 + ", ".join(select)
@@ -1868,7 +1872,7 @@ class QueryProfiler:
                 "removed, especially if you are directly working on the "
                 "performance tables."
             )
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
 
     def _set_request_qd(self):
         """
@@ -5057,7 +5061,7 @@ class QueryProfiler:
 
             tfile = tarfile.open("query_requests_example_001.tar")
             for f in tfile.getnames():
-                print_message(f"Tarball contains path: {f}")
+                print(f"Tarball contains path: {f}")
 
         The output will be:
 
@@ -5186,7 +5190,7 @@ class QueryProfiler:
 
         .. code-block:: python
 
-            print_message(f"First query duration was {qprof_imported.get_qduration()} seconds")
+            print(f"First query duration was {qprof_imported.get_qduration()} seconds")
 
         Let's assume the query had a duration of 3.14 seconds. The output will be:
 

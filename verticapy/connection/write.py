@@ -183,7 +183,7 @@ def delete_connection(name: str) -> bool:
         return True
 
     else:
-        print_message(f"The connection {name} does not exist.", "Warning")
+        print_message(f"The connection {name} does not exist.", "warning")
 
         return False
 

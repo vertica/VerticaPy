@@ -2340,7 +2340,7 @@ class KernelDensity(Regressor, Tree):
                         f"Wrong xlim for the vDataColumn {column}.\n"
                         "The max and the min will be used instead."
                     )
-                    print_message(warning_message, "Warning")
+                    print_message(warning_message, "warning")
                     x_min, x_max = vdf.agg(
                         func=["min", "max"], columns=[column]
                     ).transpose()[column]

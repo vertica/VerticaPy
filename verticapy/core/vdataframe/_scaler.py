@@ -195,7 +195,7 @@ class vDFScaler(vDFText):
                     f"The vDataColumn {column} was skipped.\n"
                     "Scaler only accept numerical data types."
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
         return self
 
     normalize = scale
@@ -356,7 +356,7 @@ class vDCScaler(vDCText):
 
         if self.isbool():
             warning_message = "Scaler doesn't work on booleans"
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
 
         elif self.isnum():
             if method == "zscore":
@@ -368,7 +368,7 @@ class vDCScaler(vDCText):
                             f"Can not scale {self} using a "
                             "Z-Score - The Standard Deviation is null !"
                         )
-                        print_message(warning_message, "Warning")
+                        print_message(warning_message, "warning")
                         return self
                 elif (n == 1) and (self._parent[by[0]].nunique() < 50):
                     try:
@@ -465,7 +465,7 @@ class vDCScaler(vDCText):
                         "parameter 'by' is empty\nIf you want to scale the data by "
                         "grouping by elements, please use a method in zscore|minmax"
                     )
-                    print_message(warning_message, "Warning")
+                    print_message(warning_message, "warning")
                     return self
                 mad, med = self.aggregate(["mad", "approx_median"]).values[self._alias]
                 mad *= 1.4826
@@ -485,7 +485,7 @@ class vDCScaler(vDCText):
                         f"Can not scale {self} using a "
                         "Robust Z-Score - The MAD is null !"
                     )
-                    print_message(warning_message, "Warning")
+                    print_message(warning_message, "warning")
                     return self
 
             elif method == "minmax":
@@ -497,7 +497,7 @@ class vDCScaler(vDCText):
                             f"Can not scale {self} using "
                             "the MIN and the MAX. MAX = MIN !"
                         )
-                        print_message(warning_message, "Warning")
+                        print_message(warning_message, "warning")
                         return self
                 elif n == 1:
                     try:

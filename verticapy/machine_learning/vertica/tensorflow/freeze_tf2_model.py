@@ -206,7 +206,9 @@ def freeze_model_from_file(
 
 
 def save_graph(frozen_func, frozen_out_path, frozen_graph_file):
-    print_message("Saving frozen model to: " + os.path.join(frozen_out_path, frozen_graph_file))
+    print_message(
+        "Saving frozen model to: " + os.path.join(frozen_out_path, frozen_graph_file)
+    )
     tf.io.write_graph(
         graph_or_graph_def=frozen_func.graph,
         logdir=frozen_out_path,
@@ -254,7 +256,9 @@ if __name__ == "__main__":
         print_message(
             "3. (Optional) Input/output Vertica column type in prediction (0 (default): primitive; 1: complex)"
         )
-        print_message("   Use primitive if you want one value stored in each row/column cell.")
+        print_message(
+            "   Use primitive if you want one value stored in each row/column cell."
+        )
         print_message("   Use complex if you want to store the data in Vertica arrays.")
         print_message(
             "Example call: ./freeze_tf_model.py path/to/saved/model my_frozen_model 0"
@@ -270,4 +274,6 @@ if __name__ == "__main__":
     elif len(sys.argv) == 4:
         freeze_model_from_file(str(sys.argv[1]), str(sys.argv[2]), str(sys.argv[3]))
     else:
-        print_message("Invalid number of arguments.")  # unreachable, just here for completeness
+        print_message(
+            "Invalid number of arguments."
+        )  # unreachable, just here for completeness

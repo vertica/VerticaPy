@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import warnings
 
+
 def print_message(message: str, mtype: Literal["auto", "warning"] = "auto") -> None:
     """
     Prints the input message or warning.
@@ -26,4 +27,4 @@ def print_message(message: str, mtype: Literal["auto", "warning"] = "auto") -> N
     if mtype == "warning":
         warnings.warn(message, Warning)
     elif mtype == "auto":
-        print_message(message)
+        print(message)

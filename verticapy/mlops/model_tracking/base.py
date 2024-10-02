@@ -206,7 +206,7 @@ class vExperiment(PlottingUtils):
                 "The experiment will not be backed up in the database "
                 "when experiment_table is not specified."
             )
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
 
         if self.experiment_type == "clustering" or (
             self.experiment_type == "auto"

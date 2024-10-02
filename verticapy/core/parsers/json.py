@@ -800,7 +800,9 @@ def read_json(
                 title="Creating table.",
             )
             if not temporary_local_table and conf.get_option("print_info"):
-                print_message(f"The table {input_relation} has been successfully created.")
+                print_message(
+                    f"The table {input_relation} has been successfully created."
+                )
         else:
             column_name_dtype = {}
             for elem in column_name:

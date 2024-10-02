@@ -881,7 +881,7 @@ class vDCFill(vDCMath):
                     f"The vDataColumn {self} has no mode "
                     "(only missing values).\nNothing was filled."
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
                 return self._parent
         if isinstance(val, str):
             val = val.replace("'", "''")

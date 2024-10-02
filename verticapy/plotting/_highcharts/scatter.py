@@ -122,7 +122,7 @@ class ScatterPlot(HighchartsBase):
         has_cmap = self.layout["has_cmap"]
         if has_cmap:
             warning_message = f"The parameter {has_cmap} is not supported on the Highchart API. It is ignored."
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)

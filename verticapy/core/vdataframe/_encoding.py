@@ -354,7 +354,7 @@ class vDFEncode(vDFFill):
                     "'max_cardinality' to solve this issue or use "
                     "directly the vDataColumn one_hot_encode method."
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
         return self
 
     get_dummies = one_hot_encode
@@ -1495,7 +1495,7 @@ class vDCEncode(vDCFill):
             warning_message = (
                 "label_encode is only available for categorical variables."
             )
-            print_message(warning_message, "Warning")
+            print_message(warning_message, "warning")
         else:
             distinct_elements = self.distinct()
             expr = ["DECODE({}"]

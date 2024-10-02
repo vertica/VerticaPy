@@ -139,7 +139,7 @@ class TableSample:
         tb.to_pandas()
 
         # Exporting to SQL.
-        print_message(tb.to_sql())
+        print(tb.to_sql())
 
     .. note::
 
@@ -1587,7 +1587,7 @@ class TableSample:
 
         .. ipython:: python
 
-            print_message(tb.to_sql())
+            print(tb.to_sql())
 
         .. seealso::
 

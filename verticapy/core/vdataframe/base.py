@@ -689,7 +689,7 @@ class vDataFrame(vDFAnimatedPlot):
                     "resolve this issue, provide aliases to your "
                     "queries."
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
                 self._vars["has_dpnames"] = True
 
             # Creating the vDataColumns

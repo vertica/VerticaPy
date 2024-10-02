@@ -17,7 +17,6 @@ permissions and limitations under the License.
 import os
 from typing import Optional, Union
 
-from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 
@@ -110,13 +109,13 @@ def generate_lib_udf(
 
     .. ipython:: python
 
-        print_message(udx_str)
+        print(udx_str)
 
     Print the SQL statements that install the function:
 
     .. ipython:: python
 
-        print_message("\\n".join(udx_sql))
+        print("\\n".join(udx_sql))
 
     .. note::
 

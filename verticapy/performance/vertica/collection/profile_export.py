@@ -23,8 +23,6 @@ from typing import Set, List, Mapping
 
 import pandas as pd
 
-
-from verticapy._utils._print import print_message
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.core.parsers.pandas import read_pandas
@@ -70,7 +68,7 @@ class ProfileExportError(Exception):
         try:
             exporter.export()
         except ProfileExportError as err:
-            print_message(f"Observed a ProfileExport error")
+            print(f"Observed a ProfileExport error")
 
     The output will be:
 
@@ -158,7 +156,7 @@ class ProfileExport:
 
         tfile = tarfile.open("query_requests_example_001.tar")
         for f in tfile.getnames():
-            print_message(f"Tarball contains path: {f}")
+            print(f"Tarball contains path: {f}")
 
     The output will be:
 
@@ -221,7 +219,7 @@ class ProfileExport:
 
         .. code-block:: python
 
-            print_message(f"Target schema is {exporter.target_schema}\n"
+            print(f"Target schema is {exporter.target_schema}\n"
                   f"Key is {exporter.key}\n"
                   f"filename is {exporter.filename}")
 
@@ -277,7 +275,7 @@ class ProfileExport:
 
         .. code-block:: python
 
-            print_message(f"Temp path = {exporter.tmp_path}")
+            print(f"Temp path = {exporter.tmp_path}")
 
         The output will be the current working directory. For this example,
         let's assume the current working directory is ``/home/u1``.
@@ -324,7 +322,7 @@ class ProfileExport:
 
         .. code-block:: python
 
-            print_message(f"Temp path = {exporter.tmp_path}")
+            print(f"Temp path = {exporter.tmp_path}")
 
         The output will be:
 
@@ -415,7 +413,7 @@ class ProfileExport:
 
             tfile = tarfile.open("query_requests_example_001.tar")
             for f in tfile.getnames():
-                print_message(f"Tarball contains path: {f}")
+                print(f"Tarball contains path: {f}")
 
         The output will be:
 

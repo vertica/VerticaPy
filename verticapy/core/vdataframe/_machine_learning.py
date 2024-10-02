@@ -695,7 +695,7 @@ class vDFMachineLearning(vDFScaler):
                             f"vDataColumn '{col}' has a too high cardinality "
                             f"(> {max_cardinality}). This vDataColumn was ignored."
                         )
-                    print_message(warning_message, "Warning")
+                    print_message(warning_message, "warning")
         for col in remove_cols:
             columns_tmp.remove(col)
         return columns_tmp

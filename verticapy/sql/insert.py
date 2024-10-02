@@ -227,7 +227,7 @@ def insert_into(
                     total_rows += 1
                 except Exception as e:
                     warning_message = f"Line {i} was skipped.\n{e}"
-                    print_message(warning_message, "Warning")
+                    print_message(warning_message, "warning")
         if genSQL:
             return sql
         else:

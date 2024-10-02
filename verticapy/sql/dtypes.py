@@ -194,7 +194,7 @@ def get_data_types(
             "As parameter 'table_name' is defined, "
             "parameter 'expression' is ignored."
         )
-        print_message(warning_message, "Warning")
+        print_message(warning_message, "warning")
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor) and not (
         table_name
     ):

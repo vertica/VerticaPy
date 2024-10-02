@@ -554,8 +554,8 @@ def _format_keys(
         sql, html_sql = _format_keys(
             SQL_KEYWORDS, sql, html_sql, KEYWORDS_TAG_L, KEYWORDS_TAG_R
         )
-        print_message(sql)
-        print_message(html_sql)
+        print(sql)
+        print(html_sql)
 
     .. note::
 
@@ -748,7 +748,7 @@ def clean_query(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print_message(clean_query(sql))
+        print(clean_query(sql))
 
     .. note::
 
@@ -803,7 +803,7 @@ def erase_comment(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print_message(erase_comment(sql))
+        print(erase_comment(sql))
 
     .. note::
 
@@ -847,7 +847,7 @@ def erase_label(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print_message(erase_label(sql))
+        print(erase_label(sql))
 
     .. note::
 
@@ -892,7 +892,7 @@ def extract_subquery(query: SQLExpression) -> SQLExpression:
         sql += "subtable -- simple query example) subtable2;"
 
         # Example.
-        print_message(extract_subquery(sql))
+        print(extract_subquery(sql))
 
     .. note::
 
@@ -941,7 +941,7 @@ def extract_and_rename_subquery(query: SQLExpression, alias: str) -> SQLExpressi
         sql += "subtable -- simple query example) subtable2;"
 
         # Example.
-        print_message(
+        print(
             extract_and_rename_subquery(
                 sql,
                 alias = 'new_alias',
@@ -1252,7 +1252,7 @@ def indent_vpy_sql(query: SQLExpression) -> SQLExpression:
         sql += "subtable; -- simple query example"
 
         # Example.
-        print_message(indent_vpy_sql(sql))
+        print(indent_vpy_sql(sql))
 
     .. note::
 
@@ -1447,7 +1447,7 @@ def replace_label(
         sql += "subtable; -- simple query example"
 
         # Example.
-        print_message(
+        print(
             indent_vpy_sql(
                 sql,
                 new_label = 'label_test',
@@ -1532,7 +1532,7 @@ def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpress
         }
 
         # Example.
-        print_message(replace_vars_in_query(sql, locals_dict = vars))
+        print(replace_vars_in_query(sql, locals_dict = vars))
 
     .. note::
 
@@ -1574,7 +1574,7 @@ def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpress
                 warning_message = (
                     f"Failed to replace variables in the query.\nError: {e}"
                 )
-                print_message(warning_message, "Warning")
+                print_message(warning_message, "warning")
                 fail = True
         if not fail:
             object_type = None

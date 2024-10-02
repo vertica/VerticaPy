@@ -732,7 +732,7 @@ def read_csv(
             "Parameters 'header_names' and 'dtype' are both defined. "
             "Only 'dtype' will be used."
         )
-        print_message(warning_message, "Warning")
+        print_message(warning_message, "warning")
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
     if gen_tmp_table_name and temporary_local_table and not table_name:
         table_name = gen_tmp_name(name=basename)
@@ -942,7 +942,9 @@ def read_csv(
                 and not temporary_local_table
                 and conf.get_option("print_info")
             ):
-                print_message(f"The table {input_relation} has been successfully created.")
+                print_message(
+                    f"The table {input_relation} has been successfully created."
+                )
             return vDataFrame(table_name, schema=schema)
 
 
