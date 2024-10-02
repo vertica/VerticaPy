@@ -23,7 +23,6 @@ from typing import Set, List, Mapping
 
 import pandas as pd
 
-
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.core.parsers.pandas import read_pandas

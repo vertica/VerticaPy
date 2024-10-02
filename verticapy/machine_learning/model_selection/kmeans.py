@@ -23,6 +23,7 @@ from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._typing import PlottingObject, SQLColumns, SQLRelation
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import format_type, quote_ident, schema_relation
@@ -291,7 +292,7 @@ def best_k(
         if score > elbow_score_stop:
             return i
         model.drop()
-    print(
+    print_message(
         f"\u26A0 The K was not found. The last K (= {i}) "
         f"is returned with an elbow score of {score}"
     )

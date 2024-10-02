@@ -21,7 +21,8 @@ import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
 
-import verticapy._config.config as conf
+from verticapy._utils._print import print_message
+
 from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
 from verticapy.connection.global_connection import (
     get_global_connection,
@@ -142,10 +143,9 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             gb_conn.set_connection(
                 vertica_connection(section, dsn, config=None), section, dsn
             )
-        if conf.get_option("print_info"):
-            print("Connected Successfully!")
+        print_message("Connected Successfully!")
     except OAuthTokenRefreshError as error:
-        print(
+        print_message(
             "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
         )
         new_connection(
@@ -155,13 +155,12 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             gb_conn.set_connection(
                 vertica_connection(section, dsn, config=None), section, dsn
             )
-            if conf.get_option("print_info"):
-                print("Connected Successfully!")
+            print_message("Connected Successfully!")
         except OAuthTokenRefreshError as error:
-            print("Error persists:")
+            print_message("Error persists:")
             raise error
     except ConnectionError as error:
-        print(
+        print_message(
             "A connection error occured. Common reasons may be an invalid host, port, or, if requiring "
             "OAuth and token refresh, this may be due to an incorrect or malformed token url."
         )

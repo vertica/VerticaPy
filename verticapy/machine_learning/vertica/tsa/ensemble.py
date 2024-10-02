@@ -18,8 +18,8 @@ permissions and limitations under the License.
 import copy
 from typing import Literal, Optional, Union
 
-import verticapy._config.config as conf
 from verticapy._typing import NoneType, PlottingObject, SQLColumns, SQLRelation
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import extract_subquery, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
@@ -375,8 +375,7 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
                 self.models_ += [model]
         if return_report:
             return report
-        if conf.get_option("print_info"):
-            print(report)
+        print_message(report)
         return None
 
     # I/O Methods.

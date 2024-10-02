@@ -17,7 +17,6 @@ permissions and limitations under the License.
 import decimal
 import multiprocessing
 from typing import Literal, Optional, Union
-import warnings
 
 from tqdm.auto import tqdm
 
@@ -35,6 +34,7 @@ from verticapy._typing import (
 )
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
@@ -1022,13 +1022,13 @@ class vDFAgg(vDFEval):
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 col_to_compute += [column]
                                 break
-                    elif conf.get_option("print_info"):
+                    else:
                         warning_message = (
                             f"The vDataColumn {column} is not numerical, it was ignored."
                             "\nTo get statistical information about all different "
                             "variables, please use the parameter method = 'categorical'."
                         )
-                        warnings.warn(warning_message, Warning)
+                        print_message(warning_message, "warning")
                 for column in columns:
                     if column not in col_to_compute:
                         values["index"] += [column.replace('"', "")]

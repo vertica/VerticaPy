@@ -379,6 +379,10 @@ def set_option(key: str, value: Any = None) -> None:
             [bool]
             If set to ``True``, a loading bar is displayed
             when using iterative functions.
+        - verbosity
+            [int]
+            API Verbosity, must be a value between 0 and 3.
+            0 (silent) | 1 (warning) | 2 (info) | 3 (debug)
 
     value: object, optional
         New value of the option.
@@ -758,3 +762,11 @@ register_option(Option("save_query_profile", True, "", bool_validator))
 
 # Verbosity
 register_option(Option("print_info", True, "", bool_validator))
+register_option(
+    Option(
+        "verbosity",
+        2,
+        "",
+        in_validator([0, 1, 2, 3]),
+    )
+)

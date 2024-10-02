@@ -18,10 +18,8 @@ import shutil
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import clean_query, indent_vpy_sql
-
-if conf.get_import_success("IPython"):
-    from IPython.display import HTML, display
 
 
 def print_query(query: str, title: Optional[str] = None) -> None:
@@ -64,13 +62,13 @@ def print_query(query: str, title: Optional[str] = None) -> None:
     query_print = clean_query(query)
     query_print = indent_vpy_sql(query)
     if conf.get_import_success("IPython"):
-        display(HTML(f"<h4>{title}</h4>"))
+        print_message(f"<h4>{title}</h4>", "display")
         query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")
-        display(HTML(query_print))
+        print_message(query_print, "display")
     else:
-        print(f"$ {title} $\n")
-        print(query_print)
-        print("-" * int(screen_columns) + "\n")
+        print_message(f"$ {title} $\n")
+        print_message(query_print)
+        print_message("-" * int(screen_columns) + "\n")
 
 
 def print_time(elapsed_time: float) -> None:
@@ -103,7 +101,9 @@ def print_time(elapsed_time: float) -> None:
     """
     screen_columns = shutil.get_terminal_size().columns
     if conf.get_import_success("IPython"):
-        display(HTML(f"<div><b>Execution: </b> {round(elapsed_time, 3)}s</div>"))
+        print_message(
+            f"<div><b>Execution: </b> {round(elapsed_time, 3)}s</div>", "display"
+        )
     else:
-        print(f"Execution: {round(elapsed_time, 3)}s")
-        print("-" * int(screen_columns) + "\n")
+        print_message(f"Execution: {round(elapsed_time, 3)}s")
+        print_message("-" * int(screen_columns) + "\n")

@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-import warnings
 from typing import Any, Iterable, Literal, Optional
 
 import numpy as np
@@ -24,12 +23,10 @@ import pandas as pd
 
 import verticapy._config.config as conf
 from verticapy._utils._object import read_pd
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy.errors import ParsingError
-
-if conf.get_import_success("IPython"):
-    from IPython.display import display, Markdown
 
 """
 SQL KEYWORDS
@@ -640,7 +637,6 @@ def format_query(
         construct others, simplifying the overall
         code.
     """
-    display_success = print_sql and conf.get_import_success("IPython")
     res = clean_query(query)
     html_res = res
 
@@ -695,15 +691,13 @@ def format_query(
             .replace("\n", "<br>")
             .replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;")
         )
-    if display_success:
-        display(Markdown(html_res))
     if indent_sql:
         res = indent_vpy_sql(res)
     if print_sql:
-        print(res)
+        print_message(res, "markdown")
     if only_html:
         return html_res
-    elif display_success:
+    elif print_sql:
         return res, html_res
     return res, None
 
@@ -1574,7 +1568,7 @@ def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpress
                 warning_message = (
                     f"Failed to replace variables in the query.\nError: {e}"
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "warning")
                 fail = True
         if not fail:
             object_type = None

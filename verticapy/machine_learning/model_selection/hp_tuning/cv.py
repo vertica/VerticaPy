@@ -24,6 +24,7 @@ from tqdm.auto import tqdm
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -1078,7 +1079,7 @@ def grid_search_cv(
                     )
                 ]
                 if print_info:
-                    print(
+                    print_message(
                         f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
                         f"Parameters: {config}; \033[91mTest_score: "
                         f"{current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score:"
@@ -1096,7 +1097,7 @@ def grid_search_cv(
                     )
                 ]
                 if print_info:
-                    print(
+                    print_message(
                         f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; "
                         f"Parameters: {config}; \033[91mTest_score: "
                         f"{current_cv[keys[1]][cv]}\033[0m; \033[94mTime:"
@@ -1104,7 +1105,7 @@ def grid_search_cv(
                     )
         except Exception as e:
             if skip_error and skip_error != "no_print":
-                print(e)
+                print_message(e)
             elif not skip_error:
                 raise e
     if not data:
@@ -1157,8 +1158,8 @@ def grid_search_cv(
         if print_info and (
             "final_print" not in kwargs or kwargs["final_print"] != "no_print"
         ):
-            print("\033[1mGrid Search Selected Model\033[0m")
-            print(
+            print_message("\033[1mGrid Search Selected Model\033[0m")
+            print_message(
                 f"{str(estimator.__class__).split('.')[-1][:-2]}; "
                 f"Parameters: {result['parameters'][0]}; \033"
                 f"[91mTest_score: {result['avg_score'][0]}\033[0m;"
@@ -1177,8 +1178,8 @@ def grid_search_cv(
         if print_info and (
             "final_print" not in kwargs or kwargs["final_print"] != "no_print"
         ):
-            print("\033[1mGrid Search Selected Model\033[0m")
-            print(
+            print_message("\033[1mGrid Search Selected Model\033[0m")
+            print_message(
                 f"{str(estimator.__class__).split('.')[-1][:-2]}; "
                 f"Parameters: {result['parameters'][0]}; \033[91mTest_score:"
                 f" {result['avg_score'][0]}\033[0m; \033[94mTime:"
@@ -1671,8 +1672,8 @@ def bayesian_search_cv(
     RFmodel_params, param_grid = format_type(RFmodel_params, param_grid, dtype=dict)
     X = format_type(X, dtype=list)
     if print_info:
-        print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
-        print(
+        print_message(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
+        print_message(
             f"\033[1m\033[4mStep 1 - Computing Random Models"
             " using Grid Search\033[0m\033[0m\n"
         )
@@ -1724,7 +1725,7 @@ def bayesian_search_cv(
     drop(relation, method="table")
     _executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
     if print_info:
-        print(
+        print_message(
             f"\033[1m\033[4mStep 2 - Fitting the RF model with "
             "the hyperparameters data\033[0m\033[0m\n"
         )
@@ -1790,7 +1791,7 @@ def bayesian_search_cv(
                     param_tmp_grid[elem] = result[elem][i]
             new_param_grid += [param_tmp_grid]
     if print_info:
-        print(
+        print_message(
             f"\033[1m\033[4mStep 3 - Computing Most Probable Good "
             "Models using Grid Search\033[0m\033[0m\n"
         )
@@ -1820,8 +1821,8 @@ def bayesian_search_cv(
         result.values[elem] = [item[idx] for item in data]
     hyper_param_estimator.drop()
     if print_info:
-        print("\033[1mBayesian Search Selected Model\033[0m")
-        print(
+        print_message("\033[1mBayesian Search Selected Model\033[0m")
+        print_message(
             f"Parameters: {result['parameters'][0]}; \033[91mTest_score:"
             f" {result['avg_score'][0]}\033[0m; \033[92mTrain_score: "
             f"{result['avg_train_score'][0]}\033[0m; \033[94mTime: "

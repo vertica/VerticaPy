@@ -21,7 +21,6 @@ from scipy.stats import chi2, f
 
 from vertica_python.errors import QueryError
 
-import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type

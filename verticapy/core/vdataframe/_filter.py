@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 import copy
 import random
-import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
 from collections.abc import Iterable
 
@@ -32,6 +31,7 @@ from verticapy._typing import (
     TimeInterval,
 )
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -859,8 +859,7 @@ class vDFFilter(vDFAgg):
             )
             self.filter(f'"{name}" = 1')
             self._vars["exclude_columns"] += [f'"{name}"']
-        elif conf.get_option("print_info"):
-            print("No duplicates detected.")
+        print_message("No duplicates detected.")
         return self
 
     @save_verticapy_logs
@@ -1001,13 +1000,12 @@ class vDFFilter(vDFAgg):
             conf.set_option("print_info", False)
             self[column].dropna()
             conf.set_option("print_info", print_info)
-        if conf.get_option("print_info"):
             total -= self.shape()[0]
             if total == 0:
-                print("Nothing was filtered.")
+                print_message("Nothing was filtered.")
             else:
                 conj = "s were " if total > 1 else " was "
-                print(f"{total} element{conj}filtered.")
+                print_message(f"{total} element{conj}filtered.")
         return self
 
     @save_verticapy_logs
@@ -1153,14 +1151,12 @@ class vDFFilter(vDFAgg):
                 )
             count -= self.shape()[0]
             if count > 0:
-                if conf.get_option("print_info"):
-                    print(f"{count} element{conj}filtered")
+                print_message(f"{count} element{conj}filtered")
                 self._add_to_history(
                     f"[Filter]: {count} element{conj}filtered "
                     f"using the filter '{conditions}'"
                 )
-            elif conf.get_option("print_info"):
-                print("Nothing was filtered.")
+            print_message("Nothing was filtered.")
         else:
             max_pos = 0
             columns_tmp = copy.deepcopy(self._vars["columns"])
@@ -1183,12 +1179,11 @@ class vDFFilter(vDFAgg):
                 count -= new_count
             except QueryError as e:
                 del self._vars["where"][-1]
-                if conf.get_option("print_info"):
-                    warning_message = (
-                        f"The expression '{conditions}' is incorrect.\n"
-                        "Nothing was filtered."
-                    )
-                    warnings.warn(warning_message, Warning)
+                warning_message = (
+                    f"The expression '{conditions}' is incorrect.\n"
+                    "Nothing was filtered."
+                )
+                print_message(warning_message, "warning")
                 if raise_error:
                     raise (e)
                 return self
@@ -1196,8 +1191,7 @@ class vDFFilter(vDFAgg):
                 self._update_catalog(erase=True)
                 self._vars["count"] = new_count
                 conj = "s were " if count > 1 else " was "
-                if conf.get_option("print_info") and "print_info" not in kwargs:
-                    print(f"{count} element{conj}filtered.")
+                print_message(f"{count} element{conj}filtered.")
                 conditions_clean = clean_query(conditions)
                 self._add_to_history(
                     f"[Filter]: {count} element{conj}filtered using "
@@ -1205,8 +1199,7 @@ class vDFFilter(vDFAgg):
                 )
             else:
                 del self._vars["where"][-1]
-                if conf.get_option("print_info") and "print_info" not in kwargs:
-                    print("Nothing was filtered.")
+                print_message("Nothing was filtered.")
         return self
 
     @save_verticapy_logs

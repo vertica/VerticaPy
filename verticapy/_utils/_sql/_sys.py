@@ -172,7 +172,9 @@ def _executeSQL(
         query = clean_query(query)
 
     cursor = current_cursor()
-    if conf.get_option("sql_on") and print_time_sql:
+    if (
+        conf.get_option("sql_on") or (conf.get_option("verbosity") == 3)
+    ) and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if data:
@@ -183,7 +185,9 @@ def _executeSQL(
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time
-    if conf.get_option("time_on") and print_time_sql:
+    if (
+        conf.get_option("time_on") or (conf.get_option("verbosity") == 3)
+    ) and print_time_sql:
         print_time(elapsed_time)
     if method == "fetchrow":
         return cursor.fetchone()

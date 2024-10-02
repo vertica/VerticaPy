@@ -22,6 +22,7 @@ from vertica_python.errors import QueryError
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._object import create_new_vdf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
@@ -37,9 +38,6 @@ from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.core.vdataframe._utils import vDFUtils, vDCUtils
-
-if conf.get_import_success("IPython"):
-    from IPython.display import HTML, display
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -187,7 +185,7 @@ class vDFRead(vDFUtils):
         It is used  when you don't want to activate
         interactive tables for all :py:class:`~vDataFrame`.
         """
-        return display(HTML(self.copy()._repr_html_(interactive=True)))
+        return print_message(self.copy()._repr_html_(interactive=True), "display")
 
     def get_columns(self, exclude_columns: Optional[SQLColumns] = None) -> list[str]:
         """

@@ -25,15 +25,14 @@ permissions and limitations under the License.
 ##
 import re
 import time
-import warnings
 from typing import Optional, TYPE_CHECKING
 
 from IPython.core.magic import needs_local_scope
-from IPython.display import display, HTML
 
 import verticapy._config.config as conf
 from verticapy._utils._object import create_new_vdf
 from verticapy._utils._parsers import parse_explain_graphviz
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_procedure
 from verticapy._utils._sql._dblink import replace_external_queries
@@ -817,12 +816,12 @@ def sql_magic(
                         raise ValueError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(options_dict[option])
 
-            elif conf.get_option("print_info"):
+            else:
                 warning_message = (
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "warning")
 
         if "-f" in options and "-c" in options:
             raise ValueError(
@@ -843,7 +842,7 @@ def sql_magic(
         # Case when it is a procedure
         if is_procedure(queries):
             current_cursor().execute(queries)
-            print("CREATE")
+            print_message("CREATE")
             return
 
         # Cleaning the Query
@@ -865,7 +864,7 @@ def sql_magic(
             )
 
             if external_queries:
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "warning")
 
         n, i, all_split = len(queries), 0, []
 
@@ -965,18 +964,18 @@ def sql_magic(
                 except Exception as e:
                     error = str(e)
 
-                if conf.get_option("print_info") and (
+                if (
                     "Severity: ERROR, Message: User defined transform must return at least one column"
                     in error
                     and "DBLINK" in error
                 ):
-                    print(query_type)
+                    print_message(query_type)
 
                 elif error:
                     raise QueryError(error)
 
-                elif conf.get_option("print_info"):
-                    print(query_type)
+                else:
+                    print_message(query_type)
 
             else:
                 error = ""
@@ -1022,14 +1021,12 @@ def sql_magic(
                         final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
-                        if final_result and conf.get_option("print_info"):
-                            print(final_result)
-                        elif (
-                            query_subtype.upper().startswith(SPECIAL_WORDS)
-                        ) and conf.get_option("print_info"):
-                            print(query_subtype.upper())
-                        elif conf.get_option("print_info"):
-                            print(query_type)
+                        if final_result:
+                            print_message(final_result)
+                        elif query_subtype.upper().startswith(SPECIAL_WORDS):
+                            print_message(query_subtype.upper())
+                        else:
+                            print_message(query_type)
 
                     except Exception as e:
                         error = str(e)
@@ -1041,8 +1038,7 @@ def sql_magic(
                     in error
                     and "DBLINK" in error
                 ):
-                    if conf.get_option("print_info"):
-                        print(query_type)
+                    print_message(query_type)
 
                 elif error:
                     raise QueryError(error)
@@ -1062,9 +1058,7 @@ def sql_magic(
         # Displaying the time
 
         elapsed_time = round(time.time() - start_time, 3)
-
-        if conf.get_option("print_info"):
-            display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+        print_message(f"<div><b>Execution: </b> {elapsed_time}s</div>", "display")
 
         return result
 

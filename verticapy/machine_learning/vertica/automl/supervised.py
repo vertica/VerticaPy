@@ -28,6 +28,7 @@ from verticapy._typing import (
     SQLColumns,
 )
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
@@ -544,14 +545,14 @@ class AutoML(VerticaModel):
         else:
             self.preprocess_ = None
         if self.parameters["print_info"]:
-            print(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
+            print_message(f"\033[1m\033[4mStarting AutoML\033[0m\033[0m\n")
         if conf.get_option("tqdm") and self.parameters["print_info"]:
             loop = tqdm(self.parameters["estimator"])
         else:
             loop = self.parameters["estimator"]
         for elem in loop:
             if self.parameters["print_info"]:
-                print(
+                print_message(
                     f"\n\033[1m\033[4mTesting Model - {str(elem.__class__).split('.')[-1][:-2]}\033[0m\033[0m\n"
                 )
             param_grid = gen_params_grid(
@@ -639,8 +640,8 @@ class AutoML(VerticaModel):
                 "Error: 'AutoML' failed to converge. Please retry fitting the estimator."
             )
         if self.parameters["print_info"]:
-            print(f"\033[1m\033[4mFinal Model\033[0m\033[0m\n")
-            print(
+            print_message(f"\033[1m\033[4mFinal Model\033[0m\033[0m\n")
+            print_message(
                 f"{result['model_type'][0]}; Best_Parameters: {result['parameters'][0]}; \033[91mBest_Test_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;\n\n"
             )
         best_model = result["model_class"][0](self.model_name)

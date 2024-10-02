@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError
@@ -124,6 +125,5 @@ def read_shp(
             PARSER STV_ShpParser();""",
         title="Ingesting the data.",
     )
-    if conf.get_option("print_info"):
-        print(f'The table "{schema}"."{table_name}" has been successfully created.')
+    print_message(f'The table "{schema}"."{table_name}" has been successfully created.')
     return vDataFrame(table_name, schema=schema)

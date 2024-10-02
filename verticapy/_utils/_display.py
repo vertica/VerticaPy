@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import html
 import shutil
-from typing import Optional
+from typing import Literal, Optional
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType

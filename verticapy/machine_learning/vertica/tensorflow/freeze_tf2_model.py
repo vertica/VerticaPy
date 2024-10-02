@@ -13,12 +13,17 @@
 # To see how to use this script, run it without arguments.
 ###########################################################################################
 
+import numpy as np
+import json
+import os
+import sys
+
 import tensorflow as tf
 from tensorflow.python.framework.convert_to_constants import (  # pylint: disable=no-name-in-module
     convert_variables_to_constants_v2,
 )
-import numpy as np
-import json, os, sys
+
+from verticapy._utils._print import print_message
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # suppress some TF noise
 
@@ -40,13 +45,13 @@ def get_str_from_dtype(dtype, is_input, idx):
     if dtype in dtype_to_string:
         dtype_str = dtype_to_string[dtype]
     else:
-        print(
+        print_message(
             "Only floats, doubles, and signed ints are currently supported as model inputs/outputs in Vertica, please modify your model."
         )
         sys.exit()
 
     in_or_out = "Input" if is_input else "Output"
-    print(in_or_out, str(idx), "is of type:", dtype_str)
+    print_message(in_or_out + str(idx) + "is of type:" + dtype_str)
 
     return dtype_str
 
@@ -61,7 +66,7 @@ def freeze_model(model, save_dir, column_type):
         # Convert Keras model to ConcreteFunction
         full_model = tf.function(lambda x: model(x))
 
-        print("Model Input:", model.input)
+        print_message("Model Input:" + str(model.input))
 
         if isinstance(model.input, list):
             no_of_inputs = len(model.input)
@@ -105,8 +110,8 @@ def freeze_model(model, save_dir, column_type):
         inputs = []
         col_start = 0
         for input_idx, inp in enumerate(frozen_func.inputs):
-            # print(inp.op.name)
-            # print(inp.get_shape())
+            # print_message(inp.op.name)
+            # print_message(inp.get_shape())
             input_dims = [1 if e is None else e for e in list(inp.get_shape())]
             dtype = get_str_from_dtype(inp.dtype, True, input_idx)
             inputs.append(
@@ -127,8 +132,8 @@ def freeze_model(model, save_dir, column_type):
         outputs = []
         col_start = 0
         for output_idx, output in enumerate(frozen_func.outputs):
-            # print(output.op.name)
-            # print(output.get_shape())
+            # print_message(output.op.name)
+            # print_message(output.get_shape())
             output_dims = [1 if e is None else e for e in list(output.get_shape())]
             dtype = get_str_from_dtype(output.dtype, False, output_idx)
             outputs.append(
@@ -188,7 +193,7 @@ def freeze_model(model, save_dir, column_type):
         save_desc_file(model_info, frozen_out_path, tf_model_desc_file)
 
     else:
-        print("Unrecognized column type flag")
+        print_message("Unrecognized column type flag")
         sys.exit()
 
 
@@ -201,7 +206,9 @@ def freeze_model_from_file(
 
 
 def save_graph(frozen_func, frozen_out_path, frozen_graph_file):
-    print("Saving frozen model to: " + os.path.join(frozen_out_path, frozen_graph_file))
+    print_message(
+        "Saving frozen model to: " + os.path.join(frozen_out_path, frozen_graph_file)
+    )
     tf.io.write_graph(
         graph_or_graph_def=frozen_func.graph,
         logdir=frozen_out_path,
@@ -211,7 +218,7 @@ def save_graph(frozen_func, frozen_out_path, frozen_graph_file):
 
 
 def save_desc_file(model_info, frozen_out_path, tf_model_desc_file):
-    print(
+    print_message(
         "Saving model description file to: "
         + os.path.join(frozen_out_path, tf_model_desc_file)
     )
@@ -241,17 +248,19 @@ def gen_tensor_list(tensors):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or len(sys.argv) > 4 or sys.argv[1] in ["-h", "--help"]:
-        print("There are three arguments to the script:")
-        print("1. Path to your saved model directory")
-        print(
+        print_message("There are three arguments to the script:")
+        print_message("1. Path to your saved model directory")
+        print_message(
             "2. (Optional) name of the folder to save the frozen model (default: frozen_tfmodel)"
         )
-        print(
+        print_message(
             "3. (Optional) Input/output Vertica column type in prediction (0 (default): primitive; 1: complex)"
         )
-        print("   Use primitive if you want one value stored in each row/column cell.")
-        print("   Use complex if you want to store the data in Vertica arrays.")
-        print(
+        print_message(
+            "   Use primitive if you want one value stored in each row/column cell."
+        )
+        print_message("   Use complex if you want to store the data in Vertica arrays.")
+        print_message(
             "Example call: ./freeze_tf_model.py path/to/saved/model my_frozen_model 0"
         )
         sys.exit()
@@ -265,4 +274,6 @@ if __name__ == "__main__":
     elif len(sys.argv) == 4:
         freeze_model_from_file(str(sys.argv[1]), str(sys.argv[2]), str(sys.argv[3]))
     else:
-        print("Invalid number of arguments.")  # unreachable, just here for completeness
+        print_message(
+            "Invalid number of arguments."
+        )  # unreachable, just here for completeness

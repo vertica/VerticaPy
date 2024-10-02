@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
 import vertica_python
 from typing import Optional, Union
 
@@ -22,6 +21,7 @@ from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import format_type, format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
@@ -194,7 +194,7 @@ def get_data_types(
             "As parameter 'table_name' is defined, "
             "parameter 'expression' is ignored."
         )
-        warnings.warn(warning_message, Warning)
+        print_message(warning_message, "warning")
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor) and not (
         table_name
     ):

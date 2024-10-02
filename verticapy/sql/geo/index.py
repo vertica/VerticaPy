@@ -14,9 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
 from typing import Optional, Union
 
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._typing import SQLRelation
@@ -455,7 +455,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
         )
 
     except Exception as e:
-        warnings.warn(str(e), Warning)
+        print_message(str(e), "warning")
         return False
 
     return True

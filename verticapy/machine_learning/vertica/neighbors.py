@@ -15,13 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import itertools
-import warnings
 from typing import Literal, Optional
 import numpy as np
 
 from vertica_python.errors import QueryError
 
-import verticapy._config.config as conf
 from verticapy._typing import (
     NoneType,
     PlottingObject,
@@ -31,6 +29,7 @@ from verticapy._typing import (
     SQLRelation,
 )
 from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     clean_query,
@@ -2340,7 +2339,7 @@ class KernelDensity(Regressor, Tree):
                         f"Wrong xlim for the vDataColumn {column}.\n"
                         "The max and the min will be used instead."
                     )
-                    warnings.warn(warning_message, Warning)
+                    print_message(warning_message, "warning")
                     x_min, x_max = vdf.agg(
                         func=["min", "max"], columns=[column]
                     ).transpose()[column]

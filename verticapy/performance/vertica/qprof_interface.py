@@ -19,13 +19,14 @@ import uuid
 from typing import Optional, Union
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
+
 from verticapy.jupyter._javascript import read_package_file, replace_value
 from verticapy.jupyter._widgets import Visualizer, Item, makeItems
 from verticapy.performance.vertica.qprof_stats_tests import QueryProfilerStats
 from verticapy.performance.vertica.qprof_utility import QprofUtility
 
 if conf.get_import_success("IPython"):
-    from IPython.display import display, HTML
     import ipywidgets as widgets
 
 
@@ -431,7 +432,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         Callback function that displays the Query Plan Tree.
         """
         # Create an output widget to hold the hourglass and the tree
-        display(self.output)
+        print_message(self.output, "display")
 
         # Show hourglass in the output before starting long-running task
         with self.output:
@@ -445,7 +446,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 [hourglass_icon],
                 layout=widgets.Layout(justify_content="center", align_items="center"),
             )
-            display(vbox)
+            print_message(vbox, "display")
 
         # Processing the inputs and generate the tree (long running task)
         metric = [
@@ -491,7 +492,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                 )
                 box = widgets.HBox([html_widget])
                 box.layout.justify_content = "center"
-                display(box)
+                print_message(box, "display")
         else:
             raw = super().get_qplan_tree(
                 metric=metric,
@@ -523,7 +524,7 @@ class QueryProfilerInterface(QueryProfilerStats):
 
             with self.output:
                 self.output.clear_output(wait=True)  # Clear the hourglass
-                display(HTML(output_html))
+                print_message(output_html, "display")
 
         # Update the header after the tree is displayed
         self._qpt_header.value = (
@@ -822,12 +823,13 @@ class QueryProfilerInterface(QueryProfilerStats):
         """
         Callback function that displays the Query Execution Steps.
         """
-        display(
+        print_message(
             super().get_qsteps_(
                 unit=self.qsteps_controls["unit"],
                 kind=self.qsteps_controls["kind"],
                 categoryorder=self.qsteps_controls["categoryorder"],
-            )
+            ),
+            "display",
         )
         self._qsteps_header.value = (
             f"<h1><b>Query Execution Steps - [query_idx: {query_idx}]</b></h1>"
@@ -897,11 +899,12 @@ class QueryProfilerInterface(QueryProfilerStats):
         Callback function that displays the
         CPU Time by node and ``path_id``.
         """
-        display(
+        print_message(
             super().get_cpu_time(
                 kind=kind,
                 categoryorder=categoryorder,
-            )
+            ),
+            "display",
         )
         self._cpu_header.value = (
             f"<h1><b>CPU Time by node and path_id - [query_idx: {query_idx}]</b></h1>"
@@ -928,8 +931,8 @@ class QueryProfilerInterface(QueryProfilerStats):
         out = widgets.Output()
         with out:
             out.clear_output(wait=True)
-            display(interactive_output)
-        display(widgets.VBox([step_navigation, out]))
+            print_message(interactive_output, "display")
+        print_message(widgets.VBox([step_navigation, out]), "display")
 
     def update_step(self, step_idx):
         """
@@ -939,9 +942,9 @@ class QueryProfilerInterface(QueryProfilerStats):
         """
         steps_id = self.get_step_funcs()
         if steps_id[step_idx] == NotImplemented:
-            display("NotImplemented")
+            print_message("NotImplemented", "display")
         else:
-            display(steps_id[step_idx]())
+            print_message(steps_id[step_idx](), "display")
         self.step_text.value = f"Step {step_idx}"
 
     def _next_step_clicked(self, button):
@@ -1085,4 +1088,4 @@ class QueryProfilerComparison:
         """
         Displays the final side-by-side UI.
         """
-        display(self.side_by_side_ui)
+        print_message(self.side_by_side_ui, "display")

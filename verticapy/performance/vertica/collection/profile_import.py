@@ -24,6 +24,7 @@ from typing import Set, List
 
 import pandas as pd
 
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.vdataframe import vDataFrame
 from verticapy.core.parsers.pandas import read_pandas
@@ -254,18 +255,18 @@ class ProfileImport:
 
         self.tarfile_obj = tarfile.open(self.filename, "r")
         names = "\n".join(self.tarfile_obj.getnames())
-        print(f"Files in the archive: {names}")
+        print_message(f"Files in the archive: {names}")
         current_datetime = datetime.datetime.now()
         timestamp_suffix = current_datetime.strftime("%Y-%m-%d_%H-%M-%S_%f")
         tmp_dir = self.tmp_path / Path(f"profile_import_run_{timestamp_suffix}")
 
-        print(f"Creating temporary directory: {tmp_dir}")
+        print_message(f"Creating temporary directory: {tmp_dir}")
 
         tmp_dir.mkdir()
 
         self.tarfile_obj.extractall(tmp_dir)
 
-        print(f"Extracted files: {[x for x in tmp_dir.iterdir()]}")
+        print_message(f"Extracted files: {[x for x in tmp_dir.iterdir()]}")
 
         return tmp_dir
 

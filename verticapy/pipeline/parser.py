@@ -25,6 +25,7 @@ import yaml
 
 import verticapy as vp
 
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.datasets import (
@@ -168,7 +169,7 @@ def parse_yaml(pipeline: dict):
             TEST_SQL, TABLE_SQL = _validate.testing(test, MODEL, pipeline_name, COLS)
             META_SQL += TEST_SQL
             pbar.update()
-            print(
+            print_message(
                 _executeSQL(
                     f"SELECT * FROM {pipeline_name + '_METRIC_TABLE'};"
                 ).fetchall()

@@ -14,10 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
 from typing import Union, Optional
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     clean_query,
@@ -227,7 +227,7 @@ def insert_into(
                     total_rows += 1
                 except Exception as e:
                     warning_message = f"Line {i} was skipped.\n{e}"
-                    warnings.warn(warning_message, Warning)
+                    print_message(warning_message, "warning")
         if genSQL:
             return sql
         else:

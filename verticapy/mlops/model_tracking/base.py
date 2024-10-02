@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
 import numpy as np
 import uuid
 from typing import Literal
@@ -32,6 +31,7 @@ from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.plotting._utils import PlottingUtils
 from verticapy._typing import PlottingObject
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -206,7 +206,7 @@ class vExperiment(PlottingUtils):
                 "The experiment will not be backed up in the database "
                 "when experiment_table is not specified."
             )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "warning")
 
         if self.experiment_type == "clustering" or (
             self.experiment_type == "auto"

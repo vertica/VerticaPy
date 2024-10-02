@@ -17,17 +17,14 @@ permissions and limitations under the License.
 import io
 import os
 from typing import List
-import warnings
 
 import verticapy._config.config as conf
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import list_strip
 
 if conf.get_import_success("graphviz"):
     import graphviz
     from graphviz import Source
-
-if conf.get_import_success("IPython"):
-    from IPython.display import display
 
 # CSV
 
@@ -104,7 +101,7 @@ def get_header_names(
                     "to CSV while retaining its indexes.\nTip: Use "
                     "index=False when exporting with pandas.DataFrame.to_csv."
                 )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "warning")
     return list_strip(file_header)
 
 
@@ -329,8 +326,5 @@ def parse_explain_graphviz(rows: list[str], display_trees: bool = True) -> list:
             result += [row]
     if display_trees:
         for row in result:
-            if isinstance(row, str) or not (conf.get_import_success("IPython")):
-                print(row)
-            else:
-                display(row)
+            print_message(row, "display")
     return result

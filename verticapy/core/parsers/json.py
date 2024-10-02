@@ -22,6 +22,7 @@ from vertica_python.errors import QueryError
 import verticapy._config.config as conf
 from verticapy._typing import NoneType
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     quote_ident,
@@ -798,8 +799,10 @@ def read_json(
                 query3,
                 title="Creating table.",
             )
-            if not temporary_local_table and conf.get_option("print_info"):
-                print(f"The table {input_relation} has been successfully created.")
+            if not temporary_local_table:
+                print_message(
+                    f"The table {input_relation} has been successfully created."
+                )
         else:
             column_name_dtype = {}
             for elem in column_name:

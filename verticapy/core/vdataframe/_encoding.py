@@ -16,13 +16,13 @@ permissions and limitations under the License.
 """
 import copy
 import math
-import warnings
 from typing import Literal, Optional, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._object import get_vertica_mllib, create_new_vdc
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
@@ -347,14 +347,14 @@ class vDFEncode(vDFFill):
                 self[column].one_hot_encode(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
-            elif cols_hand and conf.get_option("print_info"):
+            elif cols_hand:
                 warning_message = (
                     f"The vDataColumn '{column}' was ignored because of "
                     "its high cardinality.\nIncrease the parameter "
                     "'max_cardinality' to solve this issue or use "
                     "directly the vDataColumn one_hot_encode method."
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "warning")
         return self
 
     get_dummies = one_hot_encode
@@ -1495,7 +1495,7 @@ class vDCEncode(vDCFill):
             warning_message = (
                 "label_encode is only available for categorical variables."
             )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "warning")
         else:
             distinct_elements = self.distinct()
             expr = ["DECODE({}"]
@@ -1646,6 +1646,5 @@ class vDCEncode(vDCFill):
             f"[Mean Encode]: The vDataColumn {self} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
-        if conf.get_option("print_info"):
-            print("The mean encoding was successfully done.")
+        print_message("The mean encoding was successfully done.")
         return self._parent

@@ -14,10 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     clean_query,
@@ -25,7 +26,6 @@ from verticapy._utils._sql._format import (
     format_type,
     quote_ident,
 )
-from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ExtensionError
@@ -476,7 +476,7 @@ def read_file(
         extract_col_dt = extract_col_dt_from_query(result[0], col)
         if extract_col_dt is None:
             warning_message = f"The column '{col}' was not found.\nIt will be skipped."
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "warning")
         else:
             column, ctype = extract_col_dt
             result[0] = result[0].replace(

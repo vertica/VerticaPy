@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 
 import copy
-import warnings
 from abc import abstractmethod
 from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 import numpy as np
@@ -35,6 +34,7 @@ from verticapy._typing import (
     SQLExpression,
 )
 from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._format import (
     clean_query,
     format_type,
@@ -1194,7 +1194,7 @@ class VerticaModel(PlottingUtils):
                 warning_message = (
                     f"parameter 'parameters' got an unexpected keyword argument '{p}'"
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "warning")
             new_parameters[p] = parameters[p]
         self.__init__(name=self.model_name, **new_parameters)
 
@@ -2427,8 +2427,7 @@ class Supervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            if conf.get_option("print_info"):
-                print(report)
+            print_message(report)
         return None
 
 
@@ -7995,6 +7994,5 @@ class Unsupervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            if conf.get_option("print_info"):
-                print(report)
+            print_message(report)
         return None

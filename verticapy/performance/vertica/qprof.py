@@ -20,7 +20,6 @@ from pathlib import Path
 import re
 from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
 import uuid
-import warnings
 
 from tqdm.auto import tqdm
 
@@ -31,6 +30,7 @@ from verticapy.core.vdataframe import vDataFrame
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, PlottingObject, SQLExpression
 from verticapy._utils._parsers import parse_explain_graphviz
+from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
@@ -1070,7 +1070,7 @@ class QueryProfiler:
                     "supported. A new key will be then generated: "
                     f"{self.key_id}"
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "warning")
         else:
             if isinstance(key_id, int):
                 self.key_id = str(key_id)
@@ -1210,7 +1210,7 @@ class QueryProfiler:
                             "\nIt might be still running. This transaction"
                             " will be skipped."
                         )
-                        warnings.warn(warning_message, Warning)
+                        print_message(warning_message, "warning")
                     session_params_non_default += [
                         self._get_current_session_params_non_default()
                     ]
@@ -1254,8 +1254,8 @@ class QueryProfiler:
         self._create_copy_v_table(print_info=print_info)
 
         # SETTING THE requests AND queries durations.
-        if conf.get_option("print_info") and print_info:
-            print("Setting the requests and queries durations...")
+        if print_info:
+            print_message("Setting the requests and queries durations...")
         self._set_request_qd()
 
         # WARNING MESSAGES.
@@ -1495,8 +1495,8 @@ class QueryProfiler:
         v_temp_table_dict = self._v_table_dict()
         v_config_table_list = self._v_config_table_list()
         loop = v_temp_table_dict.items()
-        if conf.get_option("print_info") and print_info:
-            print("Searching the performance tables...")
+        if print_info:
+            print_message("Searching the performance tables...")
         if conf.get_option("tqdm") and print_info:
             loop = tqdm(loop, total=len(loop))
         idx = 0
@@ -1556,13 +1556,15 @@ class QueryProfiler:
                             )
                         ]
                 except:
-                    if conf.get_option("print_info") and idx == 0:
-                        print("Some tables seem to not exist...")
-                        print("Creating a copy of the performance tables...\n")
-                        print(
+                    if idx == 0:
+                        print_message("Some tables seem to not exist...")
+                        print_message("Creating a copy of the performance tables...\n")
+                        print_message(
                             f"The key used to build up the tables is: {self.key_id}\n"
                         )
-                        print("You can access the key by using the 'key_id' attribute.")
+                        print_message(
+                            "You can access the key by using the 'key_id' attribute."
+                        )
                     exists = False
                     idx += 1
 
@@ -1576,10 +1578,9 @@ class QueryProfiler:
                     self.tables_dtypes += [self.v_tables_dtypes[-1]]
 
                 if not (exists) or (self.overwrite):
-                    if conf.get_option("print_info"):
-                        print(
-                            f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
-                        )
+                    print_message(
+                        f"Copy of {schema}.{table} created in {new_schema}.{new_table}"
+                    )
                     try:
                         if self.overwrite:
                             _executeSQL(
@@ -1599,7 +1600,7 @@ class QueryProfiler:
                             " to skip the table creation and to use the existing "
                             "ones.\n\nError Details:\n" + str(e)
                         )
-                        warnings.warn(warning_message, Warning)
+                        print_message(warning_message, "warning")
         self.target_tables = target_tables
 
     def _insert_copy_v_table(
@@ -1638,8 +1639,7 @@ class QueryProfiler:
             v_temp_table_dict = self._v_table_dict()
             v_config_table_list = self._v_config_table_list()
             loop = v_temp_table_dict.items()
-            if conf.get_option("print_info"):
-                print("Inserting the new transactions...")
+            print_message("Inserting the new transactions...")
             if conf.get_option("tqdm"):
                 loop = tqdm(loop, total=len(loop))
             idx = 0
@@ -1671,7 +1671,7 @@ class QueryProfiler:
                             f"{transactions} in the relation {new_schema}.{new_table}.\n"
                             "\n\nError Details:\n" + str(e)
                         )
-                        warnings.warn(warning_message, Warning)
+                        print_message(warning_message, "warning")
             self.__init__(
                 key_id=self.key_id,
                 target_schema=self.target_schema,
@@ -1688,7 +1688,7 @@ class QueryProfiler:
                     f"{transactions}\n"
                     "Are you sure that they exist?"
                 )
-                warnings.warn(warning_message, Warning)
+                print_message(warning_message, "warning")
 
     def _check_v_table(
         self, iterchecks: bool = True, ignore_operators_check: bool = True
@@ -1722,8 +1722,7 @@ class QueryProfiler:
         if iterchecks:
             if conf.get_option("tqdm"):
                 loop = tqdm(loop, total=len(loop))
-            if conf.get_option("print_info"):
-                print("Checking all the tables consistency iteratively...")
+            print_message("Checking all the tables consistency iteratively...")
             for tr_id, st_id in loop:
                 for table_name in tables:
                     if table_name not in config_table:
@@ -1769,8 +1768,9 @@ class QueryProfiler:
                         current_table += " USING (transaction_id, statement_id)"
                     jointables += [current_table]
                     relations += [f"{sc}.{tb}"]
-            if conf.get_option("print_info"):
-                print("Checking all the tables consistency using a single SQL query...")
+            print_message(
+                "Checking all the tables consistency using a single SQL query..."
+            )
             query = (
                 "SELECT "
                 + ", ".join(select)
@@ -1809,8 +1809,7 @@ class QueryProfiler:
         inconsistent_dt = ""
         table_name_list = list(self._v_table_dict())
         n = len(self.tables_dtypes)
-        if conf.get_option("print_info"):
-            print("Checking all the tables data types...")
+        print_message("Checking all the tables data types...")
         for i in range(n):
             table_name = table_name_list[i]
             table_1 = self.v_tables_dtypes[i]
@@ -1868,7 +1867,7 @@ class QueryProfiler:
                 "removed, especially if you are directly working on the "
                 "performance tables."
             )
-            warnings.warn(warning_message, Warning)
+            print_message(warning_message, "warning")
 
     def _set_request_qd(self):
         """
@@ -3217,7 +3216,7 @@ class QueryProfiler:
             )
             res = "\n".join([l[3] for l in path])
             if print_plan:
-                print(res)
+                print_message(res)
             return res
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         return vdf
