@@ -18,7 +18,6 @@ permissions and limitations under the License.
 from getpass import getpass
 import vertica_python
 
-import verticapy._config.config as conf
 from verticapy._utils._print import print_message
 
 from verticapy.connection.errors import ConnectionError, OAuthTokenRefreshError
@@ -291,12 +290,6 @@ def new_connection(
         | :py:func:`~verticapy.connection.set_connection` :
             Sets the VerticaPy connection.
     """
-    doPrintInfo = conf.get_option("print_info")
-
-    def _printInfo(info):
-        if doPrintInfo:
-            print_message(info)
-
     path = get_connection_file()
     confparser = get_confparser()
 
@@ -312,11 +305,11 @@ def new_connection(
 
     if prompt:
         if not (oauth_access_token := getpass("Input OAuth Access Token:")):
-            _printInfo("Default value applied: Input left empty.")
+            print_message("Default value applied: Input left empty.")
         else:
             conn_info["oauth_access_token"] = oauth_access_token
         if not (oath_refresh_token := getpass("Input OAuth Refresh Token:")):
-            _printInfo("Default value applied: Input left empty.")
+            print_message("Default value applied: Input left empty.")
         else:
             conn_info["oauth_refresh_token"] = oath_refresh_token
         if not (
@@ -324,7 +317,7 @@ def new_connection(
                 "Input OAuth Client Secret: (OTCAD and public client users should leave this blank)"
             )
         ):
-            _printInfo("Default value applied: Input left empty.")
+            print_message("Default value applied: Input left empty.")
         else:
             conn_info["oauth_config"]["client_secret"] = client_secret
 
@@ -365,8 +358,7 @@ def new_connection(
                 gb_conn.set_connection(
                     vertica_python.connect(**read_dsn(name, path)), name, path
                 )
-                if doPrintInfo:
-                    print_message("Connected Successfully!")
+                print_message("Connected Successfully!")
             except OAuthTokenRefreshError as error:
                 print_message("Error persists:")
                 raise error

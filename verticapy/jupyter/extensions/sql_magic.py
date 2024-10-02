@@ -28,7 +28,6 @@ import time
 from typing import Optional, TYPE_CHECKING
 
 from IPython.core.magic import needs_local_scope
-from IPython.display import display, HTML
 
 import verticapy._config.config as conf
 from verticapy._utils._object import create_new_vdf
@@ -51,6 +50,9 @@ from verticapy.jupyter.extensions._utils import get_magic_options
 if conf.get_import_success("graphviz"):
     import graphviz
     from graphviz import Source
+
+if conf.get_import_success("IPython"):
+    from IPython.display import display, HTML
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame

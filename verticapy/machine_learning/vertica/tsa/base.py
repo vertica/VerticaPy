@@ -22,7 +22,6 @@ from typing import Literal, Optional, Union
 
 import numpy as np
 
-import verticapy._config.config as conf
 from verticapy._typing import (
     PlottingObject,
     NoneType,

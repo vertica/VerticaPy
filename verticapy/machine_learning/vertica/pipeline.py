@@ -18,7 +18,6 @@ import copy
 
 from typing import Literal, Optional
 
-import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns, SQLRelation
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._collect import save_verticapy_logs

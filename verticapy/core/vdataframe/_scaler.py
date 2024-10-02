@@ -20,7 +20,6 @@ from typing import Literal, Optional, TYPE_CHECKING
 
 from vertica_python.errors import QueryError
 
-import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs

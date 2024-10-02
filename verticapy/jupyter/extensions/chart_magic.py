@@ -19,7 +19,6 @@ import time
 from typing import Optional, Literal, Union
 
 from IPython.core.magic import needs_local_scope
-from IPython.display import display, HTML
 
 from vertica_highcharts import Highstock, Highchart
 
@@ -34,6 +33,9 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.jupyter.extensions._utils import get_magic_options
 
 from verticapy.plotting._utils import PlottingUtils
+
+if conf.get_import_success("IPython"):
+    from IPython.display import display, HTML
 
 CLASS_NAME_MAP = {
     "auto": None,

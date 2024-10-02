@@ -18,7 +18,6 @@ permissions and limitations under the License.
 import copy
 from typing import Literal, Optional, Union
 
-import verticapy._config.config as conf
 from verticapy._typing import NoneType, PlottingObject, SQLColumns, SQLRelation
 from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs

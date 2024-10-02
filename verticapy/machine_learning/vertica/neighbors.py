@@ -20,7 +20,6 @@ import numpy as np
 
 from vertica_python.errors import QueryError
 
-import verticapy._config.config as conf
 from verticapy._typing import (
     NoneType,
     PlottingObject,
