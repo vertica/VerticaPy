@@ -3011,9 +3011,12 @@ class QueryProfiler:
 
         # Final.
         tree_style["temp_relation_order"] = self._get_qplan_tr_order()
-        params = (path_id, path_id_info, show_ancestors, pic_path)
+        params = (path_id, show_ancestors, pic_path)
         if isinstance(metric, (list, tuple)):
             for met in metric:
+                params += (met,)
+        if isinstance(path_id_info, (list, tuple)):
+            for met in path_id_info:
                 params += (met,)
         for key in tree_style:
             params += (key,)
