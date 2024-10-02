@@ -858,7 +858,7 @@ class PlottingBase(PlottingBaseSQL):
         for col in columns:
             if vdf[col].isnum() and not (vdf[col].isbool()):
                 columns_ += [col]
-            elif conf.get_option("print_info"):
+            else:
                 warning_message = (
                     f"The Virtual Column {col} is not numerical."
                     " Its histogram will not be drawn."

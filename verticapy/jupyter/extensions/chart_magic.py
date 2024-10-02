@@ -717,7 +717,7 @@ def chart_magic(
                     raise ValueError("Duplicate option '-k'.")
                 options["-k"] = options_dict[option]
 
-        elif conf.get_option("print_info"):
+        else:
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't exist - skipping."
             )

@@ -144,8 +144,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             gb_conn.set_connection(
                 vertica_connection(section, dsn, config=None), section, dsn
             )
-        if conf.get_option("print_info"):
-            print_message("Connected Successfully!")
+        print_message("Connected Successfully!")
     except OAuthTokenRefreshError as error:
         print_message(
             "Access Denied: Your authentication credentials are incorrect or have expired. Please retry"
@@ -157,8 +156,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
             gb_conn.set_connection(
                 vertica_connection(section, dsn, config=None), section, dsn
             )
-            if conf.get_option("print_info"):
-                print_message("Connected Successfully!")
+            print_message("Connected Successfully!")
         except OAuthTokenRefreshError as error:
             print_message("Error persists:")
             raise error

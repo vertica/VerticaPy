@@ -415,7 +415,7 @@ class vDFMath(vDFFilter):
             "iqr",
             "sem",
         ) or ("%" in func):
-            if order_by and not conf.get_option("print_info"):
+            if order_by:
                 print_message(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"

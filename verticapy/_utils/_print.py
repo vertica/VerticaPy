@@ -16,8 +16,14 @@ permissions and limitations under the License.
 """
 import warnings
 
+from IPython.display import display, HTML
 
-def print_message(message: str, mtype: Literal["auto", "warning"] = "auto") -> None:
+import verticapy._config.config as conf
+
+
+def print_message(
+    message: str, mtype: Literal["print", "warning", "display"] = "print"
+) -> None:
     """
     Prints the input message or warning.
     This function is used to manage the
@@ -26,5 +32,7 @@ def print_message(message: str, mtype: Literal["auto", "warning"] = "auto") -> N
     mtype = mtype.lower().strip()
     if mtype == "warning":
         warnings.warn(message, Warning)
-    elif mtype == "auto":
+    elif mtype == "print" and conf.get_option("print_info"):
         print(message)
+    elif mtype == "display" and conf.get_option("print_info"):
+        display(HTML(message))

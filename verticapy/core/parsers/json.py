@@ -799,7 +799,7 @@ def read_json(
                 query3,
                 title="Creating table.",
             )
-            if not temporary_local_table and conf.get_option("print_info"):
+            if not temporary_local_table:
                 print_message(
                     f"The table {input_relation} has been successfully created."
                 )

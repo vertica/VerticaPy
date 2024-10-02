@@ -2427,8 +2427,7 @@ class Supervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            if conf.get_option("print_info"):
-                print_message(report)
+            print_message(report)
         return None
 
 
@@ -7995,6 +7994,5 @@ class Unsupervised(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            if conf.get_option("print_info"):
-                print_message(report)
+            print_message(report)
         return None

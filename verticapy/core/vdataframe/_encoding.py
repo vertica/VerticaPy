@@ -347,7 +347,7 @@ class vDFEncode(vDFFill):
                 self[column].one_hot_encode(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
-            elif cols_hand and conf.get_option("print_info"):
+            elif cols_hand:
                 warning_message = (
                     f"The vDataColumn '{column}' was ignored because of "
                     "its high cardinality.\nIncrease the parameter "
@@ -1646,6 +1646,5 @@ class vDCEncode(vDCFill):
             f"[Mean Encode]: The vDataColumn {self} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
-        if conf.get_option("print_info"):
-            print_message("The mean encoding was successfully done.")
+        print_message("The mean encoding was successfully done.")
         return self._parent

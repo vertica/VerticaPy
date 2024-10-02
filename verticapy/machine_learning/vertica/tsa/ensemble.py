@@ -376,8 +376,7 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
                 self.models_ += [model]
         if return_report:
             return report
-        if conf.get_option("print_info"):
-            print_message(report)
+        print_message(report)
         return None
 
     # I/O Methods.

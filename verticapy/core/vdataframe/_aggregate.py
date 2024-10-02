@@ -1022,13 +1022,12 @@ class vDFAgg(vDFEval):
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 col_to_compute += [column]
                                 break
-                    elif conf.get_option("print_info"):
-                        warning_message = (
-                            f"The vDataColumn {column} is not numerical, it was ignored."
-                            "\nTo get statistical information about all different "
-                            "variables, please use the parameter method = 'categorical'."
-                        )
-                        print_message(warning_message, "warning")
+                    warning_message = (
+                        f"The vDataColumn {column} is not numerical, it was ignored."
+                        "\nTo get statistical information about all different "
+                        "variables, please use the parameter method = 'categorical'."
+                    )
+                    print_message(warning_message, "warning")
                 for column in columns:
                     if column not in col_to_compute:
                         values["index"] += [column.replace('"', "")]

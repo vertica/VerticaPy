@@ -996,14 +996,12 @@ class vDCFill(vDCMath):
                     )
             total = int(total)
             conj = "s were " if total > 1 else " was "
-            if conf.get_option("print_info"):
-                print_message(f"{total} element{conj}filled.")
+            print_message(f"{total} element{conj}filled.")
             self._parent._add_to_history(
                 f"[Fillna]: {total} {self} missing value{conj} filled."
             )
         else:
-            if conf.get_option("print_info"):
-                print_message("Nothing was filled.")
+            print_message("Nothing was filled.")
             self._transf = [t for t in copy_trans]
             for s in sauv:
                 self._catalog[s] = sauv[s]

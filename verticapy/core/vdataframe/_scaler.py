@@ -190,7 +190,7 @@ class vDFScaler(vDFText):
                 self[column].scale(method=method)
             elif (no_cols) and (self[column].isbool()):
                 pass
-            elif conf.get_option("print_info"):
+            else:
                 warning_message = (
                     f"The vDataColumn {column} was skipped.\n"
                     "Scaler only accept numerical data types."

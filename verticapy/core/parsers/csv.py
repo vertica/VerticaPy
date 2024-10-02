@@ -937,11 +937,7 @@ def read_csv(
                 query2,
                 title="Ingesting the data.",
             )
-            if (
-                not insert
-                and not temporary_local_table
-                and conf.get_option("print_info")
-            ):
+            if not insert and not temporary_local_table:
                 print_message(
                     f"The table {input_relation} has been successfully created."
                 )

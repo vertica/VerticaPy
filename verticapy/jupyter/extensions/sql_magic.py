@@ -817,7 +817,7 @@ def sql_magic(
                         raise ValueError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(options_dict[option])
 
-            elif conf.get_option("print_info"):
+            else:
                 warning_message = (
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
@@ -965,7 +965,7 @@ def sql_magic(
                 except Exception as e:
                     error = str(e)
 
-                if conf.get_option("print_info") and (
+                if (
                     "Severity: ERROR, Message: User defined transform must return at least one column"
                     in error
                     and "DBLINK" in error
@@ -975,7 +975,7 @@ def sql_magic(
                 elif error:
                     raise QueryError(error)
 
-                elif conf.get_option("print_info"):
+                else:
                     print_message(query_type)
 
             else:
@@ -1022,13 +1022,11 @@ def sql_magic(
                         final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
                         )
-                        if final_result and conf.get_option("print_info"):
+                        if final_result:
                             print_message(final_result)
-                        elif (
-                            query_subtype.upper().startswith(SPECIAL_WORDS)
-                        ) and conf.get_option("print_info"):
+                        elif query_subtype.upper().startswith(SPECIAL_WORDS):
                             print_message(query_subtype.upper())
-                        elif conf.get_option("print_info"):
+                        else:
                             print_message(query_type)
 
                     except Exception as e:
@@ -1041,8 +1039,7 @@ def sql_magic(
                     in error
                     and "DBLINK" in error
                 ):
-                    if conf.get_option("print_info"):
-                        print_message(query_type)
+                    print_message(query_type)
 
                 elif error:
                     raise QueryError(error)
@@ -1062,9 +1059,7 @@ def sql_magic(
         # Displaying the time
 
         elapsed_time = round(time.time() - start_time, 3)
-
-        if conf.get_option("print_info"):
-            display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+        print_message(f"<div><b>Execution: </b> {elapsed_time}s</div>", "display")
 
         return result
 

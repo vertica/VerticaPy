@@ -125,8 +125,5 @@ def read_shp(
             PARSER STV_ShpParser();""",
         title="Ingesting the data.",
     )
-    if conf.get_option("print_info"):
-        print_message(
-            f'The table "{schema}"."{table_name}" has been successfully created.'
-        )
+    print_message(f'The table "{schema}"."{table_name}" has been successfully created.')
     return vDataFrame(table_name, schema=schema)

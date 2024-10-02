@@ -331,8 +331,7 @@ class TimeSeriesModelBase(VerticaModel):
             report = self.summarize()
             if return_report:
                 return report
-            if conf.get_option("print_info"):
-                print_message(report)
+            print_message(report)
         else:
             self._compute_attributes()
         return None
