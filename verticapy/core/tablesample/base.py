@@ -1056,7 +1056,7 @@ class TableSample:
         """
         if _clean_query:
             query = clean_query(query)
-        if conf.get_option("sql_on"):
+        if conf.get_option("sql_on") or (conf.get_option("verbosity") == 3):
             print_query(query, title)
         start_time = time.time()
         cursor = _executeSQL(
@@ -1075,7 +1075,7 @@ class TableSample:
                 scale=elem[5],
             )
         elapsed_time = time.time() - start_time
-        if conf.get_option("time_on"):
+        if conf.get_option("time_on") or (conf.get_option("verbosity") == 3):
             print_time(elapsed_time)
         result = cursor.fetchall()
         columns = [column[0] for column in cursor.description]

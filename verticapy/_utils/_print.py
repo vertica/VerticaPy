@@ -32,9 +32,17 @@ def print_message(
     verbosity.
     """
     mtype = mtype.lower().strip()
-    if mtype == "warning":
+    if mtype == "warning" and conf.get_option("verbosity") >= 1:
         warnings.warn(message, Warning)
-    elif mtype == "print" and conf.get_option("print_info"):
+    elif (
+        mtype == "print"
+        and conf.get_option("print_info")
+        and conf.get_option("verbosity") >= 2
+    ):
         print(message)
-    elif mtype == "display" and conf.get_option("print_info"):
+    elif (
+        mtype == "display"
+        and conf.get_option("print_info")
+        and conf.get_option("verbosity") >= 2
+    ):
         display(HTML(message))
