@@ -62,7 +62,7 @@ class ChampionChallengerPlot(PlotlyBase):
             "hovertemplate": "<b>%{customdata}</b><br>"
             f"{self.layout['x_label']}: "
             "%{x}<br> "
-            f"{self.layout['x_label']}:"
+            f"{self.layout['y_label']}:"
             " %{y}<br>"
             f"STD:"
             " %{marker.size:.3f} <extra></extra>"

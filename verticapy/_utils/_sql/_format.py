@@ -28,9 +28,6 @@ from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy.errors import ParsingError
 
-if conf.get_import_success("IPython"):
-    from IPython.display import display, Markdown
-
 """
 SQL KEYWORDS
 """
@@ -640,7 +637,6 @@ def format_query(
         construct others, simplifying the overall
         code.
     """
-    display_success = print_sql and conf.get_import_success("IPython")
     res = clean_query(query)
     html_res = res
 
@@ -695,15 +691,13 @@ def format_query(
             .replace("\n", "<br>")
             .replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;")
         )
-    if display_success:
-        display(Markdown(html_res))
     if indent_sql:
         res = indent_vpy_sql(res)
     if print_sql:
-        print_message(res)
+        print_message(res, "markdown")
     if only_html:
         return html_res
-    elif display_success:
+    elif print_sql:
         return res, html_res
     return res, None
 

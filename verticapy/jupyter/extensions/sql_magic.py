@@ -51,9 +51,6 @@ if conf.get_import_success("graphviz"):
     import graphviz
     from graphviz import Source
 
-if conf.get_import_success("IPython"):
-    from IPython.display import display, HTML
-
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 

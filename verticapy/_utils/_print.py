@@ -20,11 +20,11 @@ import warnings
 import verticapy._config.config as conf
 
 if conf.get_import_success("IPython"):
-    from IPython.display import display, HTML
+    from IPython.display import display, HTML, Markdown
 
 
 def print_message(
-    message: str, mtype: Literal["print", "warning", "display"] = "print"
+    message: str, mtype: Literal["print", "warning", "display", "markdown"] = "print"
 ) -> None:
     """
     Prints the input message or warning.
@@ -41,8 +41,17 @@ def print_message(
     ):
         print(message)
     elif (
-        mtype == "display"
+        mtype in ("display", "markdown")
         and conf.get_option("print_info")
         and conf.get_option("verbosity") >= 2
     ):
-        display(HTML(message))
+        if conf.get_import_success("IPython"):
+            try:
+                if mtype == "markdown":
+                    display(Markdown(message))
+                else:
+                    display(HTML(message))
+            except:
+                display(message)
+        else:
+            print(message)

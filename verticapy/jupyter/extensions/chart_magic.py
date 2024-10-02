@@ -22,7 +22,6 @@ from IPython.core.magic import needs_local_scope
 
 from vertica_highcharts import Highstock, Highchart
 
-import verticapy._config.config as conf
 from verticapy._typing import PlottingObject
 from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -33,9 +32,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.jupyter.extensions._utils import get_magic_options
 
 from verticapy.plotting._utils import PlottingUtils
-
-if conf.get_import_success("IPython"):
-    from IPython.display import display, HTML
 
 CLASS_NAME_MAP = {
     "auto": None,
@@ -759,7 +755,7 @@ def chart_magic(
 
     # Displaying the time
     elapsed_time = round(time.time() - start_time, 3)
-    display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+    print_message(f"<div><b>Execution: </b> {elapsed_time}s</div>", "display")
 
     return chart
 

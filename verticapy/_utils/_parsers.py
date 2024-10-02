@@ -26,9 +26,6 @@ if conf.get_import_success("graphviz"):
     import graphviz
     from graphviz import Source
 
-if conf.get_import_success("IPython"):
-    from IPython.display import display
-
 # CSV
 
 
@@ -329,8 +326,5 @@ def parse_explain_graphviz(rows: list[str], display_trees: bool = True) -> list:
             result += [row]
     if display_trees:
         for row in result:
-            if isinstance(row, str) or not (conf.get_import_success("IPython")):
-                print_message(row)
-            else:
-                display(row)
+            print_message(row, "display")
     return result
