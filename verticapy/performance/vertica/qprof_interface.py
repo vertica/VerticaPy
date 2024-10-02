@@ -127,6 +127,16 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._update_query_display()
         self.session_param_display = []
         self._update_session_param_display()
+        self.tooltip_display_output = widgets.Output()
+        self.tooltip_display_output.layout.height = "300px"
+        self.tooltip_display_dropdown = widgets.Dropdown(options=[None], value=None)
+        self._update_tooltip_display_dropdown()
+        self.tooltip_display_dropdown.observe(
+            self._display_tooltip_detail, names="value"
+        )
+        self.tooltip_display = widgets.VBox(
+            [self.tooltip_display_dropdown, self.tooltip_display_output]
+        )
         self._index_widget = widgets.IntText(
             description="Index:", value=self.transactions_idx
         )
@@ -357,12 +367,15 @@ class QueryProfilerInterface(QueryProfilerStats):
             "Tree style": widgets.VBox(tree_settings),
             "Query text": self._query_display,
             "Session Parameters": self.session_param_display,
+            "Detailed Tooltip": self.tooltip_display,
+            "Summary": self._query_display_info,
         }
-        query_text_index = list(accordion_items.keys()).index("Query text")
+        # query_text_index = list(accordion_items.keys()).index("Query text")
+        summary_index = list(accordion_items.keys()).index("Summary")
         self._accordions = Visualizer._accordion(
             list(accordion_items.values()), accordion_items.keys()
         )
-        self._accordions.selected_index = query_text_index
+        self._accordions.selected_index = summary_index
         header_box = widgets.HBox(
             [self._qpt_header], layout={"justify_content": "center"}
         )
@@ -387,12 +400,10 @@ class QueryProfilerInterface(QueryProfilerStats):
             self._accordions.layout.display = "none"
             self.transaction_buttons.layout.display = "none"
             self.query_select_dropdown.layout.display = "none"
-            self._query_display_info.layout.display = "none"
         settings = [
             self._accordions,
             self.transaction_buttons,
             self.query_select_dropdown,
-            self._query_display_info,
         ]
         viz = Visualizer(
             settings_wids=settings,
@@ -622,6 +633,7 @@ class QueryProfilerInterface(QueryProfilerStats):
         self.set_position(selection)
         self._update_query_display()
         self._update_session_param_display()
+        self._update_tooltip_display_dropdown()
 
     def _refresh_clicked(self, button):
         """
@@ -705,6 +717,22 @@ class QueryProfilerInterface(QueryProfilerStats):
 
         # Create a VBox for the entire display (title + key-value pairs)
         self.session_param_display = widgets.VBox([title] + rows)
+
+    def _update_tooltip_display_dropdown(self):
+        """
+        Update the options for dropdown display
+        """
+        options = list(self._get_tooltips().keys())
+        self.tooltip_display_dropdown.options = [None] + options
+        self._tooltip_compelte = self._get_tooltips()
+
+    def _display_tooltip_detail(self, change):
+        new_value = change["new"] if "new" in change else None
+        with self.tooltip_display_output:
+            self.tooltip_display_output.clear_output(wait=True)
+            print(
+                self._tooltip_compelte[new_value]
+            ) if new_value is not None else print()
 
     ##########################################################################
 
@@ -975,8 +1003,6 @@ class QueryProfilerComparison:
         self.qprof1 = qprof1
         self.qprof2 = qprof2
 
-        self.query_info = self._create_query_info()
-
         self.dual_effect = True
 
         # Initial update of the trees
@@ -996,7 +1022,7 @@ class QueryProfilerComparison:
 
         # Separate control creation for qprof1 and qprof2
         self.controls = self._create_controls()
-        self.side_by_side_ui = widgets.VBox([self.query_info, self.controls])
+        self.side_by_side_ui = self.controls
 
     def _create_qprof1_controls(self):
         """
@@ -1023,11 +1049,9 @@ class QueryProfilerComparison:
         Creates side-by-side controls for both qprof1 and qprof2.
         """
         q1_control = self.qprof1._accordions
-        q1_control.selected_index = None
         q1_control.layout.width = "50%"
 
         q2_control = self.qprof2._accordions
-        q2_control.selected_index = None
         q2_control.layout.width = "50%"
 
         # Use separate functions to create the interactive controls
@@ -1056,22 +1080,6 @@ class QueryProfilerComparison:
 
         # Observe changes in the selected_index of qprof1's accordion
         self.qprof1._accordions.observe(on_accordion_change, names="selected_index")
-
-    def _create_query_info(self):
-        """
-        Creates the query information display for both qprof1 and qprof2 side by side.
-        """
-        q1_info = self.qprof1._query_display_info
-        q1_info.layout.display = "block"
-        q1_info.layout.width = "50%"
-        q1_info.layout.border = "1px solid black"
-
-        q2_info = self.qprof2._query_display_info
-        q2_info.layout.display = "block"
-        q2_info.layout.width = "50%"
-        q2_info.layout.border = "1px solid black"
-
-        return widgets.HBox([q1_info, q2_info])
 
     def display(self):
         """
