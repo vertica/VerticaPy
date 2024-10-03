@@ -22,9 +22,12 @@ import pytest
 from verticapy import drop, set_option, TableSample
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
-from verticapy.learn.linear_model import LinearRegression, LogisticRegression
-from verticapy.learn.preprocessing import Scaler, MinMaxScaler
-from verticapy.learn.pipeline import Pipeline
+from verticapy.machine_learning.vertica.linear_model import (
+    LinearRegression,
+    LogisticRegression,
+)
+from verticapy.machine_learning.vertica.preprocessing import MinMaxScaler, Scaler
+from verticapy.machine_learning.vertica.pipeline import Pipeline
 
 set_option("print_info", False)
 

@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_winequality
-from verticapy.learn.svm import LinearSVC
+from verticapy.machine_learning.vertica.svm import LinearSVC
 
 # Matplotlib skip
 import matplotlib

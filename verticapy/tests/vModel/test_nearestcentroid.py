@@ -28,7 +28,7 @@ from verticapy import (
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.neighbors import NearestCentroid
+from verticapy.machine_learning.vertica.cluster import NearestCentroid
 
 # Matplotlib skip
 import matplotlib

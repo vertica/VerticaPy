@@ -30,7 +30,7 @@ from verticapy import (
 from verticapy.tests.conftest import get_version
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_reg
-from verticapy.learn.ensemble import IsolationForest
+from verticapy.machine_learning.vertica.ensemble import IsolationForest
 
 # Matplotlib skip
 import matplotlib

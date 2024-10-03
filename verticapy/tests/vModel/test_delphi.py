@@ -25,7 +25,11 @@ from vertica_python.errors import DuplicateObject
 # VerticaPy
 from verticapy import set_option, drop
 from verticapy.datasets import load_winequality, load_amazon, load_titanic
-from verticapy.learn.delphi import AutoML, AutoDataPrep, AutoClustering
+from verticapy.machine_learning.vertica.automl import (
+    AutoML,
+    AutoDataPrep,
+    AutoClustering,
+)
 
 set_option("print_info", False)
 set_option("random_state", 0)

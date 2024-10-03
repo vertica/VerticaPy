@@ -20,8 +20,8 @@ import pytest
 # Standard Python Modules
 
 # VerticaPy
-from verticapy.learn.delphi import AutoML
-from verticapy.learn.ensemble import RandomForestClassifier
+from verticapy.machine_learning.vertica.automl import AutoML
+from verticapy.machine_learning.vertica.ensemble import RandomForestClassifier
 
 
 # Expensive models

@@ -22,8 +22,10 @@ import pytest
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.learn.linear_model import LinearRegression
-from verticapy.learn.linear_model import LogisticRegression
+from verticapy.machine_learning.vertica.linear_model import (
+    LinearRegression,
+    LogisticRegression,
+)
 
 import verticapy.mlops.model_versioning as mv
 

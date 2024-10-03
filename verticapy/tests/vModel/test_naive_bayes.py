@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_titanic, load_iris
-from verticapy.learn.naive_bayes import *
+from verticapy.machine_learning.vertica.naive_bayes import *
 
 # Matplotlib skip
 import matplotlib

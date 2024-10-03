@@ -30,7 +30,7 @@ from verticapy import (
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_dataset_num
-from verticapy.learn.cluster import BisectingKMeans
+from verticapy.machine_learning.vertica.cluster import BisectingKMeans
 
 # Matplotlib skip
 import matplotlib

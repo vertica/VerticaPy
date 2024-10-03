@@ -25,7 +25,7 @@ from verticapy import (
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.neighbors import KNeighborsRegressor
+from verticapy.machine_learning.vertica.neighbors import KNeighborsRegressor
 
 # Matplotlib skip
 import matplotlib

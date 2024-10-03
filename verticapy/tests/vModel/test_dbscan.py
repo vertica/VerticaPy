@@ -30,7 +30,7 @@ from verticapy import (
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.cluster import DBSCAN
+from verticapy.machine_learning.vertica.cluster import DBSCAN
 
 # Matplotlib skip
 import matplotlib

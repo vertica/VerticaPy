@@ -26,7 +26,7 @@ from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_iris
-from verticapy.learn.cluster import KPrototypes
+from verticapy.machine_learning.vertica.cluster import KPrototypes
 
 # Matplotlib skip
 import matplotlib

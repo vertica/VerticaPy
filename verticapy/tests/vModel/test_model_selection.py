@@ -28,14 +28,19 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy._config.config import set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_amazon, load_winequality
-from verticapy.learn.model_selection import *
-from verticapy.learn.linear_model import *
-from verticapy.learn.naive_bayes import *
-from verticapy.learn.ensemble import *
-from verticapy.learn.tree import *
-from verticapy.learn.svm import *
-from verticapy.learn.cluster import *
-from verticapy.learn.neighbors import *
+from verticapy.machine_learning.model_selection import *
+from verticapy.machine_learning.metrics.plotting import (
+    lift_chart,
+    prc_curve,
+    roc_curve,
+)
+from verticapy.machine_learning.vertica.linear_model import *
+from verticapy.machine_learning.vertica.naive_bayes import *
+from verticapy.machine_learning.vertica.ensemble import *
+from verticapy.machine_learning.vertica.tree import *
+from verticapy.machine_learning.vertica.svm import *
+from verticapy.machine_learning.vertica.cluster import *
+from verticapy.machine_learning.vertica.neighbors import *
 
 set_option("print_info", False)
 set_option("random_state", 0)
