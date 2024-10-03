@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 
 import uuid
+import types
 from typing import Optional, Union
 
 import verticapy._config.config as conf
@@ -1007,19 +1008,42 @@ class QueryProfilerComparison:
         self.qprof2 = qprof2
 
         self.dual_effect = True
-
         # Initial update of the trees
         nooutput = widgets.Output()
         with nooutput:
             self.qprof1.get_qplan_tree()
             self.qprof2.get_qplan_tree()
 
-        if self.dual_effect:
-            # Replace the children tuple of qprof2 with a new one that copies qprof1's first accordion child
-            self.qprof2._accordions.children = (
-                self.qprof1._accordions.children[0],
-            ) + self.qprof2._accordions.children[1:]
+        metric_toggle_button = widgets.ToggleButton(
+            value=True,
+            disabled=False,
+            button_style="success",  # 'success', 'info', 'warning', 'danger' or ''
+            tooltip="Turn on to sync with left QueryProfiler object.",
+            layout=widgets.Layout(width="40px", height="40px"),
+            icon="sync",
+        )
 
+        # by default making Sync on
+        self.sync_all_checkboxes()
+        self._sync_metric_values(True)
+
+        def on_metric_toggle_change(change):
+            if change["new"]:
+                metric_toggle_button.button_style = "success"
+                self.sync_all_checkboxes()
+                self._sync_metric_values(True)
+
+            if not change["new"]:
+                metric_toggle_button.button_style = ""
+                self._sync_metric_values(False)
+                self.unsync_all_checkboxes()
+
+        metric_toggle_button.observe(on_metric_toggle_change, names="value")
+        accordion_children = list(qprof2._accordions.children[0].children)
+        accordion_children.insert(len(accordion_children), metric_toggle_button)
+        qprof2._accordions.children[0].children = tuple(accordion_children)
+
+        if self.dual_effect:
             # Sync the accordion selection between qprof1 and qprof2
             self._sync_accordion_selection()
 
@@ -1078,11 +1102,146 @@ class QueryProfilerComparison:
             """
             Callback function to update qprof2's accordion selection when qprof1's accordion selection changes.
             """
-            if change["name"] == "selected_index" and change["new"] is not None:
+            if change["name"] == "selected_index":
                 self.qprof2._accordions.selected_index = change["new"]
 
         # Observe changes in the selected_index of qprof1's accordion
         self.qprof1._accordions.observe(on_accordion_change, names="selected_index")
+
+    def _sync_metric_values(self, switch):
+        """
+        Sync the metric tab values for both qprof objects
+        """
+
+        def on_metric_dropdown1_change(change):
+            """
+            Callback function to update qprof2's dropdown selection when qprof1's dropdown selection changes.
+            """
+            val = change["new"]
+            self.qprof2._accordions.children[0].children[0].value = val
+
+        # Observe changes in the selected_index of qprof1's accordion
+        if switch:
+            if (
+                not on_metric_dropdown1_change
+                in self.qprof1._accordions.children[0]
+                .children[0]
+                ._trait_notifiers["value"]["change"]
+            ):
+                self.qprof1._accordions.children[0].children[0].observe(
+                    on_metric_dropdown1_change, names="value"
+                )
+        else:
+            # Removing the observer function to sync
+            observers = (
+                self.qprof1._accordions.children[0]
+                .children[0]
+                ._trait_notifiers["value"]["change"]
+            )
+            for observer in observers:
+                if (
+                    isinstance(observer, types.FunctionType)
+                    and observer.__name__ == "on_metric_dropdown1_change"
+                ):
+                    observers.remove(observer)
+                    break
+
+        def on_metric_dropdown2_change(change):
+            """
+            Callback function to update qprof2's dropdown selection when qprof1's dropdown selection changes.
+            """
+            val = change["new"]
+            self.qprof2._accordions.children[0].children[1].value = val
+
+        # Observe changes in the selected_index of qprof1's accordion
+        if switch:
+            if (
+                not on_metric_dropdown2_change
+                in self.qprof1._accordions.children[0]
+                .children[1]
+                ._trait_notifiers["value"]["change"]
+            ):
+                self.qprof1._accordions.children[0].children[1].observe(
+                    on_metric_dropdown2_change, names="value"
+                )
+        else:
+            # Removing the observer function to sync
+            observers = (
+                self.qprof1._accordions.children[0]
+                .children[1]
+                ._trait_notifiers["value"]["change"]
+            )
+            for observer in observers:
+                if (
+                    isinstance(observer, types.FunctionType)
+                    and observer.__name__ == "on_metric_dropdown2_change"
+                ):
+                    observers.remove(observer)
+                    break
+
+    def sync_all_checkboxes(self):
+        """
+        Syncs all checkboxes between qprof1 and qprof2.
+        """
+
+        def sync_checkboxes(checkbox1, checkbox2):
+            """
+            Syncs the values of two checkboxes.
+
+            Parameters:
+            checkbox1 (Checkbox): The first checkbox widget.
+            checkbox2 (Checkbox): The second checkbox widget.
+            """
+
+            def on_checkbox_change(change):
+                """
+                Callback function to sync the checkbox values.
+                """
+                checkbox2.value = change["new"]
+
+            checkbox1.observe(on_checkbox_change, names="value")
+
+        # Assuming the checkboxes are at children[0].children[3].children for both qprof1 and qprof2
+        checkbox_agg_q1 = self.qprof1._accordions.children[0].children[3].children[0]
+        checkbox_op_q1 = self.qprof1._accordions.children[0].children[3].children[1]
+        checkbox_desc_q1 = self.qprof1._accordions.children[0].children[3].children[2]
+
+        checkbox_agg_q2 = self.qprof2._accordions.children[0].children[3].children[0]
+        checkbox_op_q2 = self.qprof2._accordions.children[0].children[3].children[1]
+        checkbox_desc_q2 = self.qprof2._accordions.children[0].children[3].children[2]
+
+        # Sync the checkboxes
+        sync_checkboxes(checkbox_agg_q1, checkbox_agg_q2)
+        sync_checkboxes(checkbox_op_q1, checkbox_op_q2)
+        sync_checkboxes(checkbox_desc_q1, checkbox_desc_q2)
+
+    def unsync_all_checkboxes(self):
+        """
+        Unbind synchronization of checkboxes between qprof1 and qprof2.
+        """
+
+        def unsync_checkboxes(checkbox1):
+            """
+            Unbind the checkbox observers.
+            """
+            observers = checkbox1._trait_notifiers["value"]["change"]
+            for observer in observers:
+                if (
+                    isinstance(observer, types.FunctionType)
+                    and observer.__name__ == "on_checkbox_change"
+                ):
+                    observers.remove(observer)
+                    break
+
+        # Assuming the checkboxes are at children[0].children[3].children for both qprof1 and qprof2
+        checkbox_agg_q1 = self.qprof1._accordions.children[0].children[3].children[0]
+        checkbox_op_q1 = self.qprof1._accordions.children[0].children[3].children[1]
+        checkbox_desc_q1 = self.qprof1._accordions.children[0].children[3].children[2]
+
+        # Unsync the checkboxes
+        unsync_checkboxes(checkbox_agg_q1)
+        unsync_checkboxes(checkbox_op_q1)
+        unsync_checkboxes(checkbox_desc_q1)
 
     def display(self):
         """
