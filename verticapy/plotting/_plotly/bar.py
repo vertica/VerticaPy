@@ -43,7 +43,7 @@ class BarChart(PlotlyBase):
     def _init_style(self) -> None:
         self.init_trace_style = {"marker_color": self.get_colors(idx=0)}
         self.init_layout_style = {
-            "yaxis_title": self.layout["method"],
+            "yaxis_title": self.layout["method_of"],
             "xaxis_title": self.layout["column"],
             "width": 100 + 100 * len(self.layout["labels"]),
             "height": 500,
@@ -90,7 +90,7 @@ class BarChart2D(PlotlyBase):
     # Styling Methods.
     def _init_style(self) -> None:
         self.init_layout_style = {
-            "yaxis_title": self.layout["method"],
+            "yaxis_title": self.layout["method_of"],
             "legend_title_text": self.layout["columns"][1],
             "xaxis_title": self.layout["columns"][0],
             "width": (150 + 40 * len(self.layout["x_labels"]))

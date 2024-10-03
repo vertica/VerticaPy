@@ -112,11 +112,11 @@ class PieChart(MatplotlibBase):
             ):
                 current_explode = min(0.9, current_explode * 1.4)
                 explode[idx] = current_explode
-        if self.layout["method"].lower() == "density":
+        if str(self.layout["method"]).lower() == "density":
             autopct = "%1.1f%%"
         else:
-            if (self.layout["method"].lower() in ["sum", "count"]) or (
-                (self.layout["method"].lower() in ["min", "max"])
+            if (str(self.layout["method"]).lower() in ["sum", "count"]) or (
+                (str(self.layout["method"]).lower() in ["min", "max"])
                 and (self.layout["of_cat"] == "int")
             ):
                 category = "int"

@@ -29,6 +29,7 @@ import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
     NoneType,
+    PlottingMethod,
     PythonNumber,
     PythonScalar,
     SQLColumns,
@@ -499,6 +500,9 @@ class PlottingBase(PlottingBaseSQL):
             method = "50%"
         elif method == "mean":
             method = "avg"
+        no_agg = False
+        if method in ["density", "count", None] and (of):
+            no_agg = True
         if (
             method not in ["avg", "min", "max", "sum", "density", "count"]
             and "%" != method[-1]
@@ -528,17 +532,25 @@ class PlottingBase(PlottingBaseSQL):
                     "The parameter 'method' must be in [avg|mean|min|max|sum|"
                     f"median|q%] or a customized aggregation. Found {method}."
                 )
-        elif method in ["density", "count"]:
+        elif method in ["density", "count"] and not (no_agg):
             aggregate = "count(*)"
             fun = sum
-        elif isinstance(method, str):
+        elif isinstance(method, str) and not (no_agg):
             aggregate = method
             fun = None
             is_standard = False
+        elif isinstance(method, NoneType) and not (of):
+            method = "density"
+            aggregate = "count(*)"
+            fun = sum
+        elif no_agg:
+            method = None
+            aggregate = None
+            fun = None
         else:
             raise ValueError(
                 "The parameter 'method' must be in [avg|mean|min|max|sum|"
-                f"median|q%] or a customized aggregation. Found {method}."
+                f"median|q%|None] or a customized aggregation. Found {method}."
             )
         return method, aggregate, fun, is_standard
 
@@ -604,7 +616,7 @@ class PlottingBase(PlottingBaseSQL):
     def _compute_plot_params(
         self,
         vdc: "vDataColumn",
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
@@ -641,13 +653,25 @@ class PlottingBase(PlottingBaseSQL):
         is_numeric = vdc.isnum() and not vdc.isbool()
         is_date = vdc.isdate()
         is_bool = vdc.isbool()
+        no_agg = isinstance(method, NoneType)
         cast = "::int" if is_bool else ""
         is_categorical = False
         # case when categorical
-        if (((cardinality <= max_cardinality) or not is_numeric) or pie) and not (
-            is_date
-        ):
-            if ((is_numeric) and not pie) or (is_bool):
+        if (
+            (((cardinality <= max_cardinality) or not is_numeric) or pie)
+            and not (is_date)
+        ) or (no_agg):
+            if no_agg:
+                query = f"""
+                    SELECT 
+                        {vdc},
+                        {of}
+                    FROM {vdc._parent} 
+                    WHERE {vdc} IS NOT NULL 
+                      AND {of} IS NOT NULL 
+                    ORDER BY {vdc} ASC 
+                    LIMIT {max_cardinality}"""
+            elif ((is_numeric) and not pie) or (is_bool):
                 query = f"""
                     SELECT 
                         {vdc},
@@ -708,7 +732,7 @@ class PlottingBase(PlottingBaseSQL):
                     item[1] / float(count) if not isinstance(item[1], NoneType) else 0
                     for item in query_result
                 ]
-                if (method.lower() == "density")
+                if (str(method).lower() == "density")
                 else [
                     item[1] if not isinstance(item[1], NoneType) else 0
                     for item in query_result
@@ -823,14 +847,18 @@ class PlottingBase(PlottingBaseSQL):
             "bargap": bargap,
             "is_categorical": is_categorical,
         }
+        if no_agg:
+            method_of = self._clean_quotes(of)
+        else:
+            method_of = method + f"({self._clean_quotes(of)})" if of else method
         self.layout = {
             "labels": [li if not isinstance(li, NoneType) else "None" for li in labels],
             "column": self._clean_quotes(vdc._alias),
             "method": method,
-            "method_of": method + f"({of})" if of else method,
+            "method_of": method_of,
             "of": self._clean_quotes(of),
             "of_cat": vdc._parent[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
+            "aggregate": clean_query(aggregate) if aggregate else None,
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
             "categoryorder": categoryorder,

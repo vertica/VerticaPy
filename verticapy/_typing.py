@@ -58,5 +58,7 @@ HChart = Union["Highchart", "Highstock"]
 PlottingObject = Union[
     "PlottingBase", "TableSample", "Axes", "mFigure", "Highchart", "Highstock", "Figure"
 ]
-PlottingMethod = Union[Literal["density", "count", "avg", "min", "max", "sum"], str]
+PlottingMethod = Union[
+    Literal[None, "density", "count", "avg", "min", "max", "sum"], str
+]
 ColorType = str

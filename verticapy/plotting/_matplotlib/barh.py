@@ -76,7 +76,7 @@ class HorizontalBarChart(MatplotlibBase):
             ax.set_yticks(
                 [x - round(self.data["width"] / 2, 10) for x in self.data["x"]]
             )
-        ax.set_xlabel(self.layout["method"])
+        ax.set_xlabel(self.layout["method_of"])
         return ax
 
 
@@ -187,7 +187,7 @@ class HorizontalBarChart2D(MatplotlibBase):
         ax.set_yticks(yticks)
         ax.set_yticklabels(self.layout["x_labels"])
         ax.set_ylabel(self.layout["columns"][0])
-        ax.set_xlabel(self.layout["method"])
+        ax.set_xlabel(self.layout["method_of"])
         if self.layout["kind"] in ("density", "fully_stacked"):
             vals = ax.get_xticks()
             max_val = max(abs(x) for x in vals)
