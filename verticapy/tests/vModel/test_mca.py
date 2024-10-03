@@ -22,7 +22,7 @@ import pytest
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_market
-from verticapy.learn.decomposition import MCA
+from verticapy.machine_learning.vertica.decomposition import MCA
 
 # Matplotlib skip
 import matplotlib

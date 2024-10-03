@@ -28,7 +28,7 @@ from verticapy import (
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.preprocessing import CountVectorizer
+from verticapy.machine_learning.vertica.preprocessing import CountVectorizer
 from verticapy._utils._sql._format import clean_query
 
 set_option("print_info", False)

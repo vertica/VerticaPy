@@ -26,7 +26,7 @@ from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_titanic
-from verticapy.learn.linear_model import LogisticRegression
+from verticapy.machine_learning.vertica.linear_model import LogisticRegression
 
 # Matplotlib skip
 import matplotlib

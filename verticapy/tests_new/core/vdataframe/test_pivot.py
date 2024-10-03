@@ -19,7 +19,10 @@ import json
 import pandas as pd
 import pytest
 import verticapy as vp
-from verticapy.utilities import read_json, TableSample
+
+# Utilities
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.parsers.json import read_json
 
 
 class TestPivot:

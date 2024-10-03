@@ -20,9 +20,11 @@ import pytest
 import pandas as pd
 from sklearn import model_selection
 from scipy.stats import median_abs_deviation, chi2_contingency
-from verticapy.utilities import TableSample
 from verticapy import errors
 from verticapy.tests_new.machine_learning.vertica.conftest import *
+
+# Utilities
+from verticapy.core.tablesample.base import TableSample
 
 
 class TestMachineLearning:

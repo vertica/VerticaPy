@@ -139,9 +139,8 @@ class ExperimentBase:
 
 ######################### Regressor  ##############################
 
-from verticapy.learn.linear_model import LinearRegression
-from verticapy.learn.linear_model import Ridge
-from verticapy.learn.svm import LinearSVR
+from verticapy.machine_learning.vertica.linear_model import LinearRegression, Ridge
+from verticapy.machine_learning.vertica.svm import LinearSVR
 
 
 @pytest.fixture(scope="module")
@@ -271,9 +270,9 @@ class TestRegressorExperiment(ExperimentBase):
 
 ######################### Binary  ##############################
 
-from verticapy.learn.linear_model import LogisticRegression
-from verticapy.learn.svm import LinearSVC
-from verticapy.learn.tree import DecisionTreeClassifier
+from verticapy.machine_learning.vertica.linear_model import LogisticRegression
+from verticapy.machine_learning.vertica.svm import LinearSVC
+from verticapy.machine_learning.vertica.tree import DecisionTreeClassifier
 
 
 @pytest.fixture(scope="module")
@@ -404,8 +403,8 @@ class TestBinaryExperiment(ExperimentBase):
 
 
 ######################### Multi  ##############################
-from verticapy.learn.tree import DecisionTreeClassifier
-from verticapy.learn.ensemble import RandomForestClassifier
+from verticapy.machine_learning.vertica.ensemble import RandomForestClassifier
+from verticapy.machine_learning.vertica.tree import DecisionTreeClassifier
 
 
 @pytest.fixture(scope="module")
@@ -539,8 +538,7 @@ class TestMultiExperiment(ExperimentBase):
 
 
 ######################### Clustering  ##############################
-from verticapy.learn.cluster import KMeans
-from verticapy.learn.cluster import BisectingKMeans
+from verticapy.machine_learning.vertica.cluster import BisectingKMeans, KMeans
 
 
 @pytest.fixture(scope="module")

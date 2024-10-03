@@ -18,7 +18,10 @@ import random
 from itertools import chain
 import pytest
 import pandas as pd
-from verticapy.utilities import pandas_to_vertica, drop
+
+# Utilities
+from verticapy.sql.drop import drop
+from verticapy.core.parsers.pandas import pandas_to_vertica
 
 
 class TestJoinUnionSort:

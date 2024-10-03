@@ -23,7 +23,7 @@ import math, os
 
 # VerticaPy
 import verticapy
-from verticapy.udf import generate_lib_udf
+from verticapy.sdk.vertica.udf import generate_lib_udf
 
 
 def scale_titanic(age, fare):

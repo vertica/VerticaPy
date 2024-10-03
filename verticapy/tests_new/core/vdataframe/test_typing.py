@@ -21,7 +21,10 @@ import pytest
 
 import verticapy as vp
 from verticapy.errors import ConversionError
-from verticapy.utilities import read_json, TableSample
+
+# Utilities
+from verticapy.core.tablesample.base import TableSample
+from verticapy.core.parsers.json import read_json
 
 
 class TestVDFTyping:

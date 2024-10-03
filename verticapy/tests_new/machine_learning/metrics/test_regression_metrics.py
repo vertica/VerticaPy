@@ -18,7 +18,7 @@ import pytest
 import sklearn.metrics as skl_metrics
 import verticapy.machine_learning.metrics.regression as vpy_metrics
 import numpy as np
-import verticapy.learn.linear_model as vpy_linear_model
+import verticapy.machine_learning.vertica.linear_model as vpy_linear_model
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
 from verticapy import drop

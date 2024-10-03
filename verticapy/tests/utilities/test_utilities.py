@@ -26,7 +26,6 @@ import os
 import vertica_python, verticapy
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.connection import current_cursor
-from verticapy.utilities import *
 from verticapy.datasets import (
     load_cities,
     load_titanic,
@@ -34,11 +33,48 @@ from verticapy.datasets import (
     load_iris,
     load_laliga,
 )
-from verticapy.geo import *
-from verticapy.learn.neighbors import KNeighborsClassifier
-from verticapy.learn.linear_model import LinearRegression
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+from verticapy.machine_learning.vertica.neighbors import KNeighborsClassifier
 from verticapy._config.config import set_option
 from verticapy.connection.global_connection import get_global_connection
+
+# Geo
+from verticapy.sql.geo.functions import (
+    coordinate_converter,
+    intersect,
+    split_polygon_n,
+)
+
+from verticapy.sql.geo.index import (
+    create_index,
+    describe_index,
+    rename_index,
+)
+
+# Utilities
+from verticapy._config.config import set_option
+from verticapy._utils._sql._collect import save_to_query_profile
+from verticapy._utils._sql._vertica_version import vertica_version
+from verticapy._help import help_start
+
+from verticapy.core.tablesample.base import TableSample
+
+from verticapy.sql.create import create_schema, create_table
+from verticapy.sql.drop import drop
+from verticapy.sql.flex import (
+    compute_flextable_keys,
+    compute_vmap_keys,
+    isflextable,
+    isvmap,
+)
+from verticapy.sql.insert import insert_into
+from verticapy.core.parsers.all import read_file
+from verticapy.core.parsers.avro import read_avro
+from verticapy.core.parsers.csv import read_csv, pcsv
+from verticapy.core.parsers.json import read_json, pjson
+from verticapy.core.parsers.pandas import read_pandas as pandas_to_vertica, read_pandas
+from verticapy.core.parsers.shp import read_shp
+from verticapy.sql.dtypes import get_data_types
 
 set_option("print_info", False)
 

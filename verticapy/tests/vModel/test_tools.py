@@ -25,18 +25,18 @@ import matplotlib.pyplot as plt
 from verticapy import set_option, drop
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.model_selection import *
-from verticapy.learn.linear_model import *
-from verticapy.learn.naive_bayes import *
-from verticapy.learn.ensemble import *
-from verticapy.learn.tree import *
-from verticapy.learn.svm import *
-from verticapy.learn.cluster import *
-from verticapy.learn.neighbors import *
-from verticapy.learn.decomposition import *
-from verticapy.learn.preprocessing import *
-from verticapy.learn.tsa import *
-from verticapy.learn.tools import load_model
+from verticapy.machine_learning.model_selection import *
+from verticapy.machine_learning.vertica.linear_model import *
+from verticapy.machine_learning.vertica.naive_bayes import *
+from verticapy.machine_learning.vertica.ensemble import *
+from verticapy.machine_learning.vertica.tree import *
+from verticapy.machine_learning.vertica.svm import *
+from verticapy.machine_learning.vertica.cluster import *
+from verticapy.machine_learning.vertica.neighbors import *
+from verticapy.machine_learning.vertica.decomposition import *
+from verticapy.machine_learning.vertica.preprocessing import *
+from verticapy.machine_learning.vertica.tsa import *
+from verticapy.machine_learning.vertica.model_management import load_model
 import verticapy.machine_learning.memmodel.decomposition as mm
 
 set_option("print_info", False)

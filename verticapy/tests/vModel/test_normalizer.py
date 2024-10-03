@@ -22,7 +22,7 @@ import pytest
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
-from verticapy.learn.preprocessing import (
+from verticapy.machine_learning.vertica.preprocessing import (
     Scaler,
     StandardScaler,
     RobustScaler,

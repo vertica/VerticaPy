@@ -22,7 +22,7 @@ import pytest
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.preprocessing import OneHotEncoder
+from verticapy.machine_learning.vertica.preprocessing import OneHotEncoder
 
 set_option("print_info", False)
 

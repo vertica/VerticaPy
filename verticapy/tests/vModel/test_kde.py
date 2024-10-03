@@ -28,7 +28,7 @@ from verticapy import (
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.neighbors import KernelDensity
+from verticapy.machine_learning.vertica.neighbors import KernelDensity
 
 # Matplotlib skip
 import matplotlib

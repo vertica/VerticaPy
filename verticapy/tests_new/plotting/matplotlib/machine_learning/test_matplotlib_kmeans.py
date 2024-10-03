@@ -24,7 +24,7 @@ import types
 
 
 # Verticapy
-from verticapy.learn.cluster import KMeans
+from verticapy.machine_learning.vertica.cluster import KMeans
 from verticapy.tests_new.plotting.base_test_files import (
     get_xaxis_label,
     get_yaxis_label,

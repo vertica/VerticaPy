@@ -21,7 +21,19 @@ import pytest
 # VerticaPy
 from verticapy import drop, set_option
 from verticapy.datasets import load_cities, load_world
-from verticapy.geo import *
+
+# Geo
+from verticapy.sql.geo.functions import (
+    coordinate_converter,
+    intersect,
+    split_polygon_n,
+)
+
+from verticapy.sql.geo.index import (
+    create_index,
+    describe_index,
+    rename_index,
+)
 
 set_option("print_info", False)
 

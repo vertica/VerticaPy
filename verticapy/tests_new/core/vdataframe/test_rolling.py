@@ -16,7 +16,15 @@ permissions and limitations under the License.
 """
 import numpy as np
 import pytest
-import verticapy.stats as st
+
+# Stats
+from verticapy.sql.functions.conditional import case_when
+from verticapy.sql.functions.math import E, INF, PI, NAN, TAU
+from verticapy.sql.functions.math import (
+    isinf,
+    isnan,
+)
+from verticapy.sql.functions.null_handling import zeroifnull
 
 
 class TestRolling:
@@ -127,12 +135,12 @@ class TestRolling:
             order_by=order_by,
         )
         # filling nan/inf/zero
-        titanic_vd_fun[name] = st.case_when(
-            st.isnan(titanic_vd_fun[name]),
+        titanic_vd_fun[name] = case_when(
+            isnan(titanic_vd_fun[name]),
             0,
-            st.isinf(titanic_vd_fun[name]),
+            isinf(titanic_vd_fun[name]),
             0,
-            st.zeroifnull(titanic_vd_fun[name]),
+            zeroifnull(titanic_vd_fun[name]),
         )
         titanic_vd_fun = (
             titanic_vd_fun[:50]

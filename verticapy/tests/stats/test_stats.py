@@ -21,8 +21,132 @@ import pytest
 # VerticaPy
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_airline_passengers, load_amazon
-import verticapy.stats as st
-from verticapy.learn.linear_model import LinearRegression
+from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
+# Stats
+from verticapy.sql.functions.analytic import (
+    avg,
+    bool_and,
+    bool_or,
+    bool_xor,
+    conditional_change_event,
+    conditional_true_event,
+    count,
+    lag,
+    lead,
+    median,
+    nth_value,
+    quantile,
+    rank,
+    row_number,
+    std,
+    var,
+)
+from verticapy.sql.functions.analytic import max as smax
+from verticapy.sql.functions.analytic import min as smin
+from verticapy.sql.functions.analytic import sum as ssum
+from verticapy.sql.functions.conditional import case_when, decode
+from verticapy.sql.functions.date import (
+    date,
+    day,
+    dayofweek,
+    dayofyear,
+    extract,
+    getdate,
+    getutcdate,
+    hour,
+    interval,
+    minute,
+    microsecond,
+    month,
+    overlaps,
+    quarter,
+    round_date,
+    second,
+    timestamp,
+    week,
+    year,
+)
+from verticapy.sql.functions.math import E, INF, PI, NAN, TAU
+from verticapy.sql.functions.math import (
+    acos,
+    asin,
+    atan,
+    atan2,
+    cbrt,
+    ceil,
+    comb,
+    cos,
+    cosh,
+    cot,
+    degrees,
+    distance,
+    exp,
+    factorial,
+    floor,
+    gamma,
+    isfinite,
+    isinf,
+    isnan,
+    lgamma,
+    ln,
+    log,
+    radians,
+    sign,
+    sin,
+    sinh,
+    sqrt,
+    tan,
+    tanh,
+    trunc,
+)
+from verticapy.sql.functions.math import apply as sapply
+from verticapy.sql.functions.math import abs as sabs
+from verticapy.sql.functions.math import hash as shash
+from verticapy.sql.functions.math import round as sround
+from verticapy.sql.functions.null_handling import coalesce, nullifzero, zeroifnull
+from verticapy.sql.functions.random import random, randomint, seeded_random
+from verticapy.sql.functions.regexp import (
+    regexp_count,
+    regexp_ilike,
+    regexp_instr,
+    regexp_like,
+    regexp_replace,
+    regexp_substr,
+)
+from verticapy.sql.functions.string import (
+    edit_distance,
+    jaro_distance,
+    jaro_winkler_distance,
+    length,
+    lower,
+    upper,
+    soundex,
+    soundex_matches,
+    substr,
+)
+
+from verticapy.machine_learning.model_selection.statistical_tests.ols import (
+    het_breuschpagan,
+    het_goldfeldquandt,
+    het_white,
+    variance_inflation_factor,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.norm import (
+    jarque_bera,
+    kurtosistest,
+    normaltest,
+    skewtest,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.tsa import (
+    adfuller,
+    cochrane_orcutt,
+    durbin_watson,
+    het_arch,
+    ljungbox,
+    mkt,
+    seasonal_decompose,
+)
 
 set_option("print_info", False)
 
@@ -51,7 +175,7 @@ def amazon_vd():
 class TestStats:
     def test_adfuller(self, amazon_vd):
         # testing without trend
-        result = st.adfuller(
+        result = adfuller(
             amazon_vd,
             column="number",
             ts="date",
@@ -64,7 +188,7 @@ class TestStats:
         assert not result["value"][-1]
 
         # testing with trend
-        result = st.adfuller(
+        result = adfuller(
             amazon_vd,
             column="number",
             ts="date",
@@ -79,12 +203,12 @@ class TestStats:
     def test_cochrane_orcutt(self, airline_vd):
         airline_copy = airline_vd.copy()
         airline_copy["passengers_bias"] = (
-            airline_copy["passengers"] ** 2 - 50 * st.random()
+            airline_copy["passengers"] ** 2 - 50 * random()
         )
         drop("lin_cochrane_orcutt_model_test", method="model")
         model = LinearRegression("lin_cochrane_orcutt_model_test")
         model.fit(airline_copy, ["passengers_bias"], "passengers")
-        result = st.cochrane_orcutt(
+        result = cochrane_orcutt(
             model,
             airline_copy,
             ts="date",
@@ -95,11 +219,11 @@ class TestStats:
         model.drop()
 
     def test_durbin_watson(self, amazon_vd):
-        result = st.durbin_watson(amazon_vd, eps="number", ts="date", by=["state"])
+        result = durbin_watson(amazon_vd, eps="number", ts="date", by=["state"])
         assert result == pytest.approx(0.583991056156811, 1e-2)
 
     def test_het_arch(self, amazon_vd):
-        result = st.het_arch(amazon_vd, eps="number", ts="date", by=["state"], p=2)
+        result = het_arch(amazon_vd, eps="number", ts="date", by=["state"], p=2)
         assert result == (
             pytest.approx(883.1042774058532),
             pytest.approx(1.7232277859800087e-192),
@@ -110,7 +234,7 @@ class TestStats:
     def test_het_breuschpagan(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
-        result = st.het_breuschpagan(result, eps="number", X=["lag_number"])
+        result = het_breuschpagan(result, eps="number", X=["lag_number"])
         assert result == (
             pytest.approx(68.30346484950417),
             pytest.approx(1.4017446778018072e-16),
@@ -121,19 +245,19 @@ class TestStats:
     def test_het_goldfeldquandt(self, amazon_vd):
         vdf = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         vdf["lag_number"] = "LAG(number) OVER (ORDER BY date)"
-        result = st.het_goldfeldquandt(vdf, y="number", X=["lag_number"])
+        result = het_goldfeldquandt(vdf, y="number", X=["lag_number"])
         assert result == (
             pytest.approx(30.17263128858259),
             pytest.approx(1.3988910574921388e-55),
         )
-        result2 = st.het_goldfeldquandt(
+        result2 = het_goldfeldquandt(
             vdf, y="number", X=["lag_number"], alternative="decreasing"
         )
         assert result2 == (
             pytest.approx(30.17263128858259),
             pytest.approx(0.9999999999999999),
         )
-        result3 = st.het_goldfeldquandt(
+        result3 = het_goldfeldquandt(
             vdf, y="number", X=["lag_number"], alternative="two-sided"
         )
         assert result3 == (
@@ -144,7 +268,7 @@ class TestStats:
     def test_het_white(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
-        result = st.het_white(result, eps="number", X=["lag_number"])
+        result = het_white(result, eps="number", X=["lag_number"])
         assert result == (
             pytest.approx(72.93515335650999),
             pytest.approx(1.3398039866815678e-17),
@@ -153,23 +277,23 @@ class TestStats:
         )
 
     def test_jarque_bera(self, amazon_vd):
-        result = st.jarque_bera(amazon_vd, column="number")
+        result = jarque_bera(amazon_vd, column="number")
         assert result[0] == pytest.approx(930829.520860999, 1e-2)
         assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_kurtosistest(self, amazon_vd):
-        result = st.kurtosistest(amazon_vd, column="number")
+        result = kurtosistest(amazon_vd, column="number")
         assert result[0] == pytest.approx(47.31605467852915, 1e-2)
         assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_normaltest(self, amazon_vd):
-        result = st.normaltest(amazon_vd, column="number")
+        result = normaltest(amazon_vd, column="number")
         assert result[0] == pytest.approx(7645.980976250067, 1e-2)
         assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_ljungbox(self, amazon_vd):
         # testing Ljung–Box
-        result = st.ljungbox(
+        result = ljungbox(
             amazon_vd,
             column="number",
             ts="date",
@@ -184,7 +308,7 @@ class TestStats:
         )
 
         # testing Box-Pierce
-        result = st.ljungbox(
+        result = ljungbox(
             amazon_vd,
             column="number",
             ts="date",
@@ -200,7 +324,7 @@ class TestStats:
 
     def test_mkt(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
-        result = st.mkt(result, column="number", ts="date")
+        result = mkt(result, column="number", ts="date")
         assert result["value"][0] == pytest.approx(2.579654773618437, 1e-2)
         assert result["value"][1] == pytest.approx(3188.0, 1e-2)
         assert result["value"][2] == pytest.approx(1235.43662996799, 1e-2)
@@ -209,7 +333,7 @@ class TestStats:
         assert result["value"][5] == "increasing"
 
     def test_seasonal_decompose(self, airline_vd):
-        result = st.seasonal_decompose(
+        result = seasonal_decompose(
             airline_vd,
             "Passengers",
             "date",
@@ -221,7 +345,7 @@ class TestStats:
         assert result["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result["passengers_seasonal"].avg() == pytest.approx(1.0)
         assert result["passengers_epsilon"].avg() == pytest.approx(1.05417531440333)
-        result2 = st.seasonal_decompose(
+        result2 = seasonal_decompose(
             airline_vd,
             "Passengers",
             "date",
@@ -236,7 +360,7 @@ class TestStats:
         )
         assert result2["passengers_epsilon"].avg() == pytest.approx(13.9000924422799)
 
-        result2 = st.seasonal_decompose(
+        result2 = seasonal_decompose(
             airline_vd,
             "Passengers",
             "date",
@@ -250,12 +374,12 @@ class TestStats:
         assert result2["passengers_epsilon"].avg() == pytest.approx(1.00044316689124)
 
     def test_skewtest(self, amazon_vd):
-        result = st.skewtest(amazon_vd, column="number")
+        result = skewtest(amazon_vd, column="number")
         assert result[0] == pytest.approx(73.53347500226347, 1e-2)
         assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_variance_inflation_factor(self, titanic_vd):
-        result = st.variance_inflation_factor(
+        result = variance_inflation_factor(
             titanic_vd, ["pclass", "survived", "age", "fare"]
         )
         assert result["VIF"][0] == pytest.approx(1.8761429731878563, 1e-2)
@@ -266,219 +390,216 @@ class TestStats:
     @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.2")
     def test_jaro_distance(self, titanic_vd):
         assert (
-            str(st.edit_distance(titanic_vd["name"], "Laurent"))
+            str(edit_distance(titanic_vd["name"], "Laurent"))
             == "JARO_DISTANCE(\"name\", 'Laurent')"
         )
 
     @pytest.mark.skip(reason="this test will be valid for Vertica v12.0.2")
     def test_jaro_winkler_distance(self, titanic_vd):
         assert (
-            str(st.edit_distance(titanic_vd["name"], "Laurent"))
+            str(edit_distance(titanic_vd["name"], "Laurent"))
             == "JARO_WINKLER_DISTANCE(\"name\", 'Laurent')"
         )
 
     def test_edit_distance(self, titanic_vd):
         assert (
-            str(st.edit_distance(titanic_vd["name"], "Laurent"))
+            str(edit_distance(titanic_vd["name"], "Laurent"))
             == "EDIT_DISTANCE(\"name\", 'Laurent')"
         )
 
     def test_soundex(self, titanic_vd):
-        assert str(st.soundex(titanic_vd["name"])) == 'SOUNDEX("name")'
+        assert str(soundex(titanic_vd["name"])) == 'SOUNDEX("name")'
 
     def test_soundex_matches(self, titanic_vd):
         assert (
-            str(st.soundex_matches(titanic_vd["name"], "Laurent"))
+            str(soundex_matches(titanic_vd["name"], "Laurent"))
             == "SOUNDEX_MATCHES(\"name\", 'Laurent')"
         )
 
     def test_regexp_count(self, titanic_vd):
         assert (
-            str(st.regexp_count(titanic_vd["name"], "([A-Za-z])+\\. "))
+            str(regexp_count(titanic_vd["name"], "([A-Za-z])+\\. "))
             == "REGEXP_COUNT(\"name\", '([A-Za-z])+\\. ', 1)"
         )
 
     def test_regexp_instr(self, titanic_vd):
         assert (
-            str(st.regexp_instr(titanic_vd["name"], "([A-Za-z])+\\. "))
+            str(regexp_instr(titanic_vd["name"], "([A-Za-z])+\\. "))
             == "REGEXP_INSTR(\"name\", '([A-Za-z])+\\. ', 1, 1, 0)"
         )
 
     def test_regexp_like(self, titanic_vd):
         assert (
-            str(st.regexp_like(titanic_vd["name"], "([A-Za-z])+\\. "))
+            str(regexp_like(titanic_vd["name"], "([A-Za-z])+\\. "))
             == "REGEXP_LIKE(\"name\", '([A-Za-z])+\\. ')"
         )
 
     def test_regexp_replace(self, titanic_vd):
         assert (
-            str(st.regexp_replace(titanic_vd["name"], "([A-Za-z])+\\. ", "\\.\\."))
+            str(regexp_replace(titanic_vd["name"], "([A-Za-z])+\\. ", "\\.\\."))
             == "REGEXP_REPLACE(\"name\", '([A-Za-z])+\\. ', '\\.\\.', 1, 1)"
         )
 
     def test_regexp_substr(self, titanic_vd):
         assert (
-            str(st.regexp_substr(titanic_vd["name"], "([A-Za-z])+\\. "))
+            str(regexp_substr(titanic_vd["name"], "([A-Za-z])+\\. "))
             == "REGEXP_SUBSTR(\"name\", '([A-Za-z])+\\. ', 1, 1)"
         )
 
     def test_regexp_ilike(self, titanic_vd):
         assert (
-            str(st.regexp_ilike(titanic_vd["name"], "([A-Za-z])+\\. "))
+            str(regexp_ilike(titanic_vd["name"], "([A-Za-z])+\\. "))
             == "REGEXP_ILIKE(\"name\", '([A-Za-z])+\\. ')"
         )
 
     def test_length(self, titanic_vd):
-        assert str(st.length(titanic_vd["name"])) == 'LENGTH("name")'
+        assert str(length(titanic_vd["name"])) == 'LENGTH("name")'
 
     def test_lower(self, titanic_vd):
-        assert str(st.lower(titanic_vd["name"])) == 'LOWER("name")'
+        assert str(lower(titanic_vd["name"])) == 'LOWER("name")'
 
     def test_substr(self, titanic_vd):
-        assert str(st.substr(titanic_vd["name"], 1, 2)) == 'SUBSTR("name", 1, 2)'
+        assert str(substr(titanic_vd["name"], 1, 2)) == 'SUBSTR("name", 1, 2)'
 
     def test_upper(self, titanic_vd):
-        assert str(st.upper(titanic_vd["name"])) == 'UPPER("name")'
+        assert str(upper(titanic_vd["name"])) == 'UPPER("name")'
 
     def test_apply(self, titanic_vd):
-        assert str(st.apply("avg", titanic_vd["age"])) == 'AVG("age")'
-        assert str(st.apply("dense_rank")) == "DENSE_RANK()"
+        assert str(sapply("avg", titanic_vd["age"])) == 'AVG("age")'
+        assert str(sapply("dense_rank")) == "DENSE_RANK()"
 
     def test_avg(self, titanic_vd):
-        assert str(st.avg(titanic_vd["age"])) == 'AVG("age")'
+        assert str(avg(titanic_vd["age"])) == 'AVG("age")'
 
     def test_bool_and(self, titanic_vd):
-        assert str(st.bool_and(titanic_vd["age"])) == 'BOOL_AND("age")'
+        assert str(bool_and(titanic_vd["age"])) == 'BOOL_AND("age")'
 
     def test_bool_or(self, titanic_vd):
-        assert str(st.bool_or(titanic_vd["age"])) == 'BOOL_OR("age")'
+        assert str(bool_or(titanic_vd["age"])) == 'BOOL_OR("age")'
 
     def test_bool_xor(self, titanic_vd):
-        assert str(st.bool_xor(titanic_vd["age"])) == 'BOOL_XOR("age")'
+        assert str(bool_xor(titanic_vd["age"])) == 'BOOL_XOR("age")'
 
     def test_conditional_change_event(self, titanic_vd):
         assert (
-            str(st.conditional_change_event(titanic_vd["age"] > 5))
+            str(conditional_change_event(titanic_vd["age"] > 5))
             == 'CONDITIONAL_CHANGE_EVENT(("age") > (5))'
         )
 
     def test_conditional_true_event(self, titanic_vd):
         assert (
-            str(st.conditional_true_event(titanic_vd["age"] > 5))
+            str(conditional_true_event(titanic_vd["age"] > 5))
             == 'CONDITIONAL_TRUE_EVENT(("age") > (5))'
         )
 
     def test_count(self, titanic_vd):
-        assert str(st.count(titanic_vd["age"])) == 'COUNT("age")'
+        assert str(count(titanic_vd["age"])) == 'COUNT("age")'
 
     def test_max(self, titanic_vd):
-        assert str(st.max(titanic_vd["age"])) == 'MAX("age")'
+        assert str(smax(titanic_vd["age"])) == 'MAX("age")'
 
     def test_median(self, titanic_vd):
-        assert str(st.median(titanic_vd["age"])) == 'APPROXIMATE_MEDIAN("age")'
+        assert str(median(titanic_vd["age"])) == 'APPROXIMATE_MEDIAN("age")'
 
     def test_min(self, titanic_vd):
-        assert str(st.min(titanic_vd["age"])) == 'MIN("age")'
+        assert str(smin(titanic_vd["age"])) == 'MIN("age")'
 
     def test_nth_value(self, titanic_vd):
-        assert str(st.nth_value(titanic_vd["age"], 2)) == 'NTH_VALUE("age", 2)'
+        assert str(nth_value(titanic_vd["age"], 2)) == 'NTH_VALUE("age", 2)'
 
     def test_lag(self, titanic_vd):
-        assert str(st.lag(titanic_vd["age"])) == 'LAG("age", 1)'
+        assert str(lag(titanic_vd["age"])) == 'LAG("age", 1)'
 
     def test_lead(self, titanic_vd):
-        assert str(st.lead(titanic_vd["age"])) == 'LEAD("age", 1)'
+        assert str(lead(titanic_vd["age"])) == 'LEAD("age", 1)'
 
     def test_quantile(self, titanic_vd):
         assert (
-            str(st.quantile(titanic_vd["age"], 0.3))
+            str(quantile(titanic_vd["age"], 0.3))
             == 'APPROXIMATE_PERCENTILE("age" USING PARAMETERS percentile = 0.3)'
         )
 
     def test_rank(self):
-        assert str(st.rank()) == "RANK()"
+        assert str(rank()) == "RANK()"
 
     def test_row_number(self):
-        assert str(st.row_number()) == "ROW_NUMBER()"
+        assert str(row_number()) == "ROW_NUMBER()"
 
     def test_std(self, titanic_vd):
-        assert str(st.std(titanic_vd["age"])) == 'STDDEV("age")'
+        assert str(std(titanic_vd["age"])) == 'STDDEV("age")'
 
     def test_sum(self, titanic_vd):
-        assert str(st.sum(titanic_vd["age"])) == 'SUM("age")'
+        assert str(ssum(titanic_vd["age"])) == 'SUM("age")'
 
     def test_var(self, titanic_vd):
-        assert str(st.var(titanic_vd["age"])) == 'VARIANCE("age")'
+        assert str(var(titanic_vd["age"])) == 'VARIANCE("age")'
 
     def test_abs(self, titanic_vd):
-        assert str(st.abs(titanic_vd["age"])) == 'ABS("age")'
+        assert str(sabs(titanic_vd["age"])) == 'ABS("age")'
 
     def test_acos(self, titanic_vd):
-        assert str(st.acos(titanic_vd["age"])) == 'ACOS("age")'
+        assert str(acos(titanic_vd["age"])) == 'ACOS("age")'
 
     def test_asin(self, titanic_vd):
-        assert str(st.asin(titanic_vd["age"])) == 'ASIN("age")'
+        assert str(asin(titanic_vd["age"])) == 'ASIN("age")'
 
     def test_atan(self, titanic_vd):
-        assert str(st.atan(titanic_vd["age"])) == 'ATAN("age")'
+        assert str(atan(titanic_vd["age"])) == 'ATAN("age")'
 
     def test_atan2(self, titanic_vd):
         assert (
-            str(st.atan2(titanic_vd["age"], titanic_vd["fare"]))
-            == 'ATAN2("age", "fare")'
+            str(atan2(titanic_vd["age"], titanic_vd["fare"])) == 'ATAN2("age", "fare")'
         )
 
     def test_case_when(self, titanic_vd):
         assert (
-            str(st.case_when(titanic_vd["age"] > 5, 11, 1993))
+            str(case_when(titanic_vd["age"] > 5, 11, 1993))
             == 'CASE WHEN ("age") > (5) THEN 11 ELSE 1993 END'
         )
 
     def test_cbrt(self, titanic_vd):
-        assert str(st.cbrt(titanic_vd["age"])) == 'CBRT("age")'
+        assert str(cbrt(titanic_vd["age"])) == 'CBRT("age")'
 
     def test_ceil(self, titanic_vd):
-        assert str(st.ceil(titanic_vd["age"])) == 'CEIL("age")'
+        assert str(ceil(titanic_vd["age"])) == 'CEIL("age")'
 
     def test_coalesce(self, titanic_vd):
-        assert str(st.coalesce(titanic_vd["age"], 30)) == 'COALESCE("age", 30)'
+        assert str(coalesce(titanic_vd["age"], 30)) == 'COALESCE("age", 30)'
 
     def test_comb(self, titanic_vd):
-        assert str(st.comb(3, 6)) == "(3)! / ((6)! * (3 - 6)!)"
+        assert str(comb(3, 6)) == "(3)! / ((6)! * (3 - 6)!)"
 
     def test_cos(self, titanic_vd):
-        assert str(st.cos(titanic_vd["age"])) == 'COS("age")'
+        assert str(cos(titanic_vd["age"])) == 'COS("age")'
 
     def test_cosh(self, titanic_vd):
-        assert str(st.cosh(titanic_vd["age"])) == 'COSH("age")'
+        assert str(cosh(titanic_vd["age"])) == 'COSH("age")'
 
     def test_cot(self, titanic_vd):
-        assert str(st.cot(titanic_vd["age"])) == 'COT("age")'
+        assert str(cot(titanic_vd["age"])) == 'COT("age")'
 
     def test_date(self, amazon_vd):
-        assert str(st.date(amazon_vd["date"])) == 'DATE("date")'
+        assert str(date(amazon_vd["date"])) == 'DATE("date")'
 
     def test_day(self, amazon_vd):
-        assert str(st.day(amazon_vd["date"])) == 'DAY("date")'
+        assert str(day(amazon_vd["date"])) == 'DAY("date")'
 
     def test_dayofweek(self, amazon_vd):
-        assert str(st.dayofweek(amazon_vd["date"])) == 'DAYOFWEEK("date")'
+        assert str(dayofweek(amazon_vd["date"])) == 'DAYOFWEEK("date")'
 
     def test_dayofyear(self, amazon_vd):
-        assert str(st.dayofyear(amazon_vd["date"])) == 'DAYOFYEAR("date")'
+        assert str(dayofyear(amazon_vd["date"])) == 'DAYOFYEAR("date")'
 
     def test_degrees(self, titanic_vd):
-        assert str(st.degrees(titanic_vd["age"])) == 'DEGREES("age")'
+        assert str(degrees(titanic_vd["age"])) == 'DEGREES("age")'
 
     def test_decode(self, titanic_vd):
-        assert (
-            str(st.decode(titanic_vd["pclass"], 1, 0, 1)) == 'DECODE("pclass", 1, 0, 1)'
-        )
+        assert str(decode(titanic_vd["pclass"], 1, 0, 1)) == 'DECODE("pclass", 1, 0, 1)'
 
     def test_distance(self, titanic_vd):
         assert (
             str(
-                st.distance(
+                distance(
                     titanic_vd["age"],
                     titanic_vd["fare"],
                     titanic_vd["age"],
@@ -489,140 +610,139 @@ class TestStats:
         )
 
     def test_exp(self, titanic_vd):
-        assert str(st.exp(titanic_vd["age"])) == 'EXP("age")'
+        assert str(exp(titanic_vd["age"])) == 'EXP("age")'
 
     def test_extract(self, amazon_vd):
         assert (
-            str(st.extract(amazon_vd["date"], "MONTH"))
-            == "DATE_PART('MONTH', \"date\")"
+            str(extract(amazon_vd["date"], "MONTH")) == "DATE_PART('MONTH', \"date\")"
         )
 
     def test_factorial(self, titanic_vd):
-        assert str(st.factorial(titanic_vd["age"])) == '("age")!'
+        assert str(factorial(titanic_vd["age"])) == '("age")!'
 
     def test_floor(self, titanic_vd):
-        assert str(st.floor(titanic_vd["age"])) == 'FLOOR("age")'
+        assert str(floor(titanic_vd["age"])) == 'FLOOR("age")'
 
     def test_gamma(self, titanic_vd):
-        assert str(st.gamma(titanic_vd["age"])) == '("age" - 1)!'
+        assert str(gamma(titanic_vd["age"])) == '("age" - 1)!'
 
     def test_getdate(self):
-        assert str(st.getdate()) == "GETDATE()"
+        assert str(getdate()) == "GETDATE()"
 
     def test_getutcdate(self):
-        assert str(st.getutcdate()) == "GETUTCDATE()"
+        assert str(getutcdate()) == "GETUTCDATE()"
 
     def test_hash(self, titanic_vd):
-        assert str(st.hash(titanic_vd["age"])) == 'HASH("age")'
+        assert str(shash(titanic_vd["age"])) == 'HASH("age")'
         assert (
-            str(st.hash(titanic_vd["age"], titanic_vd["fare"])) == 'HASH("age", "fare")'
+            str(shash(titanic_vd["age"], titanic_vd["fare"])) == 'HASH("age", "fare")'
         )
 
     def test_hour(self, amazon_vd):
-        assert str(st.hour(amazon_vd["date"])) == 'HOUR("date")'
+        assert str(hour(amazon_vd["date"])) == 'HOUR("date")'
 
     def test_interval(self, amazon_vd):
-        assert str(st.interval("1 day")) == "('1 day')::interval"
+        assert str(interval("1 day")) == "('1 day')::interval"
 
     def test_isfinite(self, titanic_vd):
         assert (
-            str(st.isfinite(titanic_vd["age"]))
+            str(isfinite(titanic_vd["age"]))
             == '(("age") = ("age")) AND (ABS("age") < \'inf\'::float)'
         )
 
     def test_isinf(self, titanic_vd):
-        assert str(st.isinf(titanic_vd["age"])) == "ABS(\"age\") = 'inf'::float"
+        assert str(isinf(titanic_vd["age"])) == "ABS(\"age\") = 'inf'::float"
 
     def test_isnan(self, titanic_vd):
-        assert str(st.isnan(titanic_vd["age"])) == '(("age") != ("age"))'
+        assert str(isnan(titanic_vd["age"])) == '(("age") != ("age"))'
 
     def test_lgamma(self, titanic_vd):
-        assert str(st.lgamma(titanic_vd["age"])) == 'LN(("age" - 1)!)'
+        assert str(lgamma(titanic_vd["age"])) == 'LN(("age" - 1)!)'
 
     def test_ln(self, titanic_vd):
-        assert str(st.ln(titanic_vd["age"])) == 'LN("age")'
+        assert str(ln(titanic_vd["age"])) == 'LN("age")'
 
     def test_log(self, titanic_vd):
-        assert str(st.log(titanic_vd["age"])) == 'LOG(10, "age")'
+        assert str(log(titanic_vd["age"])) == 'LOG(10, "age")'
 
     def test_minute(self, amazon_vd):
-        assert str(st.minute(amazon_vd["date"])) == 'MINUTE("date")'
+        assert str(minute(amazon_vd["date"])) == 'MINUTE("date")'
 
     def test_microsecond(self, amazon_vd):
-        assert str(st.microsecond(amazon_vd["date"])) == 'MICROSECOND("date")'
+        assert str(microsecond(amazon_vd["date"])) == 'MICROSECOND("date")'
 
     def test_month(self, amazon_vd):
-        assert str(st.month(amazon_vd["date"])) == 'MONTH("date")'
+        assert str(month(amazon_vd["date"])) == 'MONTH("date")'
 
     def test_nullifzero(self, amazon_vd):
-        assert str(st.nullifzero(amazon_vd["number"])) == 'NULLIFZERO("number")'
+        assert str(nullifzero(amazon_vd["number"])) == 'NULLIFZERO("number")'
 
     def test_overlaps(self):
         assert (
-            str(st.overlaps("11-03-1993", "12-03-1993", "11-30-1993", "11-30-1994"))
+            str(overlaps("11-03-1993", "12-03-1993", "11-30-1993", "11-30-1994"))
             == "('11-03-1993', '12-03-1993') OVERLAPS ('11-30-1993', '11-30-1994')"
         )
 
     def test_quarter(self, amazon_vd):
-        assert str(st.quarter(amazon_vd["date"])) == 'QUARTER("date")'
+        assert str(quarter(amazon_vd["date"])) == 'QUARTER("date")'
 
     def test_radians(self, titanic_vd):
-        assert str(st.radians(titanic_vd["age"])) == 'RADIANS("age")'
+        assert str(radians(titanic_vd["age"])) == 'RADIANS("age")'
 
     def test_seeded_random(self):
-        assert str(st.seeded_random(10)) == "SEEDED_RANDOM(10)"
+        assert str(seeded_random(10)) == "SEEDED_RANDOM(10)"
 
     def test_random(self):
-        assert str(st.random()) == "RANDOM()"
+        assert str(random()) == "RANDOM()"
 
     def test_randomint(self):
-        assert str(st.randomint(10)) == "RANDOMINT(10)"
+        assert str(randomint(10)) == "RANDOMINT(10)"
 
     def test_round(self, titanic_vd):
-        assert str(st.round(titanic_vd["age"], 3)) == 'ROUND("age", 3)'
+        assert str(sround(titanic_vd["age"], 3)) == 'ROUND("age", 3)'
 
     def test_round_date(self, amazon_vd):
-        assert str(st.round_date(amazon_vd["date"])) == "ROUND(\"date\", 'DD')"
+        assert str(round_date(amazon_vd["date"])) == "ROUND(\"date\", 'DD')"
 
     def test_second(self, amazon_vd):
-        assert str(st.second(amazon_vd["date"])) == 'SECOND("date")'
+        assert str(second(amazon_vd["date"])) == 'SECOND("date")'
 
     def test_sign(self, titanic_vd):
-        assert str(st.sign(titanic_vd["age"])) == 'SIGN("age")'
+        assert str(sign(titanic_vd["age"])) == 'SIGN("age")'
 
     def test_sin(self, titanic_vd):
-        assert str(st.sin(titanic_vd["age"])) == 'SIN("age")'
+        assert str(sin(titanic_vd["age"])) == 'SIN("age")'
 
     def test_sinh(self, titanic_vd):
-        assert str(st.sinh(titanic_vd["age"])) == 'SINH("age")'
+        assert str(sinh(titanic_vd["age"])) == 'SINH("age")'
 
     def test_sqrt(self, titanic_vd):
-        assert str(st.sqrt(titanic_vd["age"])) == 'SQRT("age")'
+        assert str(sqrt(titanic_vd["age"])) == 'SQRT("age")'
 
     def test_tan(self, titanic_vd):
-        assert str(st.tan(titanic_vd["age"])) == 'TAN("age")'
+        assert str(tan(titanic_vd["age"])) == 'TAN("age")'
 
     def test_tanh(self, titanic_vd):
-        assert str(st.tanh(titanic_vd["age"])) == 'TANH("age")'
+        assert str(tanh(titanic_vd["age"])) == 'TANH("age")'
 
     def test_timestamp(self, amazon_vd):
-        assert str(st.timestamp("05/09/1959")) == "('05/09/1959')::timestamp"
+        assert str(timestamp("05/09/1959")) == "('05/09/1959')::timestamp"
 
     def test_trunc(self, titanic_vd):
-        assert str(st.trunc(titanic_vd["age"], 3)) == 'TRUNC("age", 3)'
+        assert str(trunc(titanic_vd["age"], 3)) == 'TRUNC("age", 3)'
 
     def test_week(self, amazon_vd):
-        assert str(st.week(amazon_vd["date"])) == 'WEEK("date")'
+        assert str(week(amazon_vd["date"])) == 'WEEK("date")'
 
     def test_year(self, amazon_vd):
-        assert str(st.year(amazon_vd["date"])) == 'YEAR("date")'
+        assert str(year(amazon_vd["date"])) == 'YEAR("date")'
 
     def test_zeroifnull(self, amazon_vd):
-        assert str(st.zeroifnull(amazon_vd["date"])) == 'ZEROIFNULL("date")'
+        assert str(zeroifnull(amazon_vd["date"])) == 'ZEROIFNULL("date")'
 
     def test_constants(self):
-        assert str(st.PI) == "PI()"
-        assert str(st.E) == "EXP(1)"
-        assert str(st.TAU) == "2 * PI()"
-        assert str(st.INF) == "'inf'::float"
-        assert str(st.NAN) == "'nan'::float"
+        assert str(PI) == "PI()"
+        assert str(E) == "EXP(1)"
+        assert str(TAU) == "2 * PI()"
+        assert str(INF) == "'inf'::float"
+        assert str(NAN) == "'nan'::float"

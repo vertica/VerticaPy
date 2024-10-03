@@ -29,7 +29,7 @@ from verticapy import (
 )
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_reg
-from verticapy.learn.tree import DummyTreeRegressor
+from verticapy.machine_learning.vertica.tree import DummyTreeRegressor
 
 # Matplotlib skip
 import matplotlib
