@@ -20,7 +20,6 @@ import pytest
 
 # Standard Python Modules
 from abc import abstractmethod
-import warnings
 
 # VerticaPy
 from verticapy import drop, set_option
