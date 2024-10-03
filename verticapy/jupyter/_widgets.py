@@ -86,14 +86,14 @@ class Visualizer:
         if self.orientation == "v":
             settings = widgets.HBox(self.settings_wids)
         with self.settings_box:
-            print_message(settings)
+            print_message(settings, "display")
         with self.graph_box:
             self.graph_box.clear_output(wait=True)
-            print_message(graph)
+            print_message(graph, "display")
         if self.orientation == "v":
-            print_message(widgets.VBox([self.settings_box, self.graph_box]))
+            print_message(widgets.VBox([self.settings_box, self.graph_box]), "display")
             return
-        print_message(widgets.HBox([self.settings_box, self.graph_box]))
+        print_message(widgets.HBox([self.settings_box, self.graph_box]), "display")
 
     @staticmethod
     def _accordion(children: list, titles: list) -> widgets.Accordion:
