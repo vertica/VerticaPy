@@ -29,6 +29,11 @@ from verticapy._config.config import set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_amazon, load_winequality
 from verticapy.machine_learning.model_selection import *
+from verticapy.machine_learning.metrics.plotting import (
+    lift_chart,
+    prc_curve,
+    roc_curve,
+)
 from verticapy.machine_learning.vertica.linear_model import *
 from verticapy.machine_learning.vertica.naive_bayes import *
 from verticapy.machine_learning.vertica.ensemble import *

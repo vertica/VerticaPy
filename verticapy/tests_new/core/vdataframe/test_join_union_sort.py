@@ -21,7 +21,7 @@ import pandas as pd
 
 # Utilities
 from verticapy.sql.drop import drop
-from verticapy.core.parsers.pandas import pandas_to_vertica
+from verticapy.core.parsers.pandas import read_pandas
 
 
 class TestJoinUnionSort:
@@ -193,7 +193,7 @@ class TestJoinUnionSort:
         market_pdf = market_vd.to_pandas()
         change_pdf = market_pdf.sample(50, random_state=100).index
         market_pdf.loc[change_pdf, "Price"] += 1
-        market_vd_copy = pandas_to_vertica(
+        market_vd_copy = read_pandas(
             market_pdf, name=f"market_pandas_{random.random()}", schema=schema_loader
         )
 
