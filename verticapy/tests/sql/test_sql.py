@@ -19,7 +19,7 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
-import warnings, os
+import os
 
 # VerticaPy
 import verticapy

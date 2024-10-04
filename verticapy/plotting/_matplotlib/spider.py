@@ -90,7 +90,7 @@ class SpiderChart(MatplotlibBase):
         ax.set_yticks(y_ticks)
         ax.set_rgrids(y_ticks, angle=180.0, fmt="%0.1f")
         ax.set_xlabel(self.layout["columns"][0])
-        ax.set_ylabel(self.layout["method"])
+        ax.set_ylabel(self.layout["method_of"])
         if len(self.layout["columns"]) > 1:
             ax.legend(
                 title=self.layout["columns"][1],

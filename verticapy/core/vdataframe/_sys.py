@@ -210,7 +210,7 @@ class vDFSystem(vDFTyping):
                 return "VERTICAPY_NOT_PRECOMPUTED"
             return total
         elif method:
-            method = verticapy_agg_name(method.lower())
+            method = verticapy_agg_name(str(method).lower())
             if columns[1] in self[columns[0]]._catalog[method]:
                 return self[columns[0]]._catalog[method][columns[1]]
             else:
@@ -1317,10 +1317,14 @@ class vDCSystem(vDCTyping):
         )
         return store_usage
 
-    def rename(self, new_name: str) -> "vDataFrame":
+    def rename(
+        self,
+        new_name: str,
+        inplace: bool = True,
+    ) -> "vDataFrame":
         """
-        Renames the vDataColumn by dropping the current vDataColumn
-        and creating a copy with the specified name.
+        Renames the vDataColumn. This function is not
+        directly applied to the input object.
 
         .. warning::
 
@@ -1328,16 +1332,24 @@ class vDCSystem(vDCTyping):
             vDataFrame  has been transformed  multiple
             times, so it's better practice to use this
             method when first preparing your data.
+            It is even recommended to use directly
+            ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.select`
+            method and do all the renaming within
+            one single operation.
 
         Parameters
         ----------
         new_name: str
             The new vDataColumn alias.
+        inplace: bool, optional
+            If set to ``True``, the
+            :py:class:`~vDataFrame` is replaced
+            with the new relation.
 
         Returns
         -------
         vDataFrame
-            self._parent
+            result.
 
         Examples
         --------
@@ -1385,8 +1397,7 @@ class vDCSystem(vDCTyping):
         .. ipython:: python
             :suppress:
 
-            vdf["val"].rename("value")
-            result = vdf
+            result = vdf["val"].rename("value", inplace=False)
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_rename.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
@@ -1407,9 +1418,11 @@ class vDCSystem(vDCTyping):
                 "By changing the parameter 'new_name', you'll "
                 "be able to solve this issue."
             )
-        self._parent.eval(name=new_name, expr=old_name)
-        parent = self.drop(add_history=False)
-        parent._add_to_history(
-            f"[Rename]: The vDataColumn {old_name} was renamed '{new_name}'."
+        res = self._parent.select(
+            self._parent.get_columns(exclude_columns=[old_name])
+            + [f"{old_name} AS {new_name}"]
         )
-        return parent
+        if inplace:
+            self._parent.__init__(res.current_relation())
+            return self._parent
+        return res

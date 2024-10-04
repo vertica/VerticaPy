@@ -251,6 +251,10 @@ class vDFPlot(vDFMachineLearning):
                 q Quantile of the
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
+            - None:
+                No Aggregations. Parameter ``of``
+                must not be empty, otherwise it
+                is ignored.
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
@@ -425,6 +429,14 @@ class vDFPlot(vDFMachineLearning):
                 categoryorder=categoryorder,
                 **style_kwargs,
             )
+        elif len(columns) == 2 and isinstance(method, NoneType) and not (of):
+            return self[columns[0]].bar(
+                method=None,
+                of=columns[1],
+                max_cardinality=max_cardinality[0],
+                categoryorder=categoryorder,
+                **style_kwargs,
+            )
         elif kind == "drilldown":
             vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="DrillDownBarChart",
@@ -529,6 +541,10 @@ class vDFPlot(vDFMachineLearning):
                 q Quantile of the
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
+            - None:
+                No Aggregations. Parameter ``of``
+                must not be empty, otherwise it
+                is ignored.
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
@@ -703,6 +719,14 @@ class vDFPlot(vDFMachineLearning):
                 max_cardinality=max_cardinality[0],
                 h=h[0],
                 chart=chart,
+                categoryorder=categoryorder,
+                **style_kwargs,
+            )
+        elif len(columns) == 2 and isinstance(method, NoneType) and not (of):
+            return self[columns[0]].barh(
+                method=None,
+                of=columns[1],
+                max_cardinality=max_cardinality[0],
                 categoryorder=categoryorder,
                 **style_kwargs,
             )
@@ -2163,6 +2187,11 @@ class vDFPlot(vDFMachineLearning):
                 q Quantile of the
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
+            - None:
+                No Aggregations. Parameter ``of``
+                must not be empty, otherwise it
+                is ignored. The function to draw
+                the final chart will be ``max```.
 
         of: str, optional
             The vDataColumn used to compute the aggregation.
@@ -2221,7 +2250,7 @@ class vDFPlot(vDFMachineLearning):
                 }
             )
 
-        Below is an examples of one type of hexbin plots:
+        Below is an example of one type of hexbin plots:
 
         - Hexbin
 
@@ -2805,9 +2834,9 @@ class vDCPlot(vDCScaler):
         fd = max(
             2.0 * (vDataColumn_075 - vDataColumn_025) / (count) ** (1.0 / 3.0), 1e-99
         )
-        if method.lower() == "sturges":
+        if str(method).lower() == "sturges":
             best_h = sturges
-        elif method.lower() in ("freedman_diaconis", "fd"):
+        elif str(method).lower() in ("freedman_diaconis", "fd"):
             best_h = fd
         else:
             best_h = max(sturges, fd)
@@ -3001,6 +3030,8 @@ class vDCPlot(vDCScaler):
                 q Quantile of the
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
+            - None:
+                No Aggregations.
 
             It can also be a cutomized aggregation
             (ex: AVG(column1) + 5).
@@ -3122,7 +3153,7 @@ class vDCPlot(vDCScaler):
     @save_verticapy_logs
     def barh(
         self,
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
@@ -3168,6 +3199,8 @@ class vDCPlot(vDCScaler):
                 q Quantile of the
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
+            - None:
+                No Aggregations.
 
             It can also be a cutomized aggregation
             (ex: AVG(column1) + 5).
@@ -3289,7 +3322,7 @@ class vDCPlot(vDCScaler):
     @save_verticapy_logs
     def pie(
         self,
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         max_cardinality: int = 6,
         h: PythonNumber = 0,
@@ -3333,6 +3366,8 @@ class vDCPlot(vDCScaler):
                 q Quantile of the
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
+            - None:
+                No Aggregations.
 
             It can also be a cutomized aggregation
             (ex: ``AVG(column1) + 5``).
@@ -3452,7 +3487,7 @@ class vDCPlot(vDCScaler):
     def spider(
         self,
         by: Optional[str] = None,
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
@@ -3592,7 +3627,7 @@ class vDCPlot(vDCScaler):
     def hist(
         self,
         by: Optional[str] = None,
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         h: Optional[PythonNumber] = None,
         h_by: PythonNumber = 0,
@@ -3935,7 +3970,7 @@ class vDCPlot(vDCScaler):
     def candlestick(
         self,
         ts: str,
-        method: str = "sum",
+        method: PlottingMethod = "sum",
         q: tuple[float, float] = (0.25, 0.75),
         start_date: Optional[PythonScalar] = None,
         end_date: Optional[PythonScalar] = None,
@@ -4020,6 +4055,12 @@ class vDCPlot(vDCScaler):
 
             import numpy as np
 
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
         Let's generate a dataset using the following data.
 
         .. ipython:: python
@@ -4036,7 +4077,6 @@ class vDCPlot(vDCScaler):
         .. code-block:: python
 
             data["population"].candlestick(ts = "date")
-
 
         .. ipython:: python
             :suppress:

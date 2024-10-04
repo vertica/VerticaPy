@@ -197,6 +197,5 @@ class TestVDCSys:
         """
         test function - rename
         """
-        titanic_vd_fun["sex"].rename("gender")
-        columns = titanic_vd_fun.get_columns()
+        columns = titanic_vd_fun["sex"].rename("gender", inplace=False).get_columns()
         assert '"gender"' in columns and '"sex"' not in columns

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 
 # Pytest
-import pytest, warnings
+import pytest
 
 # Other Modules
 import pandas as pd

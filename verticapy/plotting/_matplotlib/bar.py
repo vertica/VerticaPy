@@ -78,7 +78,7 @@ class BarChart(MatplotlibBase):
             xticks_label = xticks
         ax.set_xticks(xticks)
         ax.set_xticklabels(xticks_label, rotation=90)
-        ax.set_ylabel(self.layout["method"])
+        ax.set_ylabel(self.layout["method_of"])
         return ax
 
 
@@ -151,7 +151,7 @@ class BarChart2D(MatplotlibBase):
         ax.set_xticks(xticks)
         ax.set_xticklabels(self.layout["x_labels"], rotation=90)
         ax.set_xlabel(self.layout["columns"][0])
-        ax.set_ylabel(self.layout["method"])
+        ax.set_ylabel(self.layout["method_of"])
         ax.legend(
             title=self.layout["columns"][1], loc="center left", bbox_to_anchor=[1, 0.5]
         )

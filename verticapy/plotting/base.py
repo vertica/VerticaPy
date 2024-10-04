@@ -29,6 +29,7 @@ import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
     NoneType,
+    PlottingMethod,
     PythonNumber,
     PythonScalar,
     SQLColumns,
@@ -486,7 +487,9 @@ class PlottingBase(PlottingBaseSQL):
     # Formatting Methods.
 
     @staticmethod
-    def _map_method(method: str, of: str) -> tuple[str, str, Optional[Callable], bool]:
+    def _map_method(
+        method: Optional[str], of: Optional[str]
+    ) -> tuple[Optional[str], Optional[str], Optional[Callable], bool]:
         is_standard = True
         fun_map = {
             "avg": np.mean,
@@ -494,15 +497,23 @@ class PlottingBase(PlottingBaseSQL):
             "max": max,
             "sum": sum,
         }
-        method = method.lower()
+        if isinstance(method, str):
+            method = method.lower()
         if method == "median":
             method = "50%"
         elif method == "mean":
             method = "avg"
+        no_agg = False
+        if isinstance(method, NoneType) and (of):
+            no_agg = True
         if (
-            method not in ["avg", "min", "max", "sum", "density", "count"]
-            and "%" != method[-1]
-        ) and of:
+            isinstance(method, str)
+            and (
+                method not in ["avg", "min", "max", "sum", "density", "count"]
+                and "%" != method[-1]
+            )
+            and of
+        ):
             raise ValueError(
                 "Parameter 'of' must be empty when using customized aggregations."
             )
@@ -528,17 +539,25 @@ class PlottingBase(PlottingBaseSQL):
                     "The parameter 'method' must be in [avg|mean|min|max|sum|"
                     f"median|q%] or a customized aggregation. Found {method}."
                 )
-        elif method in ["density", "count"]:
+        elif method in ["density", "count"] and not (no_agg):
             aggregate = "count(*)"
             fun = sum
-        elif isinstance(method, str):
+        elif isinstance(method, str) and not (no_agg):
             aggregate = method
             fun = None
             is_standard = False
+        elif isinstance(method, NoneType) and not (of):
+            method = "density"
+            aggregate = "count(*)"
+            fun = sum
+        elif no_agg:
+            method = None
+            aggregate = None
+            fun = None
         else:
             raise ValueError(
                 "The parameter 'method' must be in [avg|mean|min|max|sum|"
-                f"median|q%] or a customized aggregation. Found {method}."
+                f"median|q%|None] or a customized aggregation. Found {method}."
             )
         return method, aggregate, fun, is_standard
 
@@ -604,7 +623,7 @@ class PlottingBase(PlottingBaseSQL):
     def _compute_plot_params(
         self,
         vdc: "vDataColumn",
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         max_cardinality: int = 6,
         nbins: int = 0,
@@ -641,13 +660,25 @@ class PlottingBase(PlottingBaseSQL):
         is_numeric = vdc.isnum() and not vdc.isbool()
         is_date = vdc.isdate()
         is_bool = vdc.isbool()
+        no_agg = isinstance(method, NoneType)
         cast = "::int" if is_bool else ""
         is_categorical = False
         # case when categorical
-        if (((cardinality <= max_cardinality) or not is_numeric) or pie) and not (
-            is_date
-        ):
-            if ((is_numeric) and not pie) or (is_bool):
+        if (
+            (((cardinality <= max_cardinality) or not is_numeric) or pie)
+            and not (is_date)
+        ) or (no_agg):
+            if no_agg:
+                query = f"""
+                    SELECT 
+                        {vdc},
+                        {of}
+                    FROM {vdc._parent} 
+                    WHERE {vdc} IS NOT NULL 
+                      AND {of} IS NOT NULL 
+                    ORDER BY {vdc} ASC 
+                    LIMIT {max_cardinality}"""
+            elif ((is_numeric) and not pie) or (is_bool):
                 query = f"""
                     SELECT 
                         {vdc},
@@ -708,7 +739,7 @@ class PlottingBase(PlottingBaseSQL):
                     item[1] / float(count) if not isinstance(item[1], NoneType) else 0
                     for item in query_result
                 ]
-                if (method.lower() == "density")
+                if (str(method).lower() == "density")
                 else [
                     item[1] if not isinstance(item[1], NoneType) else 0
                     for item in query_result
@@ -815,6 +846,12 @@ class PlottingBase(PlottingBaseSQL):
             labels.reverse()
         metric, desc = self.get_category_desc(categoryorder)
         y, labels = self.sort_chart_1d(y, labels=labels, metric=metric, desc=desc)
+        if not (method):
+            method_of = self._clean_quotes(of)
+        elif of:
+            method_of = method + f"({self._clean_quotes(of)})"
+        else:
+            method_of = method
         self.data = {
             "x": x,
             "y": y,
@@ -827,10 +864,10 @@ class PlottingBase(PlottingBaseSQL):
             "labels": [li if not isinstance(li, NoneType) else "None" for li in labels],
             "column": self._clean_quotes(vdc._alias),
             "method": method,
-            "method_of": method + f"({of})" if of else method,
+            "method_of": method_of,
             "of": self._clean_quotes(of),
             "of_cat": vdc._parent[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
+            "aggregate": clean_query(aggregate) if aggregate else None,
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
             "categoryorder": categoryorder,
@@ -908,16 +945,22 @@ class PlottingBase(PlottingBaseSQL):
                     )
                     cols += [column]
                     data[self._clean_quotes(column)] = copy.deepcopy(self.data)
+        if not (method):
+            method_of = self._clean_quotes(of)
+        elif of:
+            method_of = method + f"({self._clean_quotes(of)})"
+        else:
+            method_of = method
         self.data = data
         self.layout = {
             "columns": self._clean_quotes(cols),
             "categories": categories,
             "by": self._clean_quotes(by),
             "method": method,
-            "method_of": method + f"({of})" if of else method,
+            "method_of": method_of,
             "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
+            "aggregate": clean_query(aggregate) if aggregate else None,
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
             "has_category": bool(categories),
@@ -1234,6 +1277,12 @@ class PlottingBase(PlottingBaseSQL):
             metric=metric,
             desc=desc,
         )
+        if not (method):
+            method_of = self._clean_quotes(of)
+        elif of:
+            method_of = method + f"({self._clean_quotes(of)})"
+        else:
+            method_of = method
         self.data = {
             "X": X,
         }
@@ -1244,10 +1293,10 @@ class PlottingBase(PlottingBaseSQL):
             "vmin": None,
             "columns": self._clean_quotes(columns),
             "method": method,
-            "method_of": method + f"({of})" if of else method,
+            "method_of": method_of,
             "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
+            "aggregate": clean_query(aggregate) if aggregate else None,
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
             "categoryorder": categoryorder,
@@ -1420,15 +1469,28 @@ class PlottingBase(PlottingBaseSQL):
             over = "/" + str(float(vdf.shape()[0]))
         else:
             over = ""
-        X = np.array(
-            _executeSQL(
-                query=f"""
+        if isinstance(method, NoneType) and of:
+            column = vdf.format_colnames(of)
+            query = f"""
+                SELECT
+                    /*+LABEL('plotting._compute_aggregate')*/
+                    {", ".join(columns)},
+                    {column}
+                FROM {vdf}"""
+            method_of = f"max({self._clean_quotes(of)})"
+            aggregate_fun = max
+        else:
+            query = f"""
                 SELECT
                     /*+LABEL('plotting._compute_aggregate')*/
                     {", ".join(columns)},
                     {aggregate}{over}
                 FROM {vdf}
-                GROUP BY {", ".join(columns)}""",
+                GROUP BY {", ".join(columns)}"""
+            method_of = method + f"({self._clean_quotes(of)})" if of else method
+        X = np.array(
+            _executeSQL(
+                query=query,
                 title="Grouping all the elements for the Hexbin Plot",
                 method="fetchall",
             )
@@ -1437,10 +1499,10 @@ class PlottingBase(PlottingBaseSQL):
         self.layout = {
             "columns": self._clean_quotes(columns),
             "method": method,
-            "method_of": method + f"({of})" if of else method,
+            "method_of": method_of,
             "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
+            "aggregate": clean_query(aggregate) if aggregate else None,
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
@@ -1823,13 +1885,19 @@ class PlottingBase(PlottingBaseSQL):
             .sort(order_by)
             .to_numpy()
         )
+        if not (method):
+            method_of = self._clean_quotes(of)
+        elif of:
+            method_of = method + f"({self._clean_quotes(of)})"
+        else:
+            method_of = method
         self.data = {"x": X[:, 0], "Y": X[:, 1:5], "z": X[:, 5], "q": q}
         self.layout = {
             "column": self._clean_quotes(column),
             "order_by": self._clean_quotes(order_by),
             "method": method,
-            "method_of": method + f"({column})" if of else method,
-            "aggregate": clean_query(aggregate),
+            "method_of": method_of,
+            "aggregate": clean_query(aggregate) if aggregate else None,
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
@@ -1959,14 +2027,20 @@ class PlottingBase(PlottingBaseSQL):
                     )
                 vdf_tmp_i = vdf_tmp_i.sort(sort_values)
             groups += [vdf_tmp_i.to_numpy().T]
+        if not (method):
+            method_of = self._clean_quotes(of)
+        elif of:
+            method_of = method + f"({self._clean_quotes(of)})"
+        else:
+            method_of = method
         self.data = {"groups": np.array(groups, dtype=object)}
         self.layout = {
             "columns": self._clean_quotes(columns),
             "method": method,
-            "method_of": method + f"({of})" if of else method,
+            "method_of": method_of,
             "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
+            "aggregate": clean_query(aggregate) if aggregate else None,
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
