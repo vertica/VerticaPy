@@ -253,8 +253,8 @@ class vDFPlot(vDFMachineLearning):
                 (ex: 50% to get the median).
             - None:
                 No Aggregations. Parameter ``of``
-                must be empty, otherwise it is
-                ignored.
+                must not be empty, otherwise it
+                is ignored.
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
@@ -543,8 +543,8 @@ class vDFPlot(vDFMachineLearning):
                 (ex: 50% to get the median).
             - None:
                 No Aggregations. Parameter ``of``
-                must be empty, otherwise it is
-                ignored.
+                must not be empty, otherwise it
+                is ignored.
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
@@ -2187,6 +2187,11 @@ class vDFPlot(vDFMachineLearning):
                 q Quantile of the
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
+            - None:
+                No Aggregations. Parameter ``of``
+                must not be empty, otherwise it
+                is ignored. The function to draw
+                the final chart will be ``max```.
 
         of: str, optional
             The vDataColumn used to compute the aggregation.
@@ -2245,7 +2250,7 @@ class vDFPlot(vDFMachineLearning):
                 }
             )
 
-        Below is an examples of one type of hexbin plots:
+        Below is an example of one type of hexbin plots:
 
         - Hexbin
 
@@ -2829,9 +2834,9 @@ class vDCPlot(vDCScaler):
         fd = max(
             2.0 * (vDataColumn_075 - vDataColumn_025) / (count) ** (1.0 / 3.0), 1e-99
         )
-        if method.lower() == "sturges":
+        if str(method).lower() == "sturges":
             best_h = sturges
-        elif method.lower() in ("freedman_diaconis", "fd"):
+        elif str(method).lower() in ("freedman_diaconis", "fd"):
             best_h = fd
         else:
             best_h = max(sturges, fd)
@@ -4050,6 +4055,12 @@ class vDCPlot(vDCScaler):
 
             import numpy as np
 
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
         Let's generate a dataset using the following data.
 
         .. ipython:: python
@@ -4066,7 +4077,6 @@ class vDCPlot(vDCScaler):
         .. code-block:: python
 
             data["population"].candlestick(ts = "date")
-
 
         .. ipython:: python
             :suppress:

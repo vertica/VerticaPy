@@ -868,7 +868,8 @@ class vDCFill(vDCMath):
             | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.interpolate` : Fill missing values by interpolating.
             | ``vDataColumn.``:py:meth:`~verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
-        method = method.lower()
+        if isinstance(method, str):
+            method = method.lower()
         by, order_by = format_type(by, order_by, dtype=list)
         by, order_by = self._parent.format_colnames(by, order_by)
         if method == "auto":

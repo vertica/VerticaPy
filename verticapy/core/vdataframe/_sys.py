@@ -210,7 +210,7 @@ class vDFSystem(vDFTyping):
                 return "VERTICAPY_NOT_PRECOMPUTED"
             return total
         elif method:
-            method = verticapy_agg_name(method.lower())
+            method = verticapy_agg_name(str(method).lower())
             if columns[1] in self[columns[0]]._catalog[method]:
                 return self[columns[0]]._catalog[method][columns[1]]
             else:
