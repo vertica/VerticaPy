@@ -970,6 +970,23 @@ article, article .align-default {
 
 /* End of form */
 
+/* Website related */
+
+.member-pics-card {
+  height: 310px; /* Set your desired height */
+  overflow: hidden; /* Ensure content doesn't overflow */
+}
+
+.custom-class-img-top-index-page{
+  max-height: 150px;
+  width: auto;
+  padding: 20px;
+  object-fit: contain;
+}
+
+/* End of Website */
+
+
 @media (max-width: 72em) {
 
   .search-top-dropdown {
