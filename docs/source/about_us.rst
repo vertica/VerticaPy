@@ -3,133 +3,292 @@
 About Us
 ========
 
-Fueling Data Excellence: A Passionate Journey with the VerticaPy Team
----------------------------------------------------------------------
+
 
 Why Choose Us?
 --------------
 
 Elevate Your Analytics Journey with VerticaPy's Expertise
 
-In-Database
-^^^^^^^^^^^
 
-VerticaPy Harnesses the Power of Vertica.
+.. tab:: In-Database
 
-Vertica is the unified analytics platform, based on a massively scalable architecture with the broadest set of analytical functions spanning event and time series, pattern matching, geospatial and end-to-end in-database machine learning.
+    In-Database
+    ^^^^^^^^^^^
 
-VerticaPy harnesses the formidable power of Vertica's advanced analytics platform, enabling seamless and high-performance in-database data science.
+    VerticaPy Harnesses the Power of Vertica.
 
-- Seamless Integration
-- In-Database Execution  
-- Scalable Analytics
+    Vertica is the unified analytics platform, based on a massively scalable architecture with the broadest set of analytical functions spanning event and time series, pattern matching, geospatial and end-to-end in-database machine learning.
 
-`Learn More <../documentation/user_guide_vdf.html>`_
+    VerticaPy harnesses the formidable power of Vertica's advanced analytics platform, enabling seamless and high-performance in-database data science.
 
-Ease of Use  
-^^^^^^^^^^^
+    - Seamless Integration
+    - In-Database Execution  
+    - Scalable Analytics
 
-Seamless Learning Experience: VerticaPy's Familiarity akin to sklearn and pandas.
+    `Learn More <../documentation/user_guide_vdf.html>`_
 
-As the realm of data science evolves, the ease of learning and adoption of new tools become paramount. In this context, VerticaPy stands out as a user-friendly and approachable option, sharing common traits with well-established libraries like sklearn and pandas.
+.. tab:: Ease of Use
 
-VerticaPy, much like its counterparts, employs a syntax that data scientists are already familiar with. This shared syntactical foundation minimizes the learning curve, allowing data professionals to seamlessly transition their skills to VerticaPy. Whether you're comfortable with sklearn or well-acquainted with pandas, VerticaPy's syntax will feel like a natural extension of your existing toolkit.
+    Seamless Learning Experience: VerticaPy's Familiarity akin to sklearn and pandas.
 
-- Familiar Syntax
-- Intuitive APIs
-- Comprehensive Documentation
+    As the realm of data science evolves, the ease of learning and adoption of new tools become paramount. In this context, VerticaPy stands out as a user-friendly and approachable option, sharing common traits with well-established libraries like sklearn and pandas.
 
-`Learn More <../documentation/user_guide_vdf.html>`_
+    VerticaPy, much like its counterparts, employs a syntax that data scientists are already familiar with. This shared syntactical foundation minimizes the learning curve, allowing data professionals to seamlessly transition their skills to VerticaPy. Whether you're comfortable with sklearn or well-acquainted with pandas, VerticaPy's syntax will feel like a natural extension of your existing toolkit.
 
-Advanced Analytics
-^^^^^^^^^^^^^^^^^^
+    - Familiar Syntax
+    - Intuitive APIs
+    - Comprehensive Documentation
 
-Advanced Analytics Elevated: Exploring the Realm of VerticaPy.
+    `Learn More <../documentation/user_guide_vdf.html>`_
 
-Delve into the world of advanced analytics with VerticaPy, a powerful toolkit that empowers data professionals to unlock insights and harness the capabilities of cutting-edge analytical techniques.
+.. tab:: Advanced Analytics
 
-VerticaPy serves as a gateway to sophisticated analytics, enabling users to leverage state-of-the-art techniques seamlessly. From machine learning to predictive modeling, VerticaPy provides a comprehensive suite of tools that empower data scientists to tackle complex challenges with confidence.
+    Advanced Analytics Elevated: Exploring the Realm of VerticaPy.
 
-- Harnessing Advanced Analytics
-- Unlocking Complex Insights  
-- Precision and Speed Combined
+    Delve into the world of advanced analytics with VerticaPy, a powerful toolkit that empowers data professionals to unlock insights and harness the capabilities of cutting-edge analytical techniques.
 
-`Learn More <https://github.com/vertica/VerticaPy>`_
+    VerticaPy serves as a gateway to sophisticated analytics, enabling users to leverage state-of-the-art techniques seamlessly. From machine learning to predictive modeling, VerticaPy provides a comprehensive suite of tools that empower data scientists to tackle complex challenges with confidence.
 
-Dynamic Visualizations
-^^^^^^^^^^^^^^^^^^^^^^
+    - Harnessing Advanced Analytics
+    - Unlocking Complex Insights  
+    - Precision and Speed Combined
 
-Visualize Insights with Precision: Unleash the Power of VerticaPy Charts
+    `Learn More <https://github.com/vertica/VerticaPy>`_
 
-In today's data-driven landscape, where visualization transforms raw data into actionable insights, VerticaPy Charts emerges as a transformative tool. From uncovering hidden trends to communicating complex data narratives, VerticaPy Charts enables users to harness the full potential of data visualization to drive informed decisions.
+.. tab:: Dynamic Visualizations
 
-- Unveiling Data Dynamics
-- Interactive Exploration at Your Fingertips
-- Integrate with Analytical Power
+    Visualize Insights with Precision: Unleash the Power of VerticaPy Charts
 
-`Learn More <../documentation/chart.html>`_
+    In today's data-driven landscape, where visualization transforms raw data into actionable insights, VerticaPy Charts emerges as a transformative tool. From uncovering hidden trends to communicating complex data narratives, VerticaPy Charts enables users to harness the full potential of data visualization to drive informed decisions.
 
-Testimonial
------------
+    - Unveiling Data Dynamics
+    - Interactive Exploration at Your Fingertips
+    - Integrate with Analytical Power
 
-    This Python Module is the result of my passion for Data Science. I love discovering everything possible in the data. I always kept a passion for mathematics and specially for statistics. When I saw the lack of libraries using as back-end the power of columnar MPP Database, I decided to help the Data Science Community by bringing the logic to the data.
+    `Learn More <../documentation/chart.html>`_
 
-    -- Badr Ouali, Creator & Product Owner [VerticaPy], Open Text
+.. grid:: 1
+
+    .. grid-item::
+    
+      .. card:: Badr Ouali
+          :link: api.connect
+          :link-type: ref
+          :text-align: center
+          :class-footer: user_guide_footer
+        
+          "This Python Module is the result of my passion for Data Science. I love discovering everything possible in the data. I always kept a passion for mathematics and specially for statistics. When I saw the lack of libraries using as back-end the power of columnar MPP Database, I decided to help the Data Science Community by bringing the logic to the data."
+          
+          ^^^^^^^^
+          Creator & Product Owner [VerticaPy]
+
+
 
 Discover the Genesis and Evolution of VerticaPy's Vision
 --------------------------------------------------------
 
 Charting Our Journey: Unveiling the Story Behind VerticaPy's Creation
 
-Why VerticaPy?
-^^^^^^^^^^^^^^
+.. tab:: Why VerticaPy
 
-Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
+    .. image:: ../../docs/source/_static/website/about_us/bg1.jpg
+        :width: 100%
+        :align: center
 
-Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists. Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists.
+    Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
 
-However, Python only works in-memory for a single node process. While distributed programming languages have tried to face this challenge, they are still generally in-memory and can never hope to process all of your data, and moving data is expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.
+    Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists. Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists.
 
-VerticaPy aims to solve all of these problems. The idea is simple: instead of moving data to your tools, VerticaPy brings your tools to the data.
+    However, Python only works in-memory for a single node process. While distributed programming languages have tried to face this challenge, they are still generally in-memory and can never hope to process all of your data, and moving data is expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.
 
-History
-^^^^^^^
+    VerticaPy aims to solve all of these problems. The idea is simple: instead of moving data to your tools, VerticaPy brings your tools to the data.
 
-When the first data science technologies and tools came onto the scene, optimization wasn't a high priority. Companies didn't pay much mind to how the needs of data storage and ingestion might change. Back then, databases were still used as data warehouses, and moving data around was often impossible without making compromises in security.
+.. tab:: History
 
-To address these problems, Vertica implemented the first in-database, scalable machine learning algorithms. That was back in 2015, and other databases have been trying to catch up ever since.
+    .. image:: ../../docs/source/_static/website/about_us/bg2.jpg
+        :width: 100%
+        :align: center
 
-However, what SQL has in scalability, it lacks in flexibility. Python has the opposite problem: it's highly flexible, but not scalable. The idea of combining the strengths of these technologies came about in 2017 by Vertica data scientist Badr Ouali and, after 3 years of development, became unique and powerful library, VerticaPy.
+    When the first data science technologies and tools came onto the scene, optimization wasn't a high priority. Companies didn't pay much mind to how the needs of data storage and ingestion might change. Back then, databases were still used as data warehouses, and moving data around was often impossible without making compromises in security.
 
-First Logo
-^^^^^^^^^^
+    To address these problems, Vertica implemented the first in-database, scalable machine learning algorithms. That was back in 2015, and other databases have been trying to catch up ever since.
 
-In the digital realm, where logos often emerge from pixels and vectors, the story of VerticaPy's inaugural logo stands as a testament to creativity and collaboration. A journey that began with pen and paper, this logo's creation embodies the synergy between two distinct yet intertwined entities: Vertica and Python.
+    However, what SQL has in scalability, it lacks in flexibility. Python has the opposite problem: it's highly flexible, but not scalable. The idea of combining the strengths of these technologies came about in 2017 by Vertica data scientist Badr Ouali and, after 3 years of development, became unique and powerful library, VerticaPy.
 
-The first logo of VerticaPy was born from a desire to symbolize the fusion of Vertica's analytical prowess and Python's versatile programming capabilities. An idea sketched on paper, where the subtle curve of a python's head melded harmoniously with the bold form of the letter 'V' for Vertica, illustrating the partnership between these two modules.
+.. tab:: First logo
 
-The handmade sketch became the foundation for digital transformation. Each stroke and curve was digitized, preserving the organic essence of the original design while adapting it for a digital world. This process brought to life a visual representation that encapsulated VerticaPy's powerful collaboration between analytics and programming.
+    .. image:: ../../docs/source/_static/website/about_us/vertica_old_logo.jpg
+        :width: 30%
+        :align: center
 
-The creation of VerticaPy's inaugural logo reflects not just an artistic endeavor, but a deeper narrative of collaboration, innovation, and evolution. It serves as a reminder that even in the digital age, the artistry of handcrafted beginnings can yield logos that resonate with the essence of the tools they represent.
+    In the digital realm, where logos often emerge from pixels and vectors, the story of VerticaPy's inaugural logo stands as a testament to creativity and collaboration. A journey that began with pen and paper, this logo's creation embodies the synergy between two distinct yet intertwined entities: Vertica and Python.
+
+    The first logo of VerticaPy was born from a desire to symbolize the fusion of Vertica's analytical prowess and Python's versatile programming capabilities. An idea sketched on paper, where the subtle curve of a python's head melded harmoniously with the bold form of the letter 'V' for Vertica, illustrating the partnership between these two modules.
+
+    The handmade sketch became the foundation for digital transformation. Each stroke and curve was digitized, preserving the organic essence of the original design while adapting it for a digital world. This process brought to life a visual representation that encapsulated VerticaPy's powerful collaboration between analytics and programming.
+
+    The creation of VerticaPy's inaugural logo reflects not just an artistic endeavor, but a deeper narrative of collaboration, innovation, and evolution. It serves as a reminder that even in the digital age, the artistry of handcrafted beginnings can yield logos that resonate with the essence of the tools they represent.
+
+
+
 
 Team Members
 ------------
 
-* Badr Ouali - Creator & Product Owner
-* Umar Ghumman - Lead Software Engineer  
-* Fouad Teban - Customer Engineering
-* George Larionov - ML Engineer & Scrum Master
-* Matteo Monaldi - Lead Data Scientist
-* Abdelhak Zabour - Data Scientist
-* Arash Fard - Senior ML Engineer
-* Roy Paulin - Software Engineer
-* Xiaozhong Zhang - ML Engineer
-* Zachary Nowak - Software Engineer
-* Abhishek Sharma - Senior QA Engineer
-* Vikash Singh - Senior QA Engineer
-* Tyler Consigny - Information Developer
-* Kevin Xu - Information Developer
-* Brent Eynon - Product Manager
+
+.. grid:: 2 2 3 4
+
+    .. grid-item::
+
+        .. card:: Badr Ouali
+          :img-top: _static/website/about_us/team/member1.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Creator & Product Owner
+
+    .. grid-item::
+
+        .. card:: Umar Ghumman
+          :img-top: _static/website/about_us/team/member2.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Lead Software Engineer
+
+    .. grid-item::
+
+        .. card:: Fouad Teban
+          :img-top: _static/website/about_us/team/member3.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Customer Engineering
+
+    .. grid-item::
+
+        .. card:: George Larionov
+          :img-top: _static/website/about_us/team/member4.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          ML Engineer & Scrum Master
+
+    .. grid-item::
+
+        .. card:: Matteo Monaldi
+          :img-top: _static/website/about_us/team/member5.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Lead Data Scientist
+
+    .. grid-item::
+
+        .. card:: Abdelhak Zabour
+          :img-top: _static/website/about_us/team/member6.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Data Scientist
+
+    .. grid-item::
+
+        .. card:: Arash Fard
+          :img-top: _static/website/about_us/team/member7.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Senior ML Engineer
+
+    .. grid-item::
+
+        .. card:: Roy Paulin
+          :img-top: _static/website/about_us/team/member8.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Software Engineer
+
+    .. grid-item::
+
+        .. card:: Xiaozhong Zhang
+          :img-top: _static/website/about_us/team/member9.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          ML Engineer
+
+    .. grid-item::
+
+        .. card:: Zachary Nowak
+          :img-top: _static/website/about_us/team/member10.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Software Engineer
+
+    .. grid-item::
+
+        .. card:: Abhishek Sharma
+          :img-top: _static/website/about_us/team/member11.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Senior QA Engineer
+
+    .. grid-item::
+
+        .. card:: Vikash Singh
+          :img-top: _static/website/about_us/team/member12.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Senior QA Engineer
+
+    .. grid-item::
+
+        .. card:: Tyler Consigny
+          :img-top: _static/website/about_us/team/member13.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Information Developer
+
+    .. grid-item::
+
+        .. card:: Kevin Xu
+          :img-top: _static/website/about_us/team/member14.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Information Developer
+
+    .. grid-item::
+
+        .. card:: Brent Eynon
+          :img-top: _static/website/about_us/team/member15.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Product Manager
+
 
 VerticaPy Statistics
 --------------------
