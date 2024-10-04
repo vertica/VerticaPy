@@ -1328,14 +1328,14 @@ class vDCSystem(vDCTyping):
 
         .. warning::
 
-            SQL code generation  will be slower if the
-            vDataFrame  has been transformed  multiple
-            times, so it's better practice to use this
-            method when first preparing your data.
-            It is even recommended to use directly
+            SQL code generation will be slower if the
+            ``vDataFrame`` has been transformed multiple
+            times, so it's better to use this method when
+            first preparing your data. It is even
+            recommended to use the
             ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.select`
-            method and do all the renaming within
-            one single operation.
+            method directly and perform all renaming within
+            a single operation.
 
         Parameters
         ----------
