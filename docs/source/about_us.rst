@@ -13,8 +13,10 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
 
 .. tab:: In-Database
 
-    In-Database
-    ^^^^^^^^^^^
+    .. image:: ../../docs/source/_static/website/about_us/opentext-network-database-share-ico-48.svg
+        :width: 10%
+        :align: center
+
 
     VerticaPy Harnesses the Power of Vertica.
 
@@ -30,6 +32,11 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
 
 .. tab:: Ease of Use
 
+    .. image:: ../../docs/source/_static/website/about_us/opentext-process-maze-ico-48.svg
+        :width: 10%
+        :align: center
+
+
     Seamless Learning Experience: VerticaPy's Familiarity akin to sklearn and pandas.
 
     As the realm of data science evolves, the ease of learning and adoption of new tools become paramount. In this context, VerticaPy stands out as a user-friendly and approachable option, sharing common traits with well-established libraries like sklearn and pandas.
@@ -44,6 +51,11 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
 
 .. tab:: Advanced Analytics
 
+    .. image:: ../../docs/source/_static/website/about_us/opentext-ai-ai-ico-48.svg
+        :width: 10%
+        :align: center
+
+
     Advanced Analytics Elevated: Exploring the Realm of VerticaPy.
 
     Delve into the world of advanced analytics with VerticaPy, a powerful toolkit that empowers data professionals to unlock insights and harness the capabilities of cutting-edge analytical techniques.
@@ -57,6 +69,11 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
     `Learn More <https://github.com/vertica/VerticaPy>`_
 
 .. tab:: Dynamic Visualizations
+
+    .. image:: ../../docs/source/_static/website/about_us/opentext-performance-chart-line-bar-noaxis-ico-48.svg
+        :width: 10%
+        :align: center
+
 
     Visualize Insights with Precision: Unleash the Power of VerticaPy Charts
 
