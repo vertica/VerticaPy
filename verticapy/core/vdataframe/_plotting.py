@@ -253,8 +253,8 @@ class vDFPlot(vDFMachineLearning):
                 (ex: 50% to get the median).
             - None:
                 No Aggregations. Parameter ``of``
-                must not be empty, otherwise it
-                is ignored.
+                must be empty, otherwise it is
+                ignored.
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
@@ -543,8 +543,8 @@ class vDFPlot(vDFMachineLearning):
                 (ex: 50% to get the median).
             - None:
                 No Aggregations. Parameter ``of``
-                must not be empty, otherwise it
-                is ignored.
+                must be empty, otherwise it is
+                ignored.
 
             It can also be a cutomized aggregation,
             for example: ``AVG(column1) + 5``
@@ -2188,10 +2188,7 @@ class vDFPlot(vDFMachineLearning):
                 :py:class:`~vDataColumns` ``of``
                 (ex: 50% to get the median).
             - None:
-                No Aggregations. Parameter ``of``
-                must not be empty, otherwise it
-                is ignored. The function to draw
-                the final chart will be ``max```.
+                No Aggregations.
 
         of: str, optional
             The vDataColumn used to compute the aggregation.

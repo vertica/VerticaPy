@@ -99,7 +99,9 @@ class QueryProfiler:
             the ``transaction_id``; the ``statement_id``
             will automatically be set to 1.
         - A ``str``:
-            The query to execute.
+            The query to execute. If the ``str`` ends
+            with '.sql', it is considered a SQL file,
+            and the query inside will be executed.
         - A ``list`` of ``str``:
             The ``list`` of queries to execute. Each
             query will be execute iteratively.
@@ -1179,6 +1181,9 @@ class QueryProfiler:
                             title="Setting the resource pool.",
                             method="cursor",
                         )
+                    if request[-4:] == ".sql":
+                        with open(request, "r") as file:
+                            request = file.read()
                     if add_profile:
                         fword = clean_query(request).strip().split()[0].lower()
                         if fword != "profile":
