@@ -246,6 +246,7 @@ def datatables_repr(
     Returns the HTML/javascript
     representation of the table.
     """
+    theme = conf.get_option("theme")
     dtype = format_type(dtype, dtype=dict)
     if not repeat_first_column:
         index_column = list(range(1 + offset, len(data_columns[0]) + offset))
@@ -277,11 +278,17 @@ def datatables_repr(
         table_header,
     )
     output = replace_value(output, "#table_id", f"#{tableId}", 2)
+    if theme == "dark":
+        style = read_package_file("html/style-dark.css")
+    elif theme == "sphinx":
+        style = read_package_file("html/style.css")
+    else:
+        style = read_package_file("html/style.css")
     output = replace_value(
         output,
         "<style></style>",
         f"""<style>
-        {read_package_file("html/style.css")}
+        {style}
         </style>""",
     )
     dt_data = json.dumps(data, cls=DateTimeEncoder)
