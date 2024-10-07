@@ -1,4 +1,4 @@
-.. _examples.winequality:
+.. _examples.learn.winequality:
 
 Wine Quality
 =============
@@ -191,7 +191,7 @@ KNN is sensitive to unnormalized data so we'll have to normalize our data.
 
 
 Machine Learning
-=================
+-----------------
 
 Let's create our KNN model.
 
