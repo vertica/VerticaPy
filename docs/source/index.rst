@@ -22,9 +22,6 @@ Welcome to VerticaPy documentation
 
 **Date**: |today| **Latest Version**: |version|
 
-**Previous versions**: Documentation of previous VerticaPy versions is available at
-`www.vertica.com/python/old <https://www.vertica.com/python/old/documentation_last/>`_.
-
 **Useful links**:
 
 `Source Repository <https://github.com/vertica/VerticaPy>`_ |
