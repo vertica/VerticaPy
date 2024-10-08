@@ -14,7 +14,7 @@ This example uses the 'iris' dataset to predict the species of various flowers b
 We will follow the data science cycle (Data Exploration - Data Preparation - Data Modeling - Model Evaluation - Model Deployment) to solve this problem.
 
 Initialization
-----------------
+---------------
 
 This example uses the following version of VerticaPy:
 
@@ -25,7 +25,7 @@ This example uses the following version of VerticaPy:
     vp.__version__
 
 Connect to Vertica. This example uses an existing connection called "VerticaDSN". 
-For details on how to create a connection, use see the :ref:`connection` tutorial.
+For details on how to create a connection, see the :ref:`connection` tutorial.
 
 You can skip the below cell if you already have an established connection.
 
@@ -46,7 +46,7 @@ Let's create a Virtual DataFrame of the dataset.
     :suppress:
 
     from verticapy.datasets import load_iris
-    winequality = load_iris()
+    iris = load_iris()
     res = iris.head(5)
     html_file = open("/project/data/VerticaPy/docs/figures/examples_iris_table_head.html", "w")
     html_file.write(res._repr_html_())
@@ -56,18 +56,18 @@ Let's create a Virtual DataFrame of the dataset.
     :file: /project/data/VerticaPy/docs/figures/examples_iris_table_head.html
 
 Data Exploration and Preparation
-----------------------------------
+---------------------------------
 
 Let's explore the data by displaying descriptive statistics of all the columns.
 
 .. code-block:: python
 
-    iris.describe(method = "categorical", unique=True)
+    iris.describe(method = "categorical", unique = True)
 
 .. ipython:: python
     :suppress:
 
-    res = iris.describe(method = "categorical", unique=True)
+    res = iris.describe(method = "categorical", unique = True)
     html_file = open("/project/data/VerticaPy/docs/figures/examples_iris_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -163,7 +163,7 @@ We can we a clear linear separation between the Iris setosa and the other specie
 Our strategy is simple: we'll use two Linear Support Vector Classification (SVC): one to classify the Iris setosa and another to classify the Iris versicolor.
 
 Machine Learning
-=================
+-----------------
 
 Let's build the first Linear SVC to predict if a flower is an Iris setosa.
 
