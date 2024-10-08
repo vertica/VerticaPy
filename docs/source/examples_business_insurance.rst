@@ -9,14 +9,13 @@ You can download the Jupyter notebook `here <https://github.com/vertica/VerticaP
     
 The columns provided include:
 
-- age: age of the primary beneficiary.
-- sex: insurance contractor's gender.
-- bmi: body mass index.
-- children: number of dependent children covered by health insurance.
-- smoker: smoker on non-smoker.
-- region: the beneficiary's residential area in the US: northeast, southeast, southwest, northwest.
-- charges: individual medical costs billed by health insurance.
-
+- **age:** age of the primary beneficiary.
+- **sex:** insurance contractor's gender.
+- **bmi:** body mass index.
+- **children:** number of dependent children covered by health insurance.
+- **smoker:** smoker on non-smoker.
+- **region:** the beneficiary's residential area in the US: northeast, southeast, southwest, northwest.
+- **charges:** individual medical costs billed by health insurance.
 
 We will follow the data science cycle (Data Exploration - Data Preparation - Data Modeling - Model Evaluation - Model Deployment) to solve this problem.
 
@@ -31,23 +30,21 @@ This example uses the following version of VerticaPy:
     
     vp.__version__
 
-
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called "VerticaDSN". 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
-
 
 .. code-block:: python
     
     vp.connect("VerticaDSN")
 
-Let's  create a new schema and assign the data to a vDataFrame object.
+Let's create a new schema and assign the data to a vDataFrame object.
 
 .. code-block:: ipython
 
     vp.drop("insurance", method="schema")
     vp.create_schema("insurance")
-    data = vp.read_csv('insurance.csv', schema = 'insurance')
+    data = vp.read_csv("insurance.csv", schema = "insurance")
 
 Let's take a look at the first few entries in the dataset.
 
@@ -60,7 +57,10 @@ Let's take a look at the first few entries in the dataset.
 
     vp.drop("insurance", method="schema")
     vp.create_schema("insurance")
-    data = vp.read_csv('/project/data/VerticaPy/docs/source/_static/website/examples/data/insurance/insurance.csv', schema = 'insurance')
+    data = vp.read_csv(
+        "/project/data/VerticaPy/docs/source/_static/website/examples/data/insurance/insurance.csv",
+        schema = "insurance",
+    )
     res = data.head(5)
     html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table.html", "w")
     html_file.write(res._repr_html_())
