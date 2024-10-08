@@ -3,25 +3,25 @@
 Health Insurance Costs
 =======================
 
+In this example, we use a `dataset of personal medical costs <https://www.kaggle.com/mirichoi0218/insurance>`_ to create a model to estimate treatment costs.
 
-In this example, we use a `dataset of personal medical costs <https://www.kaggle.com/mirichoi0218/insurance>`_ to create a model to estimate treatment costs. 
 You can download the Jupyter notebook `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/insurance/insurance.ipynb>`_.
     
 The columns provided include:
 
-- age: age of the primary beneficiary
-- sex: insurance contractor's gender
-- bmi: body mass index
-- children: number of dependent children covered by health insurance
-- smoker: smoker on non-smoker
+- age: age of the primary beneficiary.
+- sex: insurance contractor's gender.
+- bmi: body mass index.
+- children: number of dependent children covered by health insurance.
+- smoker: smoker on non-smoker.
 - region: the beneficiary's residential area in the US: northeast, southeast, southwest, northwest.
-- charges: individual medical costs billed by health insurance
+- charges: individual medical costs billed by health insurance.
 
 
 We will follow the data science cycle (Data Exploration - Data Preparation - Data Modeling - Model Evaluation - Model Deployment) to solve this problem.
 
 Initialization
-----------------
+---------------
 
 This example uses the following version of VerticaPy:
 
@@ -51,6 +51,10 @@ Let's  create a new schema and assign the data to a vDataFrame object.
 
 Let's take a look at the first few entries in the dataset.
 
+.. code-block:: ipython
+    
+    data.head(5)
+
 .. ipython:: python
     :suppress:
 
@@ -65,12 +69,10 @@ Let's take a look at the first few entries in the dataset.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_table.html
 
-
 Data Exploration
 -----------------
 
 Let's check our dataset for missing values. If we find any, we'll have to impute them before we create any models.
-
 
 .. code-block:: python
 
@@ -91,12 +93,12 @@ There aren't missing any values, so let's get a summary of the features.
 
 .. code-block:: python
 
-    data.describe(method='all')
+    data.describe(method = "all")
 
 .. ipython:: python
     :suppress:
 
-    res = data.describe(method='all')
+    res = data.describe(method = "all")
     html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -104,14 +106,9 @@ There aren't missing any values, so let's get a summary of the features.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_describe.html
 
-
 The dataset covers 1338 individuals up to age 64 from four different regions, each with up to six dependent children.
 
 We might find some interesting patterns if we check age distribution, so let's create a histogram.
-
-
-
-
 
 .. code-block:: python
 
@@ -179,9 +176,10 @@ Let's check the average number of smokers for each age-group. Before we do, we'l
 
 .. ipython:: python
 
-    import verticapy.sql.functions as sf
+    import verticapy.sql.functions as fun
+
     # Applying the decode function
-    data["smoker_int"] = sf.decode(data["smoker"], True, 1, 0)
+    data["smoker_int"] = fun.decode(data["smoker"], True, 1, 0)
 
 Now we can plot the average number of smokers for each age group.
 
@@ -196,18 +194,20 @@ Now we can plot the average number of smokers for each age group.
 .. ipython:: python
     :suppress:
 
+    import verticapy
+    verticapy.set_option("plotting_lib", "plotly")
     fig = data.bar(
         ["age"], 
         method = "mean",
         of = "smoker_int",
-        )
+    )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_bar_age_smoker.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_bar_age_smoker.html
 
 
-Unfortuantely, there's no obvious relationship between age and smoking habits - none that we can find from this graph, anyway.
+Unfortunately, there's no obvious relationship between age and smoking habits - none that we can find from this graph, anyway.
 
 Let's see if we can relate an individual's smoking habits with their sex.
 
@@ -222,6 +222,8 @@ Let's see if we can relate an individual's smoking habits with their sex.
 .. ipython:: python
     :suppress:
 
+    import verticapy
+    verticapy.set_option("plotting_lib", "plotly")
     fig = data.bar(
         ["sex"], 
         method = "mean",
@@ -248,6 +250,8 @@ Let's see how an individual's BMI relates to their sex.
 .. ipython:: python
     :suppress:
 
+    import verticapy
+    verticapy.set_option("plotting_lib", "plotly")
     fig = data.bar(
         ["sex"], 
         method = "mean",
@@ -258,7 +262,6 @@ Let's see how an individual's BMI relates to their sex.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_bar_sex_bmi.html
 
-
 Males seem to have a slightly higher BMI, but it'd be hard to draw any conclusions from such a small difference.
 
 Going back to our earlier patterns, let's check the distribution of sexes among age groups and see if the 
@@ -266,12 +269,14 @@ patterns we identified earlier skews toward one of the sexes.
 
 .. code-block:: python
 
-    data.pivot_table(['age','sex'])
+    data.pivot_table(["age", "sex"])
 
 .. ipython:: python
     :suppress:
 
-    fig = data.pivot_table(['age','sex'])
+    import verticapy
+    verticapy.set_option("plotting_lib", "plotly")
+    fig = data.pivot_table(["age", "sex"])
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_corr_age_sex.html")
 
 .. raw:: html
@@ -294,8 +299,7 @@ Let's move onto costs: how much do people tend to spend on medical treatments?
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_charges_hist.html
 
-Based on this graph, the majority of insurance holders tend to spend less 
-than 1500 and only a handful of people spend more than 5000.
+Based on this graph, the majority of insurance holders tend to spend less than 1500 and only a handful of people spend more than 5000.
 
 Encoding
 ---------
@@ -336,20 +340,20 @@ Remember, we label-encoded 'smoker' from boolean. Let's label-encode some other 
 
 Before going further, let's check the correlation of the variables with the predictor 'charges'.
 
-
 .. code-block:: python
 
-    data.corr(focus = 'charges')
+    data.corr(focus = "charges")
 
 .. ipython:: python
     :suppress:
 
-    fig = data.corr(focus = 'charges')
+    import verticapy
+    verticapy.set_option("plotting_lib", "plotly")
+    fig = data.corr(focus = "charges")
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_charges_focus.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_charges_focus.html
-
 
 .. code-block:: python
 
@@ -367,6 +371,7 @@ For this example, let's use a random forest model.
     :okwarning:
 
     from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
+
     # define the random forest model
     rf_model = RandomForestRegressor(
         n_estimators = 20,
@@ -376,13 +381,15 @@ For this example, let's use a random forest model.
         max_depth = 3,
         min_samples_leaf = 5,
         min_info_gain = 0.0,
-        nbins = 32
+        nbins = 32,
     )
+
     # train the model
     rf_model.fit(
         data,
         X = ["age", "sex", "bmi", "children", "smoker", "region"], 
-        y = "charges")
+        y = "charges",
+    )
 
 We can create a regression report to check our model's performance.
 
@@ -405,46 +412,47 @@ We can create a regression report to check our model's performance.
 The results seem to be quite good! We have an explained variance around 0.8. 
 Let's plot the predicted values and compare them to the real ones.
 
-
 .. code-block:: python
 
     # plot the predicted values and real ones
-    result = rf_model.predict(data, 
-                            name = "pred_charges")
+    result = rf_model.predict(
+        data, 
+        name = "pred_charges",
+    )
 
     # add an index
     result["id"] = "ROW_NUMBER() OVER()"
 
-
     # plot them along the id
-    result.plot(ts = 'id',
-                columns = ['charges', 'pred_charges'])
+    result.plot(
+        ts = "id",
+        columns = ['charges', 'pred_charges'],
+    )
 
 .. ipython:: python
     :suppress:
 
-    result = rf_model.predict(data, 
-                            name = "pred_charges")
+    result = rf_model.predict(
+        data, 
+        name = "pred_charges",
+    )
     result["id"] = "ROW_NUMBER() OVER()"
     fig = result.plot(
-        ts = 'id',
-        columns = ['charges', 'pred_charges']
+        ts = "id",
+        columns = ["charges", "pred_charges"]
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_rf_plot.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_rf_plot.html
 
-
 .. code-block:: python
 
     data.to_db("insurance.final_ins_data", relation_type = "table")
 
-
 Now, let's examine the importance of each feature for this model. 
 Ours is a random forest model, so we can use the built-in Vertica function RF_PREDICTOR_IMPORTANCE() 
 to calculate the importance of each predictor with Mean Decrease in Impurity (MDI).
-
 
 .. code-block:: python
 
@@ -454,6 +462,8 @@ to calculate the importance of each predictor with Mean Decrease in Impurity (MD
 .. ipython:: python
     :suppress:
 
+    import verticapy
+    verticapy.set_option("plotting_lib", "plotly")
     # feature importance for our random forest model
     fig = rf_model.features_importance()
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_rf_feature_importance.html")
@@ -461,11 +471,9 @@ to calculate the importance of each predictor with Mean Decrease in Impurity (MD
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_rf_feature_importance.html
 
-
 .. code-block:: python
 
     data.to_db("insurance.final_ins_data", relation_type = "table")
-
 
 .. code-block:: python
 
@@ -484,7 +492,6 @@ to calculate the importance of each predictor with Mean Decrease in Impurity (MD
 
 We can examine how our model works by visualizing one of the trees in our random forest.
 
-
 .. code-block::
 
     # plot one of the trees comprising the forest
@@ -494,8 +501,7 @@ We can examine how our model works by visualizing one of the trees in our random
     :suppress:
 
     res = rf_model.plot_tree(tree_id = 3)
-    res.render(filename='figures/examples_insurance_table_rf_tree', format='png')
-
+    res.render(filename="figures/examples_insurance_table_rf_tree", format="png")
 
 .. image:: /../figures/examples_insurance_table_rf_tree.png
 
@@ -514,30 +520,38 @@ information criterion (BIC) as a selection criteria.
 .. code-block:: python
 
     from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     model = LinearRegression()
 
     # backward
     from verticapy.machine_learning.model_selection import stepwise
-    stepwise(model,
-            input_relation = data, 
-            direction = "forward",
-            X = ["age","sex", "bmi", "children", "smoker", "region"], 
-            y = "charges",)
+
+    stepwise(
+        model,
+        input_relation = data, 
+        direction = "forward",
+        X = ["age","sex", "bmi", "children", "smoker", "region"], 
+        y = "charges",
+    )
 
 
 .. ipython:: python
     :suppress:
 
     from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     model = LinearRegression()
 
     # backward
     from verticapy.machine_learning.model_selection import stepwise
-    res = stepwise(model,
-            input_relation = data, 
-            direction = "forward",
-            X = ["age","sex", "bmi", "children", "smoker", "region"], 
-            y = "charges",)
+
+    res = stepwise(
+        model,
+        input_relation = data, 
+        direction = "forward",
+        X = ["age","sex", "bmi", "children", "smoker", "region"], 
+        y = "charges",
+    )
     html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_lr_stepwise.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -545,10 +559,7 @@ information criterion (BIC) as a selection criteria.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_lr_stepwise.html
 
-
-
 From here we see that, again, the same features have similarly significant effects on medical costs.
-
 
 Conclusion
 ------------
