@@ -32,7 +32,7 @@ This example uses the following version of VerticaPy:
     vp.__version__
 
 Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
-For details on how to create a connection, use see the `connection tutorial <https://www.vertica.com/python/documentation/1.1.x/html/connection.html>`_.
+For details on how to create a connection, use see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
 .. code-block:: python
