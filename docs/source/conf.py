@@ -201,7 +201,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "VerticaPy"
 copyright = "2023-2024 OpenText. All rights reserved."
 author = "Vertica"
-release = "1.0.x"
+release = "1.1.x"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -268,7 +268,7 @@ html_theme_options = {
 
                         <div class="very-top-container">
 
-                            <a href="./home.html">
+                            <a href="index.html">
                             
                                 <svg id="Logo_Layer_2" data-name="Logo_Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.57 29.89" height="30px" width="180px" fill="var(--color-announcement-text)">
                                 <g id="Logo_Layer_1-2" data-name="Logo_Layer 1">
@@ -305,7 +305,7 @@ html_theme_options = {
                                 <button class="dropdown-btn">&#9776;</button>
                                 <div class="dropdown-content">
                                     <a class="top-button" href="./getting_started.html" id="sitenav-solutions">Getting Started</a>
-                                    <a class="top-button" href="./user_guide.html" id="sitenav-solutions">User Guide</a>
+                                    <a class="top-button" href="./about_us.html" id="sitenav-solutions">About Us</a>
                                     <a class="top-button" href="./api.html" id="sitenav-solutions">API Reference</a>
                                     <a class="top-button" href="./examples.html" id="sitenav-solutions">Examples</a>
                                 </div>
@@ -337,7 +337,8 @@ html_theme_options = {
                                 </div>
                                 <div class="form-group">
                                     <select class="form-control" id="filter-select" name="filter-select" onchange="switchVersion(this.value)">
-                                        <option value="1.0.x" selected="">1.0.x</option>
+                                        <option value="1.1.x" selected>1.1.x</option>
+                                        <option value="1.0.x">1.0.x</option>
                                     </select>
                                 </div>
                                 <div class="color-theme-container">
@@ -355,7 +356,7 @@ html_theme_options = {
 
                             <div class="top-button-container">
                                 <a class="top-button" href="./index.html" id="sitenav-solutions">Home</a>
-                                <a class="top-button" href="./user_guide.html" id="sitenav-solutions">User Guide</a>
+                                <a class="top-button" href="./about_us.html" id="sitenav-solutions">About Us</a>
                                 <a class="top-button" href="./api.html" id="sitenav-solutions">API Reference</a>
                                 <a class="top-button" href="./examples.html" id="sitenav-solutions">Examples</a>
                             </div>
