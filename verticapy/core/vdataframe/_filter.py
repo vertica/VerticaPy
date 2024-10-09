@@ -1003,7 +1003,7 @@ class vDFFilter(vDFAgg):
             total -= self.shape()[0]
             if total == 0:
                 print_message("Nothing was filtered.")
-            else:
+            elif total > 0:
                 conj = "s were " if total > 1 else " was "
                 print_message(f"{total} element{conj}filtered.")
         return self

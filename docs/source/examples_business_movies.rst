@@ -217,6 +217,7 @@ We can then normalize the data using the min-max method and quantify the notorie
     :suppress:
 
     import verticapy.sql.functions as fun
+
     actors_stats = filmtv_movies.groupby(
         columns = ["actor"], 
         expr = [
@@ -388,8 +389,8 @@ We can aggregate the data to get metrics on each movie.
             "castings_director",
         ],
         expr = [
-            st.sum(filmtv_movies_director_actors["notoriety_actors"])._as("notoriety_actors"),
-            st.sum(filmtv_movies_director_actors["castings_actors"])._as("castings_actors"),
+            fun.sum(filmtv_movies_director_actors["notoriety_actors"])._as("notoriety_actors"),
+            fun.sum(filmtv_movies_director_actors["castings_actors"])._as("castings_actors"),
         ],
     )
 
@@ -716,6 +717,7 @@ Let's create a model to evaluate an unbiased score for each different movie.
 .. ipython:: python
 
     from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
     predictors = filmtv_movies_complete.get_columns(
         exclude_columns = [
             "avg_vote",
@@ -779,7 +781,7 @@ Since a score can't be greater than 10 or less than 0, we need to adjust the 'un
 
 .. ipython:: python
 
-    filmtv_movies_complete["unbiased_vote"] = st.case_when(
+    filmtv_movies_complete["unbiased_vote"] = fun.case_when(
         filmtv_movies_complete["unbiased_vote"] > 10, 10,
         filmtv_movies_complete["unbiased_vote"] < 0, 0,
         filmtv_movies_complete["unbiased_vote"],
@@ -912,7 +914,8 @@ By looking at the elbow curve, we can choose 15 clusters. Let's create a ``k-mea
 .. ipython:: python
 
     from verticapy.machine_learning.vertica.cluster import KMeans
-    model_kmeans = KMeans("filmtv_movies_clustering", n_cluster = 15)
+
+    model_kmeans = KMeans(n_cluster = 15)
     model_kmeans.fit(filmtv_movies_complete, predictors)
     model_kmeans.clusters_
 
@@ -1080,7 +1083,7 @@ Let's look at the different clusters.
 
     res = filmtv_movies_complete.search(
         filmtv_movies_complete["movies_cluster"] == 3,
-        usecols=[
+        usecols = [
             "avg_vote",
             "period",
             "director",
