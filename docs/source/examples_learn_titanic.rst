@@ -83,6 +83,9 @@ Let's focus our analysis on the columns "name" and "cabin". We'll begin with the
 
 .. ipython:: python
     :suppress:
+    :okwarning:
+
+    from verticapy.machine_learning.vertica import CountVectorizer
 
     model = CountVectorizer()
     model.fit(titanic, ["Name"])
@@ -106,6 +109,7 @@ Let's move on to the cabins.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     model = CountVectorizer()
     model.fit("titanic", ["cabin"])
@@ -129,6 +133,7 @@ Here, we have the cabin IDs, the letter of which represents a certain position o
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     model = CountVectorizer()
     model.fit("titanic", ["cabin"])
@@ -156,6 +161,7 @@ We'll revisit this problem later. For now, let's drop the columns that don't aff
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     titanic.drop(["body", "home.dest", "embarked", "ticket"])
     res = titanic["cabin"].str_slice(1, 1)["name"].str_extract(
@@ -222,6 +228,7 @@ Let's move on to outliers. We have several tools for locating outliers (``LocalO
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic["fare"].fill_outliers(
         method = "winsorize", 
@@ -242,6 +249,7 @@ Let's encode the column "sex" so we can use it with numerical methods.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic["sex"].label_encode()
     html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_4.html", "w")
@@ -259,6 +267,7 @@ The column "age" has too many missing values and since most machine learning alg
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic["age"].fillna(method = "mean", by = ["pclass", "sex"])
     html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_5.html", "w")
@@ -276,6 +285,7 @@ Let's draw the correlation matrix to see the links between variables.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -315,6 +325,7 @@ VerticaPy dynamically generates SQL code whenever you make modifications to your
 Let's move on to modeling our data. Save the ``vDataFrame`` to your Vertica database.
 
 .. ipython:: python
+    :okwarning:
 
     from verticapy.sql import drop
 
@@ -339,6 +350,7 @@ First, let's look at the number of survivors.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic_boat["survived"].describe()
     html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_with_boat.html", "w")
@@ -356,6 +368,7 @@ We have nine deaths. Let's try to understand why these passengers died.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic_boat.search(titanic_boat["survived"] == 0).head(10)
     html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_with_boat_2.html", "w")
@@ -377,6 +390,7 @@ Let's move on to passengers without a lifeboat.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic_no_boat["survived"].describe()
     html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_without_boat.html", "w")
@@ -394,6 +408,7 @@ Only 20 survived. Let's find out why.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic_no_boat.search(titanic_boat["survived"] == 1).head(20)
     html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_without_boat_2.html", "w")
@@ -422,6 +437,7 @@ One of our predictors is categorical: the passenger title. Some of these predict
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.vertica import RandomForestClassifier
     from verticapy.machine_learning.model_selection import cross_validate
@@ -445,6 +461,7 @@ This dataset is pretty unbalanced so we'll use an AUC to evaluate it. Looking at
 We can now build a model with the entire dataset.
 
 .. ipython:: python
+    :okwarning:
 
     model.fit(titanic_no_boat, predictors, response)
 
