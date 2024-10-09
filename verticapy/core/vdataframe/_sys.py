@@ -1411,7 +1411,7 @@ class vDCSystem(vDCTyping):
                 copy :py:class:`~vDataColumn` to the parent vDataFrame.
         """
         old_name = quote_ident(self._alias)
-        new_name = quote_ident(new_name)[1:-1]
+        new_name = quote_ident(new_name)
         if self._parent.is_colname_in(new_name):
             raise NameError(
                 f"A vDataColumn has already the alias {new_name}.\n"

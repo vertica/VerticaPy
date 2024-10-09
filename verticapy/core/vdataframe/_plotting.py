@@ -2452,7 +2452,7 @@ class vDFPlot(vDFMachineLearning):
             model = vml.PCA(model_name)
             model.drop()
             try:
-                model.fit(self, columns)
+                model.fit(self, columns, return_report=True)
                 vdf = model.transform(self)
                 ev_1 = model.explained_variance_[dimensions[0] - 1]
                 x_label = f"Dim{dimensions[0]} ({ev_1}%)"
