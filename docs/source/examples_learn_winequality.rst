@@ -44,6 +44,7 @@ Let's create a Virtual DataFrame of the dataset.
 .. code-block:: python
 
     from verticapy.datasets import load_winequality
+    
     winequality = load_winequality()
     winequality.head(5)
 
