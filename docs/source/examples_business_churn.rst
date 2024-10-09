@@ -149,6 +149,7 @@ Let's compute the correlations between the different variables and the response 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -167,6 +168,7 @@ Many features have a strong correlation with the 'Churn' variable. For example, 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -184,6 +186,7 @@ The following scatter plot shows that providing better tariff plans can prevent 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -279,7 +282,7 @@ The model is excellent! Let's run some machine learning on the entire dataset an
         "churn",
     )
     fig = model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_churn_scatter.html")
+    fig.write_html("/project/data/VerticaPy/docs/figures/examples_churn_features_importance.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_churn_features_importance.html
