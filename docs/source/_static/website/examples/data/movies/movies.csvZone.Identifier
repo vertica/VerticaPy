@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=http://127.0.0.1:8889/lab/tree/data/VerticaPy/examples/business/movies
+HostUrl=http://127.0.0.1:8889/files/data/VerticaPy/examples/business/movies/movies.csv?_xsrf=2%7Cfcb414f0%7C4fdd27d0ed1dcb661429a613240935fa%7C1726751982
