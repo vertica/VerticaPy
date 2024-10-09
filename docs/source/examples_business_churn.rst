@@ -93,7 +93,7 @@ Several variables are categorical, and since they all have low cardinalities, we
         "Dependents",
         "OnlineSecurity",
         "PhoneService",
-        "StreamingMovies"
+        "StreamingMovies",
     ]:
         churn[column].decode("Yes", 1, 0)
     churn.one_hot_encode().drop(
@@ -102,8 +102,8 @@ Several variables are categorical, and since they all have low cardinalities, we
             "gender", 
             "Contract", 
             "PaymentMethod", 
-            "InternetService"
-        ]
+            "InternetService",
+        ],
     )
 
 .. ipython:: python
@@ -122,7 +122,7 @@ Several variables are categorical, and since they all have low cardinalities, we
         "Dependents",
         "OnlineSecurity",
         "PhoneService",
-        "StreamingMovies"
+        "StreamingMovies",
     ]:
         churn[column].decode("Yes", 1, 0)
     res = churn.one_hot_encode().drop(
@@ -131,8 +131,8 @@ Several variables are categorical, and since they all have low cardinalities, we
             "gender", 
             "Contract", 
             "PaymentMethod", 
-            "InternetService"
-        ]
+            "InternetService",
+        ],
     )
     html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_clean_1.html", "w")
     html_file.write(res._repr_html_())
@@ -200,7 +200,7 @@ ________
 Machine Learning
 -----------------
 
-Logistic regression is a very powerful algorithm and we can use it to detect churns. Let's split our vDataFrame into training and testing set to evaluate our model.
+``LogisticRegression`` is a very powerful algorithm and we can use it to detect churns. Let's split our ``vDataFrame`` into training and testing set to evaluate our model.
 
 .. ipython:: python
 

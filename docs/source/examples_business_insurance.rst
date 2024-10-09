@@ -38,7 +38,7 @@ You can skip the below cell if you already have an established connection.
     
     vp.connect("VerticaDSN")
 
-Let's create a new schema and assign the data to a vDataFrame object.
+Let's create a new schema and assign the data to a ``vDataFrame`` object.
 
 .. code-block:: ipython
 
@@ -206,7 +206,6 @@ Now we can plot the average number of smokers for each age group.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_bar_age_smoker.html
 
-
 Unfortunately, there's no obvious relationship between age and smoking habits - none that we can find from this graph, anyway.
 
 Let's see if we can relate an individual's smoking habits with their sex.
@@ -237,7 +236,6 @@ Let's see if we can relate an individual's smoking habits with their sex.
 Now we're getting somewhere! Looks like we have noticeably more male smokers than female ones.
 
 Let's see how an individual's BMI relates to their sex.
-
 
 .. code-block:: python
 
@@ -365,7 +363,7 @@ Predicting insurance charges
 -----------------------------
 
 Since our response variable is continuous, we can use regression to predict it. 
-For this example, let's use a random forest model.
+For this example, let's use a ``Random Forest`` model.
 
 .. ipython:: python
     :okwarning:
@@ -451,8 +449,7 @@ Let's plot the predicted values and compare them to the real ones.
     data.to_db("insurance.final_ins_data", relation_type = "table")
 
 Now, let's examine the importance of each feature for this model. 
-Ours is a random forest model, so we can use the built-in Vertica function RF_PREDICTOR_IMPORTANCE() 
-to calculate the importance of each predictor with Mean Decrease in Impurity (MDI).
+Ours is a random forest model, so we can use the built-in Vertica function ``RF_PREDICTOR_IMPORTANCE()`` to calculate the importance of each predictor with Mean Decrease in Impurity (MDI).
 
 .. code-block:: python
 
@@ -490,7 +487,7 @@ to calculate the importance of each predictor with Mean Decrease in Impurity (MD
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_feature_importance_rf.html
 
-We can examine how our model works by visualizing one of the trees in our random forest.
+We can examine how our model works by visualizing one of the trees in our ``Random Forest``.
 
 .. code-block::
 

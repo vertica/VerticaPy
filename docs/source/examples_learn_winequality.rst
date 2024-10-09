@@ -141,7 +141,7 @@ We can drop the 'density' column since it doesn't influence the quality of the w
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_drop.html
 
-We're working with the scores given by wine tasters, so it's likely that two closely competing wines will have a similar score. Knowing this, a k-nearest neighbors (KNN) model would be best.
+We're working with the scores given by wine tasters, so it's likely that two closely competing wines will have a similar score. Knowing this, a ``k-nearest neighbors`` (KNN) model would be best.
 
 KNN is sensitive to unnormalized data so we'll have to normalize our data.
 

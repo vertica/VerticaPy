@@ -165,7 +165,7 @@ Our strategy is simple: we'll use two Linear Support Vector Classification (SVC)
 Machine Learning
 -----------------
 
-Let's build the first Linear SVC to predict if a flower is an Iris setosa.
+Let's build the first ``LinearSVC`` to predict if a flower is an Iris setosa.
 
 .. code-block:: python
 
@@ -217,7 +217,7 @@ Let's plot the model to see the perfect separation.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_model_plot.html
 
-We can add this probability to the vDataFrame.
+We can add this probability to the ``vDataFrame``.
 
 .. code-block:: python
 
@@ -271,7 +271,7 @@ Let's create a model to classify the Iris virginica.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_iris_table_ml_cv_2.html
 
-We have another excellent model. Let's add it to the vDataFrame.
+We have another excellent model. Let's add it to the ``vDataFrame``.
 
 .. code-block:: python
 
@@ -290,7 +290,7 @@ We have another excellent model. Let's add it to the vDataFrame.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_model_predict_proba_2.html
 
-Let's evaluate our final model (the combination of two Linear SVCs).
+Let's evaluate our final model (the combination of two ``LinearSVC``s).
 
 .. ipython:: python
 

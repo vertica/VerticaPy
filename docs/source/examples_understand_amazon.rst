@@ -54,7 +54,7 @@ Let's create a Virtual DataFrame of the dataset.
     :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_head.html
 
 Data Exploration and Preparation
-----------------------------------
+---------------------------------
 
 We can explore our data by displaying descriptive statistics of all the columns.
 
@@ -194,7 +194,7 @@ We can clearly observe the seasonality within each state, which contributes to a
     amazon = amazon.groupby(
         ["date"], 
         [
-            fun.sum(amazon["number"])._as("number")
+            fun.sum(amazon["number"])._as("number"),
         ],
     )
     amazon["number"].plot(ts = "date")
@@ -210,7 +210,7 @@ We can clearly observe the seasonality within each state, which contributes to a
     amazon = amazon.groupby(
         ["date"], 
         [
-            fun.sum(amazon["number"])._as("number")
+            fun.sum(amazon["number"])._as("number"),
         ],
     )
     fig = amazon["number"].plot(ts = "date")

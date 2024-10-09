@@ -106,7 +106,7 @@ Let's compute some statistics using the length of the message.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_spam_table_describe.html
 
-**Notice:** spam tends to be longer than a normal message. First, let's create a view with just spam. Then, we'll use the CountVectorizer to create a dictionary and identify keywords.
+**Notice:** spam tends to be longer than a normal message. First, let's create a view with just spam. Then, we'll use the ``CountVectorizer`` to create a dictionary and identify keywords.
 
 .. code-block:: python
 
@@ -137,7 +137,7 @@ Let's compute some statistics using the length of the message.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_spam_table_clean_2.html
 
-Let's add the most occurent words in our vDataFrame and compute the correlation vector.
+Let's add the most occurent words in our ``vDataFrame`` and compute the correlation vector.
 
 .. code-block:: python
 
@@ -250,7 +250,7 @@ ________
 Machine Learning
 -----------------
 
-The naive Bayes classifier is a powerful and performant algorithm for text analytics and binary classification. Before using it on our data, let's use a cross-validation to test the efficiency of our model.
+The ``Naive Bayes`` classifier is a powerful and performant algorithm for text analytics and binary classification. Before using it on our data, let's use a ``cross-validation`` to test the efficiency of our model.
 
 .. code-block:: python
 

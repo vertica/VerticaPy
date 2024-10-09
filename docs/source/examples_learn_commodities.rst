@@ -286,7 +286,7 @@ After each local minimum, there is a local maximum. Let's look at the number of 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_plot_pacf_2.html
 
-We can clearly see the influence of the last two values on 'Spread,' which makes sense. When the curve slightly changes its direction, it will increase/decrease until reaching a new local maximum/minimum. Only the recent values can help the prediction in case of autoregressive periodical model. The local minimums of interest rate spreads are indicators of an economic crisis.
+We can clearly see the influence of the last two values on 'Spread', which makes sense. When the curve slightly changes its direction, it will increase/decrease until reaching a new local maximum/minimum. Only the recent values can help the prediction in case of autoregressive periodical model. The local minimums of interest rate spreads are indicators of an economic crisis.
 
 We saw the correlation between the price-per-barrel of Oil and the time. Let's look at the time series plot of this variable.
 
@@ -322,12 +322,12 @@ Moving on to the correlation matrix, we can see many events that changed drastic
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_corr_2.html
 
-We can see strong correlations between most of the variables. A vector autoregression (VAR) model seems ideal.
+We can see strong correlations between most of the variables. A vector autoregression (``VAR``) model seems ideal.
 
 Machine Learning
 -----------------
 
-Let's create the VAR model to predict the value of various commodities.
+Let's create the ``VAR`` model to predict the value of various commodities.
 
 .. code-block:: python
 
@@ -447,7 +447,7 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_4.html
 
-The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the VAR model.
+The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the ``VAR`` model.
 
 Conclusion
 -----------

@@ -142,7 +142,7 @@ Here, we have the cabin IDs, the letter of which represents a certain position o
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_count_vect_3.html
 
-While NULL values for "boat" clearly represent passengers who have a dedicated "lifeboat," we can't be so sure about NULL values for "cabin". We can guess that these might represent passengers without a cabin. If this is the case, then these are missing values not at random (MNAR).
+While NULL values for "boat" clearly represent passengers who have a dedicated "lifeboat", we can't be so sure about ``NULL`` values for "cabin". We can guess that these might represent passengers without a cabin. If this is the case, then these are missing values not at random (MNAR).
 
 We'll revisit this problem later. For now, let's drop the columns that don't affect survival and then encode the rest.
 
@@ -169,7 +169,7 @@ We'll revisit this problem later. For now, let's drop the columns that don't aff
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean.html
 
-Looking at our data now, we can see that some first class passengers have a NULL value for their cabin, so we can safely say that our assumption about the meaning of a NULL value of "cabin" turned out to be incorrect. This means that the "cabin" column has far too many missing values at random (MAR). We'll have to drop it.
+Looking at our data now, we can see that some first class passengers have a ``NULL`` value for their cabin, so we can safely say that our assumption about the meaning of a ``NULL`` value of "cabin" turned out to be incorrect. This means that the "cabin" column has far too many missing values at random (MAR). We'll have to drop it.
 
 .. code-block:: python
 
@@ -211,7 +211,7 @@ The "sibsp" column represents the number of siblings for each passenger, while t
 
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
 
-Let's move on to outliers. We have several tools for locating outliers (LocalOutlier Factor, DBSCAN, k-means...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
+Let's move on to outliers. We have several tools for locating outliers (``LocalOutlier Factor``, ``DBSCAN``, ``k-means``...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
 
 .. code-block:: python
 
@@ -292,7 +292,7 @@ Survival correlates strongly with whether or not a passenger has a lifeboat (the
 - Passengers with a lifeboat
 - Passengers without a lifeboat
 
-Before we move on: we did a lot of work to clean up this data, but we haven't saved anything to our Vertica database! Let's look at the modifications we've made to the vDataFrame.
+Before we move on: we did a lot of work to clean up this data, but we haven't saved anything to our Vertica database! Let's look at the modifications we've made to the ``vDataFrame``.
 
 .. ipython:: python
 
@@ -312,7 +312,7 @@ VerticaPy dynamically generates SQL code whenever you make modifications to your
     vp.set_option("sql_on", False)
     print(titanic.info())
 
-Let's move on to modeling our data. Save the vDataframe to your Vertica database.
+Let's move on to modeling our data. Save the ``vDataFrame`` to your Vertica database.
 
 .. ipython:: python
 
@@ -405,7 +405,7 @@ Only 20 survived. Let's find out why.
 
 Most survivors seem to be women. Let's build a model with this in mind.
 
-One of our predictors is categorical: the passenger title. Some of these predictors are corrleated, so it'd be best to work with a non-linear classifier that can handle that. In this case, a random forest classifier seems to be perfect. Let's evaluate it with a cross-validation.
+One of our predictors is categorical: the passenger title. Some of these predictors are corrleated, so it'd be best to work with a non-linear classifier that can handle that. In this case, a random forest classifier seems to be perfect. Let's evaluate it with a ``cross-validation``.
 
 .. code-block:: python
 
