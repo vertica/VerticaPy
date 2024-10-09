@@ -45,6 +45,7 @@ Let's create a Virtual DataFrame of the dataset.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.datasets import load_commodities
     commodities = load_commodities()
@@ -67,6 +68,7 @@ Let's explore the data by displaying descriptive statistics of all the columns.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = commodities.describe(method = "all", unique = True)
     html_file = open("/project/data/VerticaPy/docs/figures/examples_commodities_table_describe.html", "w")
@@ -86,6 +88,7 @@ Let's draw the different variables.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -118,6 +121,7 @@ Some of the commodities have an upward monotonic trend and some others might be 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.model_selection.statistical_tests import adfuller
     from verticapy.core.tablesample import TableSample
@@ -162,6 +166,7 @@ As expected: The price of gold and the S&P 500 index are not stationary. Let's u
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.model_selection.statistical_tests import mkt
 
@@ -194,9 +199,8 @@ Our hypothesis is correct. We can also look at the correlation between the elaps
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     import verticapy.sql.functions as fun
 
     commodities["elapsed_days"] = commodities["date"] - fun.min(commodities["date"])._over()
@@ -214,9 +218,8 @@ In the last plot, it's a bit hard to tell if 'Spread' is stationary. Let's draw 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = commodities["Spread"].plot(ts = "date")
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_plot_2.html")
 
@@ -238,9 +241,8 @@ We can see some sudden changes, so let's smooth the curve.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     commodities.rolling(
         func = "avg",
         window = (-20, 0),
@@ -262,9 +264,8 @@ After each local minimum, there is a local maximum. Let's look at the number of 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = commodities.acf(column = "Spread", ts = "date", p = 12)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_plot_acf_2.html")
 
@@ -277,9 +278,8 @@ After each local minimum, there is a local maximum. Let's look at the number of 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = commodities.pacf(column = "Spread", ts = "date", p = 5)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_plot_pacf_2.html")
 
@@ -296,9 +296,8 @@ We saw the correlation between the price-per-barrel of Oil and the time. Let's l
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = commodities["Oil"].plot(ts = "date")
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_plot_4.html")
 
@@ -313,9 +312,8 @@ Moving on to the correlation matrix, we can see many events that changed drastic
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = commodities.corr(columns = ["Gold", "Oil", "Spread", "Vix", "Dol_Eur", "SP500"])
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_corr_2.html")
 
@@ -343,6 +341,7 @@ Let's create the ``VAR`` model to predict the value of various commodities.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.vertica import VAR
 
@@ -370,9 +369,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(idx = 0, npredictions = 60)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_0.html")
 
@@ -387,9 +385,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(idx = 1, npredictions = 60)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_1.html")
 
@@ -404,9 +401,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(idx = 2, npredictions = 60)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_2.html")
 
@@ -421,9 +417,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(idx = 3, npredictions = 60)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_3.html")
 
@@ -438,9 +433,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(idx = 4, npredictions = 60)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_4.html")
 
