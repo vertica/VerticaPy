@@ -192,6 +192,7 @@ The process doesn't seem to be stationary. Let's use a Dickey-Fuller test to con
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.model_selection.statistical_tests import adfuller
 
@@ -221,8 +222,6 @@ We can look at the cumulative number of deaths and its exponentiality.
 .. ipython:: python
     :suppress:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = covid19["deaths"].plot(
         ts = "date", 
         by = "state",
@@ -245,8 +244,6 @@ Let's plot this for the entire country.
 .. ipython:: python
     :suppress:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     covid = covid19.groupby(
         ["date"],
         [fun.sum(covid19["deaths"])._as("deaths")],
@@ -303,8 +300,6 @@ Let's see the correlation between the number of deaths and the other variables.
 .. ipython:: python
     :suppress:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = covid19.corr(focus = "deaths")
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_covid19_table_plot_corr_5.html")
 
@@ -356,6 +351,7 @@ Let's create a ``VAR`` model to predict the number of COVID-19 deaths and cases 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.vertica.tsa import VAR
 
@@ -389,9 +385,8 @@ Our model is not bad. Let's predict the number of deaths in a near future.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(
         covid19,
         start = 37,
@@ -416,9 +411,8 @@ Our model is not bad. Let's predict the number of deaths in a near future.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(
         covid19,
         start = 37,
