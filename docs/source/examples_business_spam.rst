@@ -44,7 +44,7 @@ Let's take a look at the first few entries in the dataset.
 .. ipython:: python
     :suppress:
 
-    churn = vp.read_csv(
+    spam = vp.read_csv(
         "/project/data/VerticaPy/docs/source/_static/website/examples/data/spam/spam.csv",
     )
     res = spam.head(10)
@@ -121,6 +121,7 @@ Let's compute some statistics using the length of the message.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     spams = spam.search(spam["type"] == 1)
 
@@ -142,27 +143,29 @@ Let's add the most occurent words in our ``vDataFrame`` and compute the correlat
 .. code-block:: python
 
     for word in dict_spams.head(200).values["token"]:
-        spam.regexp(
-            name = word,
-            pattern = word,
-            method = "count",
-            column = "content",
-        )
-    
+        if word not in ['content', 'length', 'type'] : # because there is already a column called content, length and type
+            spam.regexp(
+                name = word,
+                pattern = word,
+                method = "count",
+                column = "content",
+            )
     spam.corr(focus = "type")
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     for word in dict_spams.head(200).values["token"]:
-        spam.regexp(
-            name = word,
-            pattern = word,
-            method = "count",
-            column = "content",
-        )
+        if word not in ['content', 'length', 'type'] : # because there is already a column called content, length and type
+            spam.regexp(
+                name = word,
+                pattern = word,
+                method = "count",
+                column = "content",
+            )
     fig = spam.corr(focus = "type")
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_spam_corr.html")
 
