@@ -6,6 +6,7 @@ Pokemon
 This example uses the 'pokemon' and 'combats' datasets to predict the winner of a 1-on-1 Pokemon battle. You can download the Jupyter Notebook of the study here and two datasets:
 
 `pokemon <https://github.com/vertica/VerticaPy/tree/master/examples/learn/pokemon/pokemons.csv>`_
+
 - **Name:** The name of the Pokemon.
 - **Generation:** Pokemon's generation.
 - **Legendary:** True if the Pokemon is legendary.
@@ -19,6 +20,7 @@ This example uses the 'pokemon' and 'combats' datasets to predict the winner of 
 - **Type_2:** Pokemon's second type.
 
 `fights <https://github.com/vertica/VerticaPy/tree/master/examples/learn/pokemon/fights.csv>`_
+
 - **First_pokemon:** Pokemon of trainer 1.
 - **Second_pokemon:** Pokemon of trainer 2.
 - **Winner:** Winner of the battle.
@@ -55,6 +57,8 @@ Let's ingest the datasets.
 
 .. ipython:: python
     :suppress:
+
+    import verticapy.sql.functions as fun
 
     combats = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/pokemon/fights.csv")
     res = combats.head(5)
@@ -294,6 +298,7 @@ Some really important features are categorical. Random forest can handle them. B
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.vertica import RandomForestClassifier
     from verticapy.machine_learning.model_selection import cross_validate
@@ -326,11 +331,15 @@ We have an excellent model with an average AUC of more than 99%. Let's create a 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    res = model.features_importance()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_pokemon_features_importance_ml.html", "w")
-    html_file.write(res._repr_html_())
-    html_file.close()
+    model.fit(
+        fights,
+        predictors, 
+        "Winner",
+    )
+    fig = model.features_importance()
+    fig.write_html("/project/data/VerticaPy/docs/figures/examples_pokemon_features_importance_ml.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_pokemon_features_importance_ml.html
