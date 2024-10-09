@@ -85,6 +85,13 @@ We'll need to use the One-Hot Encoder on the 'Species' to get information about 
     iris["ratio_pwl"] = iris["PetalWidthCm"] / iris["PetalLengthCm"]
     iris["ratio_swl"] = iris["SepalWidthCm"] / iris["SepalLengthCm"]
 
+.. ipython:: python
+    :suppress:
+    
+    iris["Species"].one_hot_encode(drop_first = False)
+    iris["ratio_pwl"] = iris["PetalWidthCm"] / iris["PetalLengthCm"]
+    iris["ratio_swl"] = iris["SepalWidthCm"] / iris["SepalLengthCm"]
+
 We can draw the correlation matrix (Pearson correlation coefficient) of the new features to see if there are some linear links.
 
 .. code-block:: python
@@ -113,9 +120,8 @@ The Iris setosa is highly linearly correlated with the petal length and the sepa
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = iris.scatter(
         columns = ["PetalLengthCm", "ratio_swl"], 
         by = "Species",
@@ -142,9 +148,8 @@ We can we a clear linear separation between the Iris setosa and the other specie
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = iris.scatter(
         columns = [
             "PetalLengthCm", 
@@ -208,9 +213,8 @@ Let's plot the model to see the perfect separation.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot(width = 800, height = 800)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_model_plot.html")
 
