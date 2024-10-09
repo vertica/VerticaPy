@@ -296,7 +296,7 @@ We have another excellent model. Let's add it to the ``vDataFrame``.
 
 Let's evaluate our final model (the combination of two ``LinearSVC``s).
 
-.. ipython:: python
+.. code-block:: python
 
     iris.case_when(
         "prediction",
@@ -305,6 +305,20 @@ Let's evaluate our final model (the combination of two ``LinearSVC``s).
         'Iris-versicolor',
     )
     iris["score"] = (iris["Species"] == iris["prediction"])
+
+.. ipython:: python
+    :suppress:
+
+    iris.case_when(
+        "prediction",
+        iris["setosa"] > 0.5, 'Iris-setosa',
+        iris["virginica"] > 0.5, 'Iris-virginica',
+        'Iris-versicolor',
+    )
+    iris["score"] = (iris["Species"] == iris["prediction"])
+
+.. ipython:: python
+
     iris["score"].avg()
 
 We have a great model with an accuracy of 96% on an entirely balanced dataset.
