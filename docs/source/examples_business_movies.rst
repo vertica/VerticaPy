@@ -893,15 +893,16 @@ Let's compute the ``elbow`` curve to find a suitable number of clusters.
     import verticapy
 
     verticapy.set_option("plotting_lib", "plotly") # to switch plotting graphics to plotly
-    elbow = elbow(
+    elbow_chart = elbow(
         filmtv_movies_complete,
         predictors,
-        n_cluster = (1, 60)
+        n_cluster = (1, 60),
+        show = True
     )
 
 .. code-block:: python
 
-    elbow.show()
+    elbow_chart
 
 .. ipython:: python
     :suppress:
@@ -909,7 +910,7 @@ Let's compute the ``elbow`` curve to find a suitable number of clusters.
     import verticapy
 
     verticapy.set_option("plotting_lib", "plotly")
-    fig = elbow.show()
+    fig = elbow_chart
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_elbow_plot.html")
 
 .. raw:: html
