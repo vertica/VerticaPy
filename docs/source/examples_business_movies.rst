@@ -890,7 +890,9 @@ Let's compute the ``elbow`` curve to find a suitable number of clusters.
     )
 
     from verticapy.machine_learning.model_selection import elbow
+    import verticapy
 
+    verticapy.set_option("plotting_lib", "plotly") # to switch plotting graphics to plotly
     elbow = elbow(
         filmtv_movies_complete,
         predictors,
@@ -904,6 +906,9 @@ Let's compute the ``elbow`` curve to find a suitable number of clusters.
 .. ipython:: python
     :suppress:
 
+    import verticapy
+
+    verticapy.set_option("plotting_lib", "plotly")
     fig = elbow.show()
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_elbow_plot.html")
 
