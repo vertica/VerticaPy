@@ -489,18 +489,16 @@ We can use this variable to create language groups.
         "United States", "England", "Great Britain", "Ireland",
         "Australia", "New Zealand", "South Africa",
     ]
+
     French = ["France", "Canada", "Belgium", "Switzerland", "Luxembourg",]
     Italian = ["Italy",]
     German_North_Europe = [
         "German", "Austria", "Holland", "Netherlands", "Denmark",
         "Norway", "Iceland", "Finland", "Sweden", "Greenland",
     ]
-    Russian_Est_Europe = [
-        "Russia", "Soviet Union", "Yugoslavia", "Czechoslovakia",
-        "Poland", "Bulgaria", "Croatia", "Czech Republic", "Serbia",
-        "Ukraine", "Slovenia", "Lithuania", "Latvia", "Estonia", 
-        "Bosnia and Herzegovina", "Georgia",
-    ]
+
+    Russian_Est_Europe = ["Russia", "Soviet Union", "Yugoslavia", "Czechoslovakia", "Poland", "Bulgaria", "Croatia", "Czech Republic", "Serbia", "Ukraine", "Slovenia", "Lithuania", "Latvia", "Estonia", "Bosnia and Herzegovina", "Georgia"]
+
     Grec_Balkan = [
         "Greece", "Macedonia", "Cyprus", "Romania", "Armenia", "Hungary",
         "Albania", "Malta",
@@ -698,11 +696,13 @@ We can export the results to our Vertica database.
 .. ipython:: python
     :suppress:
 
+    vp.drop("filmtv_movies_complete")
     filmtv_movies_complete.to_db(
         name = "filmtv_movies_complete",
         relation_type = "table",
         inplace = True,
     )
+    vp.drop("filmtv_movies_mco")
     filmtv_movies_complete.to_db(
         name = "filmtv_movies_mco",
         relation_type = "view",
