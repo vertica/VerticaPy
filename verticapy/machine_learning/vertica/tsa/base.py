@@ -1951,6 +1951,14 @@ class TimeSeriesModelBase(VerticaModel):
         if self._ismultivar():
             y_str = self.y[idx]
             prediction = prediction[[f"prediction{idx}"]]
+        else:
+            columns = prediction.get_columns()
+            idx = 0
+            while "prediction" not in columns[idx] and idx < len(columns) - 1:
+                idx += 1
+            columns = columns[idx:]
+            if len(columns) > 0:
+                prediction = prediction[columns]
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="TSPlot",
             chart=chart,

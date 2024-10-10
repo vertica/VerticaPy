@@ -1590,7 +1590,7 @@ def seasonal_decompose(
     Examples
     --------
 
-    Let us use a dataset that has seasonailty.
+    Let us use a dataset that has seasonality.
     The Airline passengers dataset is a good example.
 
     .. code-block:: python
