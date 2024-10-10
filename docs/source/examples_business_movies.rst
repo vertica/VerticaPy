@@ -730,6 +730,7 @@ Let's create a model to evaluate an unbiased score for each different movie.
             "Category",
         ],
     )
+    vp.drop("filmtv_movies_lr") # If model name already exists
     model = LinearRegression(
         "filmtv_movies_lr",
         max_iter = 1000,
@@ -805,7 +806,7 @@ Let's look at the top movies.
             "notoriety_director",
             "castings_director",
             "notoriety_actors",
-            "astings_actors",
+            "castings_actors",
             "period",
             "language_area",
         ],
@@ -832,7 +833,7 @@ Let's look at the top movies.
             "notoriety_director",
             "castings_director",
             "notoriety_actors",
-            "astings_actors",
+            "castings_actors",
             "period",
             "language_area",
         ],
