@@ -48,6 +48,8 @@ setuptools.setup(
         "vertica-python>=1.2.0",
         "plotly>=5.10.0",
         "pyyaml>=6.0.1",
+        "requests>=2.32.2",
+        "urllib3>=2.2.1",
     ],
     extras_require={
         "all": [
