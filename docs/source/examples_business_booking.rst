@@ -3,7 +3,7 @@
 Booking
 ========
 
-This example uses the 'Expedia' dataset to predict, based on site activity, whether a user is likely to make a booking. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/booking/booking.ipynb>`_ and the the dataset `here <https://www.kaggle.com/c/expedia-hotel-recommendations/data>`_.
+This example uses the 'Expedia' dataset to predict, based on site activity, whether a user is likely to make a booking. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/booking/booking.ipynb>`_ and the dataset `here <https://www.kaggle.com/c/expedia-hotel-recommendations/data>`_.
 
 - **cnt:** Number of similar events in the context of the same user session.
 - **user_location_city:** The ID of the city in which the customer is located.
@@ -53,8 +53,6 @@ Let's create a Virtual DataFrame of the dataset.
 
 .. code-block:: python
 
-    from verticapy.datasets import load_commodities
-
     expedia = vp.read_csv("expedia.csv", parse_nrows = 1000)
     expedia.head(5)
 
@@ -63,7 +61,7 @@ Let's create a Virtual DataFrame of the dataset.
 
     expedia = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/booking/expedia.csv")
     res = expedia.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_commodities_table_head.html", "w")
+    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
