@@ -6,71 +6,70 @@ Africe Education
 This example uses the 'Africa Education' dataset to predict student performance. 
 You can can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/understand/africa_education/africa_education.ipynb>`_.
 
-
-- **COUNTRY:** COUNTRY ID
-- **REGION:** REGION ID
-- **SCHOOL:** SCHOOL ID
-- **PUPIL:** STUDENT ID
-- **province:** School Province
-- **schoolname:** School Name
-- **lat:** School Latitude
-- **long:** School Longitude
-- **country_long:** Country Name
-- **zralocp:** Student's standardized reading score
-- **zmalocp:** Student's standardized mathematics score
-- **ZRALEVP:** Student's reading level
-- **ZMALEVP:** Student's mathematics competency level
-- **zraloct:** Teacher's standardized reading score
-- **ZRALEVT:** Student's reading competency level Teacher
-- **ZMALEVT:** Student's mathematics competency level Teacher
-- **zsdist:** School average distance from clinic, road, public, library, book shop & secondary school
-- **XNUMYRS:** Teacher's years of teaching
-- **numstu:** Number of students at each school
-- **PSEX:** Student's sex
-- **PNURSERY:** Student preschool
-- **PENGLISH:** Student speaks English at home
-- **PMALIVE:** Student's biological mother alive
-- **PFALIVE:** Student's biological father alive
-- **PTRAVEL:** Travels to school
-- **PTRAVEL2:** Means of transportation to school
-- **PMOTHER:** Mother's education
-- **PFATHER:** Father's education
-- **PLIGHT:** Source of lighting
-- **PABSENT:** Days absent
-- **PREPEAT:** Years repeated
-- **STYPE:** School type
-- **SLOCAT:** School location
-- **SQACADEM:** Academic qualifications
-- **XSEX:** Teacher's sex
-- **XAGE:** Teacher's age
-- **XQPERMNT:** Teacher's employment status
-- **XQPROFES:** Teacher's training
-- **zpsibs:** Student's number of siblings
-- **zpsit:** Seating location
-- **zpmealsc:** Free school meals
-- **zphmwkhl:** Homework help
-- **zpses:** Student's socioeconomic status
-- **PAGE:** Student's Age
-- **SINS2006:** School inspection
-- **SPUPPR04:** Student dropout
-- **SPUPPR06:** Student cheats
-- **SPUPPR07:** Student uses abusive language
-- **SPUPPR08:** Student vandalism
-- **SPUPPR09:** Student theft
-- **SPUPPR10:** Student bullies students
-- **SPUPPR11:** Student bullies staff
-- **SPUPPR12:** Student injures staff
-- **SPUPPR13:** Student sexually harrasses students
-- **SPUPPR14:** Student sexually harrasses teachers
-- **SPUPPR15:** Student drug abuse
-- **SPUPPR16:** Student alcohol abuse
-- **SPUPPR17:** Student fights
-- **STCHPR04:** Teacher bullies students
-- **STCHPR05:** Teacher sexually harasses teachers
-- **STCHPR06:** Teacher sexually harasses students
-- **STCHPR07:** Teacher uses abusive language
-- **STCHPR08:** Teacher drug abuse
-- **STCHPR09:** Teacher alcohol abuse
+- **COUNTRY:** COUNTRY ID.
+- **REGION:** REGION ID.
+- **SCHOOL:** SCHOOL ID.
+- **PUPIL:** STUDENT ID.
+- **province:** School Province.
+- **schoolname:** School Name.
+- **lat:** School Latitude.
+- **long:** School Longitude.
+- **country_long:** Country Name.
+- **zralocp:** Student's standardized reading score.
+- **zmalocp:** Student's standardized mathematics score.
+- **ZRALEVP:** Student's reading level.
+- **ZMALEVP:** Student's mathematics competency level.
+- **zraloct:** Teacher's standardized reading score.
+- **ZRALEVT:** Student's reading competency level Teacher.
+- **ZMALEVT:** Student's mathematics competency level Teacher.
+- **zsdist:** School average distance from clinic, road, public, library, book shop & secondary school.
+- **XNUMYRS:** Teacher's years of teaching.
+- **numstu:** Number of students at each school.
+- **PSEX:** Student's sex.
+- **PNURSERY:** Student preschool.
+- **PENGLISH:** Student speaks English at home.
+- **PMALIVE:** Student's biological mother alive.
+- **PFALIVE:** Student's biological father alive.
+- **PTRAVEL:** Travels to school.
+- **PTRAVEL2:** Means of transportation to school.
+- **PMOTHER:** Mother's education.
+- **PFATHER:** Father's education.
+- **PLIGHT:** Source of lighting.
+- **PABSENT:** Days absent.
+- **PREPEAT:** Years repeated.
+- **STYPE:** School type.
+- **SLOCAT:** School location.
+- **SQACADEM:** Academic qualifications.
+- **XSEX:** Teacher's sex.
+- **XAGE:** Teacher's age.
+- **XQPERMNT:** Teacher's employment status.
+- **XQPROFES:** Teacher's training.
+- **zpsibs:** Student's number of siblings.
+- **zpsit:** Seating location.
+- **zpmealsc:** Free school meals.
+- **zphmwkhl:** Homework help.
+- **zpses:** Student's socioeconomic status.
+- **PAGE:** Student's Age.
+- **SINS2006:** School inspection.
+- **SPUPPR04:** Student dropout.
+- **SPUPPR06:** Student cheats.
+- **SPUPPR07:** Student uses abusive language.
+- **SPUPPR08:** Student vandalism.
+- **SPUPPR09:** Student theft.
+- **SPUPPR10:** Student bullies students.
+- **SPUPPR11:** Student bullies staff.
+- **SPUPPR12:** Student injures staff.
+- **SPUPPR13:** Student sexually harrasses students.
+- **SPUPPR14:** Student sexually harrasses teachers.
+- **SPUPPR15:** Student drug abuse.
+- **SPUPPR16:** Student alcohol abuse.
+- **SPUPPR17:** Student fights.
+- **STCHPR04:** Teacher bullies students.
+- **STCHPR05:** Teacher sexually harasses teachers.
+- **STCHPR06:** Teacher sexually harasses students.
+- **STCHPR07:** Teacher uses abusive language.
+- **STCHPR08:** Teacher drug abuse.
+- **STCHPR09:** Teacher alcohol abuse.
 
 We will follow the data science cycle (Data Exploration - Data Preparation - Data Modeling - Model Evaluation - Model Deployment) to solve this problem.
 
@@ -101,7 +100,6 @@ Let's create a Virtual DataFrame of the dataset.
 
     africa = load_africa_education()
 
-
 .. warning::
     
     This example uses a sample dataset. For the full analysis, you should consider using the complete dataset.
@@ -110,7 +108,7 @@ Data Exploration and Preparation
 ---------------------------------
 
 Let's look at the links between all the variables. 
-Remember our goal: find a way to predict students' final scores (zralocp & zmalocp).
+Remember our goal: find a way to predict students' final scores ('zralocp' & 'zmalocp').
 
 .. code-block:: python
 
@@ -129,34 +127,35 @@ Remember our goal: find a way to predict students' final scores (zralocp & zmalo
     :file: /project/data/VerticaPy/docs/figures/examples_africe_corr_matrix.html
 
 Some variables are useless because they are categorizations of others. 
-For example, most scores can go from 0 to 1000, and 
-some variables are created by mapping these variables to a reduced interval (for example: 0 to 10), 
-so we can drop them.
-
+For example, most scores can go from 0 to 1000, and some variables are created by mapping these variables to a reduced interval (for example: 0 to 10), so we can drop them.
 
 .. code-block:: python
 
     africa.drop(
-        ["ZMALEVT", 
-        "ZRALEVT", 
-        "ZRALEVP", 
-        "ZMALEVP",
-        "COUNTRY",
-        "SCHOOL",
-        "PUPIL"]
+        [
+            "ZMALEVT", 
+            "ZRALEVT", 
+            "ZRALEVP", 
+            "ZMALEVP",
+            "COUNTRY",
+            "SCHOOL",
+            "PUPIL",
+        ],
     )
 
 .. ipython:: python
     :suppress:
 
     africa.drop(
-        ["ZMALEVT", 
-        "ZRALEVT", 
-        "ZRALEVP", 
-        "ZMALEVP",
-        "COUNTRY",
-        "SCHOOL",
-        "PUPIL"]
+        [
+            "ZMALEVT", 
+            "ZRALEVT", 
+            "ZRALEVP", 
+            "ZMALEVP",
+            "COUNTRY",
+            "SCHOOL",
+            "PUPIL",
+        ],
     )
 
 Let's take a look at the missing values.
@@ -176,7 +175,6 @@ Let's take a look at the missing values.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_africa_count_percent.html
 
-
 Many values are missing for 'zraloct' which is the teachers' test score. We need to find a way to impute them as they represent more than 10% of the dataset. For the others that represent less than 5% of the dataset, our goal is to identify what improves student performance, so we can filter them.
 
 We'll use two variables to impute the teachers' scores: TEACHER'S SEX (XSEX) and Teacher's Training (XQPROFES).
@@ -186,7 +184,7 @@ We'll use two variables to impute the teachers' scores: TEACHER'S SEX (XSEX) and
 
     africa["zraloct"].fillna(
         method = "avg", 
-        by = ["XSEX", "XQPROFES"]
+        by = ["XSEX", "XQPROFES"],
     )
     africa.dropna()
 
@@ -196,7 +194,7 @@ We'll use two variables to impute the teachers' scores: TEACHER'S SEX (XSEX) and
 
     africa["zraloct"].fillna(
         method = "avg", 
-        by = ["XSEX", "XQPROFES"]
+        by = ["XSEX", "XQPROFES"],
     )
     africa.dropna()
     res = africa
@@ -228,7 +226,7 @@ These clusters can be used as inputs by our model.
         africa,
         X = ["lon", "lat"],
         n_cluster = (1, 30),
-        show = True
+        show = True,
     )
 
 .. ipython:: python
@@ -239,18 +237,18 @@ These clusters can be used as inputs by our model.
         africa,
         X = ["lon", "lat"],
         n_cluster = (1, 30),
-        show = True
+        show = True,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_elbow.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_africa_elbow.html
 
-Eight seems to be a suitable number of clusters. Let's compute a k-means model.
+Eight seems to be a suitable number of clusters. Let's compute a ``k-means`` model.
 
 .. code-block:: python
 
-    from verticapy.machine_learning.vertica.cluster import KMeans
+    from verticapy.machine_learning.vertica import KMeans
 
     model = KMeans(n_cluster = 8)
     model.fit(africa, X = ["lon", "lat"])
@@ -258,22 +256,26 @@ Eight seems to be a suitable number of clusters. Let's compute a k-means model.
 .. ipython:: python
     :suppress:
 
-    from verticapy.machine_learning.vertica.cluster import KMeans
+    from verticapy.machine_learning.vertica import KMeans
     model = KMeans(n_cluster = 8)
     model.fit(africa, X = ["lon", "lat"])
 
-We can add the prediction to the vDataFrame and draw the scatter map.
+We can add the prediction to the ``vDataFrame`` and draw the scatter map.
 
 
 .. code-block:: python
 
     # Change the plotting lib to matplotlib
     vp.set_option("plotting_lib", "matplotlib")
+
     # Adding the prediction to the vDataFrame
     model.predict(africa, name = "clusters")
+
     # Importing the World Data
     from verticapy.datasets import load_world
+
     africa_world = load_world()
+
     # Filtering and drawing Africa
     africa_world = africa_world[africa_world["continent"] == "Africa"]
     ax = africa_world["geometry"].geo_plot(color = "white", edgecolor='black',)
@@ -310,15 +312,17 @@ information to predict the students' scores.
 .. ipython:: python
     :okwarning:
 
-    from verticapy.machine_learning.vertica.ensemble import RandomForestRegressor
+    from verticapy.machine_learning.vertica import RandomForestRegressor
     from verticapy.machine_learning.model_selection import cross_validate
+
     predictors = africa.get_columns(
-        exclude_columns = ["zralocp", 
-                        "zmalocp",
-                        "lat", 
-                        "lon",
-                        "schoolname"
-                        ]
+        exclude_columns = [
+            "zralocp", 
+            "zmalocp",
+            "lat", 
+            "lon",
+            "schoolname",
+        ],
     )
     response = "zralocp"
     model = RandomForestRegressor(
@@ -326,15 +330,14 @@ information to predict the students' scores.
         max_depth = 20,
         min_samples_leaf = 4,
         nbins = 20,
-        sample = 0.7
+        sample = 0.7,
     )
     cross_validate(
         model, 
         africa,
         X = predictors, 
-        y = response
+        y = response,
     )
-
 
 These scores are quite good! Let's fit all the data and keep the most important variables.
 
@@ -343,7 +346,7 @@ These scores are quite good! Let's fit all the data and keep the most important 
     model.fit(
         africa, 
         X = predictors, 
-        y = response
+        y = response,
     )
 
 .. ipython:: python
@@ -353,13 +356,12 @@ These scores are quite good! Let's fit all the data and keep the most important 
     model.fit(
         africa, 
         X = predictors, 
-        y = response
+        y = response,
     )
     
-
 .. ipython:: python
 
-    predictors = model.features_importance(show=False)["index"]
+    predictors = model.features_importance(show = False)["index"]
 
 We can see here that socioeconomic status and a student's country 
 tend to strongly influence the students work quality. 
@@ -379,15 +381,14 @@ Our goal will be to optimize the 'median_absolute_error'.
         {
             "min_samples_leaf": [1, 3],
             "max_leaf_nodes": [50],
-            "max_depth": [5, 8]
+            "max_depth": [5, 8],
         },
         metric = "median",
         input_relation = africa,
         X = predictors[:20], 
-        y = response
+        y = response,
     )
-    display(gcv)
-
+    gcv
 
 .. ipython:: python
     :suppress:
@@ -400,12 +401,10 @@ Our goal will be to optimize the 'median_absolute_error'.
         'max_depth': 10,
         'min_samples_leaf': 3,
         'min_info_gain': 0.0,
-        'nbins': 20
+        'nbins': 20,
     }
 
-
-Our model is excellent. Let's create one for the students' standardized reading score (zralocp).
-
+Our model is excellent. Let's create one for the students' standardized reading score ('zralocp').
 
 .. code-block:: python
 
@@ -414,7 +413,7 @@ Our model is excellent. Let's create one for the students' standardized reading 
     model_africa_rf_zralocp.fit(
         africa,
         predictors[0:20], 
-        response
+        response,
     )
     model_africa_rf_zralocp.regression_report()
 
@@ -427,7 +426,7 @@ Our model is excellent. Let's create one for the students' standardized reading 
     model_africa_rf_zralocp.fit(
         africa,
         predictors[0:20], 
-        response
+        response,
     )
     res = model_africa_rf_zralocp.regression_report()
     html_file = open("/project/data/VerticaPy/docs/figures/examples_africa_reg_report_zralocp.html", "w")
@@ -437,7 +436,7 @@ Our model is excellent. Let's create one for the students' standardized reading 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_africa_reg_report_zralocp.html
 
-We'll also create one for the students' standardized mathematics score (zmalocp).
+We'll also create one for the students' standardized mathematics score ('zmalocp').
 
 .. code-block:: python
 
@@ -446,7 +445,7 @@ We'll also create one for the students' standardized mathematics score (zmalocp)
     model_africa_rf_zmalocp.fit(
         africa,
         predictors[0:20], 
-        response
+        response,
     )
     model_africa_rf_zmalocp.regression_report()
 
@@ -459,7 +458,7 @@ We'll also create one for the students' standardized mathematics score (zmalocp)
     model_africa_rf_zmalocp.fit(
         africa,
         predictors[0:20], 
-        response
+        response,
     )
     res = model_africa_rf_zmalocp.regression_report()
     html_file = open("/project/data/VerticaPy/docs/figures/examples_africa_reg_report_zmalocp.html", "w")
@@ -470,7 +469,6 @@ We'll also create one for the students' standardized mathematics score (zmalocp)
     :file: /project/data/VerticaPy/docs/figures/examples_africa_reg_report_zmalocp.html
 
 Let's look at the feature importance for each model.
-
 
 .. code-block:: python
 
@@ -503,7 +501,7 @@ Let's look at the feature importance for each model.
 
 Feature importance between between math score and the reading score are almost identical.
 
-We can add these predictions to the main vDataFrame.
+We can add these predictions to the main ``vDataFrame``.
 
 .. code-block:: python
 
@@ -520,9 +518,7 @@ We can add these predictions to the main vDataFrame.
     model_africa_rf_zmalocp.predict(africa, name = "pred_zmalocp")
     res = model_africa_rf_zmalocp
 
-
 Let's visualize our model. We begin by creating a bubble plot using the two scores. 
-
 
 .. code-block:: python
 
@@ -531,7 +527,7 @@ Let's visualize our model. We begin by creating a bubble plot using the two scor
         columns = ["zralocp", "zmalocp"],
         size = "zpses",
         by = "PENGLISH",
-        max_nb_points = 2000
+        max_nb_points = 2000,
     )
 
 .. ipython:: python
@@ -543,7 +539,7 @@ Let's visualize our model. We begin by creating a bubble plot using the two scor
         columns = ["zralocp", "zmalocp"],
         size = "zpses",
         by = "PENGLISH",
-        max_nb_points = 2000
+        max_nb_points = 2000,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_scatter_bubble.html")
 
@@ -551,8 +547,7 @@ Let's visualize our model. We begin by creating a bubble plot using the two scor
     :file: /project/data/VerticaPy/docs/figures/examples_africa_scatter_bubble.html
 
 Notable influences are home language and the socioeconomic status. 
-It seems like students that both speak Engish at home often 
-(but not all the time) and have a comfortable standard of living tend to perform the best.
+It seems like students that both speak Engish at home often (but not all the time) and have a comfortable standard of living tend to perform the best.
 
 Now, let's see how a student's nationality might affect their performance.
 
@@ -562,7 +557,7 @@ Now, let's see how a student's nationality might affect their performance.
         method = "90%", 
         of = "pred_zmalocp",
         max_cardinality = 50,
-        width = 800
+        width = 800,
     )
 
 .. ipython:: python
@@ -573,7 +568,7 @@ Now, let's see how a student's nationality might affect their performance.
         method = "90%", 
         of = "pred_zmalocp",
         max_cardinality = 50,
-        width = 800
+        width = 800,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_90_country_long.html")
 
@@ -586,7 +581,7 @@ Now, let's see how a student's nationality might affect their performance.
         method = "10%", 
         of = "pred_zmalocp",
         max_cardinality = 50,
-        width = 800
+        width = 800,
     )
 
 .. ipython:: python
@@ -598,7 +593,7 @@ Now, let's see how a student's nationality might affect their performance.
         method = "10%", 
         of = "pred_zmalocp",
         max_cardinality = 50,
-        width = 800
+        width = 800,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_10_country_long.html")
 
@@ -614,18 +609,13 @@ South Africa, and Malawi are underrating their students
 global education in the country: some education systems could 
 be harder than the others. Let's break this down by region.
 
-.. ipython:: python
-
-    africa.get_columns()
-
-
 .. code-block:: python
 
     africa["district"].bar(
         method = "50%", 
         of = "pred_zmalocp",
         max_cardinality = 50,
-        width = 1000
+        width = 1000,
     )
 
 .. ipython:: python
@@ -637,7 +627,7 @@ be harder than the others. Let's break this down by region.
         method = "50%", 
         of = "pred_zmalocp",
         max_cardinality = 50,
-        width = 1000
+        width = 1000,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_district.html")
 
@@ -677,7 +667,7 @@ Let's look at the the variables 'PLIGHT' (a student's main lighting source) and 
         columns = ["PREPEAT", "PLIGHT"],
         method = "avg", 
         of = "pred_zmalocp",
-        width = 850
+        width = 850,
     )
 
 .. ipython:: python
@@ -688,25 +678,23 @@ Let's look at the the variables 'PLIGHT' (a student's main lighting source) and 
         columns = ["PREPEAT", "PLIGHT"],
         method = "avg", 
         of = "pred_zmalocp",
-        width = 850
+        width = 850,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_prepeat_plight.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_prepeat_plight.html
 
-We can see that students who never repeated a year and have light 
-at home tend to do better in school than those who don't.
+We can see that students who never repeated a year and have light at home tend to do better in school than those who don't.
 
-Another factor in a student's performance might be their method 
-of transportation, so we'll look at the "ptravel2" variable.
+Another factor in a student's performance might be their method of transportation, so we'll look at the "ptravel2" variable.
 
 .. code-block:: python
 
     africa["ptravel2"].bar(
         method = "50%", 
         of = "pred_zmalocp",
-        width = 850
+        width = 850,
     )
 
 .. ipython:: python
@@ -717,7 +705,7 @@ of transportation, so we'll look at the "ptravel2" variable.
     fig = africa["ptravel2"].bar(
         method = "50%", 
         of = "pred_zmalocp",
-        width = 850
+        width = 850,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_ptravel2.html")
 
@@ -737,7 +725,7 @@ Let's look at the influence of the 'district'.
     africa["district"].bar(
         method = "50%",
         of = "pred_zmalocp",
-        h = 100
+        h = 100,
     )
 
 .. ipython:: python
@@ -748,63 +736,63 @@ Let's look at the influence of the 'district'.
     fig = africa["district"].bar(
         method = "50%",
         of = "pred_zmalocp",
-        h = 100
+        h = 100,
     )
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_district_50_pred.html")
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_district_50_pred.html
 
+Here, we can see that Chicualacuala has a very high median score, so we can conclude that a students' district might impact their performance in school.
 
-Here, we can see that Chicualacuala has a very high median score, 
-so we can conclude that a students' district might impact their performance in school.
-
-After assessing several predictors of student-performance, we can 
-hypothesize some solutions. For example, we might suggest in investing 
-in extracurricular activities, ensuring that students have adequate 
-light sources at home, or improving public transportation.
+After assessing several predictors of student-performance, we can hypothesize some solutions. For example, we might suggest in investing in extracurricular activities, ensuring that students have adequate light sources at home, or improving public transportation.
 
 Machine Learning: Finding the Best Students
 ---------------------------------------------
 
-To find the best students we can use each school's ID 
-(the SCHOOL variable) and compute the average score. 
-We can then order these by descending average score and 
-note the top five students at each school.
+To find the best students we can use each school's ID (the SCHOOL variable) and compute the average score. 
+We can then order these by descending average score and note the top five students at each school.
 
 .. code-block:: python
 
     africa = load_africa_education()
+
     # Computing the averaged score
-    africa["score"] = (africa["zralocp"] + africa["zmalocp"]) / 2 
+    africa["score"] = (africa["zralocp"] + africa["zmalocp"]) / 2
+
     # Computing the averaged student score
     africa.analytic(
         func = "row_number",
         by = ["schoolname"],
         order_by = {"score": "desc"},
-        name = "student_class_position"
+        name = "student_class_position",
     )
+
     # Finding the 3 best students by class
     africa.case_when(
         "best",
         africa["student_class_position"] <= 5, 1,
-        0
+        0,
     )
+
     # Selecting the main variables
-    africa = africa[[
-        "PENGLISH", 
-        "PAGE", 
-        "zpses", 
-        "PREPEAT",
-        "PTRAVEL2", 
-        "PLIGHT",
-        "SLOCAT",
-        "best",
-        "zpmealsc",
-        "PFATHER",
-        "SPUPPR04",
-        "PNURSERY"]
+    africa = africa[
+        [
+            "PENGLISH", 
+            "PAGE", 
+            "zpses", 
+            "PREPEAT",
+            "PTRAVEL2", 
+            "PLIGHT",
+            "SLOCAT",
+            "best",
+            "zpmealsc",
+            "PFATHER",
+            "SPUPPR04",
+            "PNURSERY",
+        ]
     ]
+
     # Getting the categories dummies for the Logistic Regression
     africa.one_hot_encode(
         columns = [
@@ -818,7 +806,7 @@ note the top five students at each school.
             "PNURSERY",
             "zpmealsc"
         ],
-        max_cardinality = 1000
+        max_cardinality = 1000,
     )
     africa.dropna()
 
@@ -832,26 +820,28 @@ note the top five students at each school.
         func = "row_number",
         by = ["schoolname"],
         order_by = {"score": "desc"},
-        name = "student_class_position"
+        name = "student_class_position",
     )
     africa.case_when(
         "best",
         africa["student_class_position"] <= 5, 1,
-        0
+        0,
     )
-    africa = africa[[
-        "PENGLISH", 
-        "PAGE", 
-        "zpses", 
-        "PREPEAT",
-        "PTRAVEL2", 
-        "PLIGHT",
-        "SLOCAT",
-        "best",
-        "zpmealsc",
-        "PFATHER",
-        "SPUPPR04",
-        "PNURSERY"]
+    africa = africa[
+        [
+            "PENGLISH", 
+            "PAGE", 
+            "zpses", 
+            "PREPEAT",
+            "PTRAVEL2", 
+            "PLIGHT",
+            "SLOCAT",
+            "best",
+            "zpmealsc",
+            "PFATHER",
+            "SPUPPR04",
+            "PNURSERY",
+        ]
     ]
     africa.one_hot_encode(
         columns = [
@@ -863,18 +853,17 @@ note the top five students at each school.
             "PFATHER",
             "SPUPPR04",
             "PNURSERY",
-            "zpmealsc"
+            "zpmealsc",
         ],
-        max_cardinality = 1000
+        max_cardinality = 1000,
     )
     africa.dropna()
-
 
 Let's create a logistic regression to understand what circumstances allowed these students to perform as well as they have.
 
 .. code-block:: ipython
 
-    from verticapy.machine_learning.vertica.linear_model import LogisticRegression
+    from verticapy.machine_learning.vertica import LogisticRegression
 
     response = "best"
     predictors = africa.get_columns(
@@ -888,40 +877,48 @@ Let's create a logistic regression to understand what circumstances allowed thes
             "SPUPPR04",
             "PNURSERY",
             "zpmealsc",
-            "best"
+            "best",
         ]
     )
     model_africa_logit_best = LogisticRegression(
         name="africa_logit_best", 
-        solver="BFGS"
+        solver="BFGS",
     )
     model_africa_logit_best.fit(
         africa,
         predictors, 
-        response
+        response,
     )
     model_africa_logit_best.features_importance()
-
 
 .. ipython:: python
     :suppress:
     :okwarning:
 
-    from verticapy.machine_learning.vertica.linear_model import LogisticRegression
-    predictors = africa.get_columns(exclude_columns = ["PLIGHT","PTRAVEL2","PREPEAT", "PENGLISH","SLOCAT","PFATHER","SPUPPR04","PNURSERY","zpmealsc","best"])
+    from verticapy.machine_learning.vertica import LogisticRegression
+    predictors = africa.get_columns(exclude_columns = [
+            "PLIGHT",
+            "PTRAVEL2",
+            "PREPEAT", 
+            "PENGLISH",
+            "SLOCAT",
+            "PFATHER",
+            "SPUPPR04",
+            "PNURSERY",
+            "zpmealsc",
+            "best",
+        ]
+    )
     vp.drop("africa_logit_best")
     model_africa_logit_best = LogisticRegression(name="africa_logit_best",solver="BFGS")
     model_africa_logit_best.fit(africa,predictors,"best")
     fig = model_africa_logit_best.features_importance()
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_feature_final.html")
 
-
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_africa_feature_final.html
 
-We can see that the best students tend to be young, speak English at home, 
-come from a good socioeconomic background, have a father with a degree, 
-and live relatively close to school.
+We can see that the best students tend to be young, speak English at home, come from a good socioeconomic background, have a father with a degree, and live relatively close to school.
 
 Conclusion
 -----------
