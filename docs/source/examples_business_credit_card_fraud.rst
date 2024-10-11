@@ -152,6 +152,7 @@ We can visualize the frequency of fraudulent transactions throughout the day wit
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -174,9 +175,8 @@ The transaction amount also likely differs between fraudulent and genuine transa
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = creditcard["Class"].bar(
         method = "avg", 
         of = "Amount",
@@ -267,10 +267,9 @@ Let's look at the correlation matrix and see which features influence our predic
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
-    fig = creditcard.corr()
+    fig = creditcard.corr(width = 800)
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_corr_2.html")
 
 .. raw:: html
@@ -376,9 +375,8 @@ Based on the report, our model is very good at detecting non-fraudulent events; 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = model.features_importance()
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_features_importance_1.html")
 
@@ -414,9 +412,9 @@ Before using these techniques, let's draw some scatter plots to get a better ide
 
 .. ipython:: python
     :suppress:
+    :okwarning:
+    
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = creditcard.scatter(
         ["V12", "V17"], 
         by = "Class", 
@@ -436,9 +434,8 @@ Before using these techniques, let's draw some scatter plots to get a better ide
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = creditcard.scatter(
         ["V12", "V17", "V10"], 
         by = "Class",
@@ -477,6 +474,7 @@ Once we deploy the unsupervised model and can reliably detect suspicious transac
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.model_selection import elbow
     import verticapy
@@ -587,6 +585,7 @@ Let's use the ``z-score`` to detect global outliers of the distribution.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -617,6 +616,7 @@ Other algorithms could be used to solve the problem with more precision if we co
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.vertica import LocalOutlierFactor
     import verticapy
