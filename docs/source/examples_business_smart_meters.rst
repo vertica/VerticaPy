@@ -48,9 +48,25 @@ Create the ``vDataFrames`` of the datasets:
 
 .. code-block:: python
 
-    sm_consumption = vp.read_csv("sm_consumption.csv")
-    sm_weather = vp.read_csv("sm_weather.csv")
+    sm_consumption = vp.read_csv(
+        "sm_consumption.csv",
+        dtype = {
+            "meterID": "Integer",
+            "dateUTC": "Timestamp(6)",
+            "value": "Float(22)",
+        }
+    )
+    sm_weather = vp.read_csv(
+        "sm_weather.csv",
+        dtype = {
+            "dateUTC": "Timestamp(6)",
+            "temperature": "Float(22)",
+            "humidity": "Float(22)",
+        }
+    )
     sm_meters = vp.read_csv("sm_meters.csv")
+
+.. note:: You can let Vertica automatically decide the data type, or you can manually force the data type on any column as seen above.
 
 .. code-block:: python
 
@@ -59,8 +75,22 @@ Create the ``vDataFrames`` of the datasets:
 .. ipython:: python
     :suppress:
 
-    sm_consumption = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_consumption.csv")
-    sm_weather = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_weather.csv")
+    sm_consumption = vp.read_csv(
+        "/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_consumption.csv",
+        dtype = {
+            "meterID": "Integer",
+            "dateUTC": "Timestamp(6)",
+            "value": "Float(22)",
+        }
+    )
+    sm_weather = vp.read_csv(
+        "/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_weather.csv",
+        dtype = {
+            "dateUTC": "Timestamp(6)",
+            "temperature": "Float(22)",
+            "humidity": "Float(22)",
+        }
+    )
     sm_meters = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_meters.csv")
     res = sm_consumption.head(100)
     html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_table_head.html", "w")
@@ -474,6 +504,7 @@ Looking at three different smart meters, we can see a clear decrease in energy c
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -489,9 +520,8 @@ Looking at three different smart meters, we can see a clear decrease in energy c
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 12]["value"].plot(ts = "date_month")
     fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_12.html")
 
@@ -504,9 +534,8 @@ Looking at three different smart meters, we can see a clear decrease in energy c
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 14]["value"].plot(ts = "date_month")
     fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_14.html")
 
@@ -526,6 +555,7 @@ Let's find outliers in the distribution by computing the ZSCORE per meterID.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     std = fun.std(sm_consumption_month["value"])._over(by = [sm_consumption_month["meterID"]])
     avg = fun.avg(sm_consumption_month["value"])._over(by = [sm_consumption_month["meterID"]])
@@ -546,9 +576,8 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 364]["value"].plot(ts = "date_month")
     fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_364.html")
 
@@ -561,9 +590,8 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 399]["value"].plot(ts = "date_month")
     fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_399.html")
 
@@ -576,9 +604,8 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 809]["value"].plot(ts = "date_month")
     fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_809.html")
 
@@ -591,9 +618,8 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 951]["value"].plot(ts = "date_month")
     fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_951.html")
 
@@ -638,8 +664,6 @@ Let's compute the Pearson correlation matrix.
 .. ipython:: python
     :suppress:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month.corr()
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_month_corr_2.html")
 
@@ -760,8 +784,10 @@ Let's create our model.
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
-    fig = model.report("details")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_9.html")
+    res = model.report("details")
+    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_9.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_9.html
@@ -811,9 +837,11 @@ Let's look at the entire regression report.
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
-    fig = model.report()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_10.html")
-
+    res = model.report()
+    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_10.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
+    
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_10.html
 
