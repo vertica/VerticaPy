@@ -186,7 +186,7 @@ Let's just consider teams that have played more than five home and away games.
     football["cnt_games_2"] = "COUNT(*) OVER (PARTITION BY away_team)"
     football.filter((football["cnt_games_2"] > 5) & (football["cnt_games_1"] > 5))
     vp.drop("football_clean", method = "table")
-    res = football.to_db(
+    football.to_db(
         name = "football_clean",
         usecols = [
             "date", 
@@ -202,6 +202,7 @@ Let's just consider teams that have played more than five home and away games.
         relation_type = "table",
         inplace = True,
     )
+    res = football
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_to_db_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -279,12 +280,13 @@ Let's analyze the last game of each tournament.
     import verticapy.sql.functions as fun
 
     football["year"] = fun.year(football["date"])
-    res = football.analytic(
+    football.analytic(
         "row_number", 
         order_by = {"date": "desc"}, 
         by = ["tournament", "year"] , 
         name = "order_tournament",
     )
+    res = football
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_analytic_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -316,7 +318,7 @@ We can filter the data by only considering the last games and top tournaments.
 .. ipython:: python
     :suppress:
 
-    res = football.filter(
+    football.filter(
         conditions = [
             football["order_tournament"] == 1,
             football["winner"] != None,
@@ -332,6 +334,7 @@ We can filter the data by only considering the last games and top tournaments.
             )
         ]
     )
+    res = football
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_filter_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -351,10 +354,11 @@ Let's consider the World Cup as a special tournament. It is the only one where t
 .. ipython:: python
     :suppress:
 
-    res = football["Word_Cup"] = fun.decode(
+    football["Word_Cup"] = fun.decode(
         football["tournament"], "FIFA World Cup", 
         1, 0,
     )
+    res = football["Word_Cup"]
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_decode_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -419,10 +423,11 @@ Let's export the result to our Vertica database.
         "football_cup_winners",
         method = "table",
     )
-    res = football_cup_winners.to_db(
+    football_cup_winners.to_db(
         "football_cup_winners", 
         relation_type = "table",
     )
+    res = football_cup_winners
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_to_db_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -539,10 +544,11 @@ Let's export the result to our Vertica database.
 
     vp.drop("confederation")
     confederation["home_team"].rename("team")
-    res = confederation.to_db(
+    confederation.to_db(
         name = "confederation",
         relation_type = "table",
     )
+    res = confederation
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_confederation_9.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -881,11 +887,12 @@ Let's export the result to our Vertica database.
     :suppress:
 
     vp.drop("football_clustering", method = "table")
-    res = teams_kpi.to_db(
+    teams_kpi.to_db(
         "football_clustering", 
         relation_type = "table",
         inplace = True,
     )
+    res = teams_kpi
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_football_clustering_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -920,6 +927,7 @@ To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an `
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     from verticapy.machine_learning.model_selection import elbow
 
@@ -933,7 +941,6 @@ To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an `
         'Percent_Victory_Home',
         'Percent_Victory_Away',
     ]
-
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = elbow(
@@ -1058,6 +1065,7 @@ We can see the strongest group at the top right of the graphic and weakest teams
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
@@ -1089,9 +1097,8 @@ We can also look at the Percent of Victory by rank to confirm our hypothesis.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = teams_kpi.scatter(
         [
             "Percent_Victory_Continental_Tournament", 
@@ -1117,8 +1124,6 @@ Note that the best team in a weaker confederation might not be particularly stro
     :suppress:
     :okwarning:
 
-    import verticapy
-    verticapy.set_option("plotting_lib", "plotly")
     fig = teams_kpi["Percent_Victory"].boxplot(by = "fifa_rank")
     fig.write_html("/project/data/VerticaPy/docs/figures/examples_football_boxplot_2.html")
 
@@ -1146,11 +1151,12 @@ Let's export the KPIs to our Vertica database.
         "team_kpi", 
         method = "table",
     )
-    res = teams_kpi.to_db(
+    teams_kpi.to_db(
         name = "team_kpi",
         relation_type = "table",
         inplace = True,
     )
+    res = teams_kpi
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_13.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -1168,23 +1174,23 @@ Since a team can by a home or away team, we'll intervert the away and home teams
 .. ipython:: python
 
     football = vp.vDataFrame("football_clean")
-    football["home_team"].rename("team1")
-    football["home_score"].rename("team1_score")
-    football["away_team"].rename("team2")
-    football["away_score"].rename("team2_score")
+    football["home_team"].rename("team1");
+    football["home_score"].rename("team1_score");
+    football["away_team"].rename("team2");
+    football["away_score"].rename("team2_score");
     # will be to use to filter the data after the features engineering
-    football["match_sample"] = "1"
+    football["match_sample"] = "1";
 
-    football2 = vp.vDataFrame("football_clean")
-    football2["home_team"].rename("team2")
-    football2["home_score"].rename("team2_score")
-    football2["away_team"].rename("team1")
-    football2["away_score"].rename("team1_score")
+    football2 = vp.vDataFrame("football_clean");
+    football2["home_team"].rename("team2");
+    football2["home_score"].rename("team2_score");
+    football2["away_team"].rename("team1");
+    football2["away_score"].rename("team1_score");
     # will be to use to filter the data after the features engineering
-    football2["match_sample"] = "2"
+    football2["match_sample"] = "2";
 
     # Merging the 2 interverted datasets
-    all_matchs = football.append(football2)
+    all_matchs = football.append(football2);
 
 Let's add the different KPIs to our dataset.
 
@@ -1879,11 +1885,12 @@ Let's export the result to our Vertica database using the variable 'match_sample
     )
 
     vp.drop("football_test", method = "table")
-    res = all_matchs.to_db(
+    all_matchs.to_db(
         name = "football_test",
         relation_type = "table",
         db_filter = (fun.year(all_matchs["date"]) > 2015) & (all_matchs["match_sample"] == 1),
     )
+    res = all_matchs
     html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_all_matchs_final_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -1897,6 +1904,7 @@ Machine Learning
 It's time to make predictions about the outcomes of games. We have a lot of variables, so we need trees deep enough to pick up the most important features. We also need to consider a minimum number of games in each leaf to avoid over-fitting.
 
 .. ipython:: python
+    :okwarning:
 
     predictors = all_matchs.get_columns(
         exclude_columns = [
