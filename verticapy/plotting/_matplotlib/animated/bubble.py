@@ -222,9 +222,14 @@ class AnimatedBubblePlot(AnimatedBase):
         """
         date_style_dict = format_type(date_style_dict, dtype=dict)
         bbox = format_type(bbox, dtype=list)
-        ax, fig, style_kwargs = self._get_ax_fig(
+        ax, fig_or_plt, style_kwargs = self._get_ax_fig(
             ax, size=(12, 8), set_axis_below=True, grid=True, style_kwargs=style_kwargs
         )
+        # Determine if fig_or_plt is fig or plt
+        if isinstance(fig_or_plt, plt.Figure):
+            fig = fig_or_plt
+        else:
+            fig = ax.get_figure()
         (
             kwargs,
             date_f,
