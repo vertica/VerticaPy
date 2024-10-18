@@ -1,6 +1,5 @@
 .. _user_guide.data_preparation:
 
-
 =================
 Data Preparation
 =================
@@ -86,7 +85,6 @@ Data Preparation
           Standardize numerical features to a 
           common scale, optimizing model performance.
 
-
     .. grid-item::
 
         .. card:: Decomposition
@@ -113,16 +111,3 @@ Data Preparation
 
           Create new informative features to 
           enhance the predictive power of your models.
-
-.. toctree::
-  :hidden:
-  :maxdepth: 1
-  
-  notebooks/data_prep/decomposition/index.ipynb
-  notebooks/data_prep/duplicates/index.ipynb
-  notebooks/data_prep/encoding/index.ipynb
-  notebooks/data_prep/features_engineering/index.ipynb
-  notebooks/data_prep/joins/index.ipynb
-  notebooks/data_prep/missing_values/index.ipynb
-  notebooks/data_prep/normalization/index.ipynb
-  notebooks/data_prep/outliers/index.ipynb

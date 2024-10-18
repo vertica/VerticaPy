@@ -55,11 +55,3 @@ Data Exploration
           allowing you to identify patterns and dependencies 
           crucial for informed decision-making and predictive 
           modeling.
-
-.. toctree::
-  :hidden:
-  :maxdepth: 1
-  
-  notebooks/data_exploration/charts/index.ipynb
-  notebooks/data_exploration/correlations/index.ipynb
-  notebooks/data_exploration/descriptive_statistics/index.ipynb

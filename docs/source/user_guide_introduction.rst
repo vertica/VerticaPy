@@ -1,12 +1,8 @@
 .. _user_guide.introduction:
 
-
 =============
 Introduction
 =============
-
-
-
 
 .. grid:: 1
 
@@ -54,14 +50,3 @@ Introduction
           maximize the efficiency of your analytical workflow. 
           From data management to visualization, elevate your 
           skills and ensure optimal results.
-
-
-
-
-.. toctree::
-  :hidden:
-  :maxdepth: 1
-  
-  notebooks/introduction/installation/index.ipynb
-  notebooks/introduction/vdf/index.ipynb
-  notebooks/introduction/best-practices/index.ipynb

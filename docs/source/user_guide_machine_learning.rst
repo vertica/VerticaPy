@@ -1,6 +1,5 @@
 .. _user_guide.machine_learning:
 
-
 =================
 Machine Learning
 =================
@@ -71,7 +70,6 @@ Machine Learning
           ^^^^^^^
           Uncover insights from time-ordered data, exploring 
           trends and making predictions based on temporal patterns.
-
 
     .. grid-item::
 
