@@ -675,7 +675,8 @@ We can now define the model using those hyperparameters and train it.
         params.pop("C")
     if "max_features" in params:
         params.pop("max_features")
-        
+    if "max_leaf_nodes" in params:
+        params.pop("max_leaf_nodes")        
     vp.drop("btr_lr1")
     model_rf = LinearRegression(name = "btr_lr1", **params)
     model_rf.fit(
