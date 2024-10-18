@@ -1,12 +1,8 @@
 .. _user_guide.full_stack:
 
-
 =================
 Full Stack
 =================
-
-
-
 
 .. grid:: 1 2 2 2
 
@@ -127,18 +123,3 @@ Full Stack
           Draw maps with ease using Geo DataFrame 
           integration, expanding your analytics to 
           spatial data domains.
-
-.. toctree::
-  :hidden:
-  :maxdepth: 1
-  
-  notebooks/full_stack/complex_data_vmap/index.ipynb
-  notebooks/full_stack/dblink_integration/index.ipynb
-  notebooks/full_stack/geopandas/index.ipynb
-  notebooks/full_stack/interpolate/index.ipynb
-  notebooks/full_stack/linear_regression/index.ipynb
-  notebooks/full_stack/to_json/index.ipynb
-  notebooks/full_stack/train_test_split/index.ipynb
-  notebooks/full_stack/udf/index.ipynb
-  notebooks/full_stack/vdataframe_magic/index.ipynb
-

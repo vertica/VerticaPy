@@ -1,6 +1,5 @@
 .. _user_guide.data_ingestion:
 
-
 ===============
 Data Ingestion
 ===============
@@ -15,24 +14,17 @@ VerticaPy supports the ingestion of data in the following formats into Vertica:
 - Avro
 - pandas DataFrame
 
-You can use the :py:func:`~verticapy.read_file` function to ingest all the above file 
-types except pandas DataFrames and SHP, which instead use file-specific ingestion 
-functions— :py:func:`~verticapy.read_pandas` and :py:func:`~verticapy.read_shp`. There are also file-specifc ingestion functions for JSON, Avro, and CSV files that use flex tables to ingest the data.
+You can use the :py:func:`~verticapy.read_file` function to ingest all the above file types except pandas DataFrames and SHP, which instead use file-specific ingestion functions - :py:func:`~verticapy.read_pandas` and :py:func:`~verticapy.read_shp`. There are also file-specifc ingestion functions for JSON, Avro, and CSV files that use flex tables to ingest the data.
 
-Unless you specify the columns' data types with the dtype parameter, 
-the ingestion functions automatically predict the data type of each column. 
-If you provide the column data types, the function does not need to parse the 
-file and predict data types, likely increasing ingestion speed and precision. 
-For the :py:func:`~verticapy.read_file` function, 
-if the file to ingest is located in the Vertica database, you must provide the column data types with the dtype parameter.
+Unless you specify the columns' data types with the dtype parameter, the ingestion functions automatically predict the data type of each column. If you provide the column data types, the function does not need to parse the file and predict data types, likely increasing ingestion speed and precision.
+
+For the :py:func:`~verticapy.read_file` function, if the file to ingest is located in the Vertica database, you must provide the column data types with the dtype parameter.
 
 .. note:: 
     
-    As performance optimizations made in the Vertica database 
-    are carried over to VerticaPy, try to optimize the structure of your projections for new tables in Vertica.
+    As performance optimizations made in the Vertica database are carried over to VerticaPy, try to optimize the structure of your projections for new tables in Vertica.
 
-In the following sections, we will explore a few of the ingestion 
-functions and some of the options they support.
+In the following sections, we will explore a few of the ingestion functions and some of the options they support.
 
 Ingest files with :py:func:`~verticapy.read_file`
 -------------------------------------------------
@@ -58,29 +50,17 @@ For a full list of supported options, see the documentation or use the :py:func:
 
 .. note::
 
-    All data files used in this tutorial are availble in the VerticaPy 
-    datasets directory. For demo purposes, the following examples 
-    ingest the data files using :py:func:`~verticapy.read_file` and other file-specific read f
-    unctions. However, VerticaPy includes a set of dataset loading 
-    functions that allow you to easily ingest the data files in the datasets directory.
+    All data files used in this tutorial are availble in the VerticaPy datasets directory. For demo purposes, the following examples ingest the data files using :py:func:`~verticapy.read_file` and other file-specific read functions. However, VerticaPy includes a set of dataset loading functions that allow you to easily ingest the data files in the datasets directory.
 
+In the following examples, we will demonstrate how to use the :py:func:`~verticapy.read_file` function to ingest data into Vertica. Both file location options, in-database and local, will be explored.
 
-In the following examples, we will demonstrate how to use the :py:func:`~verticapy.read_file` 
-function to ingest data into Vertica. Both file location options, in-database and local, will be explored.
-
-Let's begin with the case where the file is located in the database. 
-We'll ingest the iris.csv file, a popular classification dataset. 
-First, before we ingest the file, run the function with the `genSQL` 
-parameter set to True to view the SQL that will be used to create 
-the table. Because the file is located in the database, we must 
-specify the data types for each column with the `dtypes` parameter:
+Let's begin with the case where the file is located in the database. We'll ingest the iris.csv file, a popular classification dataset. First, before we ingest the file, run the function with the `genSQL` parameter set to True to view the SQL that will be used to create the table. Because the file is located in the database, we must specify the data types for each column with the `dtypes` parameter:
 
 .. note:: 
 
     For the examples in this tutorial, replace `path-to-file` in the path parameter with the `path` to the file in your Vertica database or local machine.
 
-
-.. ipython:: python
+.. code-block:: python
 
     import verticapy as vp
 
@@ -98,7 +78,26 @@ specify the data types for each column with the `dtypes` parameter:
         genSQL = True,
     )
 
-To ingest the file into Vertica, remove the genSQL parameter from the above command and rerun the function:
+.. ipython:: python
+    :supress:
+
+    import verticapy as vp
+
+    vp.read_file(
+        path = "path-to-file/iris.csv",
+        dtype = {
+            "Id": "Integer",
+            "SepalLengthCm": "Numeric",
+            "SepalWidthCm": "Numeric",
+            "PetalLengthCm": "Numeric",
+            "PetalWidthCm": "Numeric",
+            "Species": "Varchar(20)",
+        },
+        schema = "public",
+        genSQL = True,
+    )
+
+To ingest the file into Vertica, remove the `genSQL` parameter from the above command and rerun the function:
 
 .. note:: If no table name is specified by `table_name` parameter, the name of the file is used for the table name.
 
@@ -168,7 +167,7 @@ subset of the Titanic dataset. To begin, load the entire Titanic dataset using t
 
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic();
+    titanic = load_titanic()
 
 To convert a subset of the dataset to a CSV file, select the desired rows in 
 the dataset and use the :py:func:`~verticapy.to_csv` vDataFrame method:
@@ -176,7 +175,7 @@ the dataset and use the :py:func:`~verticapy.to_csv` vDataFrame method:
 .. ipython:: python
 
     titanic[0:50].to_csv(
-        path = "titanic_subset.csv"
+        path = "titanic_subset.csv",
     )
 
 Before ingesting the above CSV file, we can check its columns and their data types with the :py:func:`~verticapy.pcsv` function:
@@ -185,39 +184,38 @@ Before ingesting the above CSV file, we can check its columns and their data typ
 
     vp.pcsv(path = "titanic_subset.csv",
         sep = ",",
-        na_rep = "",    
+        na_rep = "",
     )
 
 Now, setting the `ingest_local` parameter to `True`, ingest the CSV file into the Vertica database:
 
 .. code-block:: python
 
-    vp.read_csv("titanic_subset.csv",
+    vp.read_csv(
+        "titanic_subset.csv",
         schema = "public",
         table_name = "titanic_subset",
         sep = ",",
-        ingest_local = True
+        ingest_local = True,
+    )
    
-   
-If we want to insert additional data from the original 
-Titanic dataset into the `public.titanic_subset` table, 
-we can do so by setting the `insert` parameter of the :py:func:`~verticapy.read_csv` function to `True`:
+If we want to insert additional data from the original Titanic dataset into the `public.titanic_subset` table, we can do so by setting the `insert` parameter of the :py:func:`~verticapy.read_csv` function to `True`:
 
 .. hint:: You can also insert data into an existing Vertica table with the :py:func:`~verticapy.insert_into` function.
 
 .. code-block:: python
 
     titanic[50:100].to_csv(
-        path = "titanic_more_data.csv"
+        path = "titanic_more_data.csv",
     )
 
-    vp.read_csv("titanic_more_data.csv",
+    vp.read_csv(
+        "titanic_more_data.csv",
         schema = "public",
         table_name = "titanic_subset",
         sep = ",",
-        insert = True
+        insert = True,
     )
-
 
 Ingest JSON files
 ------------------
