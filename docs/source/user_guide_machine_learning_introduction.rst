@@ -70,7 +70,7 @@ In the following example, we use a ``Linear Support Vector Classification`` (SVC
     html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/ug_ml_table_introduction_1.html
+    :file: /project/data/VerticaPy/docs/figures/ug_ml_table_introduction_1.html
 
 .. code-block:: python
 
