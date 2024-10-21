@@ -86,12 +86,12 @@ Our functions are now available in Vertica.
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT EXP(1) AS python_exp;")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_udf_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_udf_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_udf_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_udf_1.html
 
 .. code-block:: ipython
 
@@ -103,12 +103,12 @@ Our functions are now available in Vertica.
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT False AS python_isclose;")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_udf_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_udf_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_udf_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_udf_2.html
 
 .. code-block:: ipython
 
@@ -120,12 +120,12 @@ Our functions are now available in Vertica.
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT True AS python_isclose;")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_udf_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_udf_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_udf_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_udf_3.html
 
 .. code-block:: ipython
 
@@ -137,11 +137,11 @@ Our functions are now available in Vertica.
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT -0.702908587257618 AS norm_age, -0.0752136752136752 AS norm_fare;")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_udf_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_udf_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_udf_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_udf_4.html
 
 It is now easy to bring customized Python functions.

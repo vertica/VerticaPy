@@ -28,12 +28,12 @@ This example demonstrates the advantages of GeoPandas integration with the 'worl
     vp.set_option("plotting_lib", "matplotlib")
     world = load_world()
     res = world.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_gpd_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_gpd_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_gpd_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_gpd_1.html
 
 The ``apply`` function of the VerticaPy stats module allows you to apply any Vertica function to the data. Let's compute the area of each country.
 
@@ -55,12 +55,12 @@ The ``apply`` function of the VerticaPy stats module allows you to apply any Ver
     world["geography"].astype("geography")
     world["area"] = fun.apply("st_area", world["geography"])
     res = world.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_gpd_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_gpd_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_gpd_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_gpd_2.html
 
 We can now export our vDataFrame as a GeoPandas DataFrame.
 

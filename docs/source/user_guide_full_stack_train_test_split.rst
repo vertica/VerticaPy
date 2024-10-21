@@ -22,12 +22,12 @@ In VerticaPy, the ``train_test_split`` method uses a random number generator to 
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT SEEDED_RANDOM(0);")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tts_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tts_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tts_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tts_1.html
 
 The ``SEEDED_RANDOM`` function chooses a number in the interval ``[0,1)``. Since the seed is user-provided, these results are reproducible. In this example, passing '0' as the seed always returns the same value.
 
@@ -41,12 +41,12 @@ The ``SEEDED_RANDOM`` function chooses a number in the interval ``[0,1)``. Since
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT SEEDED_RANDOM(0);")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tts_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tts_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tts_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tts_2.html
 
 A different seed will generate a different value.
 
@@ -60,12 +60,12 @@ A different seed will generate a different value.
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT SEEDED_RANDOM(1);")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tts_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tts_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tts_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tts_3.html
 
 The ``train_test_split`` function generates a random seed and we can then share that seed between the training and testing sets.
 
@@ -124,11 +124,11 @@ When fitting the model with the ``fit`` function, you can use the parameter ``te
     :okwarning:
 
     res = model.report()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tts_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tts_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tts_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tts_4.html
 
 All model evaluation abstractions will now use the test relation for the scoring. After that, you can evaluate the efficiency of your model.

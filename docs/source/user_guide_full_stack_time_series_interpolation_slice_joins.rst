@@ -42,7 +42,7 @@ Luckily, VerticaPy can easily slice and interpolate time series data. We'll demo
 
     import verticapy as vp
     sm_consumption = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_consumption.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/smart_meters/sm_consumption.csv",
         dtype = {
             "meterID": "Integer",
             "dateUTC": "Timestamp(6)",
@@ -50,21 +50,21 @@ Luckily, VerticaPy can easily slice and interpolate time series data. We'll demo
         }
     )
     sm_weather = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_weather.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/smart_meters/sm_weather.csv",
         dtype = {
             "dateUTC": "Timestamp(6)",
             "temperature": "Float(22)",
             "humidity": "Float(22)",
         }
     )
-    sm_meters = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_meters.csv")
+    sm_meters = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/smart_meters/sm_meters.csv")
     res = sm_consumption.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_1.html
 
 .. code-block:: python
 
@@ -74,12 +74,12 @@ Luckily, VerticaPy can easily slice and interpolate time series data. We'll demo
     :suppress:
 
     res = sm_weather.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_2.html
 
 Our first dataset has a lot of gaps, so let's slice and interpolate the energy consumption every 30 minutes.
 
@@ -103,12 +103,12 @@ Our first dataset has a lot of gaps, so let's slice and interpolate the energy c
         by = ["meterID"],
     )
     res = interpolate.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_3.html
 
 VerticaPy achieves this with its close integration with Vertica; by leveraging Vertica's comutational power and the ``TIMESERIES`` clause, slicing and interpolation is easy.
 
@@ -136,12 +136,12 @@ Having sliced data on regular interval of time can often make it easier to join 
         on = {"dateUTC": "dateUTC"},
         expr2 = ["temperature", "humidity"],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_4.html
 
 Keep in mind that slicing, interpolating, and joins can be computationally expensive.
 
@@ -165,12 +165,12 @@ Thanks to Vertica's built-in clauses and options, VerticaPy can perform joins ba
         on_interpolate = {"dateUTC": "dateUTC"},
         expr2 = ["temperature", "humidity"],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_5.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_5.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_tsisj_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_tsisj_5.html
 
 .. ipython:: python
 

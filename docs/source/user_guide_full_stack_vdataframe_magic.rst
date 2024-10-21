@@ -20,12 +20,12 @@ VerticaPy 0.3.2 introduces the 'Magic' methods, which offer some additional flex
     from verticapy.datasets import load_titanic
     titanic = load_titanic()
     res = titanic.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_1.html
 
 Feature Engineering, 'pandas'-style
 ------------------------------------
@@ -43,12 +43,12 @@ You can create new features with in a 'pandas' style.
 
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
     res = titanic[["sibsp", "parch", "family_size"]]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_2.html
 
 You can also create features from various mathematical functions.
 
@@ -66,12 +66,12 @@ You can also create features from various mathematical functions.
     import verticapy.sql.functions as fun
     titanic["ln_fare"] = fun.ln(titanic["fare"])
     res = titanic[["fare", "ln_fare"]]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_3.html
 
 .. code-block:: ipython
 
@@ -84,12 +84,12 @@ You can also create features from various mathematical functions.
 
     titanic["x"] = 1 - fun.exp(-titanic["fare"])
     res = titanic[["fare", "x"]]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_4.html
 
 Conditional Operators
 ----------------------
@@ -111,12 +111,12 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 
     single_family = titanic[titanic["family_size"] == 1]
     res = single_family.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_5.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_5.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_5.html
 
 **And Operator (&)**
 
@@ -124,7 +124,6 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 
     # Identifies the passengers who came alone and 
     # who are between 15 and 24 years old...
-
     # ...with comparison operators
     single_family[(titanic["age"] >= 15) & (titanic["age"] <= 24)]
 
@@ -133,12 +132,12 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
     :okwarning:
 
     res = single_family[(titanic["age"] >= 15) & (titanic["age"] <= 24)]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_6.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_6.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_6.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_6.html
 
 **Between Operator (_between)**
 
@@ -152,12 +151,12 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
     :okwarning:
 
     res = single_family[titanic["age"]._between(15, 24)]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_7.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_7.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_7.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_7.html
 
 **In Operator (_in)**
 
@@ -173,12 +172,12 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
     :okwarning:
 
     res = single_family[titanic["pclass"]._in(1, 3)]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_8.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_8.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_8.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_8.html
 
 **Not In Operator (_not_in)**
 
@@ -192,12 +191,12 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
     :okwarning:
 
     res = single_family[titanic["pclass"]._not_in(2)]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_9.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_9.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_9.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_9.html
 
 **Or Operator (|)**
 
@@ -211,12 +210,12 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
     :okwarning:
 
     res = single_family[(titanic["pclass"] == 1) | (titanic["pclass"] == 3)]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_10.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_10.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_10.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_10.html
 
 **Not Equal Operator (!=)**
 
@@ -230,12 +229,12 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
     :okwarning:
 
     res = single_family[titanic["pclass"] != 2]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_11.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_11.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_11.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_11.html
 
 'Pythonic' Invokation of Vertica Functions
 -------------------------------------------
@@ -247,34 +246,13 @@ You can easily apply Vertica functions to your ``vDataFrame``. Here, we use Vert
     titanic["age"].count()
 
 .. ipython:: python
-    :suppress:
-    :okwarning:
 
     res = titanic["age"].count()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_12.html", "w")
-    html_file.write(res._repr_html_())
-    html_file.close()
-
-.. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_12.html
-
-.. code-block:: ipython
-
-    titanic["age"] = fun.coalesce(titanic["age"], titanic["age"].avg())
-    titanic["age"].count()
 
 .. ipython:: python
-    :suppress:
-    :okwarning:
 
-    titanic["age"] = fun.coalesce(titanic["age"], titanic["age"].avg())
-    res = titanic["age"].count()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_13.html", "w")
-    html_file.write(res._repr_html_())
-    html_file.close()
-
-.. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_13.html
+    titanic["age"] = fun.coalesce(titanic["age"], titanic["age"].avg());
+    titanic["age"].count()
 
 Slicing the vDataFrame
 -----------------------
@@ -290,15 +268,27 @@ You can now slice the ``vDataFrame`` with indexing operators.
     :okwarning:
 
     res = titanic[0:30]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_14.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_14.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_vdfm_14.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_14.html
 
 To access a single row, we just have to specify the index.
 
-.. ipython:: python
+.. code-block:: python
 
     titanic[0]
+
+.. ipython:: python
+    :suppress:
+    :okwarning:
+
+    res = titanic[0]
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_15.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
+
+.. raw:: html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_15.html
