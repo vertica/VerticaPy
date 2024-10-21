@@ -21,7 +21,7 @@ Before connecting to a database, you must satisfy the following requirements:
 
 
 For more information about these installations, 
-see `Getting Started <https://www.vertica.com/python/documentation/1.0.x/html/getting_started.html>`_.
+see :ref:`gettting_started`.
 
 
 Connect to a DB
