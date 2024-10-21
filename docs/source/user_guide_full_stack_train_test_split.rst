@@ -14,7 +14,7 @@ In VerticaPy, the ``train_test_split`` method uses a random number generator to 
 
 .. code-block:: ipython
     
-    %%sql SELECT SEEDED_RANDOM(0); 
+    %sql -c "SELECT SEEDED_RANDOM(0);"
 
 .. ipython:: python
     :suppress:
@@ -33,7 +33,7 @@ The ``SEEDED_RANDOM`` function chooses a number in the interval ``[0,1)``. Since
 
 .. code-block:: ipython
     
-    %%sql SELECT SEEDED_RANDOM(0); 
+    %sql -c "SELECT SEEDED_RANDOM(0);"
 
 .. ipython:: python
     :suppress:
@@ -52,7 +52,7 @@ A different seed will generate a different value.
 
 .. code-block:: ipython
     
-    %%sql SELECT SEEDED_RANDOM(1); 
+    %%sql -c "SELECT SEEDED_RANDOM(1);"
 
 .. ipython:: python
     :suppress:
