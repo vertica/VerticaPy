@@ -68,7 +68,7 @@ By using the ``discretize`` method, we can discretize the data using equal-width
     titanic["age"].discretize(method = "same_width", h = 10)
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
-    fig = titanic["age"].bar(max_cardinality = 10)
+    fig = titanic["age"].bar(max_cardinality = 10, width = 900)
     fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_encoding_3.html")
 
 .. raw:: html

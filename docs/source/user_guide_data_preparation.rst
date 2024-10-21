@@ -9,7 +9,8 @@ Data Preparation
     .. grid-item::
     
       .. card:: Joins
-          :link: notebooks/data_prep/joins/index.html
+          :link: user_guide.data_preparation.joins
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
           
@@ -22,7 +23,8 @@ Data Preparation
     .. grid-item::
 
       .. card:: Duplicates
-          :link: notebooks/data_prep/duplicates/index.html
+          :link: user_guide.data_preparation.duplicates
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
 
@@ -35,7 +37,8 @@ Data Preparation
     .. grid-item::
 
         .. card:: Outliers
-          :link: notebooks/data_prep/outliers/index.html
+          :link: user_guide.data_preparation.outliers
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
 
@@ -48,7 +51,8 @@ Data Preparation
     .. grid-item::
 
         .. card:: Missing values
-          :link: notebooks/data_prep/missing_values/index.html
+          :link: user_guide.data_preparation.missing_values
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
 
@@ -62,7 +66,8 @@ Data Preparation
     .. grid-item::
 
         .. card:: Encoding
-          :link: notebooks/data_prep/encoding/index.html
+          :link: user_guide.data_preparation.encoding
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
 
@@ -75,7 +80,8 @@ Data Preparation
     .. grid-item::
 
         .. card:: Normalization
-          :link: notebooks/data_prep/normalization/index.html
+          :link: user_guide.data_preparation.normalization
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
 
@@ -88,7 +94,8 @@ Data Preparation
     .. grid-item::
 
         .. card:: Decomposition
-          :link: notebooks/data_prep/decomposition/index.html
+          :link: user_guide.data_preparation.decomposition
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
 
@@ -102,7 +109,8 @@ Data Preparation
     .. grid-item::
 
         .. card:: Feature engineering
-          :link: notebooks/data_prep/features_engineering/index.html
+          :link: user_guide.data_preparation.joins
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-13
 

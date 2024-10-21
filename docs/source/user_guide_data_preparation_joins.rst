@@ -214,12 +214,13 @@ Let's use a cross join of the 'airports' dataset on itself to compute the distan
 
     import verticapy.sql.functions as fun
 
-    res = distances["distance"] = fun.distance(
+    distances["distance"] = fun.distance(
         distances["airport1_latitude"], 
         distances["airport1_longitude"],                                
         distances["airport2_latitude"],
         distances["airport2_longitude"],
     )
+    res = distances["distance"]
     html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_6.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
