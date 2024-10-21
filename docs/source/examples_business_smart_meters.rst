@@ -3,21 +3,21 @@
 Smart Meters
 =============
 
-This example uses the following datasets to predict peoples' electricity consumption. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/smart_meters.ipynb>`_. We'll use the following datasets:
+This example uses the following datasets to predict peoples' electricity consumption. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/smart_meters.ipynb>`_. We'll use the following datasets:
 
-`sm_consumption <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/sm_consumption.csv>`_
+`sm_consumption <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/sm_consumption.csv>`_
 
 - **dateUTC:** Date and time of the record.
 - **meterID:** Smart meter ID.
 - **value:** Electricity consumed during 30 minute interval (in kWh).
 
-`sm_weather <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/sm_weather.csv>`_
+`sm_weather <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/sm_weather.csv>`_
 
 - **dateUTC:** Date and time of the record.
 - **temperature:** Temperature.
 - **humidity:** Humidity.
 
-`sm_meters <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/sm_meters.csv>`_
+`sm_meters <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/sm_meters.csv>`_
 
 - **longitude:** Longitude.
 - **latitude:** Latitude.
