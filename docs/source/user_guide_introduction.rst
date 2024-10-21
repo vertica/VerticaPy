@@ -9,7 +9,8 @@ Introduction
     .. grid-item::
     
       .. card:: Connect to a Vertica database
-          :link: notebooks/introduction/installation/index.html
+          :link: user_guide.introduction.installation
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-9
 
@@ -39,7 +40,8 @@ Introduction
     .. grid-item::
 
         .. card:: Best practices
-          :link: notebooks/introduction/best-practices/index.html
+          :link: user_guide.introduction.best_practices
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-9
 
