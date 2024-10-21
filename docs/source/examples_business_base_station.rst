@@ -297,8 +297,6 @@ Let's examine the network activity of each of our districts. To do this, we need
     )
     intersect_districts_cdr.head(100)
 
-
-
 .. ipython:: python
     :suppress:
 
@@ -323,7 +321,6 @@ Let's examine the network activity of each of our districts. To do this, we need
     html_file = open("/project/data/VerticaPy/docs/figures/examples_base_station_shanghai_district_activity.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
-
 
 .. ipython:: python
 
