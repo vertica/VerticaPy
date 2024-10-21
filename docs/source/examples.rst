@@ -12,13 +12,13 @@ Examples
     .. grid-item::
     
       .. card:: Business
-          :link: examples.learn
+          :link: examples.business
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
           :class-footer: user_guide_footer
 
-          11 Notebooks
+          10 Notebooks
           ^^^^^^^^^^^^^^
           Variety of actual buiness use cases.
           
@@ -31,20 +31,20 @@ Examples
           :class-card: custom-card-8
           :class-footer: user_guide_footer
 
-          11 Notebooks
+          5 Notebooks
           ^^^^^^^^^^^^^^
           Learn the fundamentals of VerticaPy.
 
       .. grid-item::
     
       .. card:: Understand
-          :link: examples.learn
+          :link: examples.understand
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
           :class-footer: user_guide_footer
 
-          11 Notebooks
+          3 Notebooks
           ^^^^^^^^^^^^^^
           Understand basic data science concepts.
           
