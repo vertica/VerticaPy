@@ -9,7 +9,8 @@ Data Exploration
     .. grid-item::
     
       .. card:: Descriptive statistics
-          :link: notebooks/data_exploration/descriptive_statistics/index.html
+          :link: user_guide.data_exploration.descriptive_statistics
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-12
 
@@ -25,7 +26,8 @@ Data Exploration
     .. grid-item::
 
       .. card:: Charts
-          :link: notebooks/data_exploration/charts/index.html
+          :link: user_guide.data_exploration.charts
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-12
 
@@ -42,7 +44,8 @@ Data Exploration
     .. grid-item::
 
         .. card:: Coorelation & dependencies
-          :link: notebooks/data_exploration/correlations/index.html
+          :link: user_guide.data_exploration.correlation
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-12
 

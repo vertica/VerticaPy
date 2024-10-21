@@ -78,25 +78,6 @@ Let's begin with the case where the file is located in the database. We'll inges
         genSQL = True,
     )
 
-.. ipython:: python
-    :supress:
-
-    import verticapy as vp
-
-    vp.read_file(
-        path = "path-to-file/iris.csv",
-        dtype = {
-            "Id": "Integer",
-            "SepalLengthCm": "Numeric",
-            "SepalWidthCm": "Numeric",
-            "PetalLengthCm": "Numeric",
-            "PetalWidthCm": "Numeric",
-            "Species": "Varchar(20)",
-        },
-        schema = "public",
-        genSQL = True,
-    )
-
 To ingest the file into Vertica, remove the `genSQL` parameter from the above command and rerun the function:
 
 .. note:: If no table name is specified by `table_name` parameter, the name of the file is used for the table name.
@@ -117,9 +98,9 @@ To ingest the file into Vertica, remove the `genSQL` parameter from the above co
     )
 
 .. ipython:: python
-    :supress:
+    :suppress:
 
-    fromv verticapy.datasets import load_iris
+    from verticapy.datasets import load_iris
     iris = load_iris()
     res = iris
     html_file = open("/project/data/VerticaPy/docs/figures/user_guide_data_ingestion_iris.html", "w")
