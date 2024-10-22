@@ -37,7 +37,7 @@ Full Stack
     .. grid-item::
 
         .. card:: XGBoost.to_json
-          :link: user_guide.full_stack.geopandas
+          :link: user_guide.full_stack.to_json
           :link-type: ref
           :text-align: center
           :class-card: custom-card-15
