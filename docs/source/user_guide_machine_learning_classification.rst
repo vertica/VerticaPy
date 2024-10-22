@@ -31,6 +31,7 @@ Let's use the iris dataset.
 Now that the data is loaded, we can fit the model.
 
 .. ipython:: python
+    :okwarning:
 
     model.fit(iris, ["PetalLengthCm", "SepalLengthCm"], "Species")
 

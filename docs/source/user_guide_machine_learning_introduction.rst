@@ -33,6 +33,7 @@ For example, predicting the total charges of a Telco customer using their tenure
     :okwarning:
 
     import verticapy as vp
+    vp.set_option("plotting_lib", "plotly")
 
     churn = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/user_guides/data_exploration/churn.csv")
 
