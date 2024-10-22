@@ -455,7 +455,6 @@ We create virtual base stations by grouping existing base stations in 100 cluste
     vp.drop("shanghai.bs", method = "table");
     bs.to_db("shanghai.bs",relation_type = "table",inplace = True,);
 
-
 .. code-block:: python
 
     model.plot_voronoi(plot_crosses = False)
