@@ -9,7 +9,7 @@ Full Stack
     .. grid-item::
     
       .. card:: DBLink integration
-          :link: user_guide.full_stack
+          :link: user_guide.full_stack.db_link
           :link-type: ref
           :text-align: center
           :class-card: custom-card-15
