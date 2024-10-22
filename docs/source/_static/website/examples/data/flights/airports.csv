@@ -95,7 +95,7 @@ DSM,Des Moines International Airport,Des Moines,IA,USA,41.53493,-93.66068
 DTW,Detroit Metropolitan Airport,Detroit,MI,USA,42.21206,-83.34884
 DVL,Devils Lake Regional Airport,Devils Lake,ND,USA,48.11425,-98.90878
 EAU,Chippewa Valley Regional Airport,Eau Claire,WI,USA,44.86526,-91.48507
-ECP,Northwest Florida Beaches International Airport,Panama City,FL,USA,,
+ECP,Northwest Florida Beaches International Airport,Panama City,FL,USA,NULL,NULL
 EGE,Eagle County Regional Airport,Eagle,CO,USA,39.64257,-106.91770
 EKO,Elko Regional Airport,Elko,NV,USA,40.82493,-115.79170
 ELM,Elmira/Corning Regional Airport,Elmira,NY,USA,42.15991,-76.89144
@@ -233,7 +233,7 @@ ORH,Worcester Regional Airport,Worcester,MA,USA,42.26734,-71.87571
 OTH,Southwest Oregon Regional Airport (North Bend Municipal),North Bend,OR,USA,43.41714,-124.24603
 OTZ,Ralph Wien Memorial Airport,Kotzebue,AK,USA,66.88468,-162.59855
 PAH,Barkley Regional Airport,Paducah,KY,USA,37.06083,-88.77375
-PBG,Plattsburgh International Airport,Plattsburgh,NY,USA,,
+PBG,Plattsburgh International Airport,Plattsburgh,NY,USA,NULL,NULL
 PBI,Palm Beach International Airport,West Palm Beach,FL,USA,26.68316,-80.09559
 PDX,Portland International Airport,Portland,OR,USA,45.58872,-122.59750
 PHF,Newport News/Williamsburg International Airport,Newport News,VA,USA,37.13190,-76.49299
@@ -312,7 +312,7 @@ TWF,Magic Valley Regional Airport (Joslin Field),Twin Falls,ID,USA,42.48180,-11
 TXK,Texarkana Regional Airport (Webb Field),Texarkana,AR,USA,33.45371,-93.99102
 TYR,Tyler Pounds Regional Airport,Tyler,TX,USA,32.35414,-95.40239
 TYS,McGhee Tyson Airport,Knoxville,TN,USA,35.81249,-83.99286
-UST,Northeast Florida Regional Airport (St. Augustine Airport),St. Augustine,FL,USA,,
+UST,Northeast Florida Regional Airport (St. Augustine Airport),St. Augustine,FL,USA,NULL,NULL
 VEL,Valdez Airport,Vernal,UT,USA,40.44090,-109.50992
 VLD,Valdosta Regional Airport,Valdosta,GA,USA,30.78250,-83.27672
 VPS,Destin-Fort Walton Beach Airport/Eglin AFB,Valparaiso,FL,USA,30.48325,-86.52540
