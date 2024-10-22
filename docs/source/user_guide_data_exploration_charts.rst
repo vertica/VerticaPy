@@ -4,19 +4,19 @@
 Charts
 =======
 
-Charts are a powerful tool for understanding and interpreting data. 
+Charts are a powerful tool for understanding and interpreting data.
+
 Most charts use aggregations to represent the dataset, and others downsample the data to represent a subset.
 
 .. note:: See :ref:`chart_gallery` for all the different charts and their syntax.
 
 First, let's import the modules needed for this notebook.
 
-
 .. ipython:: python
 
   # VerticaPy
-  from verticapy.datasets import load_titanic, load_iris, load_world, load_amazon, load_africa_education
   import verticapy as vp
+  from verticapy.datasets import load_titanic, load_iris, load_world, load_amazon, load_africa_education
 
   # Numpy & Matplotlib
   import numpy as np
@@ -29,15 +29,15 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
 .. code-block::
 
   vp.set_option("plotting_lib", "highcharts")
-  vdf = load_titanic()
-  vdf["pclass"].bar()
+  titanic = load_titanic()
+  titanic["pclass"].bar()
 
 .. ipython:: python
   :suppress:
 
   vp.set_option("plotting_lib", "highcharts")
-  vdf = load_titanic()
-  fig = vdf["pclass"].bar()
+  titanic = load_titanic()
+  fig = titanic["pclass"].bar()
   html_text = fig.htmlcontent.replace("container", "user_guides_data_exploration_titanic_bar")
   with open("figures/user_guides_data_exploration_titanic_bar.html", "w") as file:
     file.write(html_text)
@@ -47,12 +47,12 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
 
 .. code-block::
 
-  vdf["pclass"].pie()
+  titanic["pclass"].pie()
 
 .. ipython:: python
   :suppress:
 
-  fig = vdf["pclass"].pie()
+  fig = titanic["pclass"].pie()
   html_text = fig.htmlcontent.replace("container", "user_guides_data_exploration_titanic_pie")
   with open("figures/user_guides_data_exploration_titanic_pie.html", "w") as file:
     file.write(html_text)
@@ -60,17 +60,14 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_pie.html
 
-
-
-
 .. code-block::
 
-  vdf["home.dest"].bar()
+  titanic["home.dest"].bar()
 
 .. ipython:: python
   :suppress:
 
-  fig = vdf["home.dest"].bar()
+  fig = titanic["home.dest"].bar()
   html_text = fig.htmlcontent.replace("container", "user_guides_data_exploration_titanic_home_dest_bar")
   with open("figures/user_guides_data_exploration_titanic_home_dest_bar.html", "w") as file:
     file.write(html_text)
@@ -78,18 +75,16 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_home_dest_bar.html
 
-These methods will draw the most occurent categories and merge 
-the others. To change the number of elements, you can use the `max_cardinality` parameter.
-
+These methods will draw the most occurent categories and merge the others. To change the number of elements, you can use the `max_cardinality` parameter.
 
 .. code-block::
 
-  vdf["home.dest"].bar(max_cardinality = 5)
+  titanic["home.dest"].bar(max_cardinality = 5)
 
 .. ipython:: python
   :suppress:
 
-  fig = vdf["home.dest"].bar(max_cardinality = 5)
+  fig = titanic["home.dest"].bar(max_cardinality = 5)
   html_text = fig.htmlcontent.replace("container", "user_guides_data_exploration_titanic_home_dest_bar_max_cardinality")
   with open("figures/user_guides_data_exploration_titanic_home_dest_bar_max_cardinality.html", "w") as file:
     file.write(html_text)
@@ -97,19 +92,16 @@ the others. To change the number of elements, you can use the `max_cardinality` 
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_home_dest_bar_max_cardinality.html
 
-When dealing with numerical data types, the process is different. 
-Vertica needs to discretize the numerical features to draw them. 
-You can choose the bar width (`h` parameter) or let VerticaPy 
-compute an optimal width using the Freedman-Diaconis rule.
+When dealing with numerical data types, the process is different. Vertica needs to discretize the numerical features to draw them. You can choose the bar width (`h` parameter) or let VerticaPy compute an optimal width using the Freedman-Diaconis rule.
 
 .. code-block::
 
-  vdf["age"].hist()
+  titanic["age"].hist()
 
 .. ipython:: python
   :suppress:
 
-  fig = vdf["age"].hist()
+  fig = titanic["age"].hist()
   html_text = fig.htmlcontent.replace("container", "user_guides_data_exploration_titanic_age_hist")
   with open("figures/user_guides_data_exploration_titanic_age_hist.html", "w") as file:
     file.write(html_text)
@@ -119,12 +111,12 @@ compute an optimal width using the Freedman-Diaconis rule.
 
 .. code-block::
 
-  vdf["age"].hist(h = 5)
+  titanic["age"].hist(h = 5)
 
 .. ipython:: python
   :suppress:
 
-  fig = vdf["age"].hist(h = 5)
+  fig = titanic["age"].hist(h = 5)
   html_text = fig.htmlcontent.replace("container", "user_guides_data_exploration_titanic_age_hist_h5")
   with open("figures/user_guides_data_exploration_titanic_age_hist_h5.html", "w") as file:
     file.write(html_text)
@@ -136,12 +128,12 @@ You can also change the occurences by another aggregation with the `method` and 
 
 .. code-block::
 
-  vdf["age"].hist(method = "avg", of = "survived")
+  titanic["age"].hist(method = "avg", of = "survived")
 
 .. ipython:: python
   :suppress:
 
-  fig = vdf["age"].hist(method = "avg", of = "survived")
+  fig = titanic["age"].hist(method = "avg", of = "survived")
   html_text = fig.htmlcontent.replace("container", "user_guides_data_exploration_titanic_age_hist_avs")
   with open("figures/user_guides_data_exploration_titanic_age_hist_avs.html", "w") as file:
     file.write(html_text)
@@ -150,21 +142,21 @@ You can also change the occurences by another aggregation with the `method` and 
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_age_hist_avs.html
 
 
-VerticaPy uses the same process for other graphics, 
-like 2-dimensional histograms and bar charts. 
+VerticaPy uses the same process for other graphics, like 2-dimensional histograms and bar charts.
+
 Let us showcase another plotting library for these plots.
 
 
 .. code-block::
 
   vp.set_option("plotting_lib", "plotly")
-  vdf.bar(["pclass", "survived"])
+  titanic.bar(["pclass", "survived"])
 
 .. ipython:: python
   :suppress:
 
   vp.set_option("plotting_lib", "plotly")
-  fig = vdf.bar(["pclass", "survived"])
+  fig = titanic.bar(["pclass", "survived"])
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_surv.html")
 
 .. raw:: html
@@ -175,46 +167,45 @@ Let us showcase another plotting library for these plots.
 
 .. code-block::
     
-  vdf.hist(
+  titanic.hist(
       ["fare", "pclass"],
       method = "avg",
-      of = "survived"
+      of = "survived",
   )
 
 .. ipython:: python
   :suppress:
 
-  fig = vdf.hist(
+  fig = titanic.hist(
       ["fare", "pclass"],
       method = "avg",
-      of = "survived"
+      of = "survived",
   )
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_fare.html")
 
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_fare.html
 
-
 Pivot tables give us aggregated information for every category and are more powerful than histograms or bar charts.
 
 .. code-block::
     
-  vdf.pivot_table(
+  titanic.pivot_table(
       ["pclass", "fare"], 
       method = "avg",
       of = "survived",
-      fill_none = np.nan
+      fill_none = np.nan,
   )
 
 .. ipython:: python
   :suppress:
   :okwarning:
 
-  fig = vdf.pivot_table(
+  fig = titanic.pivot_table(
       ["pclass", "fare"], 
       method = "avg",
       of = "survived",
-      fill_none = np.nan
+      fill_none = np.nan,
   )
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_fare_fill.html")
 
@@ -223,16 +214,15 @@ Pivot tables give us aggregated information for every category and are more powe
 
 Box plots are useful for understanding statistical dispersion.
 
-
 .. code-block::
     
-  vdf.boxplot(columns = ["age", "fare"])
+  titanic.boxplot(columns = ["age", "fare"])
 
 .. ipython:: python
   :suppress:
   :okwarning:
 
-  fig = vdf.boxplot(columns = ["age", "fare"])
+  fig = titanic.boxplot(columns = ["age", "fare"])
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot.html")
 
 .. raw:: html
@@ -240,44 +230,38 @@ Box plots are useful for understanding statistical dispersion.
 
 .. code-block::
     
-  vdf["age"].boxplot()
+  titanic["age"].boxplot()
 
 .. ipython:: python
   :suppress:
   :okwarning:
 
-  fig = vdf["age"].boxplot()
+  fig = titanic["age"].boxplot()
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot_one.html")
 
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot_one.html
 
-
-
-Scatter and bubble plots are also useful for identifying 
-patterns in your data. Note, however, that these methods 
-don't use aggregations; VerticaPy downsamples the data 
-before plotting. You can use the 'max_nb_points' to limit 
-the number of points and avoid unnecessary memory usage.
+Scatter and bubble plots are also useful for identifying patterns in your data. Note, however, that these methods don't use aggregations; VerticaPy downsamples the data before plotting. You can use the 'max_nb_points' to limit the number of points and avoid unnecessary memory usage.
 
 .. code-block::
     
-  vdf = load_iris()
-  vdf.scatter(
+  iris = load_iris()
+  iris.scatter(
       ["SepalLengthCm", "PetalWidthCm"], 
       by = "Species", 
-      max_nb_points = 1000
+      max_nb_points = 1000,
   )
 
 .. ipython:: python
   :suppress:
   :okwarning:
 
-  vdf = load_iris()
-  fig = vdf.scatter(
+  iris = load_iris()
+  fig = iris.scatter(
       ["SepalLengthCm", "PetalWidthCm"], 
       by = "Species", 
-      max_nb_points = 1000
+      max_nb_points = 1000,
   )
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter.html")
 
@@ -288,20 +272,20 @@ Now, let us look at a 3D scatter plot.
 
 .. code-block::
     
-  vdf.scatter(
-      ["SepalLengthCm", "PetalWidthCm", "SepalWidthCm"], 
-      by = "Species", 
-      max_nb_points = 1000
+  iris.scatter(
+      ["SepalLengthCm", "PetalWidthCm", "SepalWidthCm"],
+      by = "Species",
+      max_nb_points = 1000,
   )
 
 .. ipython:: python
   :suppress:
   :okwarning:
 
-  fig = vdf.scatter(
+  fig = iris.scatter(
       ["SepalLengthCm", "PetalWidthCm", "SepalWidthCm"], 
       by = "Species", 
-      max_nb_points = 1000
+      max_nb_points = 1000,
   )
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter_3d.html")
 
@@ -310,25 +294,24 @@ Now, let us look at a 3D scatter plot.
 
 Similarly, we can plot a bubble plot:
 
-
 .. code-block::
     
-  vdf.scatter(
+  iris.scatter(
       ["SepalLengthCm", "PetalWidthCm"], 
       size = "SepalWidthCm",
       by = "Species",
-      max_nb_points = 1000
+      max_nb_points = 1000,
   )
 
 .. ipython:: python
   :suppress:
   :okwarning:
 
-  fig = vdf.scatter(
+  fig = iris.scatter(
       ["SepalLengthCm", "PetalWidthCm"], 
       size = "SepalWidthCm",
       by = "Species",
-      max_nb_points = 1000
+      max_nb_points = 1000,
   )
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter_bubble.html")
 
@@ -337,21 +320,19 @@ Similarly, we can plot a bubble plot:
 
 For more information on scatter look at :py:mod:`verticapy.vDataFrame.scatter`.
 
-Hexbin plots can be useful for generating heatmaps. These summarize data in a similar way to 
-scatter plots, but compute aggregations to get the final results.
+Hexbin plots can be useful for generating heatmaps. These summarize data in a similar way to scatter plots, but compute aggregations to get the final results.
 
 .. ipython:: python
 
   vp.set_option("plotting_lib", "matplotlib")
   @savefig user_guides_data_exploration_iris_hexbin.png
-  vdf.hexbin(
+  iris.hexbin(
       ["SepalLengthCm", "SepalWidthCm"], 
       method = "avg", 
-      of = "PetalWidthCm"
+      of = "PetalWidthCm",
   )
 
-Hexbin, scatter, and bubble plots also allow you to provide 
-a background image. The dataset used below is available here.
+Hexbin, scatter, and bubble plots also allow you to provide a background image. The dataset used below is available here.
 
 .. code-block:: python
 
@@ -361,7 +342,7 @@ a background image. The dataset used below is available here.
       ["lon", "lat"],
       method = "avg",
       of = "zralocp",
-      img = "img/africa.png"
+      img = "img/africa.png",
   )
 
 .. ipython:: python
@@ -377,7 +358,6 @@ a background image. The dataset used below is available here.
       img = "/project/data/VerticaPy/docs/source/_static/website/user_guides/data_exploration/africa.png"
   )
 
-
 It is also possible to use SHP datasets to draw maps.
 
 .. code-block:: python
@@ -388,14 +368,14 @@ It is also possible to use SHP datasets to draw maps.
       ["lon", "lat"],
       method = "avg",
       of = "zralocp",
-      img = "img/africa.png"
+      img = "img/africa.png",
   )
 
 .. ipython:: python
 
   # Africa Dataset
-  africa_world = load_world();
-  africa_world = africa_world[africa_world["continent"] == "Africa"];
+  africa_world = load_world()
+  africa_world = africa_world[africa_world["continent"] == "Africa"]
   ax = africa_world["geometry"].geo_plot(
       color = "white",
       edgecolor='black',
@@ -409,24 +389,23 @@ It is also possible to use SHP datasets to draw maps.
       max_cardinality = 100
   )
 
-Time-series plots are also available with the 'plot' method.
+Time-series plots are also available with the ``plot`` method.
 
 .. ipython:: python
 
-  vdf = load_amazon();
-  vdf.filter(vdf["state"]._in(['ACRE', 'RIO DE JANEIRO', 'PARÁ']));
+  amazon = load_amazon();
+  amazon.filter(amazon["state"]._in(['ACRE', 'RIO DE JANEIRO', 'PARÁ']));
   @savefig user_guides_data_exploration_amazon_time.png
-  vdf["number"].plot(ts = "date", by = "state")
+  amazon["number"].plot(ts = "date", by = "state")
 
-Since time-series plots do not aggregate the data, 
-it's important to choose the correct 'start_date' and 'end_date'.
+Since time-series plots do not aggregate the data, it's important to choose the correct ``start_date`` and ``end_date``.
 
 .. code-block:: python
 
-  vdf["number"].plot(
+  amazon["number"].plot(
       ts = "date", 
       by = "state", 
-      start_date = "2010-01-01"
+      start_date = "2010-01-01",
   )
 
 .. ipython:: python
@@ -434,14 +413,12 @@ it's important to choose the correct 'start_date' and 'end_date'.
   :okwarning:
 
   vp.set_option("plotting_lib", "plotly")
-  fig = vdf["number"].plot(
+  fig = amazon["number"].plot(
       ts = "date", 
       by = "state", 
-      start_date = "2010-01-01"
+      start_date = "2010-01-01",
   )
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_amazon_time_plot.html")
 
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_amazon_time_plot.html
-
-
