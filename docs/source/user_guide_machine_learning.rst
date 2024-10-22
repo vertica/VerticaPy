@@ -79,7 +79,7 @@ Machine Learning
     .. grid-item::
 
         .. card:: Model management
-          :link: user_guide.machine_learning.introduction
+          :link: user_guide.machine_learning.model_tracking
           :link-type: ref
           :text-align: center
           :class-card: custom-card-14
