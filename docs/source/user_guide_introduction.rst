@@ -25,7 +25,7 @@ Introduction
     .. grid-item::
 
       .. card:: The virtual DataFrame
-          :link: notebooks/introduction/vdf/index.html
+          :link: user_guide.introduction.vdf
           :text-align: center
           :class-card: custom-card-9
 
