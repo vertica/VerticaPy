@@ -751,6 +751,7 @@ class vDFRead(vDFUtils):
                         or "map" in dtype
                         or "row" in dtype
                         or "set" in dtype
+                        or "vmap" in dtype
                     ):
                         dtype = ""
                     elif column in all_cols:
