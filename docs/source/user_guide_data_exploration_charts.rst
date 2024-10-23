@@ -28,13 +28,16 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
 
 .. code-block::
 
+  # Setting the plotting lib
   vp.set_option("plotting_lib", "highcharts")
+  
   titanic = load_titanic()
   titanic["pclass"].bar()
 
 .. ipython:: python
   :suppress:
 
+  # Setting the plotting lib
   vp.set_option("plotting_lib", "highcharts")
   titanic = load_titanic()
   fig = titanic["pclass"].bar()
@@ -141,27 +144,27 @@ You can also change the occurences by another aggregation with the `method` and 
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_age_hist_avs.html
 
-
 VerticaPy uses the same process for other graphics, like 2-dimensional histograms and bar charts.
 
 Let us showcase another plotting library for these plots.
 
-
 .. code-block::
-
+  
+  # Setting the plotting lib
   vp.set_option("plotting_lib", "plotly")
+
   titanic.bar(["pclass", "survived"])
 
 .. ipython:: python
   :suppress:
 
+  # Setting the plotting lib
   vp.set_option("plotting_lib", "plotly")
   fig = titanic.bar(["pclass", "survived"])
   fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_surv.html")
 
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_surv.html
-
 
 .. note:: VerticaPy has three main plotting libraries. Look at :ref:`chart_gallery` section for all the different plots.
 
@@ -242,7 +245,7 @@ Box plots are useful for understanding statistical dispersion.
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot_one.html
 
-Scatter and bubble plots are also useful for identifying patterns in your data. Note, however, that these methods don't use aggregations; VerticaPy downsamples the data before plotting. You can use the 'max_nb_points' to limit the number of points and avoid unnecessary memory usage.
+Scatter and bubble plots are also useful for identifying patterns in your data. Note, however, that these methods don't use aggregations; VerticaPy downsamples the data before plotting. You can use the `max_nb_points` to limit the number of points and avoid unnecessary memory usage.
 
 .. code-block::
     
@@ -323,8 +326,10 @@ For more information on scatter look at :py:mod:`verticapy.vDataFrame.scatter`.
 Hexbin plots can be useful for generating heatmaps. These summarize data in a similar way to scatter plots, but compute aggregations to get the final results.
 
 .. ipython:: python
-
+  
+  # Setting the plotting lib
   vp.set_option("plotting_lib", "matplotlib")
+
   @savefig user_guides_data_exploration_iris_hexbin.png
   iris.hexbin(
       ["SepalLengthCm", "SepalWidthCm"], 
@@ -337,6 +342,7 @@ Hexbin, scatter, and bubble plots also allow you to provide a background image. 
 .. code-block:: python
 
   africa = load_africa_education()
+
   # displaying avg students score in Africa
   africa.hexbin(
       ["lon", "lat"],
@@ -349,6 +355,7 @@ Hexbin, scatter, and bubble plots also allow you to provide a background image. 
   :suppress:
 
   africa = load_africa_education()
+
   # displaying avg students score in Africa
   @savefig user_guides_data_exploration_africa_hexbin.png
   africa.hexbin(
@@ -359,17 +366,6 @@ Hexbin, scatter, and bubble plots also allow you to provide a background image. 
   )
 
 It is also possible to use SHP datasets to draw maps.
-
-.. code-block:: python
-
-  africa = load_africa_education()
-  # displaying avg students score in Africa
-  africa.hexbin(
-      ["lon", "lat"],
-      method = "avg",
-      of = "zralocp",
-      img = "img/africa.png",
-  )
 
 .. ipython:: python
 
@@ -412,7 +408,9 @@ Since time-series plots do not aggregate the data, it's important to choose the 
   :suppress:
   :okwarning:
 
+  # Setting the plotting lib
   vp.set_option("plotting_lib", "plotly")
+
   fig = amazon["number"].plot(
       ts = "date", 
       by = "state", 

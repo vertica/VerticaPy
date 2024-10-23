@@ -17,7 +17,7 @@ The :py:func:`~verticapy.vDataFrame.agg` method is the best way to compute multi
   help(vp.vDataFrame.agg)
 
 This is a tremendously useful function for understanding your data. 
-Let's use the `churn dataset <https://github.com/vertica/VerticaPy/tree/master/docs/source/notebooks/data_exploration/correlations/data>`_
+Let's use the `churn dataset <https://github.com/vertica/VerticaPy/blob/master/examples/business/churn/customers.csv>`_
 
 .. code-block::
 
@@ -122,7 +122,9 @@ You can also use the 'groupby' method to compute customized aggregations.
           "gender",
           "Contract",
       ],
-      ["AVG(DECODE(Churn, 'Yes', 1, 0)) AS Churn"],
+      [
+          "AVG(DECODE(Churn, 'Yes', 1, 0)) AS Churn",
+      ],
   )
 
 .. ipython:: python
@@ -133,7 +135,9 @@ You can also use the 'groupby' method to compute customized aggregations.
           "gender",
           "Contract",
       ],
-      ["AVG(DECODE(Churn, 'Yes', 1, 0)) AS Churn"],
+      [
+          "AVG(DECODE(Churn, 'Yes', 1, 0)) AS Churn",
+      ],
   )
   html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_group_by.html", "w")
   html_file.write(res._repr_html_())
@@ -148,7 +152,10 @@ You can also use the 'groupby' method to compute customized aggregations.
   import verticapy.sql.functions as fun
 
   vdf.groupby(
-      ["gender", "Contract"],
+      [
+          "gender",
+          "Contract",
+      ],
       [
           fun.min(vdf["tenure"])._as("min_tenure"),
           fun.max(vdf["tenure"])._as("max_tenure"),
@@ -161,7 +168,10 @@ You can also use the 'groupby' method to compute customized aggregations.
   import verticapy.sql.functions as fun
 
   res = vdf.groupby(
-      ["gender", "Contract"],
+      [
+          "gender",
+          "Contract",
+      ],
       [
           fun.min(vdf["tenure"])._as("min_tenure"),
           fun.max(vdf["tenure"])._as("max_tenure"),

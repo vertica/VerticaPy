@@ -111,6 +111,7 @@ To ingest the file into Vertica, remove the `genSQL` parameter from the above co
     :file: /project/data/VerticaPy/docs/figures/user_guide_data_ingestion_iris.html
 
 When the file to ingest is not located on your local machine, and is on the server instead, then you must set the `ingest_local` parameter to False. 
+
 `ingest_local` is True by default.
 
 .. note:: In some cases where the CSV file has a very complex structure, local ingestion might fail. If this occurs, you will have to move the file into the database and then ingest the file from that location.
@@ -130,8 +131,7 @@ syntax in the path parameter (in this case for multiple CSV files): `path = "pat
 Ingest CSV files
 ----------------
 
-In addition to :py:func:`~verticapy.read_file`, you can also ingest CSV files with the :py:func:`~verticapy.read_csv` function, 
-which ingests the file using flex tables. This function provides options not available in :py:func:`~verticapy.read_file`, such as:
+In addition to :py:func:`~verticapy.read_file`, you can also ingest CSV files with the :py:func:`~verticapy.read_csv` function, which ingests the file using flex tables. This function provides options not available in :py:func:`~verticapy.read_file`, such as:
 
 - `sep`: specify the column separator.
 - `parse_nrows`: the function creates a file of nrows from the data file to identify 
@@ -140,9 +140,7 @@ the data types. This file is then dropped and the entire data file is ingested. 
 
 For a full list of supported options, see :py:func:`~verticapy.read_csv` or use the :py:func:`~verticapy.help` function.
 
-In the following example, we will use :py:func:`~verticapy.read_csv` to ingest a 
-subset of the Titanic dataset. To begin, load the entire Titanic dataset using the 
-:py:func:`~verticapy.datasets.load_titanic` function:
+In the following example, we will use :py:func:`~verticapy.read_csv` to ingest a subset of the Titanic dataset. To begin, load the entire Titanic dataset using the :py:func:`~verticapy.datasets.load_titanic` function:
 
 .. ipython:: python
 
@@ -150,8 +148,7 @@ subset of the Titanic dataset. To begin, load the entire Titanic dataset using t
 
     titanic = load_titanic()
 
-To convert a subset of the dataset to a CSV file, select the desired rows in 
-the dataset and use the :py:func:`~verticapy.to_csv` vDataFrame method:
+To convert a subset of the dataset to a CSV file, select the desired rows in the dataset and use the :py:func:`~verticapy.to_csv` ``vDataFrame`` method:
 
 .. ipython:: python
 
@@ -163,7 +160,8 @@ Before ingesting the above CSV file, we can check its columns and their data typ
 
 .. ipython:: python
 
-    vp.pcsv(path = "titanic_subset.csv",
+    vp.pcsv(
+        path = "titanic_subset.csv",
         sep = ",",
         na_rep = "",
     )
@@ -212,8 +210,7 @@ For a full list of supported options, see the :py:func:`~verticapy.read_json` or
 
 VerticaPy also provides a :py:func:`~verticapy.pjson` function to parse JSON files to identify columns and their respective data types.
 
-In the following example, we load the iris dataset using the :py:func:`~verticapy.datasets.load_iris` dataset, 
-convert the vDataFrame to JSON format with the :py:func:`~verticapy.to_json` method, then ingest the JSON file into Vetica:
+In the following example, we load the iris dataset using the :py:func:`~verticapy.datasets.load_iris` dataset, convert the vDataFrame to JSON format with the :py:func:`~verticapy.to_json` method, then ingest the JSON file into Vetica:
 
 .. code-block:: python
 
