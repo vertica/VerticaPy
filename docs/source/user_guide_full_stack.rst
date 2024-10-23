@@ -23,7 +23,7 @@ Full Stack
     .. grid-item::
 
       .. card:: Complex DT & VMAPs
-          :link: user_guide.full_stack.geopandas
+          :link: user_guide.full_stack.complex_data_vmap
           :link-type: ref
           :text-align: center
           :class-card: custom-card-15
