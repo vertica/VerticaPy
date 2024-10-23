@@ -1,4 +1,4 @@
-.. _examples.business.africa_education:
+.. _examples.understand.africa_education:
 
 Africe Education
 =================
