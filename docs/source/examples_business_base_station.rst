@@ -6,25 +6,24 @@ Base Station Positions
 This example uses the Telecom Dataset, provided by Shanghai Telecom, to predict the optimal positions for base radio stations. 
 This dataset contains more than 7.2 million records about people's 
 Internet access through 3,233 base stations from 9,481 mobile phones 
-over period of six months. 
+over period of six months.
+
 The dataset can be found `here <http://sguangwang.com/TelecomDataset.html>`_. It consists of:
 
-- **user_id :** User's ID
-- **start_time :** When the record begins
-- **end_time :** When the record ends
-- **latitude :** Latitude of the base station
-- **longitude :** Longitude of the base station
-
+- **user_id :** User's ID.
+- **start_time :** When the record begins.
+- **end_time :** When the record ends.
+- **latitude :** Latitude of the base station.
+- **longitude :** Longitude of the base station.
 
 To complement the study, we'll also use the shanghai_districts dataset, which contains information on Shanghai's districts. Some of the columns include:
 
-- **name :** Name of the district
-- **division_code :** Division code of the district
-- **area :** Area of the district in square kilometers
-- **population :** Population of the district
-- **density :** Density of the district
-- **geometry :** Polygon of type 'Geometry' that contains the coordinates of the district
-
+- **name :** Name of the district.
+- **division_code :** Division code of the district.
+- **area :** Area of the district in square kilometers.
+- **population :** Population of the district.
+- **density :** Density of the district.
+- **geometry :** Polygon of type 'Geometry' that contains the coordinates of the district.
 
 You can download the Jupyter notebook of this study `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/base_station/base_station.ipynb>`_.
 
@@ -40,7 +39,6 @@ This example uses the following version of VerticaPy:
     import verticapy as vp
 
     vp.__version__
-
 
 Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
 For details on how to create a connection, see the :ref:`connection` tutorial.
@@ -66,7 +64,7 @@ Let's load the two datasets.
     from verticapy.datasets import load_world
 
     # Increasing video limit
-    matplotlib.rcParams['animation.embed_limit'] = 2**128
+    matplotlib.rcParams['animation.embed_limit'] = 2 ** 128
 
     #######
     # CDR #
@@ -108,7 +106,7 @@ Let's load the two datasets.
     import matplotlib
     import verticapy.sql.functions as fun
     from verticapy.datasets import load_world
-    matplotlib.rcParams['animation.embed_limit'] = 2**128
+    matplotlib.rcParams['animation.embed_limit'] = 2 ** 128
     cdr = vp.read_csv(
         "/project/data/VerticaPy/docs/source/_static/website/examples/data/base_station/shanghai_cdr.csv", 
         schema = "shanghai", 
@@ -168,13 +166,11 @@ These datasets contain the following:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_base_station_shanghai_district_head.html
 
-
 Data Exploration
 ----------------
 
 Detecting outliers
 +++++++++++++++++++
-
 
 Since we're only concerned about the base stations in Shanghai, 
 let's begin by finding the global outliers in our our Shanghai 
@@ -226,7 +222,6 @@ As we can see from the second plot, we've discarded the base stations outside of
 
 Understanding Shanghai's Districts
 +++++++++++++++++++++++++++++++++++
-
 
 Let's check the districts on the map. The Huangpu district is 
 the urban "hub" of sorts and the most central of Shanghai's 
@@ -407,7 +402,7 @@ Data Preparation
 Finding Clusters of Base Stations
 ++++++++++++++++++++++++++++++++++
 
-We create virtual base stations by grouping existing base stations in 100 clusters. Clustering is performed using k-means clustering on Euclidean coordinates of the base stations. Each cluster represents a wider coverage of connections.
+We create virtual base stations by grouping existing base stations in 100 clusters. Clustering is performed using ``k-means`` clustering on Euclidean coordinates of the base stations. Each cluster represents a wider coverage of connections.
 
 .. ipython:: python
 
@@ -596,13 +591,10 @@ Workload is defined as the number of connections per time interval. To find the 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_base_station_animated_scatter_longi.html
 
+From the above animation, we can see that we'll typically have unconnected base stations and that the most overloaded base stations are located around the downtown.
 
-From the above animation, we can see that we'll typically have 
-unconnected base stations and that the most overloaded base 
-stations are located around the downtown.
+Let's define the base station workload as the number of connections in one time point, that is, the 90-th percentile of the interval. 
 
-Let's define the base station workload as the number of connections 
-in one time point, that is, the 90-th percentile of the interval. 
 We can then calculate the workload for each cluster.
 
 .. ipython:: python
@@ -626,7 +618,6 @@ We can then calculate the workload for each cluster.
         inplace = True,
     );
 
-
 .. ipython:: python
     :suppress:
 
@@ -635,10 +626,8 @@ We can then calculate the workload for each cluster.
     html_file.write(res._repr_html_())
     html_file.close()
 
-
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_base_station_bs_workload_90.html
-
 
 .. ipython:: python
 
@@ -678,7 +667,6 @@ We can then calculate the workload for each cluster.
     html_file.write(res._repr_html_())
     html_file.close()
 
-
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_base_station_cworkload_bs.html
 
@@ -716,8 +704,6 @@ Let's find a suitable number of clusters using elbow curve.
     bs_weight = bs_most_active_cluster.add_duplicates(weight = "workload")
     bs_xy = coordinate_converter(bs_weight, "longitude", "latitude")
 
-
-
 .. code-block:: python
 
     from verticapy.machine_learning.model_selection import elbow
@@ -739,8 +725,7 @@ Let's find a suitable number of clusters using elbow curve.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_base_station_elbow_longi_lati.html
 
-The elbow curve seems to indicate that 4 would be a good number of clusters, so let's try k = 4 and view the weighted k-means algorithm's suggested positions for new base stations based on the centers of the clusters.
-
+The :py:func:`~verticapy.machine_learning.model_selection.elbow` curve seems to indicate that 4 would be a good number of clusters, so let's try k = 4 and view the weighted ``k-means`` algorithm's suggested positions for new base stations based on the centers of the clusters.
 
 .. ipython:: python
     :okwarning:
@@ -799,14 +784,12 @@ The elbow curve seems to indicate that 4 would be a good number of clusters, so 
     @savefig examples_base_station_possible_new_base_stations.png
     ax.set_title("Possible New Base Stations")
 
-
 Predicting Base Station Workload
 +++++++++++++++++++++++++++++++++
 
-With the predictive power of AutoML, we can predict the workload of the base stations. AutoML is a powerful technique that tests multiple models to maximize the input score.
+With the predictive power of AutoML, we can predict the workload of the base stations. :py:func:`~verticapy.machine_learning.vertica.automl.AutoML` is a powerful technique that tests multiple models to maximize the input score.
 
 The features used to train our model will be longitude, latitude, total number of distinct users, average duration of the connections, total duration of connections, total number of connections, the cluster they belong to, total number of base stations in the cluster, and the workload of the clusters.
-
 
 .. ipython:: python
 
@@ -883,7 +866,6 @@ The features used to train our model will be longitude, latitude, total number o
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_base_station_auto_ml_plot.html
-
 
 Conclusion
 -----------

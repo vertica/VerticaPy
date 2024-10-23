@@ -340,7 +340,8 @@ Let's move on to modeling our data. Save the :py:mod:`vDataFrame` to your Vertic
 Machine Learning
 -----------------
 
-**Passengers with a lifeboat**
+Passengers with a lifeboat
++++++++++++++++++++++++++++
 
 First, let's look at the number of survivors.
 
@@ -380,7 +381,9 @@ We have nine deaths. Let's try to understand why these passengers died.
 
 Apart from a decent amount of these passengers being third-class passengers, it doesn't seem like there are any clear predictors here for their deaths. Making a model from this would be unhelpful.
 
-**Passengers without a lifeboat**
+Passengers without a lifeboat
+++++++++++++++++++++++++++++++
+
 
 Let's move on to passengers without a lifeboat.
 

@@ -96,7 +96,8 @@ Conditional Operators
 
 You can now filter your data with conditional operators like and ('&'), or ('|'), equals ('=='), not equals (!=), and more!
 
-**Equal Operator (==)**
+Equal Operator (==)
+++++++++++++++++++++
 
 .. code-block:: ipython
 
@@ -118,7 +119,8 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_5.html
 
-**And Operator (&)**
+And Operator (&)
++++++++++++++++++
 
 .. code-block:: ipython
 
@@ -139,7 +141,8 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_6.html
 
-**Between Operator (_between)**
+Between Operator (_between)
+++++++++++++++++++++++++++++
 
 .. code-block:: ipython
 
@@ -158,7 +161,8 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_7.html
 
-**In Operator (_in)**
+In Operator (_in)
+++++++++++++++++++
 
 .. code-block:: ipython
 
@@ -179,7 +183,8 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_8.html
 
-**Not In Operator (_not_in)**
+Not In Operator (_not_in)
+++++++++++++++++++++++++++
 
 .. code-block:: ipython
 
@@ -198,7 +203,8 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_9.html
 
-**Or Operator (|)**
+Or Operator (|)
+++++++++++++++++
 
 .. code-block:: ipython
 
@@ -217,7 +223,8 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_10.html
 
-**Not Equal Operator (!=)**
+Not Equal Operator (!=)
+++++++++++++++++++++++++
 
 .. code-block:: ipython
 

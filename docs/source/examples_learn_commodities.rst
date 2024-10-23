@@ -361,7 +361,8 @@ Let's create the :py:func:`~verticapy.machine_learning.vertica.VAR` model to pre
 
 Our model is excellent. Let's predict the values these commodities in the near future.
 
-**Gold:**
+Gold
++++++
 
 .. code-block:: python
 
@@ -377,7 +378,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_0.html
 
-**Oil:**
+Oil:
++++++
 
 .. code-block:: python
 
@@ -393,7 +395,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_1.html
 
-**Spread:**
+Spread:
+++++++++
 
 .. code-block:: python
 
@@ -409,7 +412,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_2.html
 
-**Vix:**
+Vix:
++++++
 
 .. code-block:: python
 
@@ -425,7 +429,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_3.html
 
-**Dol_Eur:**
+Dol_Eur:
++++++++++
 
 .. code-block:: python
 

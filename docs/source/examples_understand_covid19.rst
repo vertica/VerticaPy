@@ -373,7 +373,8 @@ Let's create a :py:func:`~verticapy.machine_learning.vertica.VAR` model to predi
 
 Our model is not bad. Let's predict the number of deaths in a near future.
 
-**Cases:**
+Cases:
++++++++
 
 .. code-block:: python
 
@@ -399,7 +400,8 @@ Our model is not bad. Let's predict the number of deaths in a near future.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_pred_plot_0.html
 
-**Deaths:**
+Deaths:
+++++++++
 
 .. code-block:: python
 

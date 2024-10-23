@@ -343,7 +343,8 @@ Let's look at the efficiency of our model with a cutoff of 0.22.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_expedia_cutoff_best.html
 
-**ROC Curve:**
+ROC Curve:
++++++++++++
 
 .. code-block:: python
 

@@ -1,7 +1,7 @@
 .. _examples.business.spotify:
 
 Predicting Popularity on Spotify
-==================================
+=================================
 
 This example uses the publicly-available Spotify from Kaggle to predict the popularity of Polish songs and artists on Spotify. We'll also use a model to group artists together based on how similar their songs are.
 
