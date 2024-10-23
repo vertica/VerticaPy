@@ -744,7 +744,10 @@ class vDFRead(vDFUtils):
         for i in range(len(columns)):
             column = self.format_colnames(columns[i], raise_error=False)
             if column:
-                dtype = ""
+                if column in all_cols:
+                    dtype = self[column].ctype().lower()
+                else:
+                    dtype = ""
                 if self._vars["isflex"]:
                     if (
                         "array" in dtype
@@ -755,7 +758,6 @@ class vDFRead(vDFUtils):
                     ):
                         dtype = ""
                     elif column in all_cols:
-                        dtype = self[column].ctype().lower()
                         dtype = f"::{dtype}"
                 columns[i] = column + dtype
             else:
