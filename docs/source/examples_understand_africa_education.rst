@@ -262,7 +262,6 @@ Eight seems to be a suitable number of clusters. Let's compute a ``k-means`` mod
 
 We can add the prediction to the :py:mod:`vDataFrame` and draw the scatter map.
 
-
 .. code-block:: python
 
     # Change the plotting lib to matplotlib
