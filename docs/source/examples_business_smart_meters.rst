@@ -3,21 +3,21 @@
 Smart Meters
 =============
 
-This example uses the following datasets to predict peoples' electricity consumption. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/smart_meters.ipynb>`_. We'll use the following datasets:
+This example uses the following datasets to predict peoples' electricity consumption. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/smart_meters.ipynb>`_. We'll use the following datasets:
 
-`sm_consumption <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/sm_consumption.csv>`_
+`sm_consumption <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/sm_consumption.csv>`_
 
 - **dateUTC:** Date and time of the record.
 - **meterID:** Smart meter ID.
 - **value:** Electricity consumed during 30 minute interval (in kWh).
 
-`sm_weather <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/sm_weather.csv>`_
+`sm_weather <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/sm_weather.csv>`_
 
 - **dateUTC:** Date and time of the record.
 - **temperature:** Temperature.
 - **humidity:** Humidity.
 
-`sm_meters <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/smart_meters/sm_meters.csv>`_
+`sm_meters <https://github.com/vertica/VerticaPy/blob/master/examples/business/smart_meters/sm_meters.csv>`_
 
 - **longitude:** Longitude.
 - **latitude:** Latitude.
@@ -44,7 +44,7 @@ You can skip the below cell if you already have an established connection.
     
     vp.connect("VerticaDSN")
 
-Create the ``vDataFrames`` of the datasets:
+Create the :py:mod:`vDataFrame` of the datasets:
 
 .. code-block:: python
 
@@ -137,7 +137,8 @@ Predicting energy consumption in households is very important. Surges in electri
 
 In order to join the different data sources, we need to assume that the weather will be approximately the same across the entirety of Ireland. We'll use the date and time as the key to join 'sm_weather' and 'sm_consumption'.
 
-**Joining different datasets with interpolation**
+Joining different datasets with interpolation
+++++++++++++++++++++++++++++++++++++++++++++++
 
 In VerticaPy, you can interpolate joins; Vertica will find the closest timestamp to the key and join the result.
 
@@ -170,7 +171,8 @@ In VerticaPy, you can interpolate joins; Vertica will find the closest timestamp
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_table.html
 
-**Segmenting Latitude & Longitude using Clustering**
+Segmenting Latitude & Longitude using Clustering
++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The dataset 'sm_meters' is pretty important. In particular, the type of residence is probably a good predictor for electricity usage. We can create clusters of the different regions with k-means clustering based on longitude and latitude. Let's find the most suitable 'k' using an elbow curve and scatter plot.
 
@@ -217,7 +219,7 @@ The dataset 'sm_meters' is pretty important. In particular, the type of residenc
     :width: 100%
     :align: center
 
-Based on the scatter plot, five seems like the optimal number of clusters. Let's verify this hypothesis using an ``elbow`` curve.
+Based on the scatter plot, five seems like the optimal number of clusters. Let's verify this hypothesis using an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve.
 
 .. code-block:: python
 
@@ -293,7 +295,8 @@ Let's draw a scatter plot of the different regions.
     :width: 100%
     :align: center
 
-**Dataset Enrichment**
+Dataset Enrichment
++++++++++++++++++++
 
 Let's join 'sm_meters' with 'sm_consumption_weather'.
 
@@ -330,7 +333,8 @@ Let's join 'sm_meters' with 'sm_consumption_weather'.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_table.html
 
-**Handling Missing Values**
+Handling Missing Values
+++++++++++++++++++++++++
 
 Let's take care of our missing values.
 
@@ -368,7 +372,8 @@ The variable 'value' has a few missing values that we can drop.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_count_2.html
 
-**Interpolation & Aggregations**
+Interpolation & Aggregations
++++++++++++++++++++++++++++++
 
 Since power outages seem relatively common in each area, and the "value" represents the electricity consumed during 30 minute intervals (in kWh), it'd be a good idea to interpolate and aggregate the data to get a monthly average in electricity consumption per region.
 
@@ -491,7 +496,8 @@ Let's aggregate the data to figure out the monthly energy consumption for each s
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_month_clean_2.html
 
-**Understanding the Data & Detecting Outliers**
+Understanding the Data & Detecting Outliers
+++++++++++++++++++++++++++++++++++++++++++++
 
 Looking at three different smart meters, we can see a clear decrease in energy consumption during the summer followed by a sharp increase in the winter.
 
@@ -626,7 +632,8 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_951.html
 
-**Data Encoding & Bivariate Analysis**
+Data Encoding & Bivariate Analysis
++++++++++++++++++++++++++++++++++++
 
 Since most of our data is categorical, let's encode them with One-hot encoding. We can then examine the correlations between the various categories.
 
@@ -687,7 +694,8 @@ There's a clear correlation between the month and energy consumption, but this i
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_month_corr_3.html
 
-**Global Behavior**
+Global Behavior
+++++++++++++++++
 
 Let's look at this globally.
 

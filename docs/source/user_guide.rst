@@ -1,11 +1,8 @@
 .. _user_guide:
 
-
 ============
 User Guide
 ============
-
-
 
 .. grid:: 1 1 2 2
 
@@ -24,14 +21,13 @@ User Guide
           (such as :py:class:`~vDataFrame`, :py:class:`~vDataColumn` etc), and set 
           the stage for a seamless analytical journey.
 
-
           :bdg-primary:`vDataFrame` :bdg-primary:`vDataColumn`
           
-
     .. grid-item::
 
       .. card:: Data Ingestion
-          :link: ./notebooks/data_ingestion/index.html
+          :link: user_guide.data_ingestion
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-8
 

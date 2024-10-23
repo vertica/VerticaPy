@@ -1,4 +1,4 @@
-.. _examples.business.africa_education:
+.. _examples.understand.africa_education:
 
 Africe Education
 =================
@@ -260,8 +260,7 @@ Eight seems to be a suitable number of clusters. Let's compute a ``k-means`` mod
     model = KMeans(n_cluster = 8)
     model.fit(africa, X = ["lon", "lat"])
 
-We can add the prediction to the ``vDataFrame`` and draw the scatter map.
-
+We can add the prediction to the :py:mod:`vDataFrame` and draw the scatter map.
 
 .. code-block:: python
 
@@ -501,7 +500,7 @@ Let's look at the feature importance for each model.
 
 Feature importance between between math score and the reading score are almost identical.
 
-We can add these predictions to the main ``vDataFrame``.
+We can add these predictions to the main :py:mod:`vDataFrame`.
 
 .. code-block:: python
 

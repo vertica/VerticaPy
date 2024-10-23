@@ -1,6 +1,5 @@
 .. _user_guide.machine_learning:
 
-
 =================
 Machine Learning
 =================
@@ -10,7 +9,8 @@ Machine Learning
     .. grid-item::
     
       .. card:: Introduction
-          :link: notebooks/ml/introduction/index.html
+          :link: user_guide.machine_learning.introduction
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-14
 
@@ -24,7 +24,8 @@ Machine Learning
     .. grid-item::
 
       .. card:: Regression
-          :link: notebooks/ml/regression/index.html
+          :link: user_guide.machine_learning.regression
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-14
 
@@ -37,7 +38,8 @@ Machine Learning
     .. grid-item::
 
         .. card:: Classification
-          :link: notebooks/ml/classification/index.html
+          :link: user_guide.machine_learning.classification
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-14
 
@@ -50,7 +52,8 @@ Machine Learning
     .. grid-item::
 
         .. card:: Clustering
-          :link: notebooks/ml/clustering/index.html
+          :link: user_guide.machine_learning.clustering
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-14
 
@@ -63,7 +66,8 @@ Machine Learning
     .. grid-item::
 
         .. card:: Time series
-          :link: notebooks/ml/time_series/index.html
+          :link: user_guide.machine_learning.time_series
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-14
 
@@ -72,11 +76,11 @@ Machine Learning
           Uncover insights from time-ordered data, exploring 
           trends and making predictions based on temporal patterns.
 
-
     .. grid-item::
 
         .. card:: Model management
-          :link: notebooks/ml/time_series/index.html
+          :link: user_guide.machine_learning.model_tracking
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-14
 
@@ -89,9 +93,8 @@ Machine Learning
   :hidden:
   :maxdepth: 1
   
-  notebooks/ml/classification/index.ipynb
-  notebooks/ml/clustering/index.ipynb
-  notebooks/ml/introduction/index.ipynb
-  notebooks/ml/regression/index.ipynb
-  notebooks/ml/time_series/index.ipynb
-  notebooks/ml/model_tracking_versioning/index.ipynb
+  user_guide_machine_learning_classification
+  user_guide_machine_learning_clustering
+  user_guide_machine_learning_introduction
+  user_guide_machine_learning_regression
+  user_guide_machine_learning_time_series

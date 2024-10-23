@@ -1,19 +1,16 @@
 .. _user_guide.introduction:
 
-
 =============
 Introduction
 =============
-
-
-
 
 .. grid:: 1
 
     .. grid-item::
     
       .. card:: Connect to a Vertica database
-          :link: notebooks/introduction/installation/index.html
+          :link: user_guide.introduction.installation
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-9
 
@@ -43,7 +40,8 @@ Introduction
     .. grid-item::
 
         .. card:: Best practices
-          :link: notebooks/introduction/best-practices/index.html
+          :link: user_guide.introduction.best_practices
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-9
 
@@ -54,14 +52,3 @@ Introduction
           maximize the efficiency of your analytical workflow. 
           From data management to visualization, elevate your 
           skills and ensure optimal results.
-
-
-
-
-.. toctree::
-  :hidden:
-  :maxdepth: 1
-  
-  notebooks/introduction/installation/index.ipynb
-  notebooks/introduction/vdf/index.ipynb
-  notebooks/introduction/best-practices/index.ipynb

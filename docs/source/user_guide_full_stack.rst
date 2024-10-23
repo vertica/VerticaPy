@@ -1,19 +1,16 @@
 .. _user_guide.full_stack:
 
-
 =================
 Full Stack
 =================
-
-
-
 
 .. grid:: 1 2 2 2
 
     .. grid-item::
     
       .. card:: DBLink integration
-          :link: notebooks/full_stack/dblink_integration/index.html
+          :link: user_guide.full_stack.db_link
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -26,7 +23,8 @@ Full Stack
     .. grid-item::
 
       .. card:: Complex DT & VMAPs
-          :link: notebooks/full_stack/complex_data_vmap/index.html
+          :link: user_guide.full_stack.complex_data_vmap
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -39,7 +37,8 @@ Full Stack
     .. grid-item::
 
         .. card:: XGBoost.to_json
-          :link: notebooks/full_stack/to_json/index.html
+          :link: user_guide.full_stack.to_json
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -51,7 +50,8 @@ Full Stack
     .. grid-item::
 
         .. card:: User-defined functions
-          :link: notebooks/full_stack/udf/index.html
+          :link: user_guide.full_stack.udf
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -64,7 +64,8 @@ Full Stack
     .. grid-item::
 
         .. card:: Linear regression
-          :link: notebooks/full_stack/linear_regression/index.html
+          :link: user_guide.full_stack.udf
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -78,7 +79,8 @@ Full Stack
     .. grid-item::
 
         .. card:: Magic methods
-          :link: notebooks/full_stack/vdataframe_magic/index.html
+          :link: user_guide.full_stack.vdataframe_magic
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -92,7 +94,8 @@ Full Stack
     .. grid-item::
 
         .. card:: Train/Test
-          :link: notebooks/full_stack/train_test_split/index.html
+          :link: user_guide.full_stack.train_test_split
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -105,7 +108,8 @@ Full Stack
     .. grid-item::
 
         .. card:: Time series interpolation
-          :link: notebooks/ml/time_series/index.html
+          :link: user_guide.full_stack.time_series_interpolation_slice_joins
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -118,7 +122,8 @@ Full Stack
     .. grid-item::
 
         .. card:: GeoPandas integration
-          :link: notebooks/full_stack/geopandas/index.html
+          :link: user_guide.full_stack.geopandas
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -127,18 +132,3 @@ Full Stack
           Draw maps with ease using Geo DataFrame 
           integration, expanding your analytics to 
           spatial data domains.
-
-.. toctree::
-  :hidden:
-  :maxdepth: 1
-  
-  notebooks/full_stack/complex_data_vmap/index.ipynb
-  notebooks/full_stack/dblink_integration/index.ipynb
-  notebooks/full_stack/geopandas/index.ipynb
-  notebooks/full_stack/interpolate/index.ipynb
-  notebooks/full_stack/linear_regression/index.ipynb
-  notebooks/full_stack/to_json/index.ipynb
-  notebooks/full_stack/train_test_split/index.ipynb
-  notebooks/full_stack/udf/index.ipynb
-  notebooks/full_stack/vdataframe_magic/index.ipynb
-

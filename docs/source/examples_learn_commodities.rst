@@ -320,12 +320,12 @@ Moving on to the correlation matrix, we can see many events that changed drastic
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_corr_2.html
 
-We can see strong correlations between most of the variables. A vector autoregression (``VAR``) model seems ideal.
+We can see strong correlations between most of the variables. A vector autoregression (:py:func:`~verticapy.machine_learning.vertica.VAR`) model seems ideal.
 
 Machine Learning
 -----------------
 
-Let's create the ``VAR`` model to predict the value of various commodities.
+Let's create the :py:func:`~verticapy.machine_learning.vertica.VAR` model to predict the value of various commodities.
 
 .. code-block:: python
 
@@ -361,7 +361,8 @@ Let's create the ``VAR`` model to predict the value of various commodities.
 
 Our model is excellent. Let's predict the values these commodities in the near future.
 
-**Gold:**
+Gold
++++++
 
 .. code-block:: python
 
@@ -377,7 +378,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_0.html
 
-**Oil:**
+Oil:
++++++
 
 .. code-block:: python
 
@@ -393,7 +395,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_1.html
 
-**Spread:**
+Spread:
+++++++++
 
 .. code-block:: python
 
@@ -409,7 +412,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_2.html
 
-**Vix:**
+Vix:
++++++
 
 .. code-block:: python
 
@@ -425,7 +429,8 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_3.html
 
-**Dol_Eur:**
+Dol_Eur:
++++++++++
 
 .. code-block:: python
 
@@ -441,7 +446,7 @@ Our model is excellent. Let's predict the values these commodities in the near f
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_4.html
 
-The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the ``VAR`` model.
+The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the :py:func:`~verticapy.machine_learning.vertica.VAR` model.
 
 Conclusion
 -----------

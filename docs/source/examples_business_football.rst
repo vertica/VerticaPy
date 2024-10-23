@@ -126,7 +126,8 @@ Different types of tournaments took place (FIFA World Cup, UEFA Euro, etc.) aand
 
 The dataset includes 308 national teams. For most of the games, the home team scores better than the away team. Since some games take place in a neutral location, we can ensure this hypothesis using the variable 'neutral'. Notice also that the number of goals per match is pretty low (median of 1 for both away and home teams).
 
-**Goal**
+Goal
++++++
 
 Our goal for the study will be to predict the outcomes of games after 2015.
 Before doing the study, we can notice that some teams names have changed over time. We need to change the old names by the new names otherwise it will add too much bias in the data.
@@ -227,7 +228,8 @@ To create clusters, we need to find which teams are the winners of main tourname
 
 We'll ignore ties for our analysis since there's no way to determine a winner.
 
-**Cup Winner**
+Cup Winner
++++++++++++
 
 Let's start by creating the feature 'winner' to indicate the winner of a game.
 
@@ -435,7 +437,8 @@ Let's export the result to our Vertica database.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_to_db_4.html
 
-**Team Confederations**
+Team Confederations
+++++++++++++++++++++
 
 Looking into team confederations could help our analysis. For example, this might help us quantify skill differences between different continents. A team that had played a qualification of a specific location can only belong to that tournament confederation.
 
@@ -556,7 +559,8 @@ Let's export the result to our Vertica database.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_confederation_9.html
 
-**Team KPIs**
+Team KPIs
+++++++++++
 
 We use just two variables to track teams: away_team and home_team. This makes it a bit difficult to compute new features. We need to duplicate the dataset and intervert the two teams. This way, we can compute KPIs using a partition by the first team to avoid double-counting any games.
 
@@ -903,7 +907,7 @@ Let's export the result to our Vertica database.
 Team Rankings with k-means
 ---------------------------
 
-To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an ``elbow`` curve to find a suitable number of clusters.
+To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
 
 .. code-block:: python
 
@@ -975,7 +979,7 @@ To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an `
     model_kmeans.fit("football_clustering", predictors)
     model_kmeans.clusters_
 
-Let's add the prediction to the ``vDataFrame``.
+Let's add the prediction to the :py:mod:`vDataFrame`.
 
 .. code-block:: python
 
@@ -1268,7 +1272,8 @@ We can add dumies to do aggregations on the different games.
 
 Let's use moving windows to compute some additional features.
 
-**The teams' performance in their recent games**
+The teams' performance in their recent games
++++++++++++++++++++++++++++++++++++++++++++++
 
 .. code-block:: python
 
@@ -1401,7 +1406,8 @@ Let's use moving windows to compute some additional features.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_16.html
 
-**The teams' performance in the last same tournament**
+The teams' performance in the last same tournament
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 .. code-block:: python
 
@@ -1534,7 +1540,8 @@ Let's use moving windows to compute some additional features.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_17.html
 
-**Direct Confrontation**
+Direct Confrontation
++++++++++++++++++++++
 
 .. code-block:: python
 
@@ -1603,7 +1610,8 @@ Let's use moving windows to compute some additional features.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_19.html
 
-**Games against an opponents with the same rank**
+Games against an opponents with the same rank
+++++++++++++++++++++++++++++++++++++++++++++++
 
 .. code-block:: python
 
@@ -1700,7 +1708,8 @@ Let's use moving windows to compute some additional features.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_21.html
 
-**Games between teams with rank 1 and rank 2**
+Games between teams with rank 1 and rank 2
++++++++++++++++++++++++++++++++++++++++++++
 
 .. code-block:: python
 
@@ -1974,7 +1983,7 @@ Looking at the importance of each feature, it seems like direct confrontations a
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_features_importance.html
 
-Let's add the predictions to the ``vDataFrame``.
+Let's add the predictions to the :py:mod:`vDataFrame`.
 
 Draws are pretty rare, so we'll only consider them if a tie was very likely to occur.
 

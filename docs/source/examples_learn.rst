@@ -1,11 +1,8 @@
 .. _examples.learn:
 
-
-======
+=======
 Learn
-======
-
-
+=======
           
 .. toctree::
   :maxdepth: 1

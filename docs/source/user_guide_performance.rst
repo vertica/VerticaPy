@@ -1,12 +1,8 @@
 .. _user_guide.performance:
 
-
 =============
 Performance
 =============
-
-
-
 
 .. grid:: 1 2 2 2
 
@@ -20,7 +16,6 @@ Performance
           20 mins
           ^^^^^^^^
           Learn how to use the QueryProfiler tool.
-
 
 .. toctree::
   :hidden:

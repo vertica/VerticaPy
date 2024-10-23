@@ -313,7 +313,8 @@ To simplify things, let's save the dataset into a new table.
 Data Modeling
 --------------
 
-**Train/Test sets**
+Train/Test sets
+++++++++++++++++
 
 Since we're dealing with time series data, we have to maintain time linearity. Our goal is to use the past to predict the future, so a k-fold cross-validation, for example, wouldn't make much sense here.
 
@@ -324,11 +325,12 @@ We will split the dataset into a train (day 1) and a test (day 2).
     train = creditcard.search("Time  < '2013-09-02 00:00:00'")
     test  = creditcard.search("Time >= '2013-09-02 00:00:00'")
 
-**Supervision**
+Supervision
+++++++++++++
 
 Supervising would make this pretty easy since it would just be a binary classification problem. We can use different algorithms to optimize the prediction. Our dataset is unbalanced, so the AUC might be a good metric to evaluate the model. The PRC AUC would also be a relevant metric.
 
-``LogisticRegression`` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
+:py:func:`~verticapy.machine_learning.vertica.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
 
 .. code-block:: python
 
@@ -385,7 +387,8 @@ Based on the report, our model is very good at detecting non-fraudulent events; 
 
 Some PCA components seem to be very relevant and will be essential for finding anomalies.
 
-**Unsupervised Learning**
+Unsupervised Learning
+++++++++++++++++++++++
 
 There are many unsupervised learning techniques, but not all of them will be useful for detecting anomalies. Since there's no rigid mathematical definition for what an outlier is, finding anomalies becomes somewhat subjective.
 To solve this problem, we have to evaluate our constraints and needs. Do we need to find anomalies in real-time? Do we have a time constraint?
@@ -398,7 +401,7 @@ Due to the complexity of the computations, anomalies are difficult to detect in 
 
 - **Machine Learning:** We need to use easily-deployable algorithms to perform real-time fraud detection. Isolation forests and ``k-means`` can be easily deployed and they work well for detecting anomalies.
 - **Rules & Thresholds:** The z-score can be an efficient solution for detecting global outliers.
-- **Decomposition:** Robust ``PCA`` is another technique for detecting outliers.
+- **Decomposition:** Robust :py:func:`~verticapy.machine_learning.vertica.PCA` is another technique for detecting outliers.
 
 Before using these techniques, let's draw some scatter plots to get a better idea of what kind of anomalies we can expect.
 
@@ -449,11 +452,12 @@ In this case, the anomalies seem pretty clear global outliers of the distributio
 
 For the rest of this example, we'll investigate labels and how they can help us understand the efficacy of each technique.
 
-**k-means Clustering**
+k-means Clustering
++++++++++++++++++++
 
 We begin by examining ``k-means`` clustering, which partitions the data into k clusters.
 
-We can use an elbow curve to find a suitable number of clusters. We can then add more clusters then the amount suggested by the ``elbow`` curve to create clusters mainly composed of anomalies. Clusters with relatively fewer elements can then be investigated by an expert to label the anomalies.
+We can use an elbow curve to find a suitable number of clusters. We can then add more clusters then the amount suggested by the :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to create clusters mainly composed of anomalies. Clusters with relatively fewer elements can then be investigated by an expert to label the anomalies.
 
 From there, we perform the following procedure:
 
@@ -533,9 +537,10 @@ Let's direct our attention to the smallest clusters.
 
 Notice that clusters with fewer elemenets tend to contain much more fraudulent events than the others. This methodology makes ``k-means`` a good algorithm for catching collective outliers. Combining ``k-means`` with other techniques like z-score, we can find most of the outliers of the distribution.
 
-**Outliers of the distribution**
+Outliers of the distribution
++++++++++++++++++++++++++++++
 
-Let's use the ``z-score`` to detect global outliers of the distribution.
+Let's use the ``Z-score`` to detect global outliers of the distribution.
 
 .. code-block:: python
 
@@ -600,7 +605,8 @@ Let's use the ``z-score`` to detect global outliers of the distribution.
 
 We can see that we can caught more than 71% of the fraudulent activity in less than 1% of the dataset.
 
-**Neighbors**
+Neighbors
+++++++++++
 
 Other algorithms could be used to solve the problem with more precision if we could use a more powerful clustering method and didn't have a time constraint. Based on neighbors, these algorithms are very computationally expensive. An example of this kind of algorithm is the local outlier factor.
 
@@ -633,9 +639,10 @@ Other algorithms could be used to solve the problem with more precision if we co
 
 We can catch outliers with a neighbors score. Again, the main problem with these sorts of algorithms is that what they have in precision, they lack in speed, which makes them unsuitable for scoring new data. This is why it's important to focus on scalable techniques like ``k-means``.
 
-**Other Techniques**
+Other Techniques
++++++++++++++++++
 
-Other scalable techniques that can solve this problem are robust ``PCA`` and isolation forest.
+Other scalable techniques that can solve this problem are robust :py:func:`~verticapy.machine_learning.vertica.PCA` and isolation forest.
 
 Conclusion
 -----------
