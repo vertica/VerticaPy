@@ -20,11 +20,7 @@ Dataset
 ++++++++
 
 In this example of **predictive maintenance**, we propose a data-driven method 
-to estimate the health of a battery using the 
-`Li-ion battery dataset <https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository/>`_ 
-released by NASA.
-
-
+to estimate the health of a battery using the `Li-ion battery dataset <https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository/>`_ released by NASA.
 
 This dataset includes information on Li-ion batteries over several charge 
 and discharge cycles at room temperature. Charging was at a constant current 
@@ -87,8 +83,7 @@ Let us now ingest the data.
 Understanding the Data
 -----------------------
 
-Let's examine our data. Here, we use `vDataFrame.head()`
-to retrieve the first five rows of the dataset.
+Let's examine our data. Here, we use :py:func:`~verticapy.vDataFrame.head` to retrieve the first five rows of the dataset.
 
 .. ipython:: python
     :suppress:
@@ -103,7 +98,7 @@ to retrieve the first five rows of the dataset.
     :file: /project/data/VerticaPy/docs/figures/examples_battery_table_head.html
 
 
-Let's perform a few aggregations with `vDataFrame.describe()` to get a high-level overview of the dataset.
+Let's perform a few aggregations with :py:func:`~verticapy.vDataFrame.describe` to get a high-level overview of the dataset.
 
 
 .. code-block:: python
@@ -567,12 +562,9 @@ and the time needed to reach minimum voltage and maximum temperature.
 Machine Learning
 -----------------
 
+AutoML tests several models and returns input scores for each. We can use this to find the best model for our dataset.
 
-AutoML tests several models and returns input 
-scores for each. We can use this to find the best model for our dataset.
-
-.. note:: We are only using the three algorithms, but you can change the `estiamtor` parameter to try all the 'native' algorithms.
-    ``estiamtor = 'native' ``
+.. note:: We are only using the three algorithms, but you can change the `estimator` parameter to try all the 'native' algorithms: ``estimator = 'native' ``.
 
 .. code-block:: python
 

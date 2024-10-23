@@ -83,7 +83,7 @@ To help visualize the seasonality of forest fires, we'll draw some autocorrelati
 
 Forest fires follow a predictable, seasonal pattern, so it should be easy to predict future forest fires with past data.
 
-VerticaPy offers several models, including a multiple time series model. For this example, let's use a ARIMA model.
+VerticaPy offers several models, including a multiple time series model. For this example, let's use a :py:func:`~verticapy.machine_learning.vertica.ARIMA` model.
 
 .. ipython:: python
 
@@ -96,7 +96,7 @@ VerticaPy offers several models, including a multiple time series model. For thi
         ts = "date",    
     )
 
-Just like with other regression models, we'll evaluate our model with the ``report()`` method.
+Just like with other regression models, we'll evaluate our model with the :py:func:`~verticapy.machine_learning.vertica.ARIMA.report` method.
 
 .. code-block::
 

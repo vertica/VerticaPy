@@ -4,7 +4,7 @@
 Integrating with GeoPandas
 ===========================
 
-As of version 0.4.0, VerticaPy features GeoPandas integration. This allows you to easily export a ``vDataFrame`` as a GeoPandas DataFrame, giving you more control over geospatial data.
+As of version 0.4.0, VerticaPy features GeoPandas integration. This allows you to easily export a :py:mod:`vDataFrame` as a GeoPandas DataFrame, giving you more control over geospatial data.
 
 This example demonstrates the advantages of GeoPandas integration with the 'world' dataset.
 
@@ -35,7 +35,7 @@ This example demonstrates the advantages of GeoPandas integration with the 'worl
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_gpd_1.html
 
-The ``apply`` function of the VerticaPy stats module allows you to apply any Vertica function to the data. Let's compute the area of each country.
+The :py:func:`~verticapy.vDataFrame.apply` function of the VerticaPy stats module allows you to apply any Vertica function to the data. Let's compute the area of each country.
 
 .. code-block:: python
 
@@ -110,7 +110,7 @@ From there, we can draw any geospatial object.
         ax = ax,
     )
 
-You can also draw maps using the ``geo_plot`` method.
+You can also draw maps using the :py:func:`~verticapy.vDataFrame.geo_plot` method.
 
 .. ipython:: python
     :okwarning:

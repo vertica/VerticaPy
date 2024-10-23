@@ -54,7 +54,7 @@ Let's look at the 'age' of the passengers.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_encoding_2.html
 
-By using the ``discretize`` method, we can discretize the data using equal-width binning.
+By using the :py:func:`~verticapy.vDataFrame.discretize` method, we can discretize the data using equal-width binning.
 
 .. code-block:: python
 
@@ -118,7 +118,7 @@ Computing categories using a response column can also be a good solution.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_encoding_5.html
 
-We can view the available techniques in the ``discretize`` method with the ``help`` method.
+We can view the available techniques in the :py:func:`~verticapy.vDataFrame.discretize` method with the :py:func:`help` method.
 
 .. ipython:: python
 
@@ -183,4 +183,4 @@ Let's use a mean encoding on the 'home.dest' variable.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_encoding_8.html
 
-VerticaPy offers many encoding techniques. For example, the ``case_when`` and ``decode`` methods allow the user to use a customized encoding on a column. The ``discretize`` method allows you to reduce the number of categories in a column. It's important to get familiar with all the techniques available so you can make informed decisions about which to use for a given dataset.
+VerticaPy offers many encoding techniques. For example, the :py:func:`~verticapy.vDataFrame.case_when` and :py:func:`~verticapy.vDataFrame.decode` methods allow the user to use a customized encoding on a column. The :py:func:`~verticapy.vDataFrame.discretize` method allows you to reduce the number of categories in a column. It's important to get familiar with all the techniques available so you can make informed decisions about which to use for a given dataset.

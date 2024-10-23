@@ -72,7 +72,7 @@ Third, we have the names of each airline.
 
 Notice that each dataset has a primary or secondary key on which to join the data. For example, we can join the 'flights' dataset to the 'airlines' and 'airport' datasets using the corresponding IATA code.
 
-To join datasets in VerticaPy, use the vDataFrame's ``join`` method.
+To join datasets in VerticaPy, use the vDataFrame's :py:func:`~verticapy.vDataFrame.join` method.
 
 .. ipython:: python
 

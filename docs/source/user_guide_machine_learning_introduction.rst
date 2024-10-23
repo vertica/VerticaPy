@@ -100,7 +100,7 @@ When we have more than two categories, we use the expression 'Multiclass Classif
 Unsupervised Learning
 ----------------------
 
-These algorithms are to used to segment the data (``k-means``, ``DBSCAN``, etc.) or to detect anomalies (``Local Outlier Factor``, ``Z-Score`` Techniques...). In particular, they're useful for finding patterns in data without labels. For example, let's use a k-means algorithm to create different clusters on the Iris dataset. Each cluster will represent a flower's species.
+These algorithms are to used to segment the data (``k-means``, :py:func:`~verticapy.machine_learning.vertica.DBSCAN`, etc.) or to detect anomalies (:py:func:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, ``Z-Score`` Techniques...). In particular, they're useful for finding patterns in data without labels. For example, let's use a k-means algorithm to create different clusters on the Iris dataset. Each cluster will represent a flower's species.
 
 .. code-block:: python
 

@@ -10,7 +10,7 @@ Features engineering makes use of many techniques - too many to go over in this 
 Customized Features Engineering
 --------------------------------
 
-To build a customized feature, you can use the ``eval`` method of the ``vDataFrame``. Let's look at an example with the well-known 'Titanic' dataset.
+To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.eval` method of the :py:mod:`vDataFrame`. Let's look at an example with the well-known 'Titanic' dataset.
 
 .. code-block:: python
     
@@ -53,12 +53,12 @@ The feature 'parch' corresponds to the number of parents and children on-board. 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_2.html
 
-When using the ``eval`` method, you can enter any SQL expression and VerticaPy will evaluate it!
+When using the :py:func:`~verticapy.vDataFrame.eval` method, you can enter any SQL expression and VerticaPy will evaluate it!
 
 Regular Expressions
 --------------------
 
-To compute features using regular expressions, we'll use the ``regexp`` method.
+To compute features using regular expressions, we'll use the :py:func:`~verticapy.vDataFrame.regexp` method.
 
 .. ipython:: python
 
@@ -173,7 +173,7 @@ For each state, let's compute the previous number of forest fires.
 Moving Windows
 ---------------
 
-Moving windows are powerful features. Moving windows are managed by the ``rolling`` method in VerticaPy.
+Moving windows are powerful features. Moving windows are managed by the :py:func:`~verticapy.vDataFrame.rolling` method in VerticaPy.
 
 .. ipython:: python
 

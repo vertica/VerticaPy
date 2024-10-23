@@ -328,7 +328,7 @@ We will split the dataset into a train (day 1) and a test (day 2).
 
 Supervising would make this pretty easy since it would just be a binary classification problem. We can use different algorithms to optimize the prediction. Our dataset is unbalanced, so the AUC might be a good metric to evaluate the model. The PRC AUC would also be a relevant metric.
 
-``LogisticRegression`` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
+:py:func:`~verticapy.machine_learning.vertica.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
 
 .. code-block:: python
 
@@ -398,7 +398,7 @@ Due to the complexity of the computations, anomalies are difficult to detect in 
 
 - **Machine Learning:** We need to use easily-deployable algorithms to perform real-time fraud detection. Isolation forests and ``k-means`` can be easily deployed and they work well for detecting anomalies.
 - **Rules & Thresholds:** The z-score can be an efficient solution for detecting global outliers.
-- **Decomposition:** Robust ``PCA`` is another technique for detecting outliers.
+- **Decomposition:** Robust :py:func:`~verticapy.machine_learning.vertica.PCA` is another technique for detecting outliers.
 
 Before using these techniques, let's draw some scatter plots to get a better idea of what kind of anomalies we can expect.
 
@@ -453,7 +453,7 @@ For the rest of this example, we'll investigate labels and how they can help us 
 
 We begin by examining ``k-means`` clustering, which partitions the data into k clusters.
 
-We can use an elbow curve to find a suitable number of clusters. We can then add more clusters then the amount suggested by the ``elbow`` curve to create clusters mainly composed of anomalies. Clusters with relatively fewer elements can then be investigated by an expert to label the anomalies.
+We can use an elbow curve to find a suitable number of clusters. We can then add more clusters then the amount suggested by the :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to create clusters mainly composed of anomalies. Clusters with relatively fewer elements can then be investigated by an expert to label the anomalies.
 
 From there, we perform the following procedure:
 
@@ -535,7 +535,7 @@ Notice that clusters with fewer elemenets tend to contain much more fraudulent e
 
 **Outliers of the distribution**
 
-Let's use the ``z-score`` to detect global outliers of the distribution.
+Let's use the ``Z-score`` to detect global outliers of the distribution.
 
 .. code-block:: python
 
@@ -635,7 +635,7 @@ We can catch outliers with a neighbors score. Again, the main problem with these
 
 **Other Techniques**
 
-Other scalable techniques that can solve this problem are robust ``PCA`` and isolation forest.
+Other scalable techniques that can solve this problem are robust :py:func:`~verticapy.machine_learning.vertica.PCA` and isolation forest.
 
 Conclusion
 -----------

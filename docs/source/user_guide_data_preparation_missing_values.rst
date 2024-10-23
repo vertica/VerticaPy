@@ -36,7 +36,7 @@ To see how to handle missing values in VerticaPy, we'll use the well-known 'Tita
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_1.html
 
-We can examine the missing values with the ``count`` method.
+We can examine the missing values with the :py:func:`~verticapy.vDataFrame.count` method.
 
 .. code-block:: python
 
@@ -53,7 +53,7 @@ We can examine the missing values with the ``count`` method.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_2.html
 
-The missing values for 'boat' are MNAR; missing values simply indicate that the passengers didn't pay for a lifeboat. We can replace all the missing values with a new category 'No Lifeboat' using the ``fillna`` method.
+The missing values for 'boat' are MNAR; missing values simply indicate that the passengers didn't pay for a lifeboat. We can replace all the missing values with a new category 'No Lifeboat' using the :py:func:`~verticapy.vDataFrame.fillna` method.
 
 .. code-block:: python
 
@@ -97,7 +97,7 @@ Missing values for 'age' seem to be MCAR, so the best way to impute them is with
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_4.html
 
-The features 'embarked' and 'fare' have a couple missing values. Instead of using a technique to impute them, we can just drop them with the ``dropna`` method.
+The features 'embarked' and 'fare' have a couple missing values. Instead of using a technique to impute them, we can just drop them with the :py:func:`~verticapy.vDataFrame.dropna` method.
 
 .. code-block:: python
 
@@ -116,7 +116,7 @@ The features 'embarked' and 'fare' have a couple missing values. Instead of usin
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_5.html
 
-The ``fillna`` method offers many options. Let's use the ``help`` method to view its parameters.
+The :py:func:`~verticapy.vDataFrame.fillna` method offers many options. Let's use the :py:func:`help` function to view its parameters.
 
 .. ipython:: python
 

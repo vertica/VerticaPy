@@ -204,7 +204,7 @@ For the above examples, the queries were pushed to the external database.
 If the function is unique to Vertica, it automatically fetches 
 the data from the external database to compute on the Vertica server.
 
-Let's try an example with the :py:func:`verticapy.vDataFrame.describe` function, which is a 
+Let's try an example with the :py:func:`~verticapy.vDataFrame.describe` function, which is a 
 unique Vertica function.    
 
 .. code-block:: python
@@ -627,8 +627,7 @@ Pandas.DataFrame
 
 The joins also work with pandas.Dataframe. We can perform the same query that required multiple joins, but now with a local Pandas dataframe.
 
-We can read a local passengers CSV file using :py:func:`verticapy.read_csv` 
-or we could create an artificial dataset as well.
+We can read a local passengers CSV file using :py:func:`~verticapy.read_csv` or we could create an artificial dataset as well.
 
 .. code-block:: python
 

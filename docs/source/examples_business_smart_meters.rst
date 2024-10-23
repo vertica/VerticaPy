@@ -44,7 +44,7 @@ You can skip the below cell if you already have an established connection.
     
     vp.connect("VerticaDSN")
 
-Create the ``vDataFrames`` of the datasets:
+Create the :py:mod:`vDataFrame` of the datasets:
 
 .. code-block:: python
 
@@ -217,7 +217,7 @@ The dataset 'sm_meters' is pretty important. In particular, the type of residenc
     :width: 100%
     :align: center
 
-Based on the scatter plot, five seems like the optimal number of clusters. Let's verify this hypothesis using an ``elbow`` curve.
+Based on the scatter plot, five seems like the optimal number of clusters. Let's verify this hypothesis using an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve.
 
 .. code-block:: python
 

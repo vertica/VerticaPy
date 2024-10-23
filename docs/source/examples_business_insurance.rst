@@ -38,7 +38,7 @@ You can skip the below cell if you already have an established connection.
     
     vp.connect("VerticaDSN")
 
-Let's create a new schema and assign the data to a ``vDataFrame`` object.
+Let's create a new schema and assign the data to a :py:mod:`vDataFrame` object.
 
 .. code-block:: ipython
 

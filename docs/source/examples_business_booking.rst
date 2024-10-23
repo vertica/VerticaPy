@@ -77,7 +77,7 @@ Data Exploration and Preparation
 
 Sessionization is the process of gathering clicks for a certain period of time. We usually consider that after 30 minutes of inactivity, the user session ends (``date_time - lag(date_time) > 30 minutes``). For these kinds of use cases, aggregating sessions with meaningful statistics is the key for making accurate predictions.
 
-We start by using the ``sessionize`` method to create the variable 'session_id'. We can then use this variable to aggregate the data.
+We start by using the :py:func:`~verticapy.vDataFrame.sessionize` method to create the variable 'session_id'. We can then use this variable to aggregate the data.
 
 .. code-block:: python
 
@@ -234,7 +234,7 @@ We can see huge links between some of the variables ('mode_hotel_cluster_count' 
 Machine Learning
 -----------------
 
-Let's create our ``LogisticRegression`` model.
+Let's create our :py:func:`~verticapy.machine_learning.vertica.LogisticRegression` model.
 
 .. ipython:: python
 
@@ -279,7 +279,7 @@ It looks like there are two main predictors: 'mode_hotel_cluster_count' and 'tri
 - look for a shorter trip duration.
 - not click as much (spend more time at the same web page).
 
-Let's add our prediction to the ``vDataFrame``.
+Let's add our prediction to the :py:mod:`vDataFrame`.
 
 .. code-block:: python
 
@@ -304,7 +304,7 @@ Let's add our prediction to the ``vDataFrame``.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_expedia_predict_proba_1.html
 
-While analyzing the following boxplot (prediction partitioned by 'is_booking'), we can notice that the ``cutoff`` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
+While analyzing the following boxplot (prediction partitioned by 'is_booking'), we can notice that the `cutoff` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
 
 .. code-block:: python
 
@@ -320,13 +320,13 @@ While analyzing the following boxplot (prediction partitioned by 'is_booking'), 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_expedia_predict_boxplot_1.html
 
-Let's confirm our hypothesis by computing the best ``cutoff``.
+Let's confirm our hypothesis by computing the best `cutoff`.
 
 .. ipython:: python
 
     model_logit.score(metric = "best_cutoff")
 
-Let's look at the efficiency of our model with a cutoff of ``0.22``.
+Let's look at the efficiency of our model with a cutoff of 0.22.
 
 .. code-block:: python
 

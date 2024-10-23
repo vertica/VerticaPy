@@ -30,7 +30,7 @@ Let's use the Iris dataset to understand the tools VerticaPy gives you for handl
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_duplicates_1.html
 
-To find all the duplicates, you can use the ``duplicated`` method.
+To find all the duplicates, you can use the :py:func:`~verticapy.vDataFrame.duplicated` method.
 
 .. code-block:: python
 
@@ -49,7 +49,7 @@ To find all the duplicates, you can use the ``duplicated`` method.
 
 As you might expect, some flowers might share the exact same characteristics. But we have to be careful; this doesn't mean that they are real duplicates. In this case, we don't have to drop them.
 
-That said, if we did want to drop these duplicates, we can do so with the ``drop_duplicates`` method.
+That said, if we did want to drop these duplicates, we can do so with the :py:func:`~verticapy.vDataFrame.drop_duplicates` method.
 
 .. code-block:: python
 

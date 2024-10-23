@@ -24,7 +24,7 @@ First, let's import the modules needed for this notebook.
 
 Let's start with pies and histograms. Drawing the pie or histogram of a categorical column in VerticaPy is quite easy.
 
-.. note:: You can conveniently switch between the three available plotting libraries using :py:func:`verticapy.set_option`.
+.. note:: You can conveniently switch between the three available plotting libraries using :py:func:`~verticapy.set_option`.
 
 .. code-block::
 
@@ -385,7 +385,7 @@ It is also possible to use SHP datasets to draw maps.
       max_cardinality = 100
   )
 
-Time-series plots are also available with the ``plot`` method.
+Time-series plots are also available with the :py:func:`~verticapy.vDataFrame.plot` method.
 
 .. ipython:: python
 
@@ -394,7 +394,7 @@ Time-series plots are also available with the ``plot`` method.
   @savefig user_guides_data_exploration_amazon_time.png
   amazon["number"].plot(ts = "date", by = "state")
 
-Since time-series plots do not aggregate the data, it's important to choose the correct ``start_date`` and ``end_date``.
+Since time-series plots do not aggregate the data, it's important to choose the correct `start_date` and `end_date`.
 
 .. code-block:: python
 

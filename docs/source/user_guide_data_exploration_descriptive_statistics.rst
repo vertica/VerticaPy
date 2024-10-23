@@ -185,8 +185,8 @@ You can also use the 'groupby' method to compute customized aggregations.
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_group_by_python.html
 
 Computing many aggregations at the same time can be resource intensive. 
-You can use the parameters ``ncols_block`` and ``processes`` to manage the ressources.
+You can use the parameters `ncols_block` and `processes` to manage the ressources.
 
-For example, the parameter ``ncols_block`` will divide the main query into smaller using a specific number of columns. The parameter `processes` allows you to manage the number of queries you want to send at the same time. 
+For example, the parameter `ncols_block` will divide the main query into smaller using a specific number of columns. The parameter `processes` allows you to manage the number of queries you want to send at the same time. 
 
 An entire example is available in the :py:func:`~verticapy.vDataFrame.agg` documentation.

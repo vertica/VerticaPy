@@ -88,7 +88,7 @@ Create a new schema, "spotify".
 Data Loading
 -------------
 
-Load the datasets into the ``vDataFrame`` with ``read_csv()`` and then view them with ``display()``.
+Load the datasets into the :py:mod:`vDataFrame` with :py:func:`~verticapy.read_csv` and then view them with :py:func:`~verticapy.vDataFrame.head`.
 
 .. code-block::
 
@@ -521,14 +521,14 @@ Define a list of predictors and the response, and then save the normalized versi
 Machine Learning
 -----------------
 
-We can use ``AutoML`` to easily get a well-performing model.
+We can use :py:func:`~verticapy.machine_learning.vertica.automl.AutoML` to easily get a well-performing model.
 
 .. ipython:: python
 
     # define a random seed so models tested by AutoML produce consistent results
     vp.set_option("random_state", 2)
 
-``AutoML`` automatically tests several machine learning models and picks the best performing one.
+:py:func:`~verticapy.machine_learning.vertica.automl.AutoML` automatically tests several machine learning models and picks the best performing one.
 
 .. ipython:: python
     :okwarning:
@@ -569,7 +569,7 @@ Train the model.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_spotify_automl_plot.html
 
-Extract the best model according to ``AutoML``. From here, we can look at the model type and its hyperparameters.
+Extract the best model according to :py:func:`~verticapy.machine_learning.vertica.automl.AutoML`. From here, we can look at the model type and its hyperparameters.
 
 .. ipython:: python
 
@@ -581,7 +581,7 @@ Extract the best model according to ``AutoML``. From here, we can look at the mo
     print(bm_type)
     print(hyperparams)
 
-Thanks to ``AutoML``, we know best model type and its hyperparameters. Let's create a new model with this information in mind.
+Thanks to :py:func:`~verticapy.machine_learning.vertica.automl.AutoML`, we know best model type and its hyperparameters. Let's create a new model with this information in mind.
 
 .. code-block:: 
 
@@ -797,7 +797,7 @@ Let's start by taking the averages of these numerical features for each artist.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_spotify_artists_features.html
 
-Grouping means clustering, so we use an ``elbow`` curve to find a suitable number of clusters.
+Grouping means clustering, so we use an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
 
 .. ipython:: python
     :okwarning:
@@ -915,4 +915,4 @@ Let's see how our model groups these artists together:
 Conclusion
 -----------
 
-We were able to predict the popularity Polish songs with a ``RandomForestRegressor`` model suggested by ``AutoML``. We then created a ``k-means`` model to group artists into "genres" (clusters) based on the feature-commonalities in their tracks.
+We were able to predict the popularity Polish songs with a :py:func:`~verticapy.machine_learning.vertica.RandomForestRegressor` model suggested by :py:func:`~verticapy.machine_learning.vertica.automl.AutoML`. We then created a ``k-means`` model to group artists into "genres" (clusters) based on the feature-commonalities in their tracks.

@@ -15,12 +15,12 @@ Before connecting to a database, you must satisfy the following requirements:
 - Install VerticaPy on your machine
 
 For more information about these installations, 
-see :ref:`gettting_started`.
+see :ref:`getting_started`.
 
 Connect to a DB
 ----------------
 
-To connect to a database for the first time, use the :py:func:`verticapy.new_connection` function, replacing the configuration values with the credentials for your database:
+To connect to a database for the first time, use the :py:func:`~verticapy.new_connection` function, replacing the configuration values with the credentials for your database:
 
 .. code-block:: python
 
@@ -43,13 +43,13 @@ To connect to a database for the first time, use the :py:func:`verticapy.new_con
     import verticapy as vp
 
 The connection is saved to the VerticaPy connection file under the name specified in the name parameter. To reconnect to 
-the database using this connection, run the :py:func:`verticapy.connect` function with the name of the connection as the argument value:
+the database using this connection, run the :py:func:`~verticapy.connect` function with the name of the connection as the argument value:
 
 .. code-block:: python
 
     vp.connect("Vertica_Connection")
 
-To view all available connections, use :py:func:`verticapy.available_connection`.
+To view all available connections, use :py:func:`~verticapy.available_connection`.
 
 .. code-block:: python
 
@@ -63,7 +63,7 @@ If you need to confirm the parameters for a given function, you can also use the
 
     help(vp.new_connection)
 
-For an interactive start guide, you can use the ``help_start()`` function:
+For an interactive start guide, you can use the :py:func:`~verticapy.help_start()` function:
 
 .. code-block:: python
 

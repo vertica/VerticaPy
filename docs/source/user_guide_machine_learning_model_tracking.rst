@@ -27,7 +27,7 @@ The following example demonstrates how the model tracking feature can be used fo
     predictors = ["age", "fare", "pclass"]
     response = "survived"
 
-We then define a ``vExperiment`` object to track the candidate models. To define the experiment object, specify the following parameters:
+We then define a :py:func:`~verticapy.mlops.model_tracking.vExperiment` object to track the candidate models. To define the experiment object, specify the following parameters:
 
 - experiment_name: The name of the experiment.
 - test_relation: Relation or vDF to use to test the model.
@@ -104,7 +104,7 @@ So far we have only added three models to the experiment, but we could add many 
     top_model = my_experiment_1.load_best_model(metric = "auc")
 
 The experiment object facilitates not only model tracking but also makes cleanup super easy, especially in real-world 
-scenarios where there is often a large number of leftover models. The ``drop`` method drops from the database the info of the experiment and all associated models other than those specified in the keeping_models list.
+scenarios where there is often a large number of leftover models. The :py:func:`~verticapy.machine_learning.vertica.LogisticRegression.drop` method drops from the database the info of the experiment and all associated models other than those specified in the keeping_models list.
 
 .. ipython:: python
     :okwarning:
@@ -112,7 +112,7 @@ scenarios where there is often a large number of leftover models. The ``drop`` m
     my_experiment_1.drop(keeping_models=[top_model.model_name])
 
 Experiments are also helpful for performing grid search on hyper-parameters. The following example shows how they can 
-be used to study the impact of the max_iter parameter on the prediction performance of ``LogisticRegression`` models.
+be used to study the impact of the max_iter parameter on the prediction performance of :py:func:`~verticapy.machine_learning.vertica.LogisticRegression` models.
 
 .. ipython:: python
     :okwarning:
@@ -150,9 +150,9 @@ To showcase model versioning, we will begin by registering the ``top_model`` pic
 
     top_model.register("top_model_demo")
 
-When the model owner registers the model, its ownership changes to ``DBADMIN``, and the previous owner receives ``USAGE`` privileges. Registered models are referred to by their registered_name and version. Only DBADMIN or a user with the MLSUPERVISOR role can change the status of a registered model. We have provided the ``RegisteredModel`` class in VerticaPy for working with registered models.
+When the model owner registers the model, its ownership changes to ``DBADMIN``, and the previous owner receives ``USAGE`` privileges. Registered models are referred to by their registered_name and version. Only DBADMIN or a user with the MLSUPERVISOR role can change the status of a registered model. We have provided the :py:func:`~verticapy.mlops.model_versioning.RegisteredModel` class in VerticaPy for working with registered models.
 
-We will now make a ``RegisteredModel`` object for our recently registered model and change its status to "production". We can then use the registered model for scoring.
+We will now make a :py:func:`~verticapy.mlops.model_versioning.RegisteredModel` object for our recently registered model and change its status to "production". We can then use the registered model for scoring.
 
 .. ipython:: python
 

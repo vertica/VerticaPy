@@ -4,7 +4,7 @@
 The 'Magic' Methods of the vDataFrame
 ======================================
 
-VerticaPy 0.3.2 introduces the 'Magic' methods, which offer some additional flexilibility for mathematical operations in the ``vDataFrame``. These methods let you handle many operations in a 'pandas-like' or Pythonic style.
+VerticaPy 0.3.2 introduces the 'Magic' methods, which offer some additional flexilibility for mathematical operations in the :py:mod:`vDataFrame`. These methods let you handle many operations in a 'pandas-like' or Pythonic style.
 
 .. code-block:: ipython
 
@@ -239,7 +239,7 @@ You can now filter your data with conditional operators like and ('&'), or ('|')
 'Pythonic' Invokation of Vertica Functions
 -------------------------------------------
 
-You can easily apply Vertica functions to your ``vDataFrame``. Here, we use Vertica's COALESCE function to impute the 'age' of the passengers in our dataset.
+You can easily apply Vertica functions to your :py:mod:`vDataFrame`. Here, we use Vertica's COALESCE function to impute the 'age' of the passengers in our dataset.
 
 .. code-block:: ipython
 
@@ -257,7 +257,7 @@ You can easily apply Vertica functions to your ``vDataFrame``. Here, we use Vert
 Slicing the vDataFrame
 -----------------------
 
-You can now slice the ``vDataFrame`` with indexing operators.
+You can now slice the :py:mod:`vDataFrame` with indexing operators.
 
 .. code-block:: ipython
 

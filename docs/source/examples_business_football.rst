@@ -903,7 +903,7 @@ Let's export the result to our Vertica database.
 Team Rankings with k-means
 ---------------------------
 
-To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an ``elbow`` curve to find a suitable number of clusters.
+To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
 
 .. code-block:: python
 
@@ -975,7 +975,7 @@ To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an `
     model_kmeans.fit("football_clustering", predictors)
     model_kmeans.clusters_
 
-Let's add the prediction to the ``vDataFrame``.
+Let's add the prediction to the :py:mod:`vDataFrame`.
 
 .. code-block:: python
 
@@ -1974,7 +1974,7 @@ Looking at the importance of each feature, it seems like direct confrontations a
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_features_importance.html
 
-Let's add the predictions to the ``vDataFrame``.
+Let's add the predictions to the :py:mod:`vDataFrame`.
 
 Draws are pretty rare, so we'll only consider them if a tie was very likely to occur.
 

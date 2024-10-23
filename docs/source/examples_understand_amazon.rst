@@ -73,7 +73,7 @@ We can explore our data by displaying descriptive statistics of all the columns.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_describe.html
 
-Using the ``describe()`` method, we can see that our data ranges from the beginning of 1998 to the end of 2017.
+Using the :py:func:`~verticapy.vDataFrame.describe` method, we can see that our data ranges from the beginning of 1998 to the end of 2017.
 
 .. code-block:: python
 
@@ -224,7 +224,7 @@ Although it would be preferable to use seasonal decomposition and predict the re
 Machine Learning
 -----------------
 
-Since the seasonality occurs monthly, we set ``p = 12``. There is no trend in the data, and we observe some moving average in the residuals, so ``q`` should be around ``2``. Let's proceed with building the model.
+Since the seasonality occurs monthly, we set ``p = 12``. There is no trend in the data, and we observe some moving average in the residuals, so `q` should be around 2. Let's proceed with building the model.
 
 .. code-block:: python
 

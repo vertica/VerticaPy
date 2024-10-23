@@ -382,7 +382,7 @@ Let's draw a residual plot.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_13.html
 
-We see a high heteroscedasticity, indicating that we can't trust the ``p-value`` of the coefficients.
+We see a high heteroscedasticity, indicating that we can't trust the `p-value` of the coefficients.
 
 .. ipython:: python
 
@@ -438,7 +438,7 @@ Example with decomposition
 
 Let's look at the same dataset, but use decomposition techniques to filter out unimportant information. We don't have to normalize our data or look at correlations with these types of methods.
 
-We'll begin by repeating the data preparation process of the previous section and export the resulting ``vDataFrame`` to Vertica.
+We'll begin by repeating the data preparation process of the previous section and export the resulting :py:mod:`vDataFrame` to Vertica.
 
 .. code-block:: ipython
     
@@ -526,7 +526,7 @@ We'll begin by repeating the data preparation process of the previous section an
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_16.html
 
-Let's create our principal component analysis (``PCA``) model.
+Let's create our principal component analysis (:py:func:`~verticapy.machine_learning.vertica.PCA`) model.
 
 .. code-block:: ipython
     
@@ -560,7 +560,7 @@ Let's create our principal component analysis (``PCA``) model.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_17.html
 
-We can verify the Gauss-Markov assumptions with our ``PCA`` model.
+We can verify the Gauss-Markov assumptions with our :py:func:`~verticapy.machine_learning.vertica.PCA` model.
 
 .. code-block:: python
 
@@ -610,4 +610,4 @@ As you can see, we've created a much more accurate model here than in our first 
 Conclusion
 -----------
 
-We've seen two techniques that can help us create powerful linear regression models. While the first method normalized the data and looked for correlations, the second method applied a ``PCA`` model. The second one allows us to confirm the Gauss-Markov assumptions - an essential part of using linear models.
+We've seen two techniques that can help us create powerful linear regression models. While the first method normalized the data and looked for correlations, the second method applied a :py:func:`~verticapy.machine_learning.vertica.PCA` model. The second one allows us to confirm the Gauss-Markov assumptions - an essential part of using linear models.
