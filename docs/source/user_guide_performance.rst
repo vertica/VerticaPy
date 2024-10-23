@@ -9,7 +9,8 @@ Performance
     .. grid-item::
     
       .. card:: QueryProfiler
-          :link: notebooks/performance/queryprofiler/index.html
+          :link: user_guide.performance.qprof
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-15
 
@@ -21,5 +22,5 @@ Performance
   :hidden:
   :maxdepth: 1
   
-  notebooks/performance/queryprofiler/index.ipynb
+  user_guide_performance_qprof
 
