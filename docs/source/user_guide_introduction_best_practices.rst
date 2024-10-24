@@ -304,7 +304,7 @@ Filter unnecessary data
 Filtering your data is a crucial step in data preparation. Proper filtering avoids unnecessary computations and greatly 
 improves the performance of each method call. While the performance impact can be minimal for small datasets, filtering large datasets is key to improving performance.
 
-For example, if we are only interested in analyzing Titanic passengers who didn't have a lifeboat, we can filter on this requirement using the :ref:`~verticapy.vDataFrame.filter`` method: 
+For example, if we are only interested in analyzing Titanic passengers who didn't have a lifeboat, we can filter on this requirement using the :ref:`~verticapy.vDataFrame.filter` method: 
 
 .. code-block:: python
 
