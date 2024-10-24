@@ -241,6 +241,7 @@ We can even flatten the nested structure inside a json file, either flattening t
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     vp.drop("complex_vmap_test.laliga_flat")
     path = "/project/data/VerticaPy/docs"
@@ -286,6 +287,7 @@ To deconvolve the nested structure, we can use the ``flatten_arrays`` parameter 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     vp.drop("complex_vmap_test.laliga_flat")
     path = "/project/data/VerticaPy/docs"
@@ -392,6 +394,7 @@ When we do not materialize a table, it automatically becomes a flextable:
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     vp.drop("complex_vmap_test.laliga_verticapy_test_json")
     path = "/project/data/VerticaPy/docs"
@@ -528,6 +531,7 @@ Now we can save this edited strings file:
 If we look at the new file, we can see the updated changes:
 
 .. ipython:: python
+    :okwarning:
     
     @suppress
     vp.drop("complex_vmap_test.amazon_edit")
