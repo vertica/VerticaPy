@@ -979,7 +979,7 @@ To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an :
     model_kmeans.fit("football_clustering", predictors)
     model_kmeans.clusters_
 
-Let's add the prediction to the :py:mod:`vDataFrame`.
+Let's add the prediction to the :py:mod:`~verticapy.vDataFrame`.
 
 .. code-block:: python
 
@@ -1983,7 +1983,7 @@ Looking at the importance of each feature, it seems like direct confrontations a
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_football_features_importance.html
 
-Let's add the predictions to the :py:mod:`vDataFrame`.
+Let's add the predictions to the :py:mod:`~verticapy.vDataFrame`.
 
 Draws are pretty rare, so we'll only consider them if a tie was very likely to occur.
 

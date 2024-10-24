@@ -787,7 +787,7 @@ The :py:func:`~verticapy.machine_learning.model_selection.elbow` curve seems to 
 Predicting Base Station Workload
 +++++++++++++++++++++++++++++++++
 
-With the predictive power of AutoML, we can predict the workload of the base stations. :py:func:`~verticapy.machine_learning.vertica.automl.AutoML` is a powerful technique that tests multiple models to maximize the input score.
+With the predictive power of AutoML, we can predict the workload of the base stations. :py:mod:`~verticapy.machine_learning.vertica.automl.AutoML` is a powerful technique that tests multiple models to maximize the input score.
 
 The features used to train our model will be longitude, latitude, total number of distinct users, average duration of the connections, total duration of connections, total number of connections, the cluster they belong to, total number of base stations in the cluster, and the workload of the clusters.
 

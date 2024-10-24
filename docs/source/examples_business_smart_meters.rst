@@ -44,7 +44,7 @@ You can skip the below cell if you already have an established connection.
     
     vp.connect("VerticaDSN")
 
-Create the :py:mod:`vDataFrame` of the datasets:
+Create the :py:mod:`~verticapy.vDataFrame` of the datasets:
 
 .. code-block:: python
 

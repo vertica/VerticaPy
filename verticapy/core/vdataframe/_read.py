@@ -739,25 +739,26 @@ class vDFRead(vDFUtils):
             | ``vDataFrame.``:py:meth:`~verticapy.vDataFrame.iloc` :
                 Get custom rows from a :py:class:`~vDataFrame`.
         """
-        all_cols = self.get_columns()
         columns = format_type(columns, dtype=list)
         for i in range(len(columns)):
             column = self.format_colnames(columns[i], raise_error=False)
             if column:
-                if column in all_cols:
-                    dtype = self[column].ctype().lower()
-                else:
-                    dtype = ""
+                dtype = ""
                 if self._vars["isflex"]:
+                    try:
+                        dtype = self[column].ctype().lower()
+                    except:
+                        dtype = ""
                     if (
                         "array" in dtype
                         or "map" in dtype
                         or "row" in dtype
                         or "set" in dtype
                         or "vmap" in dtype
+                        or not (dtype)
                     ):
                         dtype = ""
-                    elif column in all_cols:
+                    else:
                         dtype = f"::{dtype}"
                 columns[i] = column + dtype
             else:

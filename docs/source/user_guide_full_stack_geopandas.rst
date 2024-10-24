@@ -4,7 +4,7 @@
 Integrating with GeoPandas
 ===========================
 
-As of version 0.4.0, VerticaPy features GeoPandas integration. This allows you to easily export a :py:mod:`vDataFrame` as a GeoPandas DataFrame, giving you more control over geospatial data.
+As of version 0.4.0, VerticaPy features GeoPandas integration. This allows you to easily export a :py:mod:`~verticapy.vDataFrame` as a GeoPandas DataFrame, giving you more control over geospatial data.
 
 This example demonstrates the advantages of GeoPandas integration with the 'world' dataset.
 

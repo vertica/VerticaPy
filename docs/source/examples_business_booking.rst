@@ -234,7 +234,7 @@ We can see huge links between some of the variables ('mode_hotel_cluster_count' 
 Machine Learning
 -----------------
 
-Let's create our :py:func:`~verticapy.machine_learning.vertica.LogisticRegression` model.
+Let's create our :py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` model.
 
 .. ipython:: python
 
@@ -279,7 +279,7 @@ It looks like there are two main predictors: 'mode_hotel_cluster_count' and 'tri
 - look for a shorter trip duration.
 - not click as much (spend more time at the same web page).
 
-Let's add our prediction to the :py:mod:`vDataFrame`.
+Let's add our prediction to the :py:mod:`~verticapy.vDataFrame`.
 
 .. code-block:: python
 

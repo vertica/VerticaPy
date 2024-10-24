@@ -1138,8 +1138,8 @@ class ElasticNet(LinearModel, Regressor):
         return "REGRESSOR"
 
     @property
-    def _model_type(self) -> Literal["LinearRegression"]:
-        return "LinearRegression"
+    def _model_type(self) -> Literal["ElasticNet"]:
+        return "ElasticNet"
 
     # System & Special Methods.
 
@@ -1673,8 +1673,8 @@ class Lasso(LinearModel, Regressor):
         return "REGRESSOR"
 
     @property
-    def _model_type(self) -> Literal["LinearRegression"]:
-        return "LinearRegression"
+    def _model_type(self) -> Literal["Lasso"]:
+        return "Lasso"
 
     # System & Special Methods.
 
@@ -3982,8 +3982,8 @@ class Ridge(LinearModel, Regressor):
         return "REGRESSOR"
 
     @property
-    def _model_type(self) -> Literal["LinearRegression"]:
-        return "LinearRegression"
+    def _model_type(self) -> Literal["Ridge"]:
+        return "Ridge"
 
     # System & Special Methods.
 

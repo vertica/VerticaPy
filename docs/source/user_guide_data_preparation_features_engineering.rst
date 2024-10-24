@@ -10,7 +10,7 @@ Features engineering makes use of many techniques - too many to go over in this 
 Customized Features Engineering
 --------------------------------
 
-To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.eval` method of the :py:mod:`vDataFrame`. Let's look at an example with the well-known 'Titanic' dataset.
+To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.eval` method of the :py:mod:`~verticapy.vDataFrame`. Let's look at an example with the well-known 'Titanic' dataset.
 
 .. code-block:: python
     
@@ -43,6 +43,7 @@ The feature 'parch' corresponds to the number of parents and children on-board. 
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
     res = titanic.select(["parch", "sibsp", "family_size"])
@@ -72,6 +73,7 @@ Consider the following example: notice that passenger names include their title.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = titanic["name"]
     html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_3.html", "w")
@@ -95,6 +97,7 @@ Let's extract the title using regular expressions.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     titanic.regexp(
         column = "name",
@@ -155,6 +158,7 @@ For each state, let's compute the previous number of forest fires.
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = amazon.analytic(
         name = "previous_number",
@@ -194,6 +198,7 @@ Let's look at forest fires for each state three months preceding two months foll
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     res = amazon.rolling(
         name = "number_3mp_2mf",

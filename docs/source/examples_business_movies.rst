@@ -43,7 +43,7 @@ You can skip the below cell if you already have an established connection.
     
     vp.connect("VerticaDSN")
 
-Let's  create a new schema and assign the data to a :py:mod:`vDataFrame` object.
+Let's  create a new schema and assign the data to a :py:mod:`~verticapy.vDataFrame` object.
 
 .. code-block:: ipython
 
@@ -349,7 +349,7 @@ Let's join our notoriety metrics for actors and directors with the main dataset.
         ],
     )
 
-As we did many operation, it can be nice to save the :py:mod:`vDataFrame` as a table in the Vertica database.
+As we did many operation, it can be nice to save the :py:mod:`~verticapy.vDataFrame` as a table in the Vertica database.
 
 .. code-block:: python
 
@@ -754,7 +754,7 @@ Let's create a model to evaluate an unbiased score for each different movie.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_model_report.html
 
-The model is good. Let's add it in our :py:mod:`vDataFrame`.
+The model is good. Let's add it in our :py:mod:`~verticapy.vDataFrame`.
 
 .. code-block:: python
 
@@ -926,7 +926,7 @@ By looking at the elbow curve, we can choose 15 clusters. Let's create a ``k-mea
     model_kmeans.fit(filmtv_movies_complete, predictors)
     model_kmeans.clusters_
 
-Let's add the clusters in the :py:mod:`vDataFrame`.
+Let's add the clusters in the :py:mod:`~verticapy.vDataFrame`.
 
 
 .. code-block:: python

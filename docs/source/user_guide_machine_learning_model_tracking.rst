@@ -112,7 +112,7 @@ scenarios where there is often a large number of leftover models. The :py:func:`
     my_experiment_1.drop(keeping_models=[top_model.model_name])
 
 Experiments are also helpful for performing grid search on hyper-parameters. The following example shows how they can 
-be used to study the impact of the max_iter parameter on the prediction performance of :py:func:`~verticapy.machine_learning.vertica.LogisticRegression` models.
+be used to study the impact of the max_iter parameter on the prediction performance of :py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` models.
 
 .. ipython:: python
     :okwarning:

@@ -329,7 +329,7 @@ def read_csv(
     na_rep: Optional[str] = None,
     quotechar: str = '"',
     escape: str = "\027",
-    record_terminator: str = "\n",
+    record_terminator: Optional[str] = "\n",
     trim: bool = True,
     omit_empty_keys: bool = False,
     reject_on_duplicate: bool = False,
@@ -720,6 +720,10 @@ def read_csv(
     dtype = format_type(dtype, dtype=dict)
     if isinstance(sep, NoneType):
         sep = ""
+    no_record = False
+    if isinstance(record_terminator, NoneType):
+        record_terminator = "\n"
+        no_record = True
     header_names = format_type(header_names, dtype=list)
     if schema:
         temporary_local_table = False
@@ -917,13 +921,17 @@ def read_csv(
         local = "LOCAL " if ingest_local else ""
         header_names_str = ", ".join([f'"{column}"' for column in header_names])
         record_terminator_quoted = _get_quoted_record_terminator(record_terminator)
+        if no_record:
+            record_terminator_line = ""
+        else:
+            record_terminator_line = f"RECORD TERMINATOR {record_terminator_quoted}"
         query2 = f"""
             COPY {input_relation}({header_names_str}) 
             FROM {local}'{path}' {compression} 
             DELIMITER '{sep}' 
             NULL '{na_rep}' 
             ENCLOSED BY '{quotechar}'
-            RECORD TERMINATOR {record_terminator_quoted}
+            {record_terminator_line}
             ESCAPE AS '{escape}'{skip};"""
         if genSQL:
             if insert:
@@ -941,7 +949,18 @@ def read_csv(
                 print_message(
                     f"The table {input_relation} has been successfully created."
                 )
-            return vDataFrame(table_name, schema=schema)
+            res = vDataFrame(table_name, schema=schema)
+            nb_rows = res.shape()[0]
+            if nb_rows == 0 and not (no_record):
+                warning_message = (
+                    "The data ingestion might have failed as no rows"
+                    " were ingested. The issue could be related to "
+                    "the 'record_terminator' parameter. Setting it "
+                    "to 'None' might resolve the problem.\n"
+                    "Ex: read_csv(..., record_terminator=None, ...)"
+                )
+                print_message(warning_message, "warning")
+            return res
 
 
 def _get_quoted_record_terminator(record_terminator: str) -> str:

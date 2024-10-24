@@ -217,7 +217,7 @@ The "sibsp" column represents the number of siblings for each passenger, while t
 
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
 
-Let's move on to outliers. We have several tools for locating outliers (:py:func:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, :py:func:`~verticapy.machine_learning.vertica.DBSCAN`, ``k-means``...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
+Let's move on to outliers. We have several tools for locating outliers (:py:mod:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, :py:mod:`~verticapy.machine_learning.vertica.DBSCAN`, ``k-means``...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
 
 .. code-block:: python
 
@@ -302,7 +302,7 @@ Survival correlates strongly with whether or not a passenger has a lifeboat (the
 - Passengers with a lifeboat
 - Passengers without a lifeboat
 
-Before we move on: we did a lot of work to clean up this data, but we haven't saved anything to our Vertica database! Let's look at the modifications we've made to the :py:mod:`vDataFrame`.
+Before we move on: we did a lot of work to clean up this data, but we haven't saved anything to our Vertica database! Let's look at the modifications we've made to the :py:mod:`~verticapy.vDataFrame`.
 
 .. ipython:: python
 
@@ -322,7 +322,7 @@ VerticaPy dynamically generates SQL code whenever you make modifications to your
     vp.set_option("sql_on", False)
     print(titanic.info())
 
-Let's move on to modeling our data. Save the :py:mod:`vDataFrame` to your Vertica database.
+Let's move on to modeling our data. Save the :py:mod:`~verticapy.vDataFrame` to your Vertica database.
 
 .. ipython:: python
     :okwarning:

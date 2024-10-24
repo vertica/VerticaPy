@@ -66,14 +66,14 @@ To create a vDataFrame out of a table in your Vertica database, specify its sche
 Create an XGB model
 -------------------
 
-Create a :py:func:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` model.
+Create a :py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` model.
 
 Unlike a vDataFrame object, which simply queries the table it 
-was created with, the VerticaPy :py:func:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` object creates 
+was created with, the VerticaPy :py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` object creates 
 and then references a model in Vertica, so it must be stored in a 
 schema like any other database object.
 
-This example creates the 'my_model' :py:func:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` model in 
+This example creates the 'my_model' :py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` model in 
 the 'xgb_to_json' schema:
 
 This example loads the Titanic dataset with the load_titanic function 
@@ -204,7 +204,7 @@ Clean the Example Environment
 
 Drop the 'xgb_to_json' schema, using CASCADE to drop any 
 database objects stored inside (the 'titanic' table, the 
-:py:func:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` 
+:py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` 
 model, etc.), then delete the 'exported_xgb_model.json' file:
 
 .. ipython:: python
