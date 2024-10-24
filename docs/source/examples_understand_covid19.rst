@@ -283,14 +283,14 @@ Because of the upward monotonic trend, we can also look at the correlation betwe
 
     covid19["elapsed_days"] = covid19["date"] - fun.min(covid19["date"])._over(by = [covid19["state"]])
 
-We can generate the SQL code of the :py:func:`~verticapy.vDataFrame` 
-to see what happens behind the scenes when we modify our data from within the :py:func:`~verticapy.vDataFrame`.
+We can generate the SQL code of the :py:mod:`~verticapy.vDataFrame` 
+to see what happens behind the scenes when we modify our data from within the :py:mod:`~verticapy.vDataFrame`.
 
 .. ipython:: python
 
     print(covid19.current_relation())
 
-The :py:func:`~verticapy.vDataFrame` memorizes all of our operations on the data to dynamically generate the correct SQL statement and passes computation and aggregation to Vertica.
+The :py:mod:`~verticapy.vDataFrame` memorizes all of our operations on the data to dynamically generate the correct SQL statement and passes computation and aggregation to Vertica.
 
 Let's see the correlation between the number of deaths and the other variables.
 
@@ -307,7 +307,7 @@ Let's see the correlation between the number of deaths and the other variables.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_plot_corr_5.html
 
-We can see clearly a high correlation for some variables. We can use them to compute a ``SARIMAX`` model, but we'll stick to a :py:func:`~verticapy.machine_learning.vertica.VAR` model for this study.
+We can see clearly a high correlation for some variables. We can use them to compute a ``SARIMAX`` model, but we'll stick to a :py:mod:`~verticapy.machine_learning.vertica.VAR` model for this study.
 
 Let's compute the total number of deaths and cases to create our VAR model.
 
@@ -335,7 +335,7 @@ Let's compute the total number of deaths and cases to create our VAR model.
 Machine Learning
 -----------------
 
-Let's create a :py:func:`~verticapy.machine_learning.vertica.VAR` model to predict the number of COVID-19 deaths and cases in the USA.
+Let's create a :py:mod:`~verticapy.machine_learning.vertica.VAR` model to predict the number of COVID-19 deaths and cases in the USA.
 
 .. code-block:: python
 

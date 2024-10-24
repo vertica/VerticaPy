@@ -140,7 +140,7 @@ Generally, you can identify global outliers with the `Z-Score`. We'll consider a
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_5.html
 
-Other techniques like :py:func:`~verticapy.machine_learning.vertica.DBSCAN` or local outlier factor (`LOF`) can be to used to check other data points for outliers.
+Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or local outlier factor (`LOF`) can be to used to check other data points for outliers.
 
 .. code-block:: python
 
@@ -192,7 +192,7 @@ Other techniques like :py:func:`~verticapy.machine_learning.vertica.DBSCAN` or l
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_7.html
 
-While :py:func:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers when computing the clusters, `LOF` computes an outlier score. Generally, a `LOF` Score greater than 1.5 indicates an outlier.
+While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers when computing the clusters, `LOF` computes an outlier score. Generally, a `LOF` Score greater than 1.5 indicates an outlier.
 
 .. code-block:: python
 

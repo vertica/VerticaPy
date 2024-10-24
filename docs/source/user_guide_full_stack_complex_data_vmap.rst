@@ -186,7 +186,7 @@ structure consisting of many sub-columns. We can convert this column into a JSON
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_data_2.html
 
-As with a normal :py:func:`~verticapy.vDataFrame`, we can easily extract the values from the sub-columns:
+As with a normal :py:mod:`~verticapy.vDataFrame`, we can easily extract the values from the sub-columns:
 
 .. code-block:: python
 
@@ -453,7 +453,7 @@ We can then manually materialize the flextable using the convenient :py:func:`~v
     vp.drop("complex_vmap_test.laliga_to_db")
     data.to_db("complex_vmap_test.laliga_to_db");
 
-Once we have stored the database, we can easily create a :py:func:`~verticapy.vDataFrame` of the relation:
+Once we have stored the database, we can easily create a :py:mod:`~verticapy.vDataFrame` of the relation:
 
 .. ipython:: python
 
@@ -482,7 +482,7 @@ First, we load the dataset.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_cities.html
 
-Once we have data in the form of :py:func:`~verticapy.vDataFrame`, we can readily convert it to a ``JSON`` file:
+Once we have data in the form of :py:mod:`~verticapy.vDataFrame`, we can readily convert it to a ``JSON`` file:
 
 .. ipython:: python
 

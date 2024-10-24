@@ -10,9 +10,9 @@ Restrict objects and operations to essential columns
 
 As VerticaPy is effectively an abstraction of SQL, any database-level optimizations you make in your Vertica database carry over to VerticaPy. In Vertica, optimization is centered on projections, which are collections of table columns—from one or more tables—stored on disk in a format that optimizes query execution. When you write queries in terms of the original tables, the query uses the projections to return query results. For details about creating and designing projections, see the Projections section in the Vertica documentation.
 
-Projections are created and managed in the Vertica database, but you can leverage the power of projections in VerticaPy with features such as the :py:func:`~verticapy.vDataFrame`'s usecols parameter, which specifies the columns from the input relation to include in the :py:func:`~verticapy.vDataFrame`. As columnar databases perform better when there are fewer columns in the query, especially when you are working with large datasets, limiting :py:func:`~verticapy.vDataFrame` and operations to essential columns can lead to a significant performance improvement. By default, most :py:func:`~verticapy.vDataFrame` methods use all numerical columns in the :py:func:`~verticapy.vDataFrame`, but you can restrict the operation to specific columns.
+Projections are created and managed in the Vertica database, but you can leverage the power of projections in VerticaPy with features such as the :py:mod:`~verticapy.vDataFrame`'s usecols parameter, which specifies the columns from the input relation to include in the :py:mod:`~verticapy.vDataFrame`. As columnar databases perform better when there are fewer columns in the query, especially when you are working with large datasets, limiting :py:mod:`~verticapy.vDataFrame` and operations to essential columns can lead to a significant performance improvement. By default, most :py:mod:`~verticapy.vDataFrame` methods use all numerical columns in the :py:mod:`~verticapy.vDataFrame`, but you can restrict the operation to specific columns.
 
-In the following examples, we'll demonstrate how to create a `vDataFrame` from specific columns in the input relation, and then run methods on that :py:func:`~verticapy.vDataFrame`. First, load the titanic dataset into Vertica using the :py:func:`~verticapy.datasets.load_titanic` function:
+In the following examples, we'll demonstrate how to create a `vDataFrame` from specific columns in the input relation, and then run methods on that :py:mod:`~verticapy.vDataFrame`. First, load the titanic dataset into Vertica using the :py:func:`~verticapy.datasets.load_titanic` function:
 
 .. code-block:: python
 
@@ -78,7 +78,7 @@ To turn off the SQL code generation option:
     # Turning off SQL.
     vp.set_option("sql_on", False)
 
-To restrict the operation to specific columns in the :py:func:`~verticapy.vDataFrame`, provide the column names in the `columns` parameter:
+To restrict the operation to specific columns in the :py:mod:`~verticapy.vDataFrame`, provide the column names in the `columns` parameter:
 
 .. code-block:: python
 
@@ -105,7 +105,7 @@ Instead of specifying essential columns to include, some methods allow you to li
 
 .. note:: 
 
-    To list all columns in a :py:func:`~verticapy.vDataFrame`, including non-numerical columns, use the :py:func:`~verticapy.vDataFrame.get_columns` method.
+    To list all columns in a :py:mod:`~verticapy.vDataFrame`, including non-numerical columns, use the :py:func:`~verticapy.vDataFrame.get_columns` method.
 
 You can then use this truncated list of columns in another method call; for instance, to compute a correlation matrix:
 
@@ -126,12 +126,12 @@ You can then use this truncated list of columns in another method call; for inst
 Save the current relation
 --------------------------
 
-The :py:func:`~verticapy.vDataFrame` works like a `view`, a stored query that encapsulates one or more SELECT statements. 
+The :py:mod:`~verticapy.vDataFrame` works like a `view`, a stored query that encapsulates one or more SELECT statements. 
 If the generated relation uses many different functions, the computation time for each method call is greatly increased.
 
 Small transformations don't drastically slow down computation, but heavy transformations (multiple joins, frequent use of advanced analytical funcions, moving windows, etc.) can result in noticeable slowdown. When performing computationally expensive operations, you can aid performance by saving the vDataFrame structure as a table in the Vertica database. We will demonstrate this process in the following example.
 
-First, create a :py:func:`~verticapy.vDataFrame`, then perform some operations on that :py:func:`~verticapy.vDataFrame`:
+First, create a :py:mod:`~verticapy.vDataFrame`, then perform some operations on that :py:mod:`~verticapy.vDataFrame`:
 
 .. code-block:: python
 
@@ -162,7 +162,7 @@ To understand how Vertica executes the different aggregations in the above relat
 
 Looking at the plan and its associated relation, it's clear that the transformations we applied to the vDataFrame result in a complicated relation. 
 
-Each method call to the :py:func:`~verticapy.vDataFrame` must use this relation for computation. 
+Each method call to the :py:mod:`~verticapy.vDataFrame` must use this relation for computation. 
 
 .. note:: 
 
@@ -406,13 +406,13 @@ To monitor how VerticaPy is computing the aggregations, use the :py:func:`~verti
 
 VerticaPy allows you to send multiple queries, either iteratively or concurrently, to the database when computing aggregations.
 
-First, let's send a single query to compute the average for all columns in the :py:func:`~verticapy.vDataFrame`:
+First, let's send a single query to compute the average for all columns in the :py:mod:`~verticapy.vDataFrame`:
 
 .. ipython:: python
 
     display(vdf.avg(ncols_block = 20))
 
-We see that there was one SELECT query for all columns in the :py:func:`~verticapy.vDataFrame`. 
+We see that there was one SELECT query for all columns in the :py:mod:`~verticapy.vDataFrame`. 
 You can reduce the impact on the system by using the `ncols_block` parameter to split the computation into multiple iterative queries, where the value of the parameter is the number of columns included in each query.
 
 For example, setting `ncols_block` to 5 will split the computation, which consists of 20 total columns, into 4 separate queries, each of which computes the average for 5 columns:

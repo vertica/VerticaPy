@@ -250,7 +250,7 @@ In terms of missing values, our only concern is the Pokemon's second type (Type_
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_pokemon_table_clean_2.html
 
-Let's use the current_relation method to see how our data preparation so far on the :py:func:`~verticapy.vDataFrame` generates SQL code.
+Let's use the current_relation method to see how our data preparation so far on the :py:mod:`~verticapy.vDataFrame` generates SQL code.
 
 .. ipython:: python
 

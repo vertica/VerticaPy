@@ -330,7 +330,7 @@ Supervision
 
 Supervising would make this pretty easy since it would just be a binary classification problem. We can use different algorithms to optimize the prediction. Our dataset is unbalanced, so the AUC might be a good metric to evaluate the model. The PRC AUC would also be a relevant metric.
 
-:py:func:`~verticapy.machine_learning.vertica.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
+:py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
 
 .. code-block:: python
 
@@ -401,7 +401,7 @@ Due to the complexity of the computations, anomalies are difficult to detect in 
 
 - **Machine Learning:** We need to use easily-deployable algorithms to perform real-time fraud detection. Isolation forests and ``k-means`` can be easily deployed and they work well for detecting anomalies.
 - **Rules & Thresholds:** The z-score can be an efficient solution for detecting global outliers.
-- **Decomposition:** Robust :py:func:`~verticapy.machine_learning.vertica.PCA` is another technique for detecting outliers.
+- **Decomposition:** Robust :py:mod:`~verticapy.machine_learning.vertica.PCA` is another technique for detecting outliers.
 
 Before using these techniques, let's draw some scatter plots to get a better idea of what kind of anomalies we can expect.
 
@@ -642,7 +642,7 @@ We can catch outliers with a neighbors score. Again, the main problem with these
 Other Techniques
 +++++++++++++++++
 
-Other scalable techniques that can solve this problem are robust :py:func:`~verticapy.machine_learning.vertica.PCA` and isolation forest.
+Other scalable techniques that can solve this problem are robust :py:mod:`~verticapy.machine_learning.vertica.PCA` and isolation forest.
 
 Conclusion
 -----------

@@ -320,12 +320,12 @@ Moving on to the correlation matrix, we can see many events that changed drastic
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_corr_2.html
 
-We can see strong correlations between most of the variables. A vector autoregression (:py:func:`~verticapy.machine_learning.vertica.VAR`) model seems ideal.
+We can see strong correlations between most of the variables. A vector autoregression (:py:mod:`~verticapy.machine_learning.vertica.VAR`) model seems ideal.
 
 Machine Learning
 -----------------
 
-Let's create the :py:func:`~verticapy.machine_learning.vertica.VAR` model to predict the value of various commodities.
+Let's create the :py:mod:`~verticapy.machine_learning.vertica.VAR` model to predict the value of various commodities.
 
 .. code-block:: python
 
@@ -446,7 +446,7 @@ Dol_Eur:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_commodities_table_pred_plot_4.html
 
-The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the :py:func:`~verticapy.machine_learning.vertica.VAR` model.
+The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the :py:mod:`~verticapy.machine_learning.vertica.VAR` model.
 
 Conclusion
 -----------

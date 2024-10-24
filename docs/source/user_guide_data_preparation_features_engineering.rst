@@ -10,7 +10,7 @@ Features engineering makes use of many techniques - too many to go over in this 
 Customized Features Engineering
 --------------------------------
 
-To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.eval` method of the :py:func:`~verticapy.vDataFrame`. Let's look at an example with the well-known 'Titanic' dataset.
+To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.eval` method of the :py:mod:`~verticapy.vDataFrame`. Let's look at an example with the well-known 'Titanic' dataset.
 
 .. code-block:: python
     

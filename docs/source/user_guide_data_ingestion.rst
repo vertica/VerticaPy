@@ -148,7 +148,7 @@ In the following example, we will use :py:func:`~verticapy.read_csv` to ingest a
 
     titanic = load_titanic()
 
-To convert a subset of the dataset to a CSV file, select the desired rows in the dataset and use the :py:func:`~verticapy.to_csv` :py:func:`~verticapy.vDataFrame` method:
+To convert a subset of the dataset to a CSV file, select the desired rows in the dataset and use the :py:func:`~verticapy.to_csv` :py:mod:`~verticapy.vDataFrame` method:
 
 .. ipython:: python
 

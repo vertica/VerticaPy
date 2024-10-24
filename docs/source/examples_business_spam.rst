@@ -106,7 +106,7 @@ Let's compute some statistics using the length of the message.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_spam_table_describe.html
 
-.. note:: Spam tends to be longer than a normal message. First, let's create a view with just spam. Then, we'll use the :py:func:`~verticapy.machine_learning.vertica.CountVectorizer` to create a dictionary and identify keywords.
+.. note:: Spam tends to be longer than a normal message. First, let's create a view with just spam. Then, we'll use the :py:mod:`~verticapy.machine_learning.vertica.CountVectorizer` to create a dictionary and identify keywords.
 
 .. code-block:: python
 
@@ -138,7 +138,7 @@ Let's compute some statistics using the length of the message.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_spam_table_clean_2.html
 
-Let's add the most occurent words in our :py:func:`~verticapy.vDataFrame` and compute the correlation vector.
+Let's add the most occurent words in our :py:mod:`~verticapy.vDataFrame` and compute the correlation vector.
 
 .. code-block:: python
 

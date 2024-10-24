@@ -315,13 +315,13 @@ And to reference a module named vDataFrame:
 
     .. seealso:: 
 
-        :py:func:`~verticapy.vDataFrame`
+        :py:mod:`~verticapy.vDataFrame`
 
 **Output:**
 
 .. seealso:: 
 
-   :py:func:`~verticapy.vDataFrame`
+   :py:mod:`~verticapy.vDataFrame`
 
 Now you can go through the below examples to understand the usage in detail. From the examples you will note a few things:
 

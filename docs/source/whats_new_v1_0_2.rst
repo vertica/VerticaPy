@@ -34,7 +34,7 @@ Multi-TimeSeries (Beta)
 -----------------------
 
 We added a new Time Series class: ``TimeSeriesByCategory``. This allows the users to build multiple models based off on a category. The number of models created
-are equal to the categories. This saves users time to create multiple models separately. For more information please see :py:func:`~verticapy.machine_learning.vertica.tsa.ensemble.TimeSeriesByCategory`.
+are equal to the categories. This saves users time to create multiple models separately. For more information please see :py:mod:`~verticapy.machine_learning.vertica.tsa.ensemble.TimeSeriesByCategory`.
 
 Plots
 ------
