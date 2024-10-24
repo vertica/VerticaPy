@@ -109,7 +109,7 @@ Data Preparation
     .. grid-item::
 
         .. card:: Feature engineering
-          :link: user_guide.data_preparation.joins
+          :link: user_guide.data_preparation.features_engineering
           :link-type: ref
           :text-align: center
           :class-card: custom-card-13
