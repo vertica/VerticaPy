@@ -88,7 +88,7 @@ Create a new schema, "spotify".
 Data Loading
 -------------
 
-Load the datasets into the :py:mod:`vDataFrame` with :py:func:`~verticapy.read_csv` and then view them with :py:func:`~verticapy.vDataFrame.head`.
+Load the datasets into the :py:func:`~verticapy.vDataFrame` with :py:func:`~verticapy.read_csv` and then view them with :py:func:`~verticapy.vDataFrame.head`.
 
 .. code-block::
 

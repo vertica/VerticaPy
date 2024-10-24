@@ -3,37 +3,17 @@
 The Virtual DataFrame
 =====================
 
+The Virtual DataFrame (vDataFrame) is the core object of the VerticaPy library. Leveraging the power of Vertica and the flexibility of Python, the :py:func:`~verticapy.vDataFrame` is a Python object that lets you manipulate the data representation in a Vertica database without modifying the underlying data. The data represented by a :py:func:`~verticapy.vDataFrame` remains in the Vertica database, bypassing the limitations of working memory. When a :py:func:`~verticapy.vDataFrame` is created or altered, VerticaPy formulates the operation as an SQL query and pushes the computation to the Vertica database, harnessing Vertica's massive parallel processing and in-built functions. Vertica then aggregates and returns the result to VerticaPy. In essence, vDataFrames behave similar to `views <https://docs.vertica.com/latest/en/data-analysis/views/>`_ in the Vertica database.
 
+For more information about Vertica's performance advantages, including its columnar orientation and parallelization across 
+nodes, see the `Vertica documentation <https://docs.vertica.com/latest/en/architecture/>`_.
 
-The Virtual DataFrame (vDataFrame) is the core object of the 
-VerticaPy library. Leveraging the power of Vertica and the 
-flexibility of Python, the :py:func:`verticapy.vDataFrame` is a Python object that 
-lets you manipulate the data representation in a Vertica 
-database without modifying the underlying data. The data 
-represented by a :py:func:`verticapy.vDataFrame` remains in the Vertica database, 
-bypassing the limitations of working memory. When a :py:func:`verticapy.vDataFrame` 
-is created or altered, VerticaPy formulates the operation as 
-an SQL query and pushes the computation to the Vertica database, 
-harnessing Vertica's massive parallel processing and in-built 
-functions. Vertica then aggregates and returns the result to 
-VerticaPy. In essence, vDataFrames behave similar to 
-`views <https://docs.vertica.com/latest/en/data-analysis/views/>`_ 
-in the Vertica database.
-
-For more information about Vertica's performance advantages, 
-including its columnar orientation and parallelization across 
-nodes, see the 
-`Vertica documentation <https://docs.vertica.com/latest/en/architecture/>`_.
-
-In the following tutorial, we will introduce the basic 
-functionality of the :py:func:`verticapy.vDataFrame` and then explore the ways 
-in which they utilize in-database processing to enhance performance. 
-
+In the following tutorial, we will introduce the basic functionality of the :py:func:`~verticapy.vDataFrame` and then explore the ways in which they utilize in-database processing to enhance performance. 
 
 Creating vDataFrames
 ---------------------
 
-First, run the :py:func:`verticapy.datasets.load_titanic` function to ingest into 
+First, run the :py:func:`~verticapy.datasets.load_titanic` function to ingest into 
 Vertica a dataset with information about titanic passengers:
 
 .. code-block:: python
@@ -54,12 +34,9 @@ Vertica a dataset with information about titanic passengers:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/user_guide_introduction_best_practices_laod_titanic.html
 
+You can create a :py:func:`~verticapy.vDataFrame` from either an existing relation or a customized relation.
 
-You can create a :py:func:`verticapy.vDataFrame` from either an existing 
-relation or a customized relation.
-
-To create a :py:func:`verticapy.vDataFrame` using an existing relation, in this 
-case the Titanic dataset, provide the name of the dataset:
+To create a :py:func:`~verticapy.vDataFrame` using an existing relation, in this case the Titanic dataset, provide the name of the dataset:
 
 .. code-block:: python
 
@@ -67,10 +44,7 @@ case the Titanic dataset, provide the name of the dataset:
 
     vp.vDataFrame("public.titanic")
 
-
-To create a :py:func:`verticapy.vDataFrame` using a customized relation, 
-specify the SQL query for that relation as the argument:
-
+To create a :py:func:`~verticapy.vDataFrame` using a customized relation, specify the SQL query for that relation as the argument:
 
 .. code-block:: python
 
@@ -88,18 +62,14 @@ specify the SQL query for that relation as the argument:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_1.html
 
-
-For more examples of creating vDataFrames, see vDataFrame.
+For more examples of creating vDataFrames, see :py:func:`~verticapy.vDataFrame`.
 
 In-memory vs. in-database
----------------------------
+--------------------------
 
-The following examples demonstrate the performance advantages of 
-loading and processing data in-database versus in-memory.
+The following examples demonstrate the performance advantages of loading and processing data in-database versus in-memory.
 
-First, we download the 
-`Expedia dataset <https://www.kaggle.com/competitions/expedia-hotel-recommendations/data>`_
- from Kaggle and then load it into Vertica:
+First, we download the `Expedia dataset <https://www.kaggle.com/competitions/expedia-hotel-recommendations/data>`_ from Kaggle and then load it into Vertica:
 
 .. note:: 
     
@@ -110,7 +80,7 @@ First, we download the
 
     vp.read_csv("expedia.csv", schema = "public", parse_nrows = 20000000)
 
-Once the data is loaded into the Vertica database, we can create a :py:func:`verticapy.vDataFrame` using the relation that contains the Expedia dataset:
+Once the data is loaded into the Vertica database, we can create a :py:func:`~verticapy.vDataFrame` using the relation that contains the Expedia dataset:
 
 .. ipython:: python
 
@@ -121,26 +91,21 @@ Once the data is loaded into the Vertica database, we can create a :py:func:`ver
     vp.read_csv(
         "/project/data/VerticaPy/docs/source/_static/website/examples/data/booking/expedia.csv",
         schema = "public", 
-        parse_nrows = 20000000
+        parse_nrows = 20000000,
     )
     start_time = time.time()
     expedia = vp.vDataFrame("public.expedia")
     print("elapsed time = {}".format(time.time() - start_time))
 
+The :py:func:`~verticapy.vDataFrame` was created in about a second. All the data—about 4GB—is stored in Vertica, requiring no in-memory data loading.
 
-The :py:func:`verticapy.vDataFrame` was created in about a second. 
-All the data—about 4GB—is stored in Vertica, 
-requiring no in-memory data loading.
-
-Now, to compare the above result with in-memory 
-loading, we load about half the dataset into pandas:
+Now, to compare the above result with in-memory loading, we load about half the dataset into pandas:
 
 .. note::
 
      This process is expensive on local machines, so 
      avoid running the following code if your computer 
      has less than 2GB of memory.
-
 
 .. code-block:: python
 
@@ -154,7 +119,23 @@ loading, we load about half the dataset into pandas:
         elapsed_time = time.time() - start_time
         L_time.append(elapsed_time)
 
+.. code-block:: python
+    
+    import pandas as pd
+
+    L_nrows = [10000, 100000, 149814]
+    L_time = []
+    for nrows in L_nrows:
+        start_time = time.time()
+        expedia_df = pd.read_csv(
+            "expedia.csv",
+            nrows = nrows,
+        )
+        elapsed_time = time.time() - start_time
+        L_time.append(elapsed_time)
+
 .. ipython:: python
+    :suppress:
 
     import pandas as pd
 
@@ -164,25 +145,17 @@ loading, we load about half the dataset into pandas:
         start_time = time.time()
         expedia_df = pd.read_csv(
             "/project/data/VerticaPy/docs/source/_static/website/examples/data/booking/expedia.csv",
-            nrows = nrows
+            nrows = nrows,
         )
         elapsed_time = time.time() - start_time
         L_time.append(elapsed_time)
-
 
 .. ipython:: python
 
     for i in range(len(L_time)):
         print("nrows = {}; elapsed time = {}".format(L_nrows[i], L_time[i]))
 
-
-It took an order of magnitude more to load into memory 
-compared with the time required to create the 
-vDataFrame. Loading data into 
-pandas is quite fast when the data volume is low 
-(less than some MB), but as the size of the dataset increases, 
-the load time can become exponentially more expensive, as seen 
-in the following plot:
+It took an order of magnitude more to load into memory compared with the time required to create the :py:func:`~verticapy.vDataFrame`. Loading data into pandas is quite fast when the data volume is low (less than some MB), but as the size of the dataset increases, the load time can become exponentially more expensive, as seen in the following plot:
 
 .. ipython:: python
 
@@ -192,10 +165,7 @@ in the following plot:
     @savefig ug_intro_vdf_plot_2
     plt.show()
 
-Even after the data is loaded into memory, the 
-performance is very slow. The following example 
-removes non-numeric columns from the dataset, then 
-computes a correlation matrix:
+Even after the data is loaded into memory, the performance is very slow. The following example removes non-numeric columns from the dataset, then computes a correlation matrix:
 
 .. ipython:: python
 
@@ -205,10 +175,7 @@ computes a correlation matrix:
     expedia_df.corr();
     print(f"elapsed time = {time.time() - start_time}")
 
-
-Let's compare the performance in-database using a 
-vDataFrame to compute the correlation matrix of 
-the entire dataset:
+Let's compare the performance in-database using a :py:func:`~verticapy.vDataFrame` to compute the correlation matrix of the entire dataset:
 
 .. ipython:: python
 
@@ -218,16 +185,11 @@ the entire dataset:
     expedia.corr(show = False);
     print(f"elapsed time = {time.time() - start_time}")
 
-
-VerticaPy also caches the computed aggregations. 
-With this cache available, we can repeat the 
-correlation matrix computation almost instantaneously:
+VerticaPy also caches the computed aggregations. With this cache available, we can repeat the correlation matrix computation almost instantaneously:
 
 .. note:: 
     
-    If necessary, you can deactivate the cache by calling 
-    the :py:func:`verticapy.set_option` function with 
-    the `cache` parameter set to False.
+    If necessary, you can deactivate the cache by calling the :py:func:`~verticapy.set_option` function with the `cache` parameter set to False.
 
 .. ipython:: python
 
@@ -235,14 +197,12 @@ correlation matrix computation almost instantaneously:
     expedia.corr(show = False);
     print(f"elapsed time = {time.time() - start_time}")
 
-
 Memory usage 
 +++++++++++++
 
 Now, we will examine how the memory usage compares between in-memory and in-database.
 
-First, use the pandas `info()` method to 
-explore the DataFrame's memory usage:
+First, use the pandas `info()` method to explore the DataFrame's memory usage:
 
 .. ipython:: python
 
@@ -265,39 +225,23 @@ Compare this with vDataFrame:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_mem.html
 
+The :py:func:`~verticapy.vDataFrame` only uses about 37KB! By storing the data in the Vertica database, and only recording the 
+user's data modifications in memory, the memory usage is reduced to a minimum. 
 
-The :py:func:`verticapy.vDataFrame` only uses about 37KB! By storing the data 
-in the Vertica database, and only recording the 
-user's data modifications in memory, the memory 
-usage is reduced to a minimum. 
+With VerticaPy, we can take advantage of Vertica's structure and scalability, providing fast queries without ever loading the data into memory. In the above examples, we've seen that in-memory processing is much more expensive in both computation and memory usage. This often leads to the decesion to downsample the data, which sacrfices the possibility of further data insights.
 
-With VerticaPy, we can take advantage of Vertica's 
-structure and scalability, providing fast queries 
-without ever loading the data into memory. In the 
-above examples, we've seen that in-memory processing 
-is much more expensive in both computation and memory 
-usage. This often leads to the decesion to downsample 
-the data, which sacrfices the possibility of further 
-data insights.
+The :py:func:`~verticapy.vDataFrame` structure
+----------------------------------------------
 
-The :py:func:`verticapy.vDataFrame` structure
--------------------------
+Now that we've seen the performance and memory benefits of the vDataFrame, let's dig into some of the underlying structures and methods that produce these great results.
 
-Now that we've seen the performance and memory 
-benefits of the vDataFrame, let's dig into some 
-of the underlying structures and methods that 
-produce these great results.
-
-vDataFrames are composed of columns called 
-vDataColumns. To view all vDataColumns in a 
-vDataFrame, use the :py:func:`verticapy.get_columns` method:
+:py:func:`~verticapy.vDataFrame`s are composed of columns called :py:mod:`vDataColumn`s. To view all :py:mod:`vDataColumn`s in a :py:func:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.get_columns` method:
 
 .. ipython:: python
 
     expedia.get_columns()
 
-To access a :py:func:`verticapy.vDataColumn`, 
-specify the column name in square brackets, for example:
+To access a :py:func:`~verticapy.vDataColumn`, specify the column name in square brackets, for example:
 
 .. note::
 
@@ -318,21 +262,16 @@ specify the column name in square brackets, for example:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_describe.html
 
-Each vDataColumn has its own catalog to save user 
-modifications. In the previous example, we computed 
-some aggregations for the ``is_booking`` column. Let's 
-look at the catalog for that vDataColumn:
+Each :py:func:`~verticapy.vDataColumn` has its own catalog to save user modifications. In the previous example, we computed 
+some aggregations for the ``is_booking`` column. Let's look at the catalog for that :py:func:`~verticapy.vDataColumn`:
 
 .. ipython:: python
 
     expedia["is_booking"]._catalog
 
-The catalog is updated whenever major changes are 
-made to the data.
+The catalog is updated whenever major changes are made to the data.
 
-We can also view the vDataFrame's backend SQL code 
-generation by setting the ``sql_on`` parameter to 
-True with the :py:func:`verticapy.set_option` function:
+We can also view the vDataFrame's backend SQL code generation by setting the `sql_on` parameter to ``True`` with the :py:func:`~verticapy.set_option` function:
 
 .. code-block:: python
 
@@ -402,7 +341,6 @@ True with the :py:func:`verticapy.set_option` function:
         FROM "public"."expedia"
     ) VERTICAPY_SUBTABLE;
 
-
 .. ipython:: python
     :suppress:
 
@@ -414,22 +352,16 @@ True with the :py:func:`verticapy.set_option` function:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_describe_cnt.html
 
-To control whether each query outputs its elasped time, 
-use the ``time_on`` parameter of the :py:func:`verticapy.set_option` 
-function:
+To control whether each query outputs its elasped time, use the ``time_on`` parameter of the :py:func:`~verticapy.set_option` function:
 
 .. ipython:: python
 
     vp.set_option("sql_on", False)
-    expedia = vp.vDataFrame("public.expedia") # creating a new :py:func:`verticapy.vDataFrame` to delete the catalog 
+    expedia = vp.vDataFrame("public.expedia") # creating a new vDataFrame to delete the catalog 
     vp.set_option("time_on", True)
     expedia.corr()
 
-The aggregation's for each vDataColumn are saved to its catalog. 
-If we again call the :py:func:`verticapy.vDataFrame.corr` method, it'll complete in a 
-couple seconds—the time needed to draw the graphic—because 
-the aggregations have already been computed and saved during 
-the last call:
+The aggregation's for each vDataColumn are saved to its catalog. If we again call the :py:func:`~verticapy.vDataFrame.corr` method, it'll complete in a couple seconds—the time needed to draw the graphic—because the aggregations have already been computed and saved during the last call:
 
 .. ipython:: python
 
@@ -444,19 +376,13 @@ To turn off the elapsed time and the SQL code generation options:
     vp.set_option("sql_on", False)
     vp.set_option("time_on", False)
 
-You can obtain the current :py:func:`verticapy.vDataFrame` relation 
-with the :py:func:`verticapy.vDataFrame.current_relation` 
-method:
+You can obtain the current :py:func:`~verticapy.vDataFrame` relation with the :py:func:`~verticapy.vDataFrame.current_relation` method:
 
 .. ipython:: python
 
     print(expedia.current_relation())
 
-The generated SQL for the relation changes according to the user's 
-modifications. For example, if we impute the missing values of the 
-``orig_destination_distance`` vDataColumn by its average and then 
-drop the ``is_package`` vDataColumn, these changes are reflected 
-in the relation:
+The generated SQL for the relation changes according to the user's modifications. For example, if we impute the missing values of the ``orig_destination_distance`` vDataColumn by its average and then drop the ``is_package`` vDataColumn, these changes are reflected in the relation:
 
 .. ipython:: python
 
@@ -464,16 +390,12 @@ in the relation:
     expedia["is_package"].drop();
     print(expedia.current_relation())
 
-Notice that the ``is_package`` column has been removed 
-from the ``SELECT`` statement and the 
-``orig_destination_distance`` is now using a ``COALESCE SQL`` function.
+Notice that the ``is_package`` column has been removed from the ``SELECT`` statement and the ``orig_destination_distance`` is now using a ``COALESCE SQL`` function.
 
 vDataFrame attributes and management
 -------------------------------------
 
-The :py:func:`verticapy.vDataFrame` has many attributes and methods, some of 
-which were demonstrated in the above examples. 
-vDataFrames have two types of attributes:
+The :py:func:`~verticapy.vDataFrame` has many attributes and methods, some of which were demonstrated in the above examples. :py:func:`~verticapy.vDataFrame`s have two types of attributes:
 
 - Virtual Columns (vDataColumn)
 - Main attributes (columns, main_relation ...)
@@ -487,29 +409,24 @@ The vDataFrame's main attributes are stored in the ``_vars`` dictionary:
     expedia._vars
 
 Data types
-------------
+-----------
 
+:py:func:`~verticapy.vDataFrame`s use the data types of its :py:func:`~verticapy.vDataColumn`s. The behavior of some :py:func:`~verticapy.vDataFrame` methods depend on the data type of the columns.
 
-vDataFrames use the data types of its vDataColumns. The 
-behavior of some :py:func:`verticapy.vDataFrame` methods depend on the data type of the columns.
-For example, computing a histogram for a numerical data 
-type is not the same as computing a histogram for a categorical data type. 
+For example, computing a histogram for a numerical data type is not the same as computing a histogram for a categorical data type. 
 
-The :py:func:`verticapy.vDataFrame` identifies four main data types:
+The :py:func:`~verticapy.vDataFrame` identifies four main data types:
 
 - ``int``: integers are treated like categorical data types 
     when their cardinality is low; otherwise, they are considered numeric
-
 - ``float``: numeric data types
-
 - ``date``: date-like data types (including timestamp)
-
 - ``text``: categorical data types
  
 Data types not included in the above list are automatically 
 treated as categorical. You can examine the data types of 
-the vDataColumns in a :py:func:`verticapy.vDataFrame` using the 
-:py:func:`verticapy.vDataFrame.dtypes` method:
+the vDataColumns in a :py:func:`~verticapy.vDataFrame` using the 
+:py:func:`~verticapy.vDataFrame.dtypes` method:
 
 .. code-block:: python
 
@@ -526,17 +443,14 @@ the vDataColumns in a :py:func:`verticapy.vDataFrame` using the
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_dtypes.html
 
-To convert the data type of a vDataColumn, use 
-the :py:func:`verticapy.vDataColumn.astype` method:
+To convert the data type of a vDataColumn, use the :py:func:`~verticapy.vDataColumn.astype` method:
 
 .. ipython:: python
 
     expedia["hotel_market"].astype("varchar");
     expedia["hotel_market"].ctype()
 
-To view the category of a specific vDataColumn, 
-specify the vDataColumn and use the 
-:py:func:`verticapy.vDataColumn.category` method:
+To view the category of a specific :py:func:`~verticapy.vDataColumn`, specify the :py:func:`~verticapy.vDataColumn` and use the :py:func:`~verticapy.vDataColumn.category` method:
 
 .. ipython:: python
 
@@ -545,10 +459,7 @@ specify the vDataColumn and use the
 Exporting, saving, and loading 
 -------------------------------
 
-
-The :py:func:`verticapy.vDataFrame.save` and 
-:py:func:`verticapy.vDataFrame.load` functions 
-allow you to save and load vDataFrames:
+The :py:func:`~verticapy.vDataFrame.save` and :py:func:`~verticapy.vDataFrame.load` functions allow you to save and load vDataFrames:
 
 .. code-block:: python
 
@@ -567,23 +478,16 @@ allow you to save and load vDataFrames:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_filter.html
 
-To return a :py:func:`verticapy.vDataFrame` to a previously saved structure, 
-use the :py:func:`verticapy.vDataFrame.load` function:
+To return a :py:func:`~verticapy.vDataFrame` to a previously saved structure, use the :py:func:`~verticapy.vDataFrame.load` function:
 
 .. ipython:: python
 
     expedia = expedia.load();
     print(expedia.shape())
 
-Because vDataFrames are views of data stored in the 
-connected Vertica database, any modifications made to 
-the :py:func:`verticapy.vDataFrame` are not reflected in the underlying 
-data in the database. To save a vDataFrame's relation 
-to the database, use the :py:func:`verticapy.vDataFrame.to_db` 
-method.
+Because :py:func:`~verticapy.vDataFrame`s are views of data stored in the connected Vertica database, any modifications made to the :py:func:`~verticapy.vDataFrame` are not reflected in the underlying data in the database. To save a :py:func:`~verticapy.vDataFrame`'s relation to the database, use the :py:func:`~verticapy.vDataFrame.to_db` method.
 
-It's good practice to examine the expected disk usage of 
-the :py:func:`verticapy.vDataFrame` before exporting it to the database:
+It's good practice to examine the expected disk usage of the :py:func:`~verticapy.vDataFrame` before exporting it to the database:
 
 .. code-block:: python
 
@@ -600,12 +504,11 @@ the :py:func:`verticapy.vDataFrame` before exporting it to the database:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_storage_gb.html
 
-If you decide that there is sufficient space to store the 
-vDataFrame in the database, run the :py:func:`verticapy.vDataFrame.to_db`  method:
+If you decide that there is sufficient space to store the :py:func:`~verticapy.vDataFrame` in the database, run the :py:func:`~verticapy.vDataFrame.to_db`  method:
 
 .. code-block:: python
     
     expedia.to_db(
         "public.expedia_clean",
-        relation_type = "table"
+        relation_type = "table",
     )

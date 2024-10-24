@@ -283,14 +283,14 @@ Because of the upward monotonic trend, we can also look at the correlation betwe
 
     covid19["elapsed_days"] = covid19["date"] - fun.min(covid19["date"])._over(by = [covid19["state"]])
 
-We can generate the SQL code of the :py:mod:`vDataFrame` 
-to see what happens behind the scenes when we modify our data from within the :py:mod:`vDataFrame`.
+We can generate the SQL code of the :py:func:`~verticapy.vDataFrame` 
+to see what happens behind the scenes when we modify our data from within the :py:func:`~verticapy.vDataFrame`.
 
 .. ipython:: python
 
     print(covid19.current_relation())
 
-The :py:mod:`vDataFrame` memorizes all of our operations on the data to dynamically generate the correct SQL statement and passes computation and aggregation to Vertica.
+The :py:func:`~verticapy.vDataFrame` memorizes all of our operations on the data to dynamically generate the correct SQL statement and passes computation and aggregation to Vertica.
 
 Let's see the correlation between the number of deaths and the other variables.
 

@@ -138,7 +138,7 @@ Let's compute some statistics using the length of the message.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_spam_table_clean_2.html
 
-Let's add the most occurent words in our :py:mod:`vDataFrame` and compute the correlation vector.
+Let's add the most occurent words in our :py:func:`~verticapy.vDataFrame` and compute the correlation vector.
 
 .. code-block:: python
 

@@ -203,7 +203,7 @@ ________
 Machine Learning
 -----------------
 
-:py:func:`~verticapy.machine_learning.vertica.LogisticRegression` is a very powerful algorithm and we can use it to detect churns. Let's split our :py:mod:`vDataFrame` into training and testing set to evaluate our model.
+:py:func:`~verticapy.machine_learning.vertica.LogisticRegression` is a very powerful algorithm and we can use it to detect churns. Let's split our :py:func:`~verticapy.vDataFrame` into training and testing set to evaluate our model.
 
 .. ipython:: python
 

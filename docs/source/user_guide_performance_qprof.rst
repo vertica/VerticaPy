@@ -4,237 +4,223 @@
 Getting started with Query Profiler
 ====================================
 
+This starter notebook will help you get up and running with the Query Profiler (:py:func:`~verticapy.performance.vertica.QueryProfiler`) tool in VerticaPyLab and demonstrate functionality through various examples and use cases.
 
+This tool is a work in progress and the VerticaPy team is continuously adding new features.
 
-This starter notebook will help you get up and running with the Query 
-Profiler (QProf) tool in VerticaPyLab and demonstrate functionality 
-through various examples and use cases.
-
-This tool is a work in progress and the VerticaPy team 
-is continuously adding new features.
-
-See also :py:func:`verticapy.performance.vertica.QueryProfiler`, 
-:py:func:`verticapy.performance.vertica.QueryProfilerInterface`, 
-:py:func:`verticapy.performance.vertica.QueryProfilerComparison`.
+See also :py:func:`~verticapy.performance.vertica.QueryProfiler`, 
+:py:func:`~verticapy.performance.vertica.QueryProfilerInterface`, 
+:py:func:`~verticapy.performance.vertica.QueryProfilerComparison`.
 
 VerticaPyLab
 -------------
 
-The easiest way to use the QProf tool is through VerticaPyLab. 
-For installation instructions, see :ref:`getting_started`.
+The easiest way to use the :py:func:`~verticapy.performance.vertica.QueryProfiler` tool is through VerticaPyLab. For installation instructions, see :ref:`getting_started`.
 
-Before using the QProf tool, confirm that you are connected 
-to a Vertica database. If not, follow the connection instructions 
-in a Jupyter notebook or connect using the Connect option on the 
-VerticaPyLab homepage.
-
+Before using the :py:func:`~verticapy.performance.vertica.QueryProfiler` tool, confirm that you are connected to a Vertica database. If not, follow the connection instructions in a Jupyter notebook or connect using the Connect option on the VerticaPyLab homepage.
 
 QueryProfiler
 --------------
 
-The QueryProfiler object is a python object that includes many 
-built-in methods for analyzing queries and their performance. 
-There are a few different ways to create a QProf object.
-
+The :py:func:`~verticapy.performance.vertica.QueryProfiler` object is a python object that includes many built-in methods for analyzing queries and their performance. There are a few different ways to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object.
 
 Create and save a QueryProfiler object
-++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++
 
 First, import the verticapy package and load the datasets:
 
 .. ipython:: python
 
-  import verticapy as vp
-  from verticapy.datasets import load_titanic, load_amazon
-  # load datasets
-  titanic = load_titanic()
-  amazon = load_amazon()
+    import verticapy as vp
+    from verticapy.datasets import load_titanic, load_amazon
+    # load datasets
+    titanic = load_titanic()
+    amazon = load_amazon()
 
-Create QProf object from transaction id and statement id
+Create :py:func:`~verticapy.performance.vertica.QueryProfiler` object from transaction id and statement id
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Before creating the QProf object, take a look at the data 
-used by the query:
+Before creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, take a look at the data used by the query:
 
 .. code-block:: python
 
-  display(amazon)
+    amazon.head(100)
 
 .. ipython:: python
-  :suppress:
+    :suppress:
 
-  res = amazon
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_amazon.html", "w")
-  html_file.write(res._repr_html_())
-  html_file.close()
+    res = amazon.head(100)
+    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_amazon.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_amazon.html
-
+    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_amazon.html
 
 .. code-block:: python
 
-  display(titanic)
+    titanic.head(100)
 
 .. ipython:: python
-  :suppress:
+    :suppress:
 
-  res = titanic
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_titanic.html", "w")
-  html_file.write(res._repr_html_())
-  html_file.close()
+    res = titanic.head(100)
+    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_titanic.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_titanic.html
+    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_titanic.html
 
+We can now run some queries to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object. One way to do so is by using the queries `statement_id` and `transaction_id`.
 
-We can now run some queries to create a QProf object. 
-One way to do so is by using the queries statement id 
-and transaction id.
-
-To allow for SQL execution in Jupyter cells, 
-load the sql extension:
+To allow for SQL execution in Jupyter cells, load the sql extension:
 
 .. ipython:: python
 
-  %load_ext verticapy.sql
+    %load_ext verticapy.sql
 
 Next, let us run the queries:
 
 .. code-block:: python
 
-  %%sql
-  SELECT date, MONTH(date) as month, AVG(number) as avg_number_test from public.amazon group by date order by avg_number_test desc;
+    %%sql
+    SELECT 
+        date, 
+        MONTH(date) as month, 
+        AVG(number) as avg_number_test 
+    FROM public.amazon 
+    GROUP BY date
+    ORDER BY avg_number_test DESC;
 
 .. ipython:: python
-  :suppress:
+    :suppress:
 
-  query = """
-  SELECT date, MONTH(date) as month, AVG(number) as avg_number_test from public.amazon group by date order by avg_number_test desc;
-  """
-  res = vp.vDataFrame(query)
-  query_1 = query
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql.html", "w")
-  html_file.write(res._repr_html_())
-  html_file.close()
+    query = """
+    SELECT 
+        date, 
+        MONTH(date) as month, 
+        AVG(number) as avg_number_test 
+    FROM public.amazon 
+    GROUP BY date
+    ORDER BY avg_number_test DESC;
+    """
+    res = vp.vDataFrame(query)
+    query_1 = query
+    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql.html
-
+    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql.html
 
 .. code-block:: python
 
-  %%sql
-  SELECT 
-      a.date, 
-      MONTH(a.date) AS month, 
-      AVG(a.number) AS avg_number_test, 
-      b.max_number
-  FROM 
-      public.amazon AS a
-  JOIN (
-      SELECT 
-          date, 
-          MAX(number) AS max_number
-      FROM 
-          public.amazon
-      GROUP BY 
-          date
-  ) AS b 
-  ON 
-      a.date = b.date
-  GROUP BY 
-      a.date, b.max_number
-  ORDER BY 
-      avg_number_test DESC;
+    %%sql
+    SELECT 
+        a.date, 
+        MONTH(a.date) AS month, 
+        AVG(a.number) AS avg_number_test, 
+        b.max_number
+    FROM 
+        public.amazon AS a
+    JOIN (
+        SELECT 
+            date, 
+            MAX(number) AS max_number
+        FROM 
+            public.amazon
+        GROUP BY 
+            date
+    ) AS b 
+    ON 
+        a.date = b.date
+    GROUP BY 
+        a.date, b.max_number
+    ORDER BY 
+        avg_number_test DESC;
 
 .. ipython:: python
-  :suppress:
+    :suppress:
 
-  query = """
-  SELECT 
-      a.date, 
-      MONTH(a.date) AS month, 
-      AVG(a.number) AS avg_number_test, 
-      b.max_number
-  FROM 
-      public.amazon AS a
-  JOIN (
-      SELECT 
-          date, 
-          MAX(number) AS max_number
-      FROM 
-          public.amazon
-      GROUP BY 
-          date
-  ) AS b 
-  ON 
-      a.date = b.date
-  GROUP BY 
-      a.date, b.max_number
-  ORDER BY 
-      avg_number_test DESC;  
-  """
-  query_2 = query
-  res = vp.vDataFrame(query_2)
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql_2.html", "w")
-  html_file.write(res._repr_html_())
-  html_file.close()
+    query = """
+    SELECT 
+        a.date, 
+        MONTH(a.date) AS month, 
+        AVG(a.number) AS avg_number_test, 
+        b.max_number
+    FROM 
+        public.amazon AS a
+    JOIN (
+        SELECT 
+            date, 
+            MAX(number) AS max_number
+        FROM 
+            public.amazon
+        GROUP BY 
+            date
+    ) AS b 
+    ON 
+        a.date = b.date
+    GROUP BY 
+        a.date, b.max_number
+    ORDER BY 
+        avg_number_test DESC;
+    """
+    query_2 = query
+    res = vp.vDataFrame(query_2)
+    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql_2.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql_2.html
+    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql_2.html
 
-In order to create a QProf object from a query, 
-we need the queries statement_id and transaction_id, 
-both of which are found in the QUERY_REQUESTS system table:
+In order to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object from a query, we need the queries statement_id and transaction_id, both of which are found in the QUERY_REQUESTS system table:
 
 .. code-block:: python
 
-  from verticapy.performance.vertica import QueryProfiler, QueryProfilerInterface
+    from verticapy.performance.vertica import QueryProfiler, QueryProfilerInterface
 
-  qprof = QueryProfiler((45035996273780927,76))
+    qprof = QueryProfiler((45035996273780927,76))
 
-To create a QProf object w/ multiple queries, provide a list of tuples
+To create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object w/ multiple queries, provide a list of tuples
 
 .. code-block:: python
 
-  qprof = QueryProfilerInterface([(45035996273780927,74), (45035996273780075,6)])
+    qprof = QueryProfilerInterface([(45035996273780927,74), (45035996273780075,6)])
 
-Once the QProf object is created, you can run the get_queries() method to view the queries contained in the QProf object:
+Once the :py:func:`~verticapy.performance.vertica.QueryProfiler` object is created, you can run the get_queries() method to view the queries contained in the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. code-block:: python
   
-  qprof.get_queries()
+    qprof.get_queries()
 
 .. ipython:: python
-  :suppress:
-  :okwarning:
+    :suppress:
+    :okwarning:
 
-  from verticapy.performance.vertica import QueryProfiler, QueryProfilerInterface
-  qprof = QueryProfilerInterface([query_1, query_2])
-  res = qprof.get_queries()
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_get_queries.html", "w")
-  html_file.write(res._repr_html_())
-  html_file.close()
+    from verticapy.performance.vertica import QueryProfiler, QueryProfilerInterface
+    qprof = QueryProfilerInterface([query_1, query_2])
+    res = qprof.get_queries()
+    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_get_queries.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_get_queries.html
-
-
+    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_get_queries.html
 
 To visualize the query plan, run :py;func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
-which is customizable, allowing you to specify certain 
-metrics or focus on a specified tree path:
-
+which is customizable, allowing you to specify certain metrics or focus on a specified tree path:
 
 .. image:: ../../source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.PNG
     :width: 80%
     :align: center
 
-Create a QProf object directly from a query
-++++++++++++++++++++++++++++++++++++++++++++
+Create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object directly from a query
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-You can also create the QProf Object directly from an SQL Command:
+You can also create the :py:func:`~verticapy.performance.vertica.QueryProfiler` Object directly from an SQL Command:
 
 .. code-block:: python
 
@@ -248,52 +234,50 @@ You can also create the QProf Object directly from an SQL Command:
 Save the QueryProfiler object in a target schema
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
-After you create a QProf object, you can save it to a target schema. 
+After you create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, you can save it to a target schema. 
+
 In this example, we will save the object to the ``sc_demo`` schema:
 
 .. ipython:: python
 
     vp.create_schema("sc_demo")
 
-To save the QProf object, specify the ``target_schema`` and, optionally, 
-a ``key_id`` (it is a unique key which is used to search for the stored Qprof object) 
-when creating the QProf object:
+To save the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, specify the `target_schema` and, optionally, a `key_id` (it is a unique key which is used to search for the stored Qprof object) when creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. code-block:: python
 
     # Save it to your schema
     qprof = QueryProfiler(
         (45035996273780927, 76),
-        target_schema='sc_demo',
+        target_schema = "sc_demo",
         key_id = "unique_xx1",
-        overwrite=True,
+        overwrite = True,
     )
 
-Load a QProf object
---------------------
+Load a :py:func:`~verticapy.performance.vertica.QueryProfiler` object
+----------------------------------------------------------------------
 
-
-To load a previously saved QProf, simply provide its ``target_schema`` and ``key_id``:
+To load a previously saved :py:func:`~verticapy.performance.vertica.QueryProfiler`, simply provide its `target_schema` and `key_id`:
 
 .. code-block:: python
 
     from verticapy.performance.vertica import QueryProfiler, QueryProfilerInterface
-    #Someone else can now connect to my DB and use the object.
+
+    # Someone else can now connect to my DB and use the object.
     qprof = QueryProfiler(
         target_schema = "sc_demo",
-        key_id = "unique_xx1"
+        key_id = "unique_xx1",
     )
-
 
 Export and import
 ------------------
 
-You can export and import QProf objects as .tar files.
+You can export and import :py:func:`~verticapy.performance.vertica.QueryProfiler` objects as .tar files.
 
 Export
 +++++++
 
-To export a QProf object, use the export_profile() method:
+To export a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.export_profile` method:
 
 .. code-block:: python
 
@@ -301,41 +285,35 @@ To export a QProf object, use the export_profile() method:
 
 .. note:: 
     
-    There is also a shell script which helps you export 
-    ``qprof`` data without python. See
-    `qprof_export <https://github.com/mail4umar/qprof_export>`_.
-
+    There is also a shell script which helps you export ``qprof`` data without python. See `qprof_export <https://github.com/mail4umar/qprof_export>`_.
 
 Import
 +++++++
 
-To import a QProf object, use the 
-:py:func:`verticapy.performance.vertica.QueryProfiler.import_profile` 
-method and provide the ``target_schema`` and ``key_id``. 
-Make sure the ``key_id`` is unique/unused. Let us create 
-a new schema to load this into:
+To import a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.import_profile` method and provide the `target_schema` and `key_id`.
+
+Make sure the `key_id` is unique/unused. Let us create a new schema to load this into:
 
 .. code-block:: python
 
     vp.create_schema("sc_demo_1")
 
     qprof = QueryProfiler.import_profile(
-        target_schema="sc_demo_1",
-        key_id="unique_load_xx1",
-        filename="test_export_1.tar",
-        auto_initialize = True                                          
+        target_schema = "sc_demo_1",
+        key_id = "unique_load_xx1",
+        filename = "test_export_1.tar",
+        auto_initialize = True,                                        
     )
 
 Methods & attributes
 ---------------------
 
-The QProf object includes many useful methods and attributes 
-to aid in the analysis of query performence.
+The :py:func:`~verticapy.performance.vertica.QueryProfiler` object includes many useful methods and attributes to aid in the analysis of query performence.
 
 Access performance tables
 ++++++++++++++++++++++++++
 
-With the QProf object, you can access any of the following tables:
+With the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, you can access any of the following tables:
 
 .. ipython:: python
 
@@ -345,12 +323,12 @@ For example, view the ``QUERY_EVENTS`` table:
 
 .. code-block:: python
 
-    qprof.get_table('query_events')
+    qprof.get_table("query_events")
 
 .. ipython:: python
   :suppress:
 
-  res = qprof.get_table('query_events')
+  res = qprof.get_table("query_events")
   html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_events.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
@@ -365,39 +343,37 @@ Or the ``DC_EXPLAIN_PLANS`` table:
     qprof.get_table('dc_explain_plans')
 
 .. ipython:: python
-  :suppress:
+    :suppress:
 
-  res = qprof.get_table('dc_explain_plans')
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_dc_explain_plans.html", "w")
-  html_file.write(res._repr_html_())
-  html_file.close()
+    res = qprof.get_table('dc_explain_plans')
+    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_dc_explain_plans.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_dc_explain_plans.html
-
+    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_dc_explain_plans.html
 
 Or the ``QUERY_CONSUMPTION`` table:
 
 .. code-block:: python
 
-    qprof.get_table('query_consumption')
+    qprof.get_table("query_consumption")
 
 .. ipython:: python
-  :suppress:
+    :suppress:
 
-  res = qprof.get_table('query_consumption')
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_consumption.html", "w")
-  html_file.write(res._repr_html_())
-  html_file.close()
+    res = qprof.get_table("query_consumption")
+    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_consumption.html", "w")
+    html_file.write(res._repr_html_())
+    html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_consumption.html
+    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_consumption.html
 
 Get query information
 ++++++++++++++++++++++
 
-You can retrieve the query information, such as 
-``transaction id`` and ``statement id``, from the QProf object:
+You can retrieve the query information, such as `transaction_id` and `statement_id`, from the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. ipython:: python
     :okwarning:
@@ -409,7 +385,7 @@ You can retrieve the query information, such as
         """
     )
 
-View the statement and transaction ids:
+View the `transaction_id` and `statement_id`:
 
 .. ipython:: python
 
@@ -441,7 +417,6 @@ View the number of query steps in a bar graph:
 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_bar.html
-
 
 .. ipython:: python
 
@@ -484,21 +459,20 @@ To view the cpu time of the query in a bar graph:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_cpu_bar.html
 
-QProf execution report
-+++++++++++++++++++++++
+:py:func:`~verticapy.performance.vertica.QueryProfiler` execution report
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-The QProf object can also generate a report that includes various performence metrics, 
-including which operation took the most amount of time:
+The :py:func:`~verticapy.performance.vertica.QueryProfiler` object can also generate a report that includes various performence metrics, including which operation took the most amount of time:
 
 .. code-block:: python
     
-    qprof.get_qexecution_report().sort({'exec_time_us':'desc'})
+    qprof.get_qexecution_report().sort({"exec_time_us": "desc"})
 
 .. ipython:: python
     :suppress:
     :okwarning:
 
-    res = qprof.get_qexecution_report().sort({'exec_time_us':'desc'})
+    res = qprof.get_qexecution_report().sort({"exec_time_us": "desc"})
     html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
@@ -522,14 +496,10 @@ To view the query execution details:
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_last.html
 
+:py:func:`~verticapy.performance.vertica.QueryProfiler` Summary Report Export
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-QProf Summary Report Export
-++++++++++++++++++++++++++++
-
-You can also easily export the entire report in an HTML 
-format. This report can be read without having any 
-connection to database or a jupyter environment making 
-it very convenient to share and analyze offline.
+You can also easily export the entire report in an HTML format. This report can be read without having any connection to database or a jupyter environment making it very convenient to share and analyze offline.
 
 .. code-block:: python
 

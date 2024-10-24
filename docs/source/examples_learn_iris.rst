@@ -221,7 +221,7 @@ Let's plot the model to see the perfect separation.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_model_plot.html
 
-We can add this probability to the :py:mod:`vDataFrame`.
+We can add this probability to the :py:func:`~verticapy.vDataFrame`.
 
 .. code-block:: python
 
@@ -275,7 +275,7 @@ Let's create a model to classify the Iris virginica.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_iris_table_ml_cv_2.html
 
-We have another excellent model. Let's add it to the :py:mod:`vDataFrame`.
+We have another excellent model. Let's add it to the :py:func:`~verticapy.vDataFrame`.
 
 .. code-block:: python
 

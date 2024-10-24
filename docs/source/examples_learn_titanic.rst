@@ -302,7 +302,7 @@ Survival correlates strongly with whether or not a passenger has a lifeboat (the
 - Passengers with a lifeboat
 - Passengers without a lifeboat
 
-Before we move on: we did a lot of work to clean up this data, but we haven't saved anything to our Vertica database! Let's look at the modifications we've made to the :py:mod:`vDataFrame`.
+Before we move on: we did a lot of work to clean up this data, but we haven't saved anything to our Vertica database! Let's look at the modifications we've made to the :py:func:`~verticapy.vDataFrame`.
 
 .. ipython:: python
 
@@ -322,7 +322,7 @@ VerticaPy dynamically generates SQL code whenever you make modifications to your
     vp.set_option("sql_on", False)
     print(titanic.info())
 
-Let's move on to modeling our data. Save the :py:mod:`vDataFrame` to your Vertica database.
+Let's move on to modeling our data. Save the :py:func:`~verticapy.vDataFrame` to your Vertica database.
 
 .. ipython:: python
     :okwarning:

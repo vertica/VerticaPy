@@ -438,7 +438,7 @@ Example with decomposition
 
 Let's look at the same dataset, but use decomposition techniques to filter out unimportant information. We don't have to normalize our data or look at correlations with these types of methods.
 
-We'll begin by repeating the data preparation process of the previous section and export the resulting :py:mod:`vDataFrame` to Vertica.
+We'll begin by repeating the data preparation process of the previous section and export the resulting :py:func:`~verticapy.vDataFrame` to Vertica.
 
 .. code-block:: ipython
     

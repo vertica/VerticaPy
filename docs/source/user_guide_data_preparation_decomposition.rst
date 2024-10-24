@@ -89,7 +89,7 @@ Notice that the predictors are now independant and combined together and they ha
 
     model.explained_variance_
 
-Most of the information is in the first two components with more than 97.7% of explained variance. We can export this result to a :py:mod:`vDataFrame`.
+Most of the information is in the first two components with more than 97.7% of explained variance. We can export this result to a :py:func:`~verticapy.vDataFrame`.
 
 .. code-block::
 

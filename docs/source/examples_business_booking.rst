@@ -279,7 +279,7 @@ It looks like there are two main predictors: 'mode_hotel_cluster_count' and 'tri
 - look for a shorter trip duration.
 - not click as much (spend more time at the same web page).
 
-Let's add our prediction to the :py:mod:`vDataFrame`.
+Let's add our prediction to the :py:func:`~verticapy.vDataFrame`.
 
 .. code-block:: python
 
