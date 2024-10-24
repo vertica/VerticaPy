@@ -32,7 +32,7 @@ Introduction
           12 mins
           ^^^^^^^^
 
-          Unlock the potential of the Virtual DataFrame (:py:class:`~vDataFrame`). 
+          Unlock the potential of the Virtual DataFrame (:py:mod:`~verticapy.vDataFrame`). 
           Explore its role in storing and manipulating data, 
           optimizing your data manipulation processes, and 
           elevating your analytical capabilities.

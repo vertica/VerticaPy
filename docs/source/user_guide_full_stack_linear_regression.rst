@@ -382,7 +382,7 @@ Let's draw a residual plot.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_13.html
 
-We see a high heteroscedasticity, indicating that we can't trust the `p-value` of the coefficients.
+We see a high heteroscedasticity, indicating that we can't trust the ``p-value`` of the coefficients.
 
 .. ipython:: python
 
