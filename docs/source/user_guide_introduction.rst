@@ -26,6 +26,7 @@ Introduction
 
       .. card:: The virtual DataFrame
           :link: user_guide.introduction.vdf
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-9
 
