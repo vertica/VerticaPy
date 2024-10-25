@@ -35,17 +35,17 @@ For example, predicting the total charges of a Telco customer using their tenure
     import verticapy as vp
     vp.set_option("plotting_lib", "plotly")
 
-    churn = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/user_guides/data_exploration/churn.csv")
+    churn = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/user_guides/data_exploration/churn.csv")
 
     from verticapy.machine_learning.vertica import LinearRegression
 
     model = LinearRegression()
     model.fit(churn, ["tenure"], "TotalCharges")
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_1.html
 
 In contrast, when we have to predict a categorical column, we're dealing with classification.
 
@@ -66,12 +66,12 @@ In the following example, we use a ``Linear Support Vector Classification`` (SVC
 
     iris = load_iris()
     res = iris.one_hot_encode()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_table_introduction_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_table_introduction_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_table_introduction_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_table_introduction_1.html
 
 .. code-block:: python
 
@@ -90,10 +90,10 @@ In the following example, we use a ``Linear Support Vector Classification`` (SVC
     model = LinearSVC()
     model.fit(iris, ["PetalLengthCm", "SepalLengthCm"], "Species_Iris-setosa")
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_2.html
 
 When we have more than two categories, we use the expression 'Multiclass Classification' instead of 'Classification'.
 
@@ -119,9 +119,9 @@ These algorithms are to used to segment the data (``k-means``, :py:mod:`~vertica
     model = KMeans(n_cluster = 3)
     model.fit(iris, ["PetalLengthCm", "SepalLengthCm"])
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_3.html
 
 In this section, we went over a few of the many ML algorithms available in VerticaPy. In the next lesson, we'll cover creating a regression model.

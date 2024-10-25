@@ -110,12 +110,12 @@ This example drops 'age', 'fare', 'sex', 'embarked' and 'survived' columns from 
     :okwarning:
 
     res = vdf
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_to_json_vdf.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_to_json_vdf.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_to_json_vdf.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_to_json_vdf.html
 
 Split your data into training and testing:
 
@@ -155,12 +155,12 @@ Evaluate the model with :py:func:`~verticapy.machine_learning.vertica.ensemble.X
     :okwarning:
 
     res = model.report()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_to_json_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_to_json_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_to_json_report.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_to_json_report.html
 
 Use to_json() to export the model to a JSON file. If you omit a filename, VerticaPy prints the model:
 

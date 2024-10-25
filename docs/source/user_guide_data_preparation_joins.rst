@@ -21,14 +21,14 @@ First, we have information on each flight.
     :suppress:
 
     import verticapy as vp
-    flights = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/flights.csv")
+    flights = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/flights/flights.csv")
     res = flights.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_join_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_join_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_join_1.html
 
 Second, we have information on each airport.
 
@@ -41,7 +41,7 @@ Second, we have information on each airport.
     :suppress:
 
     import verticapy as vp
-    airports = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/airports.csv",
+    airports = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/flights/airports.csv",
                         dtype = {
                             "IATA_CODE": "Varchar(20)",
                             "AIRPORT": "Varchar(156)",
@@ -53,12 +53,12 @@ Second, we have information on each airport.
                         }
     )
     res = airports.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_join_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_join_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_join_2.html
 
 Third, we have the names of each airline.
 
@@ -71,14 +71,14 @@ Third, we have the names of each airline.
     :suppress:
 
     import verticapy as vp
-    airlines = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/airlines.csv")
+    airlines = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/flights/airlines.csv")
     res = airlines.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_join_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_join_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_join_3.html
 
 Notice that each dataset has a primary or secondary key on which to join the data. For example, we can join the 'flights' dataset to the 'airlines' and 'airport' datasets using the corresponding IATA code.
 
@@ -110,12 +110,12 @@ Let's use a left join to merge the 'airlines' dataset and the 'flights' dataset.
         expr2 = ["AIRLINE AS airline_long"],
     )
     res = flights.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_join_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_join_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_join_4.html
 
 Let's use two left joins to get the information on the origin and destination airports.
 
@@ -163,12 +163,12 @@ Let's use two left joins to get the information on the origin and destination ai
         ],
     )
     res = flights.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_5.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_join_5.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_join_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_join_5.html
 
 To avoid duplicate information, splitting the data into different tables is very important. Just imagine: what if we wrote the longitude and the latitude of the destination and origin airports for each flight? It would add way too many duplicates and drastically impact the volume of the data.
 
@@ -231,12 +231,12 @@ Let's use a cross join of the 'airports' dataset on itself to compute the distan
         distances["airport2_longitude"],
     )
     res = distances["distance"]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_6.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_join_6.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_join_6.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_join_6.html
 
 VerticaPy offers many powerful options for joining datasets.
 

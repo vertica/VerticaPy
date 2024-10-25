@@ -103,12 +103,12 @@ To ingest the file into Vertica, remove the ``genSQL`` parameter from the above 
     from verticapy.datasets import load_iris
     iris = load_iris()
     res = iris
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guide_data_ingestion_iris.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guide_data_ingestion_iris.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guide_data_ingestion_iris.html
+    :file: SPHINX_DIRECTORY/figures/user_guide_data_ingestion_iris.html
 
 When the file to ingest is not located on your local machine, and is on the server instead, then you must set the ``ingest_local`` parameter to False. 
 

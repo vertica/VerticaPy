@@ -83,16 +83,16 @@ an identifying symbol that can be used for fetching perform queries with SQL.
     import verticapy as vp
     vp.drop("public.airports")
     tab_data = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/airports.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/flights/airports.csv",
         schema = "public",
         table_name = "airports")
     res = tab_data
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_table.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
 
 
 All vDataFrame functions are available for this imported table. 
@@ -243,12 +243,12 @@ unique Vertica function.
     :okwarning:
 
     res = tab_data.describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_describe.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_describe.html
 
 We can see that the data was fetched from the external database to be computed in Vertica.
 
@@ -284,7 +284,7 @@ whose special character is ``&``.
 
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_table.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
 
 To perform all regular queries, all we need to do is 
 call the table with its name inside three special characters.
@@ -306,12 +306,12 @@ Count the elements inside the table:
     SELECT COUNT(*) FROM public.airports
     """
     res = vp.vDataFrame(query)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_count.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_count.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_count.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_count.html
 
 
 Find the IATA_CODE where CITY is "Allentown":
@@ -333,12 +333,12 @@ Find the IATA_CODE where CITY is "Allentown":
     WHERE CITY='Allentown';
     """
     res = vp.vDataFrame(query)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_count_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_count_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_count_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_count_2.html
 
 .. note:: Any query that we write inside the ``&&&`` signs is also sent to the external database to be run.
 
@@ -355,7 +355,7 @@ For example, let's select all elements inside the airports table:
     &&& SELECT * FROM airports &&&;
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_table.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
 
 Now we'll run a search query to find a particular id:
 
@@ -372,12 +372,12 @@ Now we'll run a search query to find a particular id:
     SELECT "IATA_CODE" FROM airports WHERE "CITY"='Allentown'
     """
     res = vp.vDataFrame(query)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_find.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_find.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_find.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_find.html
 
 We can also ``insert`` a new entry into the airports table, 
 which is placed in the postgreSQL database represented by ``&``:
@@ -435,16 +435,16 @@ Let's look at the airline table that we have in our postgreSQL database.
     import verticapy as vp
     vp.drop("public.airline")
     tab_data = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/airlines.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/flights/airlines.csv",
         schema = "public",
         table_name = "airline")
     res = tab_data
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_airlines_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_airlines_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airlines_table.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airlines_table.html
 
 Airports Data in MySQL
 ++++++++++++++++++++++
@@ -473,7 +473,7 @@ Let's take a look at the airports table that we have in our MySQL database.
 
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_airports_table.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
 
 
 
@@ -502,16 +502,16 @@ We'll now read a locally stored CSV file with the flights data and materialize i
     import verticapy as vp
     vp.drop("public.flight_vertica")
     tab_data = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/flights.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/flights/flights.csv",
         schema = "public",
         table_name = "flight_vertica")
     res = tab_data
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_flights_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_flights_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_flights_table.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_flights_table.html
 
 Joins and Queries Across Multiple Databases
 --------------------------------------------
@@ -544,12 +544,12 @@ all the flights by joining the two tables:
     ON flight_vertica.ORIGIN_AIRPORT = public.airports.IATA_CODE;
     """
     res = vp.vDataFrame(query)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_join.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_join.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_join.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_join.html
 
 Let's try another query to find the ``TAIL_NUMBER`` and ``AIRLINE`` 
 of all the flights by joining the two tables:
@@ -576,12 +576,12 @@ of all the flights by joining the two tables:
     ON public.flight_vertica.AIRLINE = public.airline.IATA_CODE;
     """
     res = vp.vDataFrame(query)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_join_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_join_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_join_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_join_2.html
 
 We can even try queries that require multiple joins.
 
@@ -615,12 +615,12 @@ In the following example, we try to get the ``TAIL_NUMBER``,
     ON flight_vertica.ORIGIN_AIRPORT = airports.IATA_CODE;
     """
     res = vp.vDataFrame(query)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_join_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_join_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_join_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_join_2.html
 
 Pandas.DataFrame
 -----------------
@@ -663,11 +663,11 @@ We can read a local passengers CSV file using :py:func:`~verticapy.read_csv` or 
 
     vp.drop("public.passengers_pandas")
     passengers_pandas.to_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/temp.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/flights/temp.csv",
         index=False
         )
     passengers_pandas = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/temp.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/flights/temp.csv",
         schema = "public",
         table_name = "passengers_pandas")
 
@@ -714,12 +714,12 @@ We can now perform the same query involving the three tables:
     ON flight_vertica.FLIGHT_NUMBER = passengers_pandas.FLIGHT_NUMBER;
     """
     res = vp.vDataFrame(query)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_mega_join.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_mega_join.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_dblink_multi_mega_join.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_mega_join.html
 
 Conclusion
 ------------

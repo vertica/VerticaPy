@@ -58,16 +58,16 @@ Let's take a look at the first few entries in the dataset.
     vp.drop("insurance", method="schema")
     vp.create_schema("insurance")
     data = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/insurance/insurance.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/insurance/insurance.csv",
         schema = "insurance",
     )
     res = data.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_table.html
 
 Data Exploration
 -----------------
@@ -82,12 +82,12 @@ Let's check our dataset for missing values. If we find any, we'll have to impute
     :suppress:
 
     res = data.count_percent()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_count.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_table_count.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_count.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_table_count.html
 
 There aren't missing any values, so let's get a summary of the features.
 
@@ -99,12 +99,12 @@ There aren't missing any values, so let's get a summary of the features.
     :suppress:
 
     res = data.describe(method = "all")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_table_describe.html
 
 The dataset covers 1338 individuals up to age 64 from four different regions, each with up to six dependent children.
 
@@ -120,10 +120,10 @@ We might find some interesting patterns if we check age distribution, so let's c
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = data["age"].hist(method = "count", h = 1)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_hist_age.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_hist_age.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_hist_age.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_hist_age.html
 
 We have a pretty obvious trend here: the 18 and 19 year old age groups are significantly more frequent than any other, older age group. The other ages range from 20 to 30 people.
 
@@ -138,12 +138,12 @@ Before we do anything else, let's discretize the age column using equal-width bi
 
     data["age"].discretize(method = "same_width", h = 5)
     res = data
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_descretize.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_descretize.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_descretize.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_descretize.html
 
 
 Age probably influences one's body mass index (BMI), so let's compare the average of 
@@ -165,10 +165,10 @@ body mass indexes of each age group and look for patterns there. We'll use a bar
         method = "mean",
         of = "bmi", 
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_bar_age.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_bar_age.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_bar_age.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_bar_age.html
 
 There's a pretty clear trend here, and we can say that, in general, older individuals tend to have a greater BMIs.
 
@@ -201,10 +201,10 @@ Now we can plot the average number of smokers for each age group.
         method = "mean",
         of = "smoker_int",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_bar_age_smoker.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_bar_age_smoker.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_bar_age_smoker.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_bar_age_smoker.html
 
 Unfortunately, there's no obvious relationship between age and smoking habits - none that we can find from this graph, anyway.
 
@@ -228,10 +228,10 @@ Let's see if we can relate an individual's smoking habits with their sex.
         method = "mean",
         of = "smoker_int",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_bar_sex_smoker.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_bar_sex_smoker.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_bar_sex_smoker.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_bar_sex_smoker.html
 
 Now we're getting somewhere! Looks like we have noticeably more male smokers than female ones.
 
@@ -255,10 +255,10 @@ Let's see how an individual's BMI relates to their sex.
         method = "mean",
         of = "bmi",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_bar_sex_bmi.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_bar_sex_bmi.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_bar_sex_bmi.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_bar_sex_bmi.html
 
 Males seem to have a slightly higher BMI, but it'd be hard to draw any conclusions from such a small difference.
 
@@ -275,10 +275,10 @@ patterns we identified earlier skews toward one of the sexes.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = data.pivot_table(["age", "sex"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_corr_age_sex.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_corr_age_sex.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_corr_age_sex.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_corr_age_sex.html
 
 It seems that sex is pretty evenly distributed in each age group.
 
@@ -292,10 +292,10 @@ Let's move onto costs: how much do people tend to spend on medical treatments?
     :suppress:
 
     fig = data["charges"].hist(method = "count")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_charges_hist.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_charges_hist.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_charges_hist.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_charges_hist.html
 
 Based on this graph, the majority of insurance holders tend to spend less than 1500 and only a handful of people spend more than 5000.
 
@@ -329,12 +329,12 @@ Remember, we label-encoded 'smoker' from boolean. Let's label-encode some other 
     # encoding age
     data["age"].label_encode()
     res = data
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_encoded_new.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_table_encoded_new.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_encoded_new.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_table_encoded_new.html
 
 Before going further, let's check the correlation of the variables with the predictor 'charges'.
 
@@ -348,10 +348,10 @@ Before going further, let's check the correlation of the variables with the pred
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = data.corr(focus = "charges")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_charges_focus.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_charges_focus.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_charges_focus.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_charges_focus.html
 
 .. code-block:: python
 
@@ -400,12 +400,12 @@ We can create a regression report to check our model's performance.
     :okwarning:
 
     res = rf_model.report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_table_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_report.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_table_report.html
 
 The results seem to be quite good! We have an explained variance around 0.8. 
 Let's plot the predicted values and compare them to the real ones.
@@ -439,10 +439,10 @@ Let's plot the predicted values and compare them to the real ones.
         ts = "id",
         columns = ["charges", "pred_charges"]
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_rf_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_rf_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_rf_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_rf_plot.html
 
 .. code-block:: python
 
@@ -463,10 +463,10 @@ Ours is a random forest model, so we can use the built-in Vertica function ``RF_
     verticapy.set_option("plotting_lib", "plotly")
     # feature importance for our random forest model
     fig = rf_model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_insurance_rf_feature_importance.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_insurance_rf_feature_importance.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_rf_feature_importance.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_rf_feature_importance.html
 
 .. code-block:: python
 
@@ -480,12 +480,12 @@ Ours is a random forest model, so we can use the built-in Vertica function ``RF_
     :suppress:
 
     res = rf_model.features_importance(show = False)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_feature_importance_rf.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_table_feature_importance_rf.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_feature_importance_rf.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_table_feature_importance_rf.html
 
 We can examine how our model works by visualizing one of the trees in our ``Random Forest``.
 
@@ -549,12 +549,12 @@ information criterion (BIC) as a selection criteria.
         X = ["age","sex", "bmi", "children", "smoker", "region"], 
         y = "charges",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_lr_stepwise.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_lr_stepwise.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_lr_stepwise.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_lr_stepwise.html
 
 From here we see that, again, the same features have similarly significant effects on medical costs.
 

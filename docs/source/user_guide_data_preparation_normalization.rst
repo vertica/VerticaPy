@@ -29,12 +29,12 @@ To demonstrate data normalization in VerticaPy, we will use the well-known 'Tita
     from verticapy.datasets import load_titanic
     titanic = load_titanic()
     res = titanic.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_norm_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_norm_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_norm_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_norm_1.html
 
 Let's look at the 'fare' and 'age' of the passengers.
 
@@ -46,12 +46,12 @@ Let's look at the 'fare' and 'age' of the passengers.
     :suppress:
 
     res = titanic.select(["age", "fare"])
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_norm_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_norm_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_norm_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_norm_2.html
 
 These lie in different numerical intervals so it's probably a good idea to normalize them. To normalize data in VerticaPy, we can use the :py:func:`~verticapy.vDataFrame.normalize` method.
 
@@ -73,11 +73,11 @@ The three main normalization techniques are available. Let's normalize the 'fare
     titanic["age"].normalize(method = "minmax")
     titanic["fare"].normalize(method = "minmax")
     res = titanic.select(["age", "fare"])
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_norm_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_norm_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_norm_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_norm_3.html
 
 Both of the features now scale in ``[0,1]``. It is also possible to normalize by a specific partition with the ``by`` parameter.

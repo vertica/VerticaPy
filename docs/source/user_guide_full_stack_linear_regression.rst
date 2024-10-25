@@ -81,12 +81,12 @@ Let's use the 'africa_education' dataset to compute a linear regression model of
         ],
     )
     res = africa.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_1.html
 
 First, let's look for missing values.
 
@@ -99,12 +99,12 @@ First, let's look for missing values.
     :okwarning:
 
     res = africa.count_percent()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_2.html
 
 We'll simply drop the missing values to avoid adding bias to the data.
 
@@ -117,12 +117,12 @@ We'll simply drop the missing values to avoid adding bias to the data.
     :okwarning:
 
     res = africa.dropna()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_2.html
 
 We need to encode the categorical columns to dummies to retain linearity.
 
@@ -135,12 +135,12 @@ We need to encode the categorical columns to dummies to retain linearity.
     :okwarning:
 
     res = africa.one_hot_encode(max_cardinality = 20)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_3.html
 
 Linear regression can only handle numerical columns, so we'll drop the categorical columns.
 
@@ -177,12 +177,12 @@ Linear regression can only handle numerical columns, so we'll drop the categoric
             "country",
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_4.html
 
 Let's look at the correlation between the response column and the predictors. We'll look to keep columns with correlations coefficients greater than 20% (the top 10 features).
 
@@ -199,12 +199,12 @@ Let's look at the correlation between the response column and the predictors. We
     x = africa.corr(focus = "student_score", show = False)
     africa = africa.select(columns = x["index"][0:12])
     res = africa.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_5.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_5.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_5.html
 
 Let's examine the correlation matrix to see if we have any independent predictors.
 
@@ -218,10 +218,10 @@ Let's examine the correlation matrix to see if we have any independent predictor
 
     vp.set_option("plotting_lib","plotly")
     fig = africa.corr()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_fs_plot_lr_6.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_6.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_6.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_plot_lr_6.html
 
 Some of these features are highly-correlated, like socioeconomic status and having an electric lighting. We'll drop the lighting column to avoid unexpected results while computing the linear regression.
 
@@ -234,12 +234,12 @@ Some of these features are highly-correlated, like socioeconomic status and havi
     :okwarning:
 
     res = africa["source_of_lighting_ELECTRIC"].drop()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_7.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_7.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_7.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_7.html
 
 Let's normalize the dataset to follow the Gaussian-Markov assumptions.
 
@@ -252,12 +252,12 @@ Let's normalize the dataset to follow the Gaussian-Markov assumptions.
     :okwarning:
 
     res = africa.normalize(columns = africa.get_columns(exclude_columns = ["student_score"]))
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_8.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_8.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_8.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_8.html
 
 We can use a cross-validation to test our model.
 
@@ -285,12 +285,12 @@ We can use a cross-validation to test our model.
         X = africa.get_columns(exclude_columns = ["student_score"]),
         y = "student_score",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_9.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_9.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_9.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_9.html
 
 The model isn't bad. We're just using a few variables to get a median absolute error of 47; that is, our score has a distance of 47 from the true value. This seems high, but if we keep in mind that the final score is over 1000, our predictions are quite good.
 
@@ -315,10 +315,10 @@ Let's compare the importance of our features.
 
     vp.set_option("plotting_lib","plotly")
     fig = model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_fs_plot_lr_10.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_10.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_10.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_plot_lr_10.html
 
 The following factors seem to have the greatest influence on a student's performance:
 - Having a good teacher.
@@ -340,10 +340,10 @@ Let's add the prediction to the vDataFrame to see how our model performs its est
     model.predict(africa, name = "estimated_student_score")
     vp.set_option("plotting_lib","plotly")
     fig = africa.boxplot(["estimated_student_score", "student_score"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_fs_plot_lr_11.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_11.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_11.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_plot_lr_11.html
 
 .. code-block:: ipython
     
@@ -354,12 +354,12 @@ Let's add the prediction to the vDataFrame to see how our model performs its est
     :okwarning:
 
     res = africa.describe(columns = ["student_score", "estimated_student_score"])
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_12.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_12.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_12.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_12.html
 
 Our model has trouble catching outliers: exceptionally well-performing and struggling students.
 
@@ -377,10 +377,10 @@ Let's draw a residual plot.
     africa["residual"] = africa["student_score"] - africa["estimated_student_score"]
     vp.set_option("plotting_lib","plotly")
     fig = africa.scatter(["residual", "student_score"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_fs_plot_lr_13.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_13.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_13.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_plot_lr_13.html
 
 We see a high heteroscedasticity, indicating that we can't trust the ``p-value`` of the coefficients.
 
@@ -399,12 +399,12 @@ Let's look at the model's analysis of variance (ANOVA) table.
     :okwarning:
 
     res = model.report("anova")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_14.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_14.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_14.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_14.html
 
 According to the ``ANOVA`` table, at least one of our variables is influencing the prediction.
 
@@ -420,10 +420,10 @@ We can also see that a student's estimated score and true score skew heavily fro
 
     vp.set_option("plotting_lib","plotly")
     fig = africa["estimated_student_score"].hist()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_fs_plot_lr_15.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_15.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_15.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_plot_lr_15.html
 
 .. ipython:: python
 
@@ -519,12 +519,12 @@ We'll begin by repeating the data preparation process of the previous section an
             "country",
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_16.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_16.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_16.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_16.html
 
 Let's create our principal component analysis (:py:mod:`~verticapy.machine_learning.vertica.PCA`) model.
 
@@ -553,12 +553,12 @@ Let's create our principal component analysis (:py:mod:`~verticapy.machine_learn
     )
     africa_pca = model.transform()
     res = africa_pca.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_17.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_17.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_17.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_17.html
 
 We can verify the Gauss-Markov assumptions with our :py:mod:`~verticapy.machine_learning.vertica.PCA` model.
 
@@ -572,10 +572,10 @@ We can verify the Gauss-Markov assumptions with our :py:mod:`~verticapy.machine_
 
     vp.set_option("plotting_lib","plotly")
     fig = africa_pca.corr()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_fs_plot_lr_18.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_18.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_plot_lr_18.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_plot_lr_18.html
 
 Let's use a cross-validation to test our linear regression model.
 
@@ -598,12 +598,12 @@ Let's use a cross-validation to test our linear regression model.
         X = africa_pca.get_columns(exclude_columns = ["student_score"]),
         y = "student_score",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_table_lr_19.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_lr_19.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_table_lr_19.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_19.html
 
 As you can see, we've created a much more accurate model here than in our first attempt. This example emphasizes the importance of filtering noise from the data.
 

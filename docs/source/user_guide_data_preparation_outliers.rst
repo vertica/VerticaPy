@@ -29,14 +29,14 @@ Let's look at some examples using the `Heart Disease <https://www.kaggle.com/dat
     :suppress:
 
     import verticapy as vp
-    heart = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/heart/heart.csv")
+    heart = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/heart/heart.csv")
     res = heart.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_outliers_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_outliers_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_outliers_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_outliers_1.html
 
 Let's focus on a patient's maximum heart rate (thalach) and the cholesterol (chol) to identify some outliers.
 
@@ -51,10 +51,10 @@ Let's focus on a patient's maximum heart rate (thalach) and the cholesterol (cho
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = heart.scatter(["thalach", "chol"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_2.html
 
 We can see some outliers of the distribution: people with high cholesterol and others with a very low heart rate. Let's compute the global outliers using the :py:func:`~verticapy.vDataFrame.outlier` method.
 
@@ -71,10 +71,10 @@ We can see some outliers of the distribution: people with high cholesterol and o
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = heart.scatter(["thalach", "chol"], by = "global_outliers")
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_3.html
 
 It is also possible to draw an outlier plot using the :py:func:`~verticapy.vDataFrame.outliers_plot` method.
 
@@ -89,10 +89,10 @@ It is also possible to draw an outlier plot using the :py:func:`~verticapy.vData
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = heart.outliers_plot(["thalach", "chol"],)
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_4.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_4.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_4.html
 
 We've detected some global outliers in the distribution and we can impute these with the :py:func:`~verticapy.vDataFrame.fill_outliers` method.
 
@@ -135,10 +135,10 @@ Generally, you can identify global outliers with the ``Z-Score``. We'll consider
         ["thalach", "chol"],
         by = "global_outliers",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_5.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_5.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_5.html
 
 Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or local outlier factor (``LOF``) can be to used to check other data points for outliers.
 
@@ -161,10 +161,10 @@ Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or lo
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_6.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_6.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_6.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_6.html
 
 .. code-block:: python
 
@@ -187,10 +187,10 @@ Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or lo
         ["thalach", "chol"],
         by = "outliers_dbscan",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_7.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_7.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_7.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_7.html
 
 While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers when computing the clusters, ``LOF`` computes an outlier score. Generally, a ``LOF`` Score greater than 1.5 indicates an outlier.
 
@@ -213,10 +213,10 @@ While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers w
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_8.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_8.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_8.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_8.html
 
 .. code-block:: python
 
@@ -239,9 +239,9 @@ While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers w
         ["thalach", "chol"],
         by = "outliers",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_9.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_9.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_9.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_9.html
 
 We have many other techniques like the ``k-means`` clustering for finding outliers, but the most important method is using the ``Z-Score``. After identifying outliers, we just have to decide how to impute the missing values. We'll focus on missing values in the next lesson.

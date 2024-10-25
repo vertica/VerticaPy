@@ -42,12 +42,12 @@ Let's create a Virtual DataFrame of the dataset.
     from verticapy.datasets import load_titanic
     titanic = load_titanic()
     res = titanic.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_head.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -62,12 +62,12 @@ Let's explore the data by displaying descriptive statistics of all the columns.
     :suppress:
 
     res = titanic.describe(method = "categorical", unique = True)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_describe.html
 
 The columns "body" (passenger ID), "home.dest" (passenger origin/destination), "embarked" (origin port) and "ticket" (ticket ID) shouldn't influence survival, so we can ignore these.
 
@@ -90,12 +90,12 @@ Let's focus our analysis on the columns "name" and "cabin". We'll begin with the
     model = CountVectorizer()
     model.fit(titanic, ["Name"])
     res = model.transform()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_count_vect_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_count_vect_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_count_vect_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_count_vect_1.html
 
 Passengers' titles might come in handy. We can extract these from their names.
 
@@ -114,12 +114,12 @@ Let's move on to the cabins.
     model = CountVectorizer()
     model.fit("titanic", ["cabin"])
     res = model.transform()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_count_vect_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_count_vect_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_count_vect_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_count_vect_2.html
 
 Here, we have the cabin IDs, the letter of which represents a certain position on the boat. Let's see how often each cabin occurs in the dataset.
 
@@ -140,12 +140,12 @@ Here, we have the cabin IDs, the letter of which represents a certain position o
     res = model.transform()["token"].str_slice(1, 1).groupby(
         columns = ["token"], expr = ["SUM(cnt)"]
     ).head(30)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_count_vect_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_count_vect_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_count_vect_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_count_vect_3.html
 
 While NULL values for "boat" clearly represent passengers who have a dedicated "lifeboat", we can't be so sure about ``NULL`` values for "cabin". We can guess that these might represent passengers without a cabin. If this is the case, then these are missing values not at random (MNAR).
 
@@ -168,12 +168,12 @@ We'll revisit this problem later. For now, let's drop the columns that don't aff
             ' ([A-Za-z]+)\.')["boat"].fillna(
             method = "0ifnull"
     )["cabin"].fillna("No Cabin")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean.html
 
 Looking at our data now, we can see that some first class passengers have a ``NULL`` value for their cabin, so we can safely say that our assumption about the meaning of a ``NULL`` value of "cabin" turned out to be incorrect. This means that the "cabin" column has far too many missing values at random (MAR). We'll have to drop it.
 
@@ -185,12 +185,12 @@ Looking at our data now, we can see that some first class passengers have a ``NU
     :suppress:
 
     res = titanic["cabin"].drop()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_2.html
 
 Let's look at descriptive statistics of the entire Virtual Dataframe.
 
@@ -202,12 +202,12 @@ Let's look at descriptive statistics of the entire Virtual Dataframe.
     :suppress:
 
     res = titanic.describe(method = "all")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_describe_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_describe_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_describe_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_describe_2.html
 
 Descriptive statistics can give us valuable insights into our data. Notice, for example, that the column "fare" has many outliers (The maximum of 512.33 is much greater than the 9th decile of 79.13). Most passengers traveled in 3rd class (median of pclass = 3).
 
@@ -234,12 +234,12 @@ Let's move on to outliers. We have several tools for locating outliers (:py:mod:
         method = "winsorize", 
         alpha = 0.03,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_3.html
 
 Let's encode the column "sex" so we can use it with numerical methods.
 
@@ -252,12 +252,12 @@ Let's encode the column "sex" so we can use it with numerical methods.
     :okwarning:
 
     res = titanic["sex"].label_encode()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_4.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_4.html
 
 The column "age" has too many missing values and since most machine learning algorithms can't handle missing values, we need to impute our data. Let's fill the missing values using the average "age" of the passengers that have the same "pclass" and "sex".
 
@@ -270,12 +270,12 @@ The column "age" has too many missing values and since most machine learning alg
     :okwarning:
 
     res = titanic["age"].fillna(method = "mean", by = ["pclass", "sex"])
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_5.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_5.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_drop_clean_5.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_5.html
 
 Let's draw the correlation matrix to see the links between variables.
 
@@ -290,10 +290,10 @@ Let's draw the correlation matrix to see the links between variables.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = titanic.corr(method = "spearman", width = 800, height = 800)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_titanic_table_corr_matrix.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_titanic_table_corr_matrix.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_corr_matrix.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_corr_matrix.html
 
 Fare correlates strongly with family size. This is about what you would expect: a larger family means more tickets, and more tickets means a greater fare.
 
@@ -354,12 +354,12 @@ First, let's look at the number of survivors.
     :okwarning:
 
     res = titanic_boat["survived"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_with_boat.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_with_boat.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_with_boat.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_with_boat.html
 
 We have nine deaths. Let's try to understand why these passengers died.
 
@@ -372,12 +372,12 @@ We have nine deaths. Let's try to understand why these passengers died.
     :okwarning:
 
     res = titanic_boat.search(titanic_boat["survived"] == 0).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_with_boat_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_with_boat_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_with_boat_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_with_boat_2.html
 
 Apart from a decent amount of these passengers being third-class passengers, it doesn't seem like there are any clear predictors here for their deaths. Making a model from this would be unhelpful.
 
@@ -396,12 +396,12 @@ Let's move on to passengers without a lifeboat.
     :okwarning:
 
     res = titanic_no_boat["survived"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_without_boat.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_without_boat.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_without_boat.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_without_boat.html
 
 Only 20 survived. Let's find out why.
 
@@ -414,12 +414,12 @@ Only 20 survived. Let's find out why.
     :okwarning:
 
     res = titanic_no_boat.search(titanic_boat["survived"] == 1).head(20)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_without_boat_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_without_boat_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_without_boat_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_without_boat_2.html
 
 Most survivors seem to be women. Let's build a model with this in mind.
 
@@ -452,12 +452,12 @@ One of our predictors is categorical: the passenger title. Some of these predict
         max_depth = 4,
     )
     res = cross_validate(model, titanic_no_boat, predictors, response)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_titanic_table_ml_cv.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_titanic_table_ml_cv.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_ml_cv.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_ml_cv.html
 
 This dataset is pretty unbalanced so we'll use an AUC to evaluate it. Looking at our table, our model has an average AUC of more than 0.9, so our model is quite good.
 
@@ -480,10 +480,10 @@ Let's look at the importance of each feature.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_titanic_table_features.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_titanic_table_features.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_titanic_table_features.html
+    :file: SPHINX_DIRECTORY/figures/examples_titanic_table_features.html
 
 As expected, the passenger's title is the most important predictors of survival.
 

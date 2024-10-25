@@ -82,14 +82,14 @@ Let's examine our data. Here, we use :py:func:`~verticapy.vDataFrame.head` to re
 .. ipython:: python
     :suppress:
 
-    battery5 = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/battery/data.csv",)
+    battery5 = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/battery/data.csv",)
     res = battery5
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_table_head.html
 
 Let's perform a few aggregations with :py:func:`~verticapy.vDataFrame.describe` to get a high-level overview of the dataset.
 
@@ -101,12 +101,12 @@ Let's perform a few aggregations with :py:func:`~verticapy.vDataFrame.describe` 
     :suppress:
 
     res = battery5.describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_table_describe.html
 
 To get a better idea of the changes between each cycle, we look at an aggregation at their start time, duration, and voltage at the beginning and the end of each cycle.
 
@@ -118,12 +118,12 @@ To get a better idea of the changes between each cycle, we look at an aggregatio
     :suppress:
 
     res = battery5["start_time"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery__start_time_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery__start_time_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery__start_time_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery__start_time_table_describe.html
 
 To see how the voltage changes during the cycle, we extract the initial and final voltage measurements for each cycle.
 
@@ -189,12 +189,12 @@ To see how the voltage changes during the cycle, we extract the initial and fina
     ).sort("start_time")
     cycling_info["cycle_id"] = "ROW_NUMBER() OVER(ORDER BY start_time)"
     res = cycling_info.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery_cycling_info.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery_cycling_info.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_cycling_info.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_cycling_info.html
 
 We can see from the "duration" column that charging seems to take a longer time than discharging. 
 Let's visualize this trend with an animated graph.
@@ -213,12 +213,12 @@ Let's visualize this trend with an animated graph.
     import warnings
     warnings.filterwarnings("ignore")
     res = cycling_info.animated_bar(ts = "start_time",columns = ["type", "cycle_duration"])
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery_animated_bar.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery_animated_bar.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_animated_bar.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_animated_bar.html
 
 The animated graph below shows how the cycles change throughout time. Another way we can verify that charging cycles are longer than discharging cycles is by looking at the average duration of each type of cycle.
 
@@ -236,10 +236,10 @@ The animated graph below shows how the cycles change throughout time. Another wa
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = cycling_info.bar(["type"], method = "avg", of = "cycle_duration")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_battery_bar_type.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_battery_bar_type.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_bar_type.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_bar_type.html
 
 In general, charging cycles are longer than discharging cycles. 
 Let's examine how voltage changes between cycles and their transitions.
@@ -275,12 +275,12 @@ Let's examine how voltage changes between cycles and their transitions.
         ],
     )
     res = cycling_info.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery_cycling_info_after_groupby.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery_cycling_info_after_groupby.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_cycling_info_after_groupby.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_cycling_info_after_groupby.html
 
 From this table, it looks like batteries are charged until they are almost full (4.2V) and discharging doesn't begin until they are fully charged.
 
@@ -315,12 +315,12 @@ But first we need to perform some preprocessing.
         window = (-100, -1),
         name = "smooth_capacity",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery_cycling_info_after_rollign_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery_cycling_info_after_rollign_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_cycling_info_after_rollign_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_cycling_info_after_rollign_2.html
 
 Now we can plot the graphs. In VerticaPy we have multiple options to plot the graphs with different syntax of customization. For a complete list of all the graphs and their options check out the :ref:`chart_gallery`.
 
@@ -389,10 +389,10 @@ We can now try to plot it using Plotly. We can conveniently switch between the p
     # Add legend for the horizontal line
     plot.add_trace(go.Scatter(x = [None], y = [None], mode = "lines", line = dict(color="green", width=3, dash="dash"), name = "End-of-life criteria"))
     fig = plot
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_battery_discharge_plotly_plote.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_battery_discharge_plotly_plote.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_discharge_plotly_plote.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_discharge_plotly_plote.html
 
 The sudden increases in battery capacity come from the self-charging property of Li-ion batteries. The smoothed graph makes 
 the downward trend in the battery's capacity very clear.
@@ -465,10 +465,10 @@ Since measurements like voltage and temperature tend to differ within the differ
     sample_cycle = battery5[battery5["Capacity"] == "1.83514614292266"]
     sample_cycle["Voltage_measured"].plot(ts = "Time")
     fig = sample_cycle["Temperature_measured"].plot(ts = "Time")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_battery_temp_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_battery_temp_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_temp_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_temp_plot.html
 
 We'll define new features that describe the minimum and maximum temperature during one cycle; the minimal voltage; and the time needed to reach minimum voltage and maximum temperature.
 
@@ -657,10 +657,10 @@ We can visualize the performance and efficency differences of each model with a 
     :okwarning:
 
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_battery_auto_ml_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_battery_auto_ml_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_auto_ml_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_auto_ml_plot.html
 
 .. ipython:: python
 
@@ -721,12 +721,12 @@ We can now define the model using those hyperparameters and train it.
     :suppress:
 
     res = model_rf.regression_report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_battery_reg_reprot.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_battery_reg_reprot.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_reg_reprot.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_reg_reprot.html
 
 The predictive power of our model looks pretty good. Let's use our model to predict the SoH of the battery. We can visualize our prediction with a plot against the true values.
 
@@ -754,10 +754,10 @@ The predictive power of our model looks pretty good. Let's use our model to pred
         ts = "start_time", 
         columns = ["SOH", "SOH_estimates"],
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_battery_auto_ml_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_battery_auto_ml_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_battery_auto_ml_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_battery_auto_ml_plot.html
 
 Conclusion
 -----------

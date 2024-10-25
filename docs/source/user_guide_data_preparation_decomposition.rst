@@ -23,12 +23,12 @@ To demonstrate data decomposition in VerticaPy, we'll use the well-known 'Iris' 
     from verticapy.datasets import load_iris
     iris = load_iris()
     res = iris.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_decomposition_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_decomposition_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_decomposition_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_decomposition_1.html
 
 Notice that all the predictors are well-correlated with each other.
 
@@ -43,10 +43,10 @@ Notice that all the predictors are well-correlated with each other.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = iris.corr()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_decomposition_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_decomposition_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_decomposition_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_decomposition_2.html
 
 Let's compute the PCA of the different elements.
 
@@ -78,10 +78,10 @@ Let's compute the correlation matrix of the result of the :py:mod:`~verticapy.ma
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = model.transform().corr()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_dp_plot_decomposition_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_dp_plot_decomposition_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_decomposition_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_plot_decomposition_3.html
 
 Notice that the predictors are now independant and combined together and they have the exact same amount of information than the previous variables. Let's look at the accumulated explained variance of the PCA components.
 
@@ -100,9 +100,9 @@ Most of the information is in the first two components with more than 97.7% of e
     :okwarning:
 
     res = model.transform(n_components = 2)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_decomposition_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_decomposition_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_decomposition_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_decomposition_4.html

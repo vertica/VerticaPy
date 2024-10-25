@@ -46,14 +46,14 @@ Let's create a Virtual DataFrame of the dataset.
 .. ipython:: python
     :suppress:
 
-    football = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/football/games.csv")
+    football = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/football/games.csv")
     res = football.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_table_head.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -68,12 +68,12 @@ Let's explore the data by displaying descriptive statistics of all the columns.
     :suppress:
 
     res = football["date"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_describe.html
 
 The dataset includes a total of 41,586 games, which take place between 1872 and 2020. Let's look at our game types and teams.
 
@@ -85,12 +85,12 @@ The dataset includes a total of 41,586 games, which take place between 1872 and 
     :suppress:
 
     res = football["tournament"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_describe_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_describe_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_describe_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_describe_2.html
 
 Different types of tournaments took place (FIFA World Cup, UEFA Euro, etc.) aand most of the games in our data are friendlies or qualifiers for international tournaments.
 
@@ -102,12 +102,12 @@ Different types of tournaments took place (FIFA World Cup, UEFA Euro, etc.) aand
     :suppress:
 
     res = football.describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_describe_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_describe_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_describe_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_describe_3.html
 
 .. code-block:: python
 
@@ -117,12 +117,12 @@ Different types of tournaments took place (FIFA World Cup, UEFA Euro, etc.) aand
     :suppress:
 
     res = football.describe(method = "categorical")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_describe_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_describe_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_describe_4.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_describe_4.html
 
 The dataset includes 308 national teams. For most of the games, the home team scores better than the away team. Since some games take place in a neutral location, we can ensure this hypothesis using the variable 'neutral'. Notice also that the number of goals per match is pretty low (median of 1 for both away and home teams).
 
@@ -204,12 +204,12 @@ Let's just consider teams that have played more than five home and away games.
         inplace = True,
     )
     res = football
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_to_db_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_to_db_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_to_db_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_to_db_1.html
 
 A lot of things could influence the outcome of a game. Since we only have access to the score, teams, and type of game, we can't consider external factors like, weather or temperature, which would otherwise help our prediction.
 
@@ -257,12 +257,12 @@ Let's start by creating the feature 'winner' to indicate the winner of a game.
         football["home_score"] < football["away_score"], football["away_team"],
         None,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_case_when_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_case_when_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_case_when_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_case_when_1.html
 
 Let's analyze the last game of each tournament.
 
@@ -289,12 +289,12 @@ Let's analyze the last game of each tournament.
         name = "order_tournament",
     )
     res = football
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_analytic_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_analytic_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_analytic_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_analytic_2.html
 
 We can filter the data by only considering the last games and top tournaments.
 
@@ -337,12 +337,12 @@ We can filter the data by only considering the last games and top tournaments.
         ]
     )
     res = football
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_filter_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_filter_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_filter_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_filter_2.html
 
 Let's consider the World Cup as a special tournament. It is the only one where the confrontations between the top teams is possible.
 
@@ -361,12 +361,12 @@ Let's consider the World Cup as a special tournament. It is the only one where t
         1, 0,
     )
     res = football["Word_Cup"]
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_decode_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_decode_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_decode_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_decode_3.html
 
 We can compute all the number of cup-wins by team. As expected, Brazil and Germany are the top football teams.
 
@@ -398,12 +398,12 @@ We can compute all the number of cup-wins by team. As expected, Brazil and Germa
             "nb_Continental_Cup": "desc",
         }
     ).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_groupby_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_groupby_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_groupby_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_groupby_3.html
 
 Let's export the result to our Vertica database.
 
@@ -430,12 +430,12 @@ Let's export the result to our Vertica database.
         relation_type = "table",
     )
     res = football_cup_winners
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_to_db_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_to_db_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_to_db_4.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_to_db_4.html
 
 Team Confederations
 ++++++++++++++++++++
@@ -459,7 +459,7 @@ First let's encode the different continents so we can compute the correct aggreg
 .. ipython:: python
     :suppress:
 
-    football = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/football/games.csv")
+    football = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/football/games.csv")
     res = football.case_when(
         'confederation', 
         football["tournament"] == 'UEFA Euro qualification', 5,
@@ -468,12 +468,12 @@ First let's encode the different continents so we can compute the correct aggreg
         football["tournament"] == 'Copa América', 2,
         football["tournament"] == 'Gold Cup', 1, 0,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_table_confederation_case_when.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_table_confederation_case_when.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_table_confederation_case_when.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_table_confederation_case_when.html
 
 We can aggregate the data and get each team's continent.
 
@@ -493,12 +493,12 @@ We can aggregate the data and get each team's continent.
         [fun.max(football["confederation"])._as("confederation")],
     )
     res = confederation.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_confederation_6.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_confederation_6.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_confederation_6.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_confederation_6.html
 
 We can decode the previous label encoding.
 
@@ -524,12 +524,12 @@ We can decode the previous label encoding.
         1, "CONCACAF",
         "OFC",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_confederation_8.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_confederation_8.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_confederation_8.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_confederation_8.html
 
 Let's export the result to our Vertica database.
 
@@ -552,12 +552,12 @@ Let's export the result to our Vertica database.
         relation_type = "table",
     )
     res = confederation
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_confederation_9.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_confederation_9.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_confederation_9.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_confederation_9.html
 
 Team KPIs
 ++++++++++
@@ -608,12 +608,12 @@ We use just two variables to track teams: away_team and home_team. This makes it
     # Merging the 2 interverted datasets
     all_matchs = football.append(football2)
     res = all_matchs["neutral"].rename("home_team_id")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_10.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_10.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_10.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_10.html
 
 To compute the different aggregations, we need to add dummies which indicate the type of game and winner.
 
@@ -665,12 +665,12 @@ To compute the different aggregations, we need to add dummies which indicate the
     all_matchs["Victory_team1"].astype("int")
     all_matchs["Draw"] = (all_matchs["team1_score"] == all_matchs["team2_score"])
     res = all_matchs["Draw"].astype("int")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_11.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_11.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_11.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_11.html
 
 Now we can compute each team's KPI.
 
@@ -712,12 +712,12 @@ Now we can compute each team's KPI.
         ],
     ).sort({"Number_Games_World_Tournament": "desc"})
     res = teams_kpi.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_12.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_12.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_12.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_12.html
 
 We can join the different information about the cup winners to enrich our dataset. We'll be using this later, so let's export it to our Vertica database.
 
@@ -749,12 +749,12 @@ We can join the different information about the cup winners to enrich our datase
         ],
     ).to_db("teams_kpi", relation_type = "table")
     res = teams_kpi.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final.html
 
 Let's add each team's confederation to our dataset.
 
@@ -778,12 +778,12 @@ Let's add each team's confederation to our dataset.
         expr2 = ["confederation"],
     )
     res = teams_kpi.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_1.html
 
 Since clustering will use different statistics, we need to normalize the data. We'll also create a dummy that will equal 1 if the team won at least one World Cup.
 
@@ -813,12 +813,12 @@ Since clustering will use different statistics, we need to normalize the data. W
     )
     teams_kpi["Word_Cup_Victory"] = teams_kpi["nb_World_Cup"] > 0
     res = teams_kpi["Word_Cup_Victory"].astype("int")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_2.html
 
 Some data is missing; this is because only top teams won major tournaments. Besides, some non-professional teams may not have a stadium.
 
@@ -830,12 +830,12 @@ Some data is missing; this is because only top teams won major tournaments. Besi
     :suppress:
 
     res = teams_kpi.count()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_3.html
 
 Let's impute the missing values by 0.
 
@@ -869,12 +869,12 @@ Let's impute the missing values by 0.
             "confederation": "OFC",
         },
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_final_4.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_final_4.html
 
 Let's export the result to our Vertica database.
 
@@ -897,12 +897,12 @@ Let's export the result to our Vertica database.
         inplace = True,
     )
     res = teams_kpi
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_football_clustering_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_football_clustering_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_football_clustering_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_football_clustering_1.html
 
 Team Rankings with k-means
 ---------------------------
@@ -952,10 +952,10 @@ To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an :
         predictors,
         n_cluster = (1, 11),
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_football_elbow_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_football_elbow_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_elbow_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_elbow_1.html
 
 6 seems to be a good number of clusters. To help the algorithm to converge to meaningful clusters, we can initialize the clusters with different types of centroid levels. For example, we can associate very good teams (champions) to World Cups Winners, good teams to continental Cup Winners, etc. This will let us to properly weigh the performance of each team relatve to the strength of their region.
 
@@ -995,12 +995,12 @@ Let's add the prediction to the :py:mod:`~verticapy.vDataFrame`.
         teams_kpi, 
         name = "fifa_rank",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_model_kmeans_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_model_kmeans_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_model_kmeans_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_model_kmeans_1.html
 
 Let's look at the strongest group, which includes well-known teams like Argentina, Brazil, and France.
 
@@ -1020,12 +1020,12 @@ Let's look at the strongest group, which includes well-known teams like Argentin
         usecols = ["team1", "fifa_rank"],
         order_by = ["fifa_rank"],
     ).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_10.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_10.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_10.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_10.html
 
 The weakest group includes less well-known teams.
 
@@ -1045,12 +1045,12 @@ The weakest group includes less well-known teams.
         usecols = ["team1", "fifa_rank"],
         order_by = ["fifa_rank"],
     ).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_11.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_11.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_11.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_11.html
 
 A bubble plot will let us visualize the differences in strength between each confederation.
 
@@ -1081,10 +1081,10 @@ We can see the strongest group at the top right of the graphic and weakest teams
         size = "fifa_rank",
         by = "confederation",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_football_scatter_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_football_scatter_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_scatter_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_scatter_1.html
 
 We can also look at the Percent of Victory by rank to confirm our hypothesis.
 
@@ -1111,10 +1111,10 @@ We can also look at the Percent of Victory by rank to confirm our hypothesis.
         size = "Percent_Victory",
         by = "fifa_rank",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_football_scatter_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_football_scatter_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_scatter_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_scatter_2.html
 
 A box plot can also show us the differences in skill between teams. We can look at rank 1, where the percent of victory is high because of the confederation.
 
@@ -1129,10 +1129,10 @@ Note that the best team in a weaker confederation might not be particularly stro
     :okwarning:
 
     fig = teams_kpi["Percent_Victory"].boxplot(by = "fifa_rank")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_football_boxplot_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_football_boxplot_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_boxplot_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_boxplot_2.html
 
 Let's export the KPIs to our Vertica database.
 
@@ -1161,12 +1161,12 @@ Let's export the KPIs to our Vertica database.
         inplace = True,
     )
     res = teams_kpi
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_13.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_13.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_13.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_13.html
 
 Features Engineering
 ---------------------
@@ -1263,12 +1263,12 @@ We can add dumies to do aggregations on the different games.
     all_matchs["draw"].astype("int")
     all_matchs["victory_team2"] = all_matchs["team1_score"] < all_matchs["team2_score"]
     res = all_matchs["victory_team2"].astype("int")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_15.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_15.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_15.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_15.html
 
 Let's use moving windows to compute some additional features.
 
@@ -1399,12 +1399,12 @@ The teams' performance in their recent games
         order_by = ["date"],
         name = "avg_draw_team2_1_5",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_16.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_16.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_16.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_16.html
 
 The teams' performance in the last same tournament
 +++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1533,12 +1533,12 @@ The teams' performance in the last same tournament
         order_by = ["date"],
         name = "avg_draw_same_tournament_team2_1_5",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_17.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_17.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_17.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_17.html
 
 Direct Confrontation
 +++++++++++++++++++++
@@ -1603,12 +1603,12 @@ Direct Confrontation
         order_by = ["date"],
         name = "avg_draw_direct_team1_1_5",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_19.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_19.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_19.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_19.html
 
 Games against an opponents with the same rank
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -1701,12 +1701,12 @@ Games against an opponents with the same rank
         order_by = ["date"],
         name = "avg_draw_rank1_team2_1_5",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_21.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_21.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_21.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_21.html
 
 Games between teams with rank 1 and rank 2
 +++++++++++++++++++++++++++++++++++++++++++
@@ -1753,12 +1753,12 @@ Games between teams with rank 1 and rank 2
         order_by = ["date"],
         name = "avg_draw_rank1_rank2_team1_1_5",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_22.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_22.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_22.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_22.html
 
 Before we use the 'neutral' variable with our model, we should convert it to an integer.
 
@@ -1784,12 +1784,12 @@ We need also to create our response column: the outcome of the game.
         all_matchs["team1_score"] < all_matchs["team2_score"], "2", 
         "X",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_23.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_23.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_kmeans_23.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_23.html
 
 We have some missing values here. This might be because the two teams never played together, the competition was one or both teams' first, etc.
 
@@ -1801,12 +1801,12 @@ We have some missing values here. This might be because the two teams never play
     :suppress:
 
     res = all_matchs.count()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_count_final_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_count_final_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_count_final_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_count_final_1.html
 
 We need to impute these missing values.
 
@@ -1858,12 +1858,12 @@ We need to impute these missing values.
     all_matchs["avg_victory_same_tournament_team2_1_10"].fillna(expr = "avg_victory_team2_1_10")
     all_matchs["avg_victory_same_tournament_team2_1_3"].fillna(expr = "avg_victory_team2_1_3")
     res = all_matchs["avg_draw_same_tournament_team2_1_5"].fillna(expr = "avg_draw_team2_1_5")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_all_matchs_final_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_all_matchs_final_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_all_matchs_final_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_all_matchs_final_1.html
 
 Let's export the result to our Vertica database using the variable 'match_sample' to avoid counting the same game twice.
 
@@ -1900,12 +1900,12 @@ Let's export the result to our Vertica database using the variable 'match_sample
         db_filter = (fun.year(all_matchs["date"]) > 2015) & (all_matchs["match_sample"] == 1),
     )
     res = all_matchs
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_all_matchs_final_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_all_matchs_final_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_all_matchs_final_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_all_matchs_final_2.html
 
 Machine Learning
 -----------------
@@ -1955,12 +1955,12 @@ It's time to make predictions about the outcomes of games. We have a lot of vari
     :suppress:
 
     res = model.classification_report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_clean_kpi_ml_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_clean_kpi_ml_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_clean_kpi_ml_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_ml_1.html
 
 Our model is excellent! 57% of accuracy on 3 categories - it's almost twice as good as a random model.
 
@@ -1978,10 +1978,10 @@ Looking at the importance of each feature, it seems like direct confrontations a
     :suppress:
 
     fig = model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_football_features_importance.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_football_features_importance.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_features_importance.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_features_importance.html
 
 Let's add the predictions to the :py:mod:`~verticapy.vDataFrame`.
 
@@ -2019,12 +2019,12 @@ Draws are pretty rare, so we'll only consider them if a tie was very likely to o
         test["prob_1"] > test["prob_2"], "1",
         test["prob_1"] < test["prob_2"], "2",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_ml_case_when_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_ml_case_when_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_ml_case_when_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_ml_case_when_1.html
 
 Let's look at our predictions for the 2018 World Cup.
 
@@ -2062,12 +2062,12 @@ Let's look at our predictions for the 2018 World Cup.
         ],
         order_by = ["date"],
     ).head(128)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_ml_search_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_ml_search_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_ml_search_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_ml_search_1.html
 
 Fantastic: we built a very efficient model which predicted that France will win almost all of its games (except the game against Argentina which is really hard to predict). In reality, France did indeed win the 2018 World Cup!
 
@@ -2111,12 +2111,12 @@ Fantastic: we built a very efficient model which predicted that France will win 
         ],
         order_by = ["date"],
     ).head(128)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_football_ml_search_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_football_ml_search_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_football_ml_search_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_football_ml_search_2.html
 
 Conclusion
 -----------

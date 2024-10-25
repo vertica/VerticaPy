@@ -48,12 +48,12 @@ Let's create a Virtual DataFrame of the dataset.
     from verticapy.datasets import load_iris
     iris = load_iris()
     res = iris.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_iris_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_iris_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_iris_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_iris_table_head.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -68,12 +68,12 @@ Let's explore the data by displaying descriptive statistics of all the columns.
     :suppress:
 
     res = iris.describe(method = "categorical", unique = True)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_iris_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_iris_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_iris_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_iris_table_describe.html
 
 We don't have much data here, but that's okay; since different flower species have different proportions and ratios between those proportions, we can start by making ratios between each feature.
 
@@ -104,10 +104,10 @@ We can draw the correlation matrix (Pearson correlation coefficient) of the new 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = iris.corr(width = 800, height = 800)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_iris_table_corr_matrix.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_iris_table_corr_matrix.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_iris_table_corr_matrix.html
+    :file: SPHINX_DIRECTORY/figures/examples_iris_table_corr_matrix.html
 
 The Iris setosa is highly linearly correlated with the petal length and the sepal ratio. We can see a perfect separation using the two features (though we can also see this separation the petal length alone).
 
@@ -128,10 +128,10 @@ The Iris setosa is highly linearly correlated with the petal length and the sepa
         width = 800,
         height = 800,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_iris_scatter_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_iris_scatter_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_iris_scatter_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_iris_scatter_1.html
 
 We can we a clear linear separation between the Iris setosa and the other species, but we'll need more features to identify the differences between Iris virginica and Iris versicolor.
 
@@ -160,10 +160,10 @@ We can we a clear linear separation between the Iris setosa and the other specie
         width = 800,
         height = 800,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_iris_scatter_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_iris_scatter_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_iris_scatter_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_iris_scatter_2.html
 
 Our strategy is simple: we'll use two Linear Support Vector Classification (SVC): one to classify the Iris setosa and another to classify the Iris versicolor.
 
@@ -192,12 +192,12 @@ Let's build the first :py:mod:`~verticapy.machine_learning.vertica.LinearSVC` to
     response = "Species_Iris-setosa"
     model = LinearSVC("svc_setosa_iris")
     res = cross_validate(model, iris, predictors, response)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_iris_table_ml_cv.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_iris_table_ml_cv.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_iris_table_ml_cv.html
+    :file: SPHINX_DIRECTORY/figures/examples_iris_table_ml_cv.html
 
 Our model is excellent. Let's build it using the entire dataset.
 
@@ -216,10 +216,10 @@ Let's plot the model to see the perfect separation.
     :okwarning:
 
     fig = model.plot(width = 800, height = 800)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_model_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_model_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_model_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_model_plot.html
 
 We can add this probability to the :py:mod:`~verticapy.vDataFrame`.
 
@@ -231,12 +231,12 @@ We can add this probability to the :py:mod:`~verticapy.vDataFrame`.
     :suppress:
 
     res = model.predict_proba(iris, name = "setosa", pos_label = 1)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_model_predict_proba.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_model_predict_proba.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_model_predict_proba.html
+    :file: SPHINX_DIRECTORY/figures/examples_model_predict_proba.html
 
 Let's create a model to classify the Iris virginica.
 
@@ -268,12 +268,12 @@ Let's create a model to classify the Iris virginica.
     response = "Species_Iris-virginica"
     model = LinearSVC("svc_virginica_iris")
     res = cross_validate(model, iris, predictors, response)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_iris_table_ml_cv_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_iris_table_ml_cv_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_iris_table_ml_cv_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_iris_table_ml_cv_2.html
 
 We have another excellent model. Let's add it to the :py:mod:`~verticapy.vDataFrame`.
 
@@ -287,12 +287,12 @@ We have another excellent model. Let's add it to the :py:mod:`~verticapy.vDataFr
 
     model.fit(iris, predictors, response)
     res = model.predict_proba(iris, name = "virginica", pos_label = 1)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_model_predict_proba_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_model_predict_proba_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_model_predict_proba_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_model_predict_proba_2.html
 
 Let's evaluate our final model (the combination of two :py:mod:`~verticapy.machine_learning.vertica.LinearSVC`).
 

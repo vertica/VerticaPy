@@ -46,12 +46,12 @@ We have many metrics to evaluate the model.
     :okwarning:
 
     res = model.report()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_table_classification_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_table_classification_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_table_classification_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_table_classification_1.html
 
 You can add the predictions to your dataset.
 
@@ -64,12 +64,12 @@ You can add the predictions to your dataset.
     :okwarning:
 
     res = model.predict(iris, name = "prediction")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_table_classification_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_table_classification_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_table_classification_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_table_classification_2.html
 
 You can also add the probabilities.
 
@@ -82,12 +82,12 @@ You can also add the probabilities.
     :okwarning:
 
     res = model.predict_proba(iris, name = "prob")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_table_classification_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_table_classification_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_table_classification_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_table_classification_3.html
 
 Our example forgoes splitting the data into training and testing, which is important for real-world work. Our main goal in this lesson is to look at the metrics used to evaluate classifications. The most famous metric is accuracy: generally speaking, the closer accuracy is to 1, the better the model is. However, taking metrics at face value can lead to incorrect interpretations.
 

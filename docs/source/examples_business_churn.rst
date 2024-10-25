@@ -47,15 +47,15 @@ Let's take a look at the first few entries in the dataset.
     :suppress:
 
     churn = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/churn/customers.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/churn/customers.csv",
     )
     res = churn.head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_churn_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_churn_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_table.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -70,12 +70,12 @@ Let's examine our data.
     :suppress:
 
     res = churn.describe(method = "categorical", unique = True)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_churn_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_churn_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_table_describe.html
 
 Several variables are categorical, and since they all have low cardinalities, we can compute their dummies. We can also convert all booleans to numeric.
 
@@ -134,12 +134,12 @@ Several variables are categorical, and since they all have low cardinalities, we
             "InternetService",
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_insurance_table_clean_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_insurance_table_clean_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_insurance_table_clean_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_insurance_table_clean_1.html
 
 Let's compute the correlations between the different variables and the response column.
 
@@ -154,10 +154,10 @@ Let's compute the correlations between the different variables and the response 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.corr(focus = "Churn")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_churn_corr.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_churn_corr.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_corr.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_corr.html
 
 Many features have a strong correlation with the 'Churn' variable. For example, the customers that have a 'Month to Month' contract are more likely to churn. Having this type of contract gives customers a lot of flexibility and allows them to leave at any time. New customers are also likely to churn.
 
@@ -173,10 +173,10 @@ Many features have a strong correlation with the 'Churn' variable. For example, 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.barh(["Contract_Month-to-month", "tenure"], method = "avg", of = "Churn", height = 500)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_churn_barh.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_churn_barh.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_barh.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_barh.html
 
 The following scatter plot shows that providing better tariff plans can prevent churning. Indeed, customers having high total charges are more likely to churn even if they've been with the company for a long time.
 
@@ -191,10 +191,10 @@ The following scatter plot shows that providing better tariff plans can prevent 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.scatter(["TotalCharges", "tenure"], by = "Churn")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_churn_scatter.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_churn_scatter.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_scatter.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_scatter.html
 
 Let's move on to machine learning.
 
@@ -251,12 +251,12 @@ Let's train and evaluate our model.
         test,
     )
     res = model.classification_report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_churn_table_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_churn_table_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_table_report.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_table_report.html
 
 The model is excellent! Let's run some machine learning on the entire dataset and compute the importance of each feature.
 
@@ -282,10 +282,10 @@ The model is excellent! Let's run some machine learning on the entire dataset an
         "churn",
     )
     fig = model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_churn_features_importance.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_churn_features_importance.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_features_importance.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_features_importance.html
 
 Based on our model, most churning customers are at least one of the following:
 
@@ -326,12 +326,12 @@ Notice that customers have a 'Fiber Optic' option are also likely to churn. Let'
             fun.avg(churn["monthlycharges"])._as("monthlycharges"),
         ]
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_churn_table_groupby.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_churn_table_groupby.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_table_groupby.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_table_groupby.html
 
 It seems like the 'Fiber Optic' option in and of itself doesn't lead to churning, but customers that have this option tend to churn because their contract puts them into one of the three categories we listed before: they're paying more.
 
@@ -349,10 +349,10 @@ We'll use a lift chart to help us identify which of our customers are likely to 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = model.lift_chart()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_churn_lift_chart.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_churn_lift_chart.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_churn_lift_chart.html
+    :file: SPHINX_DIRECTORY/figures/examples_churn_lift_chart.html
 
 By targeting less than 30% of the entire distribution, our predictions will be more than three times more accurate than the other 70%.
 

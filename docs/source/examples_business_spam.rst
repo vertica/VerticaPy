@@ -45,15 +45,15 @@ Let's take a look at the first few entries in the dataset.
     :suppress:
 
     spam = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/spam/spam.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/spam/spam.csv",
     )
     res = spam.head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spam_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spam_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_table.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -76,12 +76,12 @@ Our dataset relies on text analysis. First, we should create some features. For 
     spam["length"] = fun.length(spam["content"])
     spam["content"].apply("LOWER({})")
     res = spam["type"].decode('spam', 1, 0)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spam_table_clean.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spam_table_clean.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_table_clean.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_table_clean.html
 
 Let's compute some statistics using the length of the message.
 
@@ -99,12 +99,12 @@ Let's compute some statistics using the length of the message.
         method = 'cat_stats', 
         numcol = 'length',
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spam_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spam_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_table_describe.html
 
 .. note:: Spam tends to be longer than a normal message. First, let's create a view with just spam. Then, we'll use the :py:mod:`~verticapy.machine_learning.vertica.CountVectorizer` to create a dictionary and identify keywords.
 
@@ -131,12 +131,12 @@ Let's compute some statistics using the length of the message.
     dict_spams.fit(spams, ["content"])
     dict_spams = dict_spams.transform()
     res = dict_spams
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spam_table_clean_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spam_table_clean_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_table_clean_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_table_clean_2.html
 
 Let's add the most occurent words in our :py:mod:`~verticapy.vDataFrame` and compute the correlation vector.
 
@@ -167,10 +167,10 @@ Let's add the most occurent words in our :py:mod:`~verticapy.vDataFrame` and com
                 column = "content",
             )
     fig = spam.corr(focus = "type")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spam_corr.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spam_corr.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_corr.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_corr.html
 
 Let's just keep the first 100-most correlated features and merge the numbers together.
 
@@ -205,12 +205,12 @@ Let's just keep the first 100-most correlated features and merge the numbers tog
         method = "count",
         name = "nb_numbers",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spam_table_regexp.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spam_table_regexp.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_table_regexp.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_table_regexp.html
 
 Let's narrow down our keyword list to words of more than two characters.
 
@@ -241,10 +241,10 @@ Compute the correlation vector again using the response column.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = spam.corr(focus = "type")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spam_corr_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spam_corr_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_corr_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_corr_2.html
 
 We have enough correlated features with our response to create a fantastic model.
 
@@ -288,12 +288,12 @@ The ``Naive Bayes`` classifier is a powerful and performant algorithm for text a
         "type", 
         cv = 5,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spam_table_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spam_table_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spam_table_report.html
+    :file: SPHINX_DIRECTORY/figures/examples_spam_table_report.html
 
 We have an excellent model! Let's learn from the data.
 

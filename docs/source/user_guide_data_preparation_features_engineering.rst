@@ -27,12 +27,12 @@ To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.e
     from verticapy.datasets import load_titanic
     titanic = load_titanic()
     res = titanic.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_fe_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_1.html
 
 The feature 'parch' corresponds to the number of parents and children on-board. The feature 'sibsp' corresponds to the number of siblings and spouses on-board. We can create the feature 'family size' which is equal to parch + sibsp + 1.
 
@@ -47,12 +47,12 @@ The feature 'parch' corresponds to the number of parents and children on-board. 
 
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
     res = titanic.select(["parch", "sibsp", "family_size"])
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_fe_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_2.html
 
 When using the :py:func:`~verticapy.vDataFrame.eval` method, you can enter any SQL expression and VerticaPy will evaluate it!
 
@@ -76,12 +76,12 @@ Consider the following example: notice that passenger names include their title.
     :okwarning:
 
     res = titanic["name"]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_fe_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_3.html
 
 Let's extract the title using regular expressions.
 
@@ -106,12 +106,12 @@ Let's extract the title using regular expressions.
         method = "substr",
     )
     res = titanic.select(["name", "title"])
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_fe_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_4.html
 
 Advanced Analytical Functions
 ------------------------------
@@ -137,12 +137,12 @@ To demonstrate some of these techniques, let's use the Amazon dataset and perfor
     from verticapy.datasets import load_amazon
     amazon = load_amazon()
     res = amazon.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_5.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_fe_5.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_5.html
 
 For each state, let's compute the previous number of forest fires.
 
@@ -167,12 +167,12 @@ For each state, let's compute the previous number of forest fires.
         by = "state",
         order_by = {"date": "asc"},
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_6.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_fe_6.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_6.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_6.html
 
 Moving Windows
 ---------------
@@ -208,12 +208,12 @@ Let's look at forest fires for each state three months preceding two months foll
         by = "state",
         order_by = {"date": "asc"},
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_fe_7.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_fe_7.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_fe_7.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_7.html
 
 Moving windows give us infinite possibilities for creating new features.
 
