@@ -26,13 +26,14 @@ Introduction
 
       .. card:: The virtual DataFrame
           :link: user_guide.introduction.vdf
+          :link-type: ref
           :text-align: center
           :class-card: custom-card-9
 
           12 mins
           ^^^^^^^^
 
-          Unlock the potential of the Virtual DataFrame (:py:class:`~vDataFrame`). 
+          Unlock the potential of the Virtual DataFrame (:py:mod:`~verticapy.vDataFrame`). 
           Explore its role in storing and manipulating data, 
           optimizing your data manipulation processes, and 
           elevating your analytical capabilities.

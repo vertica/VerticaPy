@@ -96,7 +96,7 @@ Similar to the use of :py:func:`~verticapy.read_json` above, we can use :py:func
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_data.html
 
-We can also use the handy `genSQL` parameter to generate (but not execute) the SQL needed to create the final relation:
+We can also use the handy ``genSQL`` parameter to generate (but not execute) the SQL needed to create the final relation:
 
 .. note:: This is a great way to customize the data ingestion or alter the final relation types.
 
@@ -241,6 +241,7 @@ We can even flatten the nested structure inside a json file, either flattening t
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     vp.drop("complex_vmap_test.laliga_flat")
     path = "/project/data/VerticaPy/docs"
@@ -271,7 +272,7 @@ type that we saw in the above cells. Even though both are used to capture nested
 - **Row:** More rigid because the dictionaries, including all the data types, are fixed when they are defined. Newly 
 parsed keys are ignored. But because of it's rigid structure, it is much more performant than VMaps. They are best used when the file structure is known in advance.
 
-To deconvolve the nested structure, we can use the `flatten_arrays` parameter in order to make the output strictly formatted. However, it can be an expensive process.
+To deconvolve the nested structure, we can use the ``flatten_arrays`` parameter in order to make the output strictly formatted. However, it can be an expensive process.
 
 .. code-block:: python
 
@@ -286,6 +287,7 @@ To deconvolve the nested structure, we can use the `flatten_arrays` parameter in
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     vp.drop("complex_vmap_test.laliga_flat")
     path = "/project/data/VerticaPy/docs"
@@ -392,6 +394,7 @@ When we do not materialize a table, it automatically becomes a flextable:
 
 .. ipython:: python
     :suppress:
+    :okwarning:
 
     vp.drop("complex_vmap_test.laliga_verticapy_test_json")
     path = "/project/data/VerticaPy/docs"
@@ -419,7 +422,7 @@ Some of the columns are ``VMAPs``:
     for m in managers:
         print(data[m].isvmap())
 
-We can easily flatten the VMaps virtual columns by using the :py:func:`~vDataFrame.flat_vmap` method:
+We can easily flatten the VMaps virtual columns by using the :py:func:`~vDataFrame.flat_vmap`` method:
 
 .. code-block:: python
 
@@ -445,7 +448,7 @@ To check for a flex table, we can use the following function:
 
     isflextable(table_name = "laliga_verticapy_test_json", schema = "complex_vmap_test")
 
-We can then manually materialize the flextable using the convenient :py:func:`~vDataFrame.to_db` method:
+We can then manually materialize the flextable using the convenient :py:func:`~vDataFrame.to_db`` method:
 
 .. ipython:: python
 
@@ -528,6 +531,7 @@ Now we can save this edited strings file:
 If we look at the new file, we can see the updated changes:
 
 .. ipython:: python
+    :okwarning:
     
     @suppress
     vp.drop("complex_vmap_test.amazon_edit")
