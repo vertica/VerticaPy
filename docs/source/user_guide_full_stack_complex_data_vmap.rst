@@ -551,7 +551,9 @@ Let's search for the changed name:
 .. ipython:: python
     :suppress:
 
-    res = data[data["state"] == "XXXX"]
+    res = vp.vDataFrame("""
+    select * from complex_vmap_test.amazon_edit where state ilike '%XXXX%'
+    """)
     html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_cities_search.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
