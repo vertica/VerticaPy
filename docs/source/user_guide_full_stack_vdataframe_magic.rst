@@ -286,13 +286,13 @@ To access a single row, we just have to specify the index.
 
 .. code-block:: python
 
-    titanic[0]
+    titanic[0:1]
 
 .. ipython:: python
     :suppress:
     :okwarning:
 
-    res = titanic[0]
+    res = titanic[0:1]
     html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_15.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
