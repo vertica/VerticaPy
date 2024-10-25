@@ -41,7 +41,17 @@ Second, we have information on each airport.
     :suppress:
 
     import verticapy as vp
-    airports = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/airports.csv")
+    airports = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/flights/airports.csv",
+                        dtype = {
+                            "IATA_CODE": "Varchar(20)",
+                            "AIRPORT": "Varchar(156)",
+                            "CITY": "Varchar(60)",
+                            "STATE": "Varchar(20)",
+                            "COUNTRY": "Varchar(20)",
+                            "LATITUDE": "float",
+                            "LONGITUDE": "float",
+                        }
+    )
     res = airports.head(100)
     html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_join_2.html", "w")
     html_file.write(res._repr_html_())
