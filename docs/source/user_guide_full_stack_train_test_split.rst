@@ -29,7 +29,7 @@ In VerticaPy, the :py:func:`~verticapy.vDataFrame.train_test_split` method uses 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_tts_1.html
 
-The ``SEEDED_RANDOM`` function chooses a number in the interval `[0,1)`. Since the seed is user-provided, these results are reproducible. In this example, passing '0' as the seed always returns the same value.
+The ``SEEDED_RANDOM`` function chooses a number in the interval ``[0,1)``. Since the seed is user-provided, these results are reproducible. In this example, passing '0' as the seed always returns the same value.
 
 .. code-block:: ipython
     
@@ -88,7 +88,7 @@ The :py:func:`~verticapy.vDataFrame.train_test_split` function generates a rando
 
     test.shape()
 
-Note that ``SEEDED_RANDOM`` depends on the order of your data. That is, if your data isn't sorted by a unique feature, the selected data might be inconsistent. To avoid this, we'll want to use the `order_by` parameter.
+Note that ``SEEDED_RANDOM`` depends on the order of your data. That is, if your data isn't sorted by a unique feature, the selected data might be inconsistent. To avoid this, we'll want to use the ``order_by`` parameter.
 
 .. ipython:: python
 
@@ -104,7 +104,7 @@ Let's create a model and evaluate it.
 
     model = LinearRegression()
 
-When fitting the model with the :py:func:`~verticapy.machine_learning.vertica.LinearRegression.fit` method, you can use the parameter `test_relation` to score your data on a specific relation.
+When fitting the model with the :py:func:`~verticapy.machine_learning.vertica.LinearRegression.fit` method, you can use the parameter ``test_relation`` to score your data on a specific relation.
 
 .. ipython:: python
 

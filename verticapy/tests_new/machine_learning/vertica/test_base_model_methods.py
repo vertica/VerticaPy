@@ -394,6 +394,12 @@ def regression_report_details(
             py_res = "LinearSVR"
         elif model_class == "PoissonRegressor":
             py_res = "PoissonRegressor"
+        elif model_class == "ElasticNet":
+            py_res = "ElasticNet"
+        elif model_class == "Lasso":
+            py_res = "Lasso"
+        elif model_class == "Ridge":
+            py_res = "Ridge"
         else:
             py_res = "LinearRegression"
     elif metric == "No. Predictors":

@@ -4571,14 +4571,6 @@ class QueryProfiler:
 
             qprof.get_qexecution()
 
-        .. ipython:: python
-            :suppress:
-
-            import verticapy as vp
-            vp.set_option("plotting_lib", "plotly")
-            fig = qprof.get_qexecution()
-            fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html")
-
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_get_qexecution_1.html
 

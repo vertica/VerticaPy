@@ -224,7 +224,7 @@ Although it would be preferable to use seasonal decomposition and predict the re
 Machine Learning
 -----------------
 
-Since the seasonality occurs monthly, we set ``p = 12``. There is no trend in the data, and we observe some moving average in the residuals, so `q` should be around 2. Let's proceed with building the model.
+Since the seasonality occurs monthly, we set ``p = 12``. There is no trend in the data, and we observe some moving average in the residuals, so ``q`` should be around 2. Let's proceed with building the model.
 
 .. code-block:: python
 

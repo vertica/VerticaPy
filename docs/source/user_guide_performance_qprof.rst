@@ -72,7 +72,7 @@ Before creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` obje
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_titanic.html
 
-We can now run some queries to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object. One way to do so is by using the queries `statement_id` and `transaction_id`.
+We can now run some queries to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object. One way to do so is by using the queries ``statement_id`` and ``transaction_id``.
 
 To allow for SQL execution in Jupyter cells, load the sql extension:
 
@@ -210,7 +210,7 @@ Once the :py:func:`~verticapy.performance.vertica.QueryProfiler` object is creat
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_get_queries.html
 
-To visualize the query plan, run :py;func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
+To visualize the query plan, run :py:func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
 which is customizable, allowing you to specify certain metrics or focus on a specified tree path:
 
 .. image:: ../../source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.PNG
@@ -242,7 +242,7 @@ In this example, we will save the object to the ``sc_demo`` schema:
 
     vp.create_schema("sc_demo")
 
-To save the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, specify the `target_schema` and, optionally, a `key_id` (it is a unique key which is used to search for the stored Qprof object) when creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
+To save the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, specify the ``target_schema`` and, optionally, a ``key_id`` (it is a unique key which is used to search for the stored Qprof object) when creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. code-block:: python
 
@@ -257,7 +257,7 @@ To save the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, spec
 Load a :py:func:`~verticapy.performance.vertica.QueryProfiler` object
 ----------------------------------------------------------------------
 
-To load a previously saved :py:func:`~verticapy.performance.vertica.QueryProfiler`, simply provide its `target_schema` and `key_id`:
+To load a previously saved :py:func:`~verticapy.performance.vertica.QueryProfiler`, simply provide its ``target_schema`` and ``key_id``:
 
 .. code-block:: python
 
@@ -290,9 +290,9 @@ To export a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use 
 Import
 +++++++
 
-To import a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.import_profile` method and provide the `target_schema` and `key_id`.
+To import a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.import_profile` method and provide the ``target_schema`` and ``key_id``.
 
-Make sure the `key_id` is unique/unused. Let us create a new schema to load this into:
+Make sure the ``key_id`` is unique/unused. Let us create a new schema to load this into:
 
 .. code-block:: python
 
@@ -373,7 +373,7 @@ Or the ``QUERY_CONSUMPTION`` table:
 Get query information
 ++++++++++++++++++++++
 
-You can retrieve the query information, such as `transaction_id` and `statement_id`, from the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
+You can retrieve the query information, such as ``transaction_id`` and ``statement_id``, from the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. ipython:: python
     :okwarning:
@@ -385,7 +385,7 @@ You can retrieve the query information, such as `transaction_id` and `statement_
         """
     )
 
-View the `transaction_id` and `statement_id`:
+View the ``transaction_id`` and ``statement_id``:
 
 .. ipython:: python
 

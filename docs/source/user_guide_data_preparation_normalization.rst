@@ -4,7 +4,7 @@
 Normalization
 ==============
 
-Normalizing data is crucial when using machine learning algorithms because of how sensitive most of them are to un-normalized data. For example, the neighbors-based and `k-means` algorithms use the `p-distance` in their learning phase. Normalization is the first step before using a linear regression due to Gauss-Markov assumptions.
+Normalizing data is crucial when using machine learning algorithms because of how sensitive most of them are to un-normalized data. For example, the neighbors-based and ``k-means`` algorithms use the ``p-distance`` in their learning phase. Normalization is the first step before using a linear regression due to Gauss-Markov assumptions.
 
 Unnormalized data can also create complications for the convergence of some ML algorithms. Normalization is also a way to encode the data and to retain the global distribution. When we know the estimators to use to normalize the data, we can easily un-normalize the data and come back to the original distribution.
 
@@ -12,7 +12,7 @@ There are three main normalization techniques:
 
 - **Z-Score:** We reduce and center the feature values using the average and standard deviation. This normalization is sensitive to outliers.
 - **Robust Z-Score:** We reduce and center the feature values using the median and the median absolute deviation. This normalization is robust to outliers.
-- **Min-Max:**  We reduce the feature values by using a bijection to `[0,1]`. The max will reach 1 and the min will reach 0. This normalization is robust to outliers.
+- **Min-Max:**  We reduce the feature values by using a bijection to ``[0,1]``. The max will reach 1 and the min will reach 0. This normalization is robust to outliers.
 
 To demonstrate data normalization in VerticaPy, we will use the well-known 'Titanic' dataset.
 
@@ -80,4 +80,4 @@ The three main normalization techniques are available. Let's normalize the 'fare
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_table_norm_3.html
 
-Both of the features now scale in `[0,1]`. It is also possible to normalize by a specific partition with the `by` parameter.
+Both of the features now scale in ``[0,1]``. It is also possible to normalize by a specific partition with the ``by`` parameter.

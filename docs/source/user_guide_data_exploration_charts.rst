@@ -78,7 +78,7 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_home_dest_bar.html
 
-These methods will draw the most occurent categories and merge the others. To change the number of elements, you can use the `max_cardinality` parameter.
+These methods will draw the most occurent categories and merge the others. To change the number of elements, you can use the ``max_cardinality`` parameter.
 
 .. code-block::
 
@@ -95,7 +95,7 @@ These methods will draw the most occurent categories and merge the others. To ch
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_home_dest_bar_max_cardinality.html
 
-When dealing with numerical data types, the process is different. Vertica needs to discretize the numerical features to draw them. You can choose the bar width (`h` parameter) or let VerticaPy compute an optimal width using the Freedman-Diaconis rule.
+When dealing with numerical data types, the process is different. Vertica needs to discretize the numerical features to draw them. You can choose the bar width (``h`` parameter) or let VerticaPy compute an optimal width using the Freedman-Diaconis rule.
 
 .. code-block::
 
@@ -127,7 +127,7 @@ When dealing with numerical data types, the process is different. Vertica needs 
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_age_hist_h5.html
 
-You can also change the occurences by another aggregation with the `method` and `of` parameters.
+You can also change the occurences by another aggregation with the ``method`` and ``of`` parameters.
 
 .. code-block::
 
@@ -245,7 +245,7 @@ Box plots are useful for understanding statistical dispersion.
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot_one.html
 
-Scatter and bubble plots are also useful for identifying patterns in your data. Note, however, that these methods don't use aggregations; VerticaPy downsamples the data before plotting. You can use the `max_nb_points` to limit the number of points and avoid unnecessary memory usage.
+Scatter and bubble plots are also useful for identifying patterns in your data. Note, however, that these methods don't use aggregations; VerticaPy downsamples the data before plotting. You can use the ``max_nb_points`` to limit the number of points and avoid unnecessary memory usage.
 
 .. code-block::
     
@@ -321,7 +321,7 @@ Similarly, we can plot a bubble plot:
 .. raw:: html
   :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter_bubble.html
 
-For more information on scatter look at :py:mod:`verticapy.vDataFrame.scatter`.
+For more information on scatter look at :py:func:`verticapy.vDataFrame.scatter`.
 
 Hexbin plots can be useful for generating heatmaps. These summarize data in a similar way to scatter plots, but compute aggregations to get the final results.
 
@@ -394,7 +394,7 @@ Time-series plots are also available with the :py:func:`~verticapy.vDataFrame.pl
   @savefig user_guides_data_exploration_amazon_time.png
   amazon["number"].plot(ts = "date", by = "state")
 
-Since time-series plots do not aggregate the data, it's important to choose the correct `start_date` and `end_date`.
+Since time-series plots do not aggregate the data, it's important to choose the correct ``start_date`` and ``end_date``.
 
 .. code-block:: python
 

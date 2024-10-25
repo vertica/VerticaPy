@@ -12,7 +12,7 @@ As VerticaPy is effectively an abstraction of SQL, any database-level optimizati
 
 Projections are created and managed in the Vertica database, but you can leverage the power of projections in VerticaPy with features such as the :py:mod:`~verticapy.vDataFrame`'s usecols parameter, which specifies the columns from the input relation to include in the :py:mod:`~verticapy.vDataFrame`. As columnar databases perform better when there are fewer columns in the query, especially when you are working with large datasets, limiting :py:mod:`~verticapy.vDataFrame` and operations to essential columns can lead to a significant performance improvement. By default, most :py:mod:`~verticapy.vDataFrame` methods use all numerical columns in the :py:mod:`~verticapy.vDataFrame`, but you can restrict the operation to specific columns.
 
-In the following examples, we'll demonstrate how to create a `vDataFrame` from specific columns in the input relation, and then run methods on that :py:mod:`~verticapy.vDataFrame`. First, load the titanic dataset into Vertica using the :py:func:`~verticapy.datasets.load_titanic` function:
+In the following examples, we'll demonstrate how to create a :py:mod:`~verticapy.vDataFrame` from specific columns in the input relation, and then run methods on that :py:mod:`~verticapy.vDataFrame`. First, load the titanic dataset into Vertica using the :py:func:`~verticapy.datasets.load_titanic` function:
 
 .. code-block:: python
 
@@ -78,7 +78,7 @@ To turn off the SQL code generation option:
     # Turning off SQL.
     vp.set_option("sql_on", False)
 
-To restrict the operation to specific columns in the :py:mod:`~verticapy.vDataFrame`, provide the column names in the `columns` parameter:
+To restrict the operation to specific columns in the :py:mod:`~verticapy.vDataFrame`, provide the column names in the ``columns`` parameter:
 
 .. code-block:: python
 
@@ -97,7 +97,7 @@ To restrict the operation to specific columns in the :py:mod:`~verticapy.vDataFr
 
 As we are working with a small dataset, the perfomance impact of excluding unncessary columns is not very significant. However, with large datasets (e.g. greater than a TB), the impact is much greater, and choosing essential columns becomes a key step in improving performance.
 
-Instead of specifying essential columns to include, some methods allow you to list the columns to exclude with the `exclude_columns` parameter:
+Instead of specifying essential columns to include, some methods allow you to list the columns to exclude with the ``exclude_columns`` parameter:
 
 .. ipython:: python
 
@@ -126,7 +126,7 @@ You can then use this truncated list of columns in another method call; for inst
 Save the current relation
 --------------------------
 
-The :py:mod:`~verticapy.vDataFrame` works like a `view`, a stored query that encapsulates one or more SELECT statements. 
+The :py:mod:`~verticapy.vDataFrame` works like a ``view``, a stored query that encapsulates one or more SELECT statements. 
 If the generated relation uses many different functions, the computation time for each method call is greatly increased.
 
 Small transformations don't drastically slow down computation, but heavy transformations (multiple joins, frequent use of advanced analytical funcions, moving windows, etc.) can result in noticeable slowdown. When performing computationally expensive operations, you can aid performance by saving the vDataFrame structure as a table in the Vertica database. We will demonstrate this process in the following example.
@@ -168,7 +168,7 @@ Each method call to the :py:mod:`~verticapy.vDataFrame` must use this relation f
 
     To better understand your queries, check out the :ref:`~verticapy.performance.vertica.qprof.QueryProfiler` function.
 
-To save the relation as a table in the Vertica and replace the current relation in VerticaPy with the new table relation, use the :py:func:`~verticapy.vDataFrame.to_db` method with the `inplace` parameter set to True:
+To save the relation as a table in the Vertica and replace the current relation in VerticaPy with the new table relation, use the :py:func:`~verticapy.vDataFrame.to_db` method with the ``inplace`` parameter set to True:
 
 .. code-block:: python
 
@@ -212,7 +212,7 @@ For a quick and convenient way to view information about an object or function, 
 Close your connections
 -----------------------
 
-Each connection to the database increases the concurrency on the system, so try to close connections when you're done with them. VerticaPy simplifies the connection process by allowing the user to create an auto-connection, but the closing of connections must be done manually with the :ref:`~verticapy.close_connection` function.
+Each connection to the database increases the concurrency on the system, so try to close connections when you're done with them. VerticaPy simplifies the connection process by allowing the user to create an auto-connection, but the closing of connections must be done manually with the :func:`~verticapy.close_connection` function.
 
 To demonstrate, create a database connection:
 
@@ -220,7 +220,7 @@ To demonstrate, create a database connection:
 
     vp.connect("VerticaDSN")
 
-When you are done making changes, close the connection with the :ref:`~verticapy.close_connection` function:
+When you are done making changes, close the connection with the :func:`~verticapy.close_connection` function:
 
 .. code-block:: python
 
@@ -321,7 +321,7 @@ For example, if we are only interested in analyzing Titanic passengers who didn'
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_filter.html
 
-To drop unnecessary columns from your vDataFrame, use the :ref:`~verticapy.vDataFrame.drop` method:
+To drop unnecessary columns from your vDataFrame, use the :func:`~verticapy.vDataFrame.drop` method:
 
 .. code-block:: python
 
@@ -413,16 +413,16 @@ First, let's send a single query to compute the average for all columns in the :
     display(vdf.avg(ncols_block = 20))
 
 We see that there was one SELECT query for all columns in the :py:mod:`~verticapy.vDataFrame`. 
-You can reduce the impact on the system by using the `ncols_block` parameter to split the computation into multiple iterative queries, where the value of the parameter is the number of columns included in each query.
+You can reduce the impact on the system by using the ``ncols_block`` parameter to split the computation into multiple iterative queries, where the value of the parameter is the number of columns included in each query.
 
-For example, setting `ncols_block` to 5 will split the computation, which consists of 20 total columns, into 4 separate queries, each of which computes the average for 5 columns:
+For example, setting ``ncols_block`` to 5 will split the computation, which consists of 20 total columns, into 4 separate queries, each of which computes the average for 5 columns:
 
 .. ipython:: python
 
     display(vdf.avg(ncols_block = 5))
 
 In addition to spliting up the computation into separate queries, you can send multiple queries to the database concurrently. 
-You specify the number of concurrent queries with the `processes` parameter, which defines the number of workers involved in the computation. Each child process creates a DB connection and then sends its query. In the following example, we use 4 'processes':
+You specify the number of concurrent queries with the ``processes`` parameter, which defines the number of workers involved in the computation. Each child process creates a DB connection and then sends its query. In the following example, we use 4 'processes':
 
 .. code-block:: python
 

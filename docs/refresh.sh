@@ -14,6 +14,10 @@ pip install ../.
 # Clean the build directory
 make clean
 
+# In case the data files are not copied, then you can run the lines below
+mkdir /usr/local/lib/python3.10/site-packages/verticapy/datasets/data/laliga/
+cp ../verticapy/datasets/data/laliga/*.json /usr/local/lib/python3.10/site-packages/verticapy/datasets/data/laliga/
+
 # Build HTML documentation
 make html
 

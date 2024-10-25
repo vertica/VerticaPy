@@ -278,7 +278,7 @@ Timing is a classic factor for success, so let's look at the popularity of Monik
 
 .. ipython:: python
     :okwarning:
-    :supress:
+    :suppress:
 
     # extract year from the date
     brodka_tracks["release_year"] = "year(release_date::date)"

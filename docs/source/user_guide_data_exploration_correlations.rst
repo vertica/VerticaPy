@@ -162,7 +162,7 @@ Binary features are considered numerical, but this isn't technically accurate. S
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_7.html
 
-Lastly, we'll look at the relationship between categorical columns. In this case, the 'Cramer's V' method is very efficient. Since there is no position in the Euclidean space for those variables, the 'Cramer's V' coefficients cannot be negative (which is a sign of an opposite relationship) and they will range in the interval `[0,1]`.
+Lastly, we'll look at the relationship between categorical columns. In this case, the 'Cramer's V' method is very efficient. Since there is no position in the Euclidean space for those variables, the 'Cramer's V' coefficients cannot be negative (which is a sign of an opposite relationship) and they will range in the interval ``[0,1]``.
 
 .. code-block:: python
 
@@ -180,7 +180,7 @@ Lastly, we'll look at the relationship between categorical columns. In this case
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_8.html
 
-Sometimes, we just need to look at the correlation between a response and other variables. The parameter `focus` will isolate and show us the specified correlation vector.
+Sometimes, we just need to look at the correlation between a response and other variables. The parameter ``focus`` will isolate and show us the specified correlation vector.
 
 .. code-block:: python
 
@@ -198,7 +198,7 @@ Sometimes, we just need to look at the correlation between a response and other 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_9.html
 
-Sometimes a correlation coefficient can lead to incorrect assumptions, so we should always look at the coefficient `p-value`.
+Sometimes a correlation coefficient can lead to incorrect assumptions, so we should always look at the coefficient ``p-value``.
 
 .. ipython:: python
 

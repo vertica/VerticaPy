@@ -189,7 +189,7 @@ VerticaPy also caches the computed aggregations. With this cache available, we c
 
 .. note:: 
     
-    If necessary, you can deactivate the cache by calling the :py:func:`~verticapy.set_option` function with the `cache` parameter set to False.
+    If necessary, you can deactivate the cache by calling the :py:func:`~verticapy.set_option` function with the ``cache`` parameter set to False.
 
 .. ipython:: python
 
@@ -202,7 +202,7 @@ Memory usage
 
 Now, we will examine how the memory usage compares between in-memory and in-database.
 
-First, use the pandas `info()` method to explore the DataFrame's memory usage:
+First, use the pandas ``info()`` method to explore the DataFrame's memory usage:
 
 .. ipython:: python
 
@@ -271,7 +271,7 @@ some aggregations for the ``is_booking`` column. Let's look at the catalog for t
 
 The catalog is updated whenever major changes are made to the data.
 
-We can also view the vDataFrame's backend SQL code generation by setting the `sql_on` parameter to ``True`` with the :py:func:`~verticapy.set_option` function:
+We can also view the vDataFrame's backend SQL code generation by setting the ``sql_on`` parameter to ``True`` with the :py:func:`~verticapy.set_option` function:
 
 .. code-block:: python
 

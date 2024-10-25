@@ -304,7 +304,7 @@ Let's add our prediction to the :py:mod:`~verticapy.vDataFrame`.
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_expedia_predict_proba_1.html
 
-While analyzing the following boxplot (prediction partitioned by 'is_booking'), we can notice that the `cutoff` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
+While analyzing the following boxplot (prediction partitioned by 'is_booking'), we can notice that the ``cutoff`` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
 
 .. code-block:: python
 
@@ -320,7 +320,7 @@ While analyzing the following boxplot (prediction partitioned by 'is_booking'), 
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/examples_expedia_predict_boxplot_1.html
 
-Let's confirm our hypothesis by computing the best `cutoff`.
+Let's confirm our hypothesis by computing the best ``cutoff``.
 
 .. ipython:: python
 

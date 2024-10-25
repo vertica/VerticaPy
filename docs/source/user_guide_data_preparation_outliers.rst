@@ -14,7 +14,7 @@ Outliers consist of three main types:
 - **Contextual Outliers:** Values deviate significantly from the rest of the data points in the same context.
 - **Collective Outliers:** Values that aren't global or contextual outliers, but as a collection deviate significantly from the entire dataset.
 
-Global outliers are often the most critical type and can add a significant amount of bias into the data. Fortunately, we can easily identify these outliers by computing the `Z-Score`.
+Global outliers are often the most critical type and can add a significant amount of bias into the data. Fortunately, we can easily identify these outliers by computing the ``Z-Score``.
 
 Let's look at some examples using the `Heart Disease <https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset>`_ dataset. This dataset contains information on patients who are likely to have heart-related complications.
 
@@ -96,7 +96,7 @@ It is also possible to draw an outlier plot using the :py:func:`~verticapy.vData
 
 We've detected some global outliers in the distribution and we can impute these with the :py:func:`~verticapy.vDataFrame.fill_outliers` method.
 
-Generally, you can identify global outliers with the `Z-Score`. We'll consider a `Z-Score` greater than 3 indicates that the datapoint is an outlier. Some less precise techniques consider the data points belonging in the first and last alpha-quantile as outliers. You're free to choose either of these strategies when filling outliers.
+Generally, you can identify global outliers with the ``Z-Score``. We'll consider a ``Z-Score`` greater than 3 indicates that the datapoint is an outlier. Some less precise techniques consider the data points belonging in the first and last alpha-quantile as outliers. You're free to choose either of these strategies when filling outliers.
 
 .. code-block:: python
 
@@ -140,7 +140,7 @@ Generally, you can identify global outliers with the `Z-Score`. We'll consider a
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_5.html
 
-Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or local outlier factor (`LOF`) can be to used to check other data points for outliers.
+Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or local outlier factor (``LOF``) can be to used to check other data points for outliers.
 
 .. code-block:: python
 
@@ -192,7 +192,7 @@ Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or lo
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_7.html
 
-While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers when computing the clusters, `LOF` computes an outlier score. Generally, a `LOF` Score greater than 1.5 indicates an outlier.
+While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers when computing the clusters, ``LOF`` computes an outlier score. Generally, a ``LOF`` Score greater than 1.5 indicates an outlier.
 
 .. code-block:: python
 
@@ -244,4 +244,4 @@ While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers w
 .. raw:: html
     :file: /project/data/VerticaPy/docs/figures/ug_dp_plot_outliers_9.html
 
-We have many other techniques like the `k-means` clustering for finding outliers, but the most important method is using the `Z-Score`. After identifying outliers, we just have to decide how to impute the missing values. We'll focus on missing values in the next lesson.
+We have many other techniques like the ``k-means`` clustering for finding outliers, but the most important method is using the ``Z-Score``. After identifying outliers, we just have to decide how to impute the missing values. We'll focus on missing values in the next lesson.

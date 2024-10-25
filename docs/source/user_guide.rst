@@ -18,7 +18,7 @@ User Guide
           36 mins
           ^^^^^^^^
           Dive into the basics, understand the core features 
-          (such as :py:class:`~vDataFrame`, :py:class:`~vDataColumn` etc), and set 
+          (such as :py:mod:`~verticapy.vDataFrame`, :py:mod:`~verticapy.vDataColumn` etc), and set 
           the stage for a seamless analytical journey.
 
           :bdg-primary:`vDataFrame` :bdg-primary:`vDataColumn`
