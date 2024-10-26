@@ -239,3 +239,5 @@ Conclusion
 
 
 The addition of model tracking and model versioning to the VerticaPy toolkit greatly improves VerticaPy's MLOps capabilities. We are constantly working to improve VerticaPy and address the needs of data scientists who wish to harness the power of Vertica database to empower their data analyses. If you have any comments or questions, don't hesitate to reach out in the VerticaPy github community.
+
+This concludes the fundamental lessons on machine learning algorithms in VerticaPy.

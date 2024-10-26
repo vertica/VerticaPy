@@ -53,3 +53,11 @@ Introduction
           maximize the efficiency of your analytical workflow. 
           From data management to visualization, elevate your 
           skills and ensure optimal results.
+
+.. toctree::
+  :hidden:
+  :maxdepth: 1
+  
+  user_guide_introduction_installation
+  user_guide_introduction_best_practices
+  user_guide_introduction_vdf

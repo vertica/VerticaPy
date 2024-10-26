@@ -218,6 +218,7 @@ Customer Testimonials
     connection
     whats_new
     contribution_guidelines
+    examples
     api
     chart_gallery
     user_guide

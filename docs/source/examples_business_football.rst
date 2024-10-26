@@ -3,7 +3,7 @@
 Football
 =========
 
-In this example, we use the 'football' dataset to predict the outcomes of games between various teams. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/football/football.ipynb>`_ and the dataset `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/football/games.csv>`_.
+In this example, we use the ``football`` dataset to predict the outcomes of games between various teams. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/football/football.ipynb>`_ and the dataset `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/football/games.csv>`_.
 
 - **date:** Date of the game.
 - **home_team:** Home Team.
@@ -124,7 +124,7 @@ Different types of tournaments took place (FIFA World Cup, UEFA Euro, etc.) aand
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_football_describe_4.html
 
-The dataset includes 308 national teams. For most of the games, the home team scores better than the away team. Since some games take place in a neutral location, we can ensure this hypothesis using the variable 'neutral'. Notice also that the number of goals per match is pretty low (median of 1 for both away and home teams).
+The dataset includes 308 national teams. For most of the games, the home team scores better than the away team. Since some games take place in a neutral location, we can ensure this hypothesis using the variable ``neutral``. Notice also that the number of goals per match is pretty low (median of 1 for both away and home teams).
 
 Goal
 +++++
@@ -231,7 +231,7 @@ We'll ignore ties for our analysis since there's no way to determine a winner.
 Cup Winner
 +++++++++++
 
-Let's start by creating the feature 'winner' to indicate the winner of a game.
+Let's start by creating the feature ``winner`` to indicate the winner of a game.
 
 .. code-block:: python
 
@@ -1760,7 +1760,7 @@ Games between teams with rank 1 and rank 2
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_kmeans_22.html
 
-Before we use the 'neutral' variable with our model, we should convert it to an integer.
+Before we use the ``neutral`` variable with our model, we should convert it to an integer.
 
 We need also to create our response column: the outcome of the game.
 

@@ -86,4 +86,4 @@ We have many metrics to evaluate the model.
 
 Our example forgoes splitting the data into training and testing, which is important for real-world work. Our main goal in this lesson is to look at the metrics used to evaluate regressions. The most famous metric is ``R2``: generally speaking, the closer ``R2`` is to 1, the better the model is.
 
-In the next lesson, we'll go over classification models.
+In the next lesson, we'll go over :ref:`user_guide.machine_learning.classification`

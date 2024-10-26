@@ -75,4 +75,6 @@ You can add the prediction to your vDataFrame.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_ml_table_clustering_1.html
 
-This concludes this lesson on clustering models in VerticaPy. We'll look at time series models in the next lesson.
+This concludes this lesson on clustering models in VerticaPy.
+
+In the next lesson, we'll go over :ref:`user_guide.machine_learning.clustering`

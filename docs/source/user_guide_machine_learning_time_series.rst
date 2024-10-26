@@ -132,4 +132,4 @@ We can also draw our model using one-step ahead and dynamic forecasting.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_ml_plot_ts_5.html
 
-This concludes the fundamental lessons on machine learning algorithms in VerticaPy.
+In the next lesson, we'll go over :ref:`user_guide.machine_learning.regression`

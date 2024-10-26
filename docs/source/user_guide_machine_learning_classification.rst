@@ -94,3 +94,5 @@ Our example forgoes splitting the data into training and testing, which is impor
 For example, let's say our goal is to identify bank fraud. Fraudulent activity is relatively rare, so let's say that they represent less than 1% of the data. If we were to predict that there are no frauds in the dataset, we'd end up with an accuracy of 99%. This is why ROC ``AUC`` and PRC ``AUC`` are more robust metrics.
 
 That said, a good model is simply a model that might solve a the given problem. In that regard, any model is better than a random one.
+
+In the next lesson, we'll go over :ref:`user_guide.machine_learning.time_series`

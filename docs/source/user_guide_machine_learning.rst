@@ -93,8 +93,9 @@ Machine Learning
   :hidden:
   :maxdepth: 1
   
-  user_guide_machine_learning_classification
-  user_guide_machine_learning_clustering
   user_guide_machine_learning_introduction
   user_guide_machine_learning_regression
+  user_guide_machine_learning_classification
+  user_guide_machine_learning_clustering
   user_guide_machine_learning_time_series
+  user_guide_machine_learning_model_tracking

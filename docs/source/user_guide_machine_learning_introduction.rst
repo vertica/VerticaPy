@@ -124,4 +124,6 @@ These algorithms are to used to segment the data (``k-means``, :py:mod:`~vertica
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_3.html
 
-In this section, we went over a few of the many ML algorithms available in VerticaPy. In the next lesson, we'll cover creating a regression model.
+In this section, we went over a few of the many ML algorithms available in VerticaPy.
+
+In the next lesson, we'll go over :ref:`user_guide.machine_learning.time_series`
