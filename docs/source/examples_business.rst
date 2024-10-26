@@ -22,7 +22,7 @@ Business
 
 
       .. card:: Battery
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/battery.jpg
         :link: examples.business.battery
         :link-type: ref
         :text-align: center
@@ -34,7 +34,7 @@ Business
         Details...
 
       .. card:: Booking
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/booking.jpg
         :link: examples.business.booking
         :link-type: ref
         :text-align: center
@@ -46,7 +46,7 @@ Business
         Details...
 
       .. card:: Churn
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/churn.jpg
         :link: examples.business.churn
         :link-type: ref
         :text-align: center
@@ -58,7 +58,7 @@ Business
         Details...
 
       .. card:: Credit Card Fraud
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/credit_card_fraud.jpg
         :link: examples.business.credit_card_fraud
         :link-type: ref
         :text-align: center
@@ -70,7 +70,7 @@ Business
         Details...
 
       .. card:: Football
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/football.jpg
         :link: examples.business.football
         :link-type: ref
         :text-align: center
@@ -82,7 +82,7 @@ Business
         Details...
 
       .. card:: Insurance
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/insurance.jpg
         :link: examples.business.insurance
         :link-type: ref
         :text-align: center
@@ -94,7 +94,7 @@ Business
         Details...
 
       .. card:: Movies
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/movies.jpg
         :link: examples.business.movies
         :link-type: ref
         :text-align: center
@@ -106,7 +106,7 @@ Business
         Details...
 
       .. card:: Smart meters
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/smart_meters.jpg
         :link: examples.business.smart_meters
         :link-type: ref
         :text-align: center
@@ -118,7 +118,7 @@ Business
         Details...
 
       .. card:: Spam
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/spam.jpg
         :link: examples.business.spam
         :link-type: ref
         :text-align: center
@@ -130,7 +130,7 @@ Business
         Details...
 
       .. card:: Spotify
-        :img-top: _static/website/examples/images/base_station.jpg
+        :img-top: _static/website/examples/images/spotify.jpg
         :link: examples.business.spotify
         :link-type: ref
         :text-align: center
