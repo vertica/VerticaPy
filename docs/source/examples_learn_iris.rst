@@ -170,7 +170,7 @@ Our strategy is simple: we'll use two Linear Support Vector Classification (SVC)
 Machine Learning
 -----------------
 
-Let's build the first :py:mod:`~verticapy.machine_learning.vertica.LinearSVC` to predict if a flower is an Iris setosa.
+Let's build the first :py:mod:`~verticapy.machine_learning.vertica.svm.LinearSVC` to predict if a flower is an Iris setosa.
 
 .. code-block:: python
 
@@ -294,7 +294,7 @@ We have another excellent model. Let's add it to the :py:mod:`~verticapy.vDataFr
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_model_predict_proba_2.html
 
-Let's evaluate our final model (the combination of two :py:mod:`~verticapy.machine_learning.vertica.LinearSVC`).
+Let's evaluate our final model (the combination of two :py:mod:`~verticapy.machine_learning.vertica.svm.LinearSVC`).
 
 .. code-block:: python
 

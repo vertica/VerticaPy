@@ -235,7 +235,7 @@ The :py:mod:`~verticapy.vDataFrame` structure
 
 Now that we've seen the performance and memory benefits of the vDataFrame, let's dig into some of the underlying structures and methods that produce these great results.
 
-:py:mod:`~verticapy.vDataFrame`s are composed of columns called :py:mod:`vDataColumn`s. To view all :py:mod:`vDataColumn`s in a :py:mod:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.get_columns` method:
+:py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`s. To view all :py:mod:`vDataColumn`s in a :py:mod:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.get_columns` method:
 
 .. ipython:: python
 
@@ -395,7 +395,7 @@ Notice that the ``is_package`` column has been removed from the ``SELECT`` state
 vDataFrame attributes and management
 -------------------------------------
 
-The :py:mod:`~verticapy.vDataFrame` has many attributes and methods, some of which were demonstrated in the above examples. :py:mod:`~verticapy.vDataFrame`s have two types of attributes:
+The :py:mod:`~verticapy.vDataFrame` has many attributes and methods, some of which were demonstrated in the above examples. :py:mod:`~verticapy.vDataFrame` have two types of attributes:
 
 - Virtual Columns (vDataColumn)
 - Main attributes (columns, main_relation ...)
@@ -411,7 +411,7 @@ The vDataFrame's main attributes are stored in the ``_vars`` dictionary:
 Data types
 -----------
 
-:py:mod:`~verticapy.vDataFrame`s use the data types of its :py:mod:`~verticapy.vDataColumn`s. The behavior of some :py:mod:`~verticapy.vDataFrame` methods depend on the data type of the columns.
+:py:mod:`~verticapy.vDataFrame` use the data types of its :py:mod:`~verticapy.vDataColumn`. The behavior of some :py:mod:`~verticapy.vDataFrame` methods depend on the data type of the columns.
 
 For example, computing a histogram for a numerical data type is not the same as computing a histogram for a categorical data type. 
 
@@ -485,7 +485,7 @@ To return a :py:mod:`~verticapy.vDataFrame` to a previously saved structure, use
     expedia = expedia.load();
     print(expedia.shape())
 
-Because :py:mod:`~verticapy.vDataFrame`s are views of data stored in the connected Vertica database, any modifications made to the :py:mod:`~verticapy.vDataFrame` are not reflected in the underlying data in the database. To save a :py:mod:`~verticapy.vDataFrame`'s relation to the database, use the :py:func:`~verticapy.vDataFrame.to_db` method.
+Because :py:mod:`~verticapy.vDataFrame` are views of data stored in the connected Vertica database, any modifications made to the :py:mod:`~verticapy.vDataFrame` are not reflected in the underlying data in the database. To save a :py:mod:`~verticapy.vDataFrame`'s relation to the database, use the :py:func:`~verticapy.vDataFrame.to_db` method.
 
 It's good practice to examine the expected disk usage of the :py:mod:`~verticapy.vDataFrame` before exporting it to the database:
 

@@ -526,7 +526,7 @@ We'll begin by repeating the data preparation process of the previous section an
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_16.html
 
-Let's create our principal component analysis (:py:mod:`~verticapy.machine_learning.vertica.PCA`) model.
+Let's create our principal component analysis (:py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`) model.
 
 .. code-block:: ipython
     
@@ -560,7 +560,7 @@ Let's create our principal component analysis (:py:mod:`~verticapy.machine_learn
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_17.html
 
-We can verify the Gauss-Markov assumptions with our :py:mod:`~verticapy.machine_learning.vertica.PCA` model.
+We can verify the Gauss-Markov assumptions with our :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` model.
 
 .. code-block:: python
 
@@ -610,4 +610,4 @@ As you can see, we've created a much more accurate model here than in our first 
 Conclusion
 -----------
 
-We've seen two techniques that can help us create powerful linear regression models. While the first method normalized the data and looked for correlations, the second method applied a :py:mod:`~verticapy.machine_learning.vertica.PCA` model. The second one allows us to confirm the Gauss-Markov assumptions - an essential part of using linear models.
+We've seen two techniques that can help us create powerful linear regression models. While the first method normalized the data and looked for correlations, the second method applied a :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` model. The second one allows us to confirm the Gauss-Markov assumptions - an essential part of using linear models.

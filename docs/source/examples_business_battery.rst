@@ -587,7 +587,7 @@ We'll define new features that describe the minimum and maximum temperature duri
 Machine Learning
 -----------------
 
-:py:mod:`~verticapy.machine_learning.vertica.AutoML` tests several models and returns input scores for each. We can use this to find the best model for our dataset.
+:py:mod:`~verticapy.machine_learning.vertica.automl.AutoML` tests several models and returns input scores for each. We can use this to find the best model for our dataset.
 
 .. note:: We are only using the three algorithms, but you can change the ``estimator`` parameter to try all the 'native' algorithms: ``estimator = 'native' ``.
 

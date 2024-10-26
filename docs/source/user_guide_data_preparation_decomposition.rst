@@ -6,7 +6,7 @@ Decomposition
 
 Decomposition is the process of using an orthogonal transformation to convert a set of observations of possibly-correlated variables (with numerical values) into a set of values of linearly-uncorrelated variables called principal components.
 
-Since some algorithms are sensitive to correlated predictors, it can be a good idea to use the :py:mod:`~verticapy.machine_learning.vertica.PCA` (Principal Component Analysis: Decomposition Technique) before applying the algorithm. Since some algorithms are also sensitive to the number of predictors, we'll have to be picky with which variables we include.
+Since some algorithms are sensitive to correlated predictors, it can be a good idea to use the :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` (Principal Component Analysis: Decomposition Technique) before applying the algorithm. Since some algorithms are also sensitive to the number of predictors, we'll have to be picky with which variables we include.
 
 To demonstrate data decomposition in VerticaPy, we'll use the well-known 'Iris' dataset.
 
@@ -65,7 +65,7 @@ Let's compute the PCA of the different elements.
         ],
     )
 
-Let's compute the correlation matrix of the result of the :py:mod:`~verticapy.machine_learning.vertica.PCA`.
+Let's compute the correlation matrix of the result of the :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`.
 
 .. code-block:: python
 
