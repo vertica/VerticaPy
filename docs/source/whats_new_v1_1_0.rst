@@ -15,15 +15,35 @@ Options
   - ``max_tableheight``: Maximum height of VerticaPy tables.
   - ``theme``: Theme used to display the VerticaPy objects ('light', 'dark' or 'sphinx').
 
+Machine Learning
+-----------------
+
+PLS Regression
++++++++++++++++
+
+Partial Least Squares (PLS) regression has been added to VerticaPy. 
+
+This integration will enhance VerticaPy's analytics capabilities, 
+particularly benefiting Vertica customers who have expressed interest 
+in utilizing PLS regression.
+
+For more details, please look at 
+:py:mod:`~verticapy.machine_learning.vertica.linear_model.PLSRegression`
+
+Performance
+------------
+
+``QueryProfiler`` has been greatly supplemented in this release: 
+
 QueryProfilerInterface
------------------------
++++++++++++++++++++++++
 
 Now we have added the functionality of a ``session_control_param`` parameter.
 This allows users to enter the alter session SQL before profiling the queries.
 
 
 QueryProfilerInterface
------------------------
++++++++++++++++++++++++
 
  - Added many more metrics for the profiled queries such as:
 
@@ -38,7 +58,7 @@ QueryProfilerInterface
 - Improved the efficiency of plotting the tree by chaching results.
 
 QueryProfilerComparison
------------------------
+++++++++++++++++++++++++
 
  - :py:class:`~verticapy.performance.vertica.qprof.QueryProfilerComparison` class offers an extended set of functionalities, enabling the creation of complex trees with multiple metrics.
   
