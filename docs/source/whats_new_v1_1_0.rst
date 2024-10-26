@@ -63,16 +63,11 @@ QueryProfilerComparison
   qprof_compare.get_qplan_tree()
 
 
-Others
--------
+Deprecations
+-------------
 
-- Docstrings have been enriched to add examples and other details that will help in creating a more helpful doc.
-  
-Internal
-=========
+Because of the re-structuring of VerticaPy, some parts of the heirarchy has changed.
 
-- Hints have been added to most functions to make sure the correct inputs are passed to all the functions.
+Please look at the latest doc for the up-to-date imports.
 
-- Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and the contributing folder.
 
-- Some old unit tests have been deleted which are covered in the new unit tests inside the ``tests_new`` folder.
