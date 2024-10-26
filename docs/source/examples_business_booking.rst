@@ -223,7 +223,7 @@ We can then look at the links between the variables. We will use Spearman's rank
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
-    fig = expedia.corr(method = "spearman")
+    fig = expedia.corr(method = "spearman", width = 750, with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_expedia_corr.html")
 
 .. raw:: html

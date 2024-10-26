@@ -269,7 +269,7 @@ Let's look at the correlation matrix and see which features influence our predic
     :suppress:
     :okwarning:
 
-    fig = creditcard.corr(width = 800)
+    fig = creditcard.corr(width = 850, with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_corr_2.html")
 
 .. raw:: html

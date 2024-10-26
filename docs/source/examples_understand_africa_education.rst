@@ -120,7 +120,7 @@ Remember our goal: find a way to predict students' final scores (``zralocp`` & `
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     africa = africa.sample(x = 0.1)
-    fig = africa.corr(width = 900)
+    fig = africa.corr(width = 800, with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_africe_corr_matrix.html")
 
 .. raw:: html

@@ -217,7 +217,7 @@ Let's examine the correlation matrix to see if we have any independent predictor
     :okwarning:
 
     vp.set_option("plotting_lib","plotly")
-    fig = africa.corr()
+    fig = africa.corr(width = 800, with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_6.html")
 
 .. raw:: html

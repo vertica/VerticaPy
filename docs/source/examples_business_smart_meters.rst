@@ -671,7 +671,7 @@ Let's compute the Pearson correlation matrix.
 .. ipython:: python
     :suppress:
 
-    fig = sm_consumption_month.corr()
+    fig = sm_consumption_month.corr(width = 820, with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_sm_consumption_month_corr_2.html")
 
 .. raw:: html
