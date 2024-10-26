@@ -10,7 +10,7 @@ Restrict objects and operations to essential columns
 
 As VerticaPy is effectively an abstraction of SQL, any database-level optimizations you make in your Vertica database carry over to VerticaPy. In Vertica, optimization is centered on projections, which are collections of table columns—from one or more tables—stored on disk in a format that optimizes query execution. When you write queries in terms of the original tables, the query uses the projections to return query results. For details about creating and designing projections, see the Projections section in the Vertica documentation.
 
-Projections are created and managed in the Vertica database, but you can leverage the power of projections in VerticaPy with features such as the :py:mod:`~verticapy.vDataFrame`'s usecols parameter, which specifies the columns from the input relation to include in the :py:mod:`~verticapy.vDataFrame`. As columnar databases perform better when there are fewer columns in the query, especially when you are working with large datasets, limiting :py:mod:`~verticapy.vDataFrame` and operations to essential columns can lead to a significant performance improvement. By default, most :py:mod:`~verticapy.vDataFrame` methods use all numerical columns in the :py:mod:`~verticapy.vDataFrame`, but you can restrict the operation to specific columns.
+Projections are created and managed in the Vertica database, but you can leverage the power of projections in VerticaPy with features such as the :py:mod:`~verticapy.vDataFrame` usecols parameter, which specifies the columns from the input relation to include in the :py:mod:`~verticapy.vDataFrame`. As columnar databases perform better when there are fewer columns in the query, especially when you are working with large datasets, limiting :py:mod:`~verticapy.vDataFrame` and operations to essential columns can lead to a significant performance improvement. By default, most :py:mod:`~verticapy.vDataFrame` methods use all numerical columns in the :py:mod:`~verticapy.vDataFrame`, but you can restrict the operation to specific columns.
 
 In the following examples, we'll demonstrate how to create a :py:mod:`~verticapy.vDataFrame` from specific columns in the input relation, and then run methods on that :py:mod:`~verticapy.vDataFrame`. First, load the titanic dataset into Vertica using the :py:func:`~verticapy.datasets.load_titanic` function:
 
@@ -32,7 +32,7 @@ In the following examples, we'll demonstrate how to create a :py:mod:`~verticapy
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_laod_titanic.html
 
-Supposing we are only interested in the 'survived', 'pclass', 'age', 'parch', and 'sibsp' columns, we can create a vDataFrame with just those columns by specifying them in the usecols parameter:
+Supposing we are only interested in the ``survived``, ``pclass``, ``age``, ``parch``, and ``sibsp`` columns, we can create a vDataFrame with just those columns by specifying them in the usecols parameter:
 
 .. code-block:: python
     
@@ -233,7 +233,7 @@ Consider a method's time complexity
 
 Some techniques are significantly more computationally expensive than others. For example, a Kendall correlation is very expensive compared to a Pearson correlation because, unlike Pearson, Kendall correlations use a cross join, resulting in a time complexity of O(n*n) (where n is the number of rows). 
 
-Let's compare the time needed to compute these two correlations on the 'titanic' dataset:
+Let's compare the time needed to compute these two correlations on the ``titanic`` dataset:
 
 .. ipython:: python
 
@@ -422,7 +422,7 @@ For example, setting ``ncols_block`` to 5 will split the computation, which cons
     display(vdf.avg(ncols_block = 5))
 
 In addition to spliting up the computation into separate queries, you can send multiple queries to the database concurrently. 
-You specify the number of concurrent queries with the ``processes`` parameter, which defines the number of workers involved in the computation. Each child process creates a DB connection and then sends its query. In the following example, we use 4 'processes':
+You specify the number of concurrent queries with the ``processes`` parameter, which defines the number of workers involved in the computation. Each child process creates a DB connection and then sends its query. In the following example, we use 4 ``processes``:
 
 .. code-block:: python
 

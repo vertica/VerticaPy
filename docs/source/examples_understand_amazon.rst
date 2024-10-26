@@ -3,7 +3,7 @@
 Amazon
 =======
 
-This example uses the 'Amazon' dataset to predict the number of forest fires in Brazil. You can download a copy of the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/amazon/amazon.ipynb>`_.
+This example uses the ``amazon`` dataset to predict the number of forest fires in Brazil. You can download a copy of the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/amazon/amazon.ipynb>`_.
 
 - **date:** Date of the record
 - **number:** Number of forest fires

@@ -3,7 +3,7 @@
 Booking
 ========
 
-This example uses the 'Expedia' dataset to predict, based on site activity, whether a user is likely to make a booking. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/booking/booking.ipynb>`_ and the dataset `here <https://www.kaggle.com/c/expedia-hotel-recommendations/data>`_.
+This example uses the ``expedia`` dataset to predict, based on site activity, whether a user is likely to make a booking. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/booking/booking.ipynb>`_ and the dataset `here <https://www.kaggle.com/c/expedia-hotel-recommendations/data>`_.
 
 - **cnt:** Number of similar events in the context of the same user session.
 - **user_location_city:** The ID of the city in which the customer is located.
@@ -77,7 +77,7 @@ Data Exploration and Preparation
 
 Sessionization is the process of gathering clicks for a certain period of time. We usually consider that after 30 minutes of inactivity, the user session ends (``date_time - lag(date_time) > 30 minutes``). For these kinds of use cases, aggregating sessions with meaningful statistics is the key for making accurate predictions.
 
-We start by using the :py:func:`~verticapy.vDataFrame.sessionize` method to create the variable 'session_id'. We can then use this variable to aggregate the data.
+We start by using the :py:func:`~verticapy.vDataFrame.sessionize` method to create the variable ``session_id``. We can then use this variable to aggregate the data.
 
 .. code-block:: python
 
@@ -193,7 +193,7 @@ Let's look at the missing values.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_expedia_count_percent.html
 
-Let's impute the missing values for 'avg_distance' and 'trip_duration'.
+Let's impute the missing values for ``avg_distance`` and ``trip_duration``.
 
 .. code-block:: python
 
@@ -229,12 +229,12 @@ We can then look at the links between the variables. We will use Spearman's rank
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_expedia_corr.html
 
-We can see huge links between some of the variables ('mode_hotel_cluster_count' and 'session_duration') and our response variable ('is_booking'). A logistic regression would work well in this case because the response and predictors have a monotonic relationship.
+We can see huge links between some of the variables (``mode_hotel_cluster_count`` and ``session_duration``) and our response variable (``is_booking``). A logistic regression would work well in this case because the response and predictors have a monotonic relationship.
 
 Machine Learning
 -----------------
 
-Let's create our :py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` model.
+Let's create our :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` model.
 
 .. ipython:: python
 
@@ -273,7 +273,7 @@ None of our coefficients are rejected (``pvalue = 0``). Let's look at their impo
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_expedia_features_importance.html
 
-It looks like there are two main predictors: 'mode_hotel_cluster_count' and 'trip_duration'. According to our model, users likely to make a booking during a particular session will tend to:
+It looks like there are two main predictors: ``mode_hotel_cluster_count`` and ``trip_duration``. According to our model, users likely to make a booking during a particular session will tend to:
 
 - look at the same hotel many times.
 - look for a shorter trip duration.
@@ -304,7 +304,7 @@ Let's add our prediction to the :py:mod:`~verticapy.vDataFrame`.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_expedia_predict_proba_1.html
 
-While analyzing the following boxplot (prediction partitioned by 'is_booking'), we can notice that the ``cutoff`` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
+While analyzing the following boxplot (prediction partitioned by ``is_booking``), we can notice that the ``cutoff`` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
 
 .. code-block:: python
 

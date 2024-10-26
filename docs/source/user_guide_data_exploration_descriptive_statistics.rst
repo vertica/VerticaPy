@@ -100,19 +100,19 @@ Multi-column aggregations can also be called with many built-in methods. For exa
 .. raw:: html
   :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_avg.html
 
-Or just the 'median' of a specific column.
+Or just the ``median`` of a specific column.
 
 .. ipython:: python
 
   vdf["tenure"].median()
 
-The approximate median is automatically computed. Set the parameter 'approx' to False to get the exact median.
+The approximate median is automatically computed. Set the parameter ``approx`` to False to get the exact median.
 
 .. ipython:: python
 
   vdf["tenure"].median(approx = False)
 
-You can also use the 'groupby' method to compute customized aggregations.
+You can also use the :py:func:`~verticapy.vDataFrame.groupby` method to compute customized aggregations.
 
 .. code-block:: python
 

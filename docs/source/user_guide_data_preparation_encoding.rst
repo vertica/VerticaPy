@@ -14,7 +14,7 @@ There are many encoding techniques:
 - **Mean Encoding:** This technique uses the frequencies of each category for a specific response column.
 - **Discretization:** This technique uses various mathematical technique to encode continuous features into categories.
 
-To demonstrate encoding data in VerticaPy, we'll use the well-known 'Titanic' dataset.
+To demonstrate encoding data in VerticaPy, we'll use the well-known ``titanic`` dataset.
 
 .. code-block:: python
 
@@ -36,7 +36,7 @@ To demonstrate encoding data in VerticaPy, we'll use the well-known 'Titanic' da
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_table_encoding_1.html
 
-Let's look at the 'age' of the passengers.
+Let's look at the ``age`` of the passengers.
 
 .. code-block:: python
 
@@ -124,7 +124,7 @@ We can view the available techniques in the :py:func:`~verticapy.vDataColumn.dis
 
     help(titanic["age"].discretize)
 
-To encode a categorical feature, we can use label encoding. For example, the column 'sex' has two categories (male and female) that we can represent with 0 and 1, respectively.
+To encode a categorical feature, we can use label encoding. For example, the column ``sex`` has two categories (male and female) that we can represent with 0 and 1, respectively.
 
 .. code-block:: python
 
@@ -143,7 +143,7 @@ To encode a categorical feature, we can use label encoding. For example, the col
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_table_encoding_6.html
 
-When a feature has few categories, the most suitable choice is the one-hot encoding. Label encoding converts a categorical feature to numerical without retaining its mathematical relationships. Let's use a one-hot encoding on the 'embarked' column.
+When a feature has few categories, the most suitable choice is the one-hot encoding. Label encoding converts a categorical feature to numerical without retaining its mathematical relationships. Let's use a one-hot encoding on the ``embarked`` column.
 
 .. code-block:: python
 
@@ -164,7 +164,7 @@ When a feature has few categories, the most suitable choice is the one-hot encod
 
 One-hot encoding can be expensive if the column in question has a large number of categories. In that case, we should use mean encoding. Mean encoding replaces each category of a variable with its corresponding average over a partition by a response column. This makes it an efficient way to encode the data, but be careful of over-fitting.
 
-Let's use a mean encoding on the 'home.dest' variable.
+Let's use a mean encoding on the ``home.dest`` variable.
 
 .. code-block:: python
 

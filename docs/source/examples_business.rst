@@ -1,12 +1,9 @@
 .. _examples.business:
 
-
 =========
 Business
 =========
-
-
-          
+       
 .. toctree::
   :maxdepth: 1
   

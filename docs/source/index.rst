@@ -201,8 +201,6 @@ Customer Testimonials
           ^^^^^^^^
           Software Development Director [Unowhy]
 
-
-
 .. toctree::
     :hidden:
     :maxdepth: 1

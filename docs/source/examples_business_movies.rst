@@ -108,7 +108,7 @@ We can drop the 'description' and 'notes' columns since these fields are empty f
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_movies_drop.html
 
-We have access to more than 50000 movies in 27 different genres. Let's organize our list by their average rating.
+We have access to more than ``50000`` movies in ``27`` different genres. Let's organize our list by their average rating.
 
 .. code-block:: python
 
@@ -149,7 +149,7 @@ Since we want properly averaged scores, let's just consider the top 10 movies th
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_movies_search_votes.html
 
-We can see classic movies like 'The Godfather' and 'Greed'. Let's smooth the avg_vote using a linear regression to make it more representative.
+We can see classic movies like ``The Godfather`` and ``Greed``. Let's smooth the avg_vote using a linear regression to make it more representative.
 
 To create our model we could use the votes, the category, the duration, etc. but let's go with the director and main actors. 
 
@@ -585,7 +585,7 @@ We can do the same for the genres.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_category_genre.html
 
-Since we're more concerned with the 'Category' at this point, we can drop 'genre.'
+Since we're more concerned with the ``Category`` at this point, we can drop ``genre``.
 
 .. code-block:: python
 
@@ -613,7 +613,8 @@ Let's look at the missing values.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_missing_vals.html
 
-Let's impute the missing values for 'notoriety_actors' and 'castings_actors' using different techniques. 
+Let's impute the missing values for ``notoriety_actors`` and ``castings_actors`` using different techniques.
+
 We can then drop the few remaining missing values.
 
 .. code-block:: python
@@ -778,7 +779,7 @@ The model is good. Let's add it in our :py:mod:`~verticapy.vDataFrame`.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_model_predict.html
 
-Since a score can't be greater than 10 or less than 0, we need to adjust the 'unbiased_vote'.
+Since a score can't be greater than 10 or less than 0, we need to adjust the ``unbiased_vote``.
 
 .. ipython:: python
 
@@ -927,7 +928,6 @@ By looking at the elbow curve, we can choose 15 clusters. Let's create a ``k-mea
     model_kmeans.clusters_
 
 Let's add the clusters in the :py:mod:`~verticapy.vDataFrame`.
-
 
 .. code-block:: python
 

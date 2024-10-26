@@ -3,7 +3,7 @@
 Iris
 =====
 
-This example uses the 'iris' dataset to predict the species of various flowers based on their physical features. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/learn/iris/iris.ipynb>`_.
+This example uses the ``iris`` dataset to predict the species of various flowers based on their physical features. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/learn/iris/iris.ipynb>`_.
 
 - **PetalLengthCm:** Petal Length in cm
 - **PetalWidthCm:** Petal Width in cm
@@ -77,7 +77,7 @@ Let's explore the data by displaying descriptive statistics of all the columns.
 
 We don't have much data here, but that's okay; since different flower species have different proportions and ratios between those proportions, we can start by making ratios between each feature.
 
-We'll need to use the One-Hot Encoder on the 'Species' to get information about each species.
+We'll need to use the One-Hot Encoder on the ``Species`` to get information about each species.
 
 .. code-block:: python
     
@@ -300,9 +300,9 @@ Let's evaluate our final model (the combination of two :py:mod:`~verticapy.machi
 
     iris.case_when(
         "prediction",
-        iris["setosa"] > 0.5, 'Iris-setosa',
-        iris["virginica"] > 0.5, 'Iris-virginica',
-        'Iris-versicolor',
+        iris["setosa"] > 0.5, "Iris-setosa",
+        iris["virginica"] > 0.5, "Iris-virginica",
+        "Iris-versicolor",
     )
     iris["score"] = (iris["Species"] == iris["prediction"])
 
@@ -311,9 +311,9 @@ Let's evaluate our final model (the combination of two :py:mod:`~verticapy.machi
 
     iris.case_when(
         "prediction",
-        iris["setosa"] > 0.5, 'Iris-setosa',
-        iris["virginica"] > 0.5, 'Iris-virginica',
-        'Iris-versicolor',
+        iris["setosa"] > 0.5, "Iris-setosa",
+        iris["virginica"] > 0.5, "Iris-virginica",
+        "Iris-versicolor",
     )
     iris["score"] = (iris["Species"] == iris["prediction"])
 

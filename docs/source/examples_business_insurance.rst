@@ -303,7 +303,7 @@ Encoding
 ---------
 
 Since our features vary in type, let's start by encoding our categorical features. 
-Remember, we label-encoded 'smoker' from boolean. Let's label-encode some other features: sex, region, and age groups.
+Remember, we label-encoded ``smoker`` from boolean. Let's label-encode some other features: sex, region, and age groups.
 
 .. code-block:: python
 
@@ -336,7 +336,7 @@ Remember, we label-encoded 'smoker' from boolean. Let's label-encode some other 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_insurance_table_encoded_new.html
 
-Before going further, let's check the correlation of the variables with the predictor 'charges'.
+Before going further, let's check the correlation of the variables with the predictor ``charges``.
 
 .. code-block:: python
 
@@ -511,8 +511,7 @@ It seems that smoking habits have a significant effect on medical costs. Next in
 
 As one might expect, the correlation between charges and region is almost 0.
 
-Now, let's see what we can learn from a stepwise model with forward elimination using Bayesian 
-information criterion (BIC) as a selection criteria.
+Now, let's see what we can learn from a stepwise model with forward elimination using Bayesian information criterion (BIC) as a selection criteria.
 
 .. code-block:: python
 

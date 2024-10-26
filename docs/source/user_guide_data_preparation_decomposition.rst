@@ -8,7 +8,7 @@ Decomposition is the process of using an orthogonal transformation to convert a 
 
 Since some algorithms are sensitive to correlated predictors, it can be a good idea to use the :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` (Principal Component Analysis: Decomposition Technique) before applying the algorithm. Since some algorithms are also sensitive to the number of predictors, we'll have to be picky with which variables we include.
 
-To demonstrate data decomposition in VerticaPy, we'll use the well-known 'Iris' dataset.
+To demonstrate data decomposition in VerticaPy, we'll use the well-known ``iris`` dataset.
 
 .. code-block:: python
 
@@ -48,7 +48,7 @@ Notice that all the predictors are well-correlated with each other.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_plot_decomposition_2.html
 
-Let's compute the PCA of the different elements.
+Let's compute the :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` of the different elements.
 
 .. ipython:: python
 

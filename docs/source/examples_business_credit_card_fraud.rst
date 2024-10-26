@@ -9,14 +9,14 @@ The Credit Card Fraud Detection dataset contains credit card transactions from S
 
 To preserve the cardholders' confidentiality, we cannot access the original features and background information about the data.
 
-'Time' and 'Amount' are the only features that have not been transformed with PCA.
+``Time`` and ``Amount`` are the only features that have not been transformed with PCA.
 
 - **V1, V2,..., V28:** principal components from PCA.
 - **Time:** Number of seconds elapsed between this transaction and the first transaction in the dataset.
 - **Amount:** Transaction amount.
 - **Class:** Response variable, where a value of 1 indicates fraudulent activity.
 
-'Amount' will be useful for example-dependent cost-sensitive learning.
+``Amount`` will be useful for example-dependent cost-sensitive learning.
 
 We will follow the entire Data Science cycle (Data Exploration, Data Preparation, Data Modeling, Model Evaluation, Model Deployment) to solve this problem.
 
@@ -85,7 +85,7 @@ Let's explore the data by displaying descriptive statistics of all the columns.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_describe.html
 
-It'll be difficult to work on the principal components (V1 through V28) without knowing what they mean. The only features we can work on are 'Time' and 'Amount'.
+It'll be difficult to work on the principal components (V1 through V28) without knowing what they mean. The only features we can work on are ``Time`` and ``Amount``.
 
 Let's convert the number of seconds elapsed to the correct date and time. We know that the records were ingested in September 2013, so we'll use that to create the new feature.
 
@@ -191,7 +191,7 @@ Let's create some new features and move forward from there.
 Features Engineering
 ---------------------
 
-Since all data (besides 'Time' and 'Amount') are encoded, we're somewhat limited in creating features.
+Since all data (besides ``Time`` and ``Amount``) are encoded, we're somewhat limited in creating features.
 One way to work with this limitation for time series is with moving windows.
 
 In lieu of customer IDs, we'll aggregate on the transaction amount over some partitions. Let's compute some features to analyze the transaction amount and frequencies across different windows: 5 hours preceding, 5 minutes preceding, and 5 seconds preceding. Choosing these windows is pretty subjective, but we can close in on the most relevant windows after some more extensive testing.
@@ -330,7 +330,7 @@ Supervision
 
 Supervising would make this pretty easy since it would just be a binary classification problem. We can use different algorithms to optimize the prediction. Our dataset is unbalanced, so the AUC might be a good metric to evaluate the model. The PRC AUC would also be a relevant metric.
 
-:py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
+:py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
 
 .. code-block:: python
 
@@ -401,7 +401,7 @@ Due to the complexity of the computations, anomalies are difficult to detect in 
 
 - **Machine Learning:** We need to use easily-deployable algorithms to perform real-time fraud detection. Isolation forests and ``k-means`` can be easily deployed and they work well for detecting anomalies.
 - **Rules & Thresholds:** The z-score can be an efficient solution for detecting global outliers.
-- **Decomposition:** Robust :py:mod:`~verticapy.machine_learning.vertica.PCA` is another technique for detecting outliers.
+- **Decomposition:** Robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` is another technique for detecting outliers.
 
 Before using these techniques, let's draw some scatter plots to get a better idea of what kind of anomalies we can expect.
 
@@ -642,7 +642,7 @@ We can catch outliers with a neighbors score. Again, the main problem with these
 Other Techniques
 +++++++++++++++++
 
-Other scalable techniques that can solve this problem are robust :py:mod:`~verticapy.machine_learning.vertica.PCA` and isolation forest.
+Other scalable techniques that can solve this problem are robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` and isolation forest.
 
 Conclusion
 -----------

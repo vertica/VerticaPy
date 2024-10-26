@@ -4,7 +4,7 @@
 Classification
 ===============
 
-Classifications are ML algorithms used to predict categorical response columns. For predicting more than two categories, these are called 'Multiclass Classifications'. Examples of classification are predicting the flower species using specific characteristics or predicting whether Telco customers will churn.
+Classifications are ML algorithms used to predict categorical response columns. For predicting more than two categories, these are called ``Multiclass Classifications``. Examples of classification are predicting the flower species using specific characteristics or predicting whether Telco customers will churn.
 
 To understand how to create a classification model, let's predict the species of flowers with the Iris dataset.
 

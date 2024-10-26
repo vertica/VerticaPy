@@ -169,7 +169,7 @@ Even after the data is loaded into memory, the performance is very slow. The fol
 
 .. ipython:: python
 
-    columns_to_drop = ['date_time', 'srch_ci', 'srch_co'] ;
+    columns_to_drop = ["date_time", "srch_ci", "srch_co"] ;
     expedia_df = expedia_df.drop(columns_to_drop, axis=1);
     start_time = time.time()
     expedia_df.corr();
@@ -180,7 +180,7 @@ Let's compare the performance in-database using a :py:mod:`~verticapy.vDataFrame
 .. ipython:: python
 
     # Remove non-numeric columns
-    expedia.drop(columns = ['date_time', 'srch_ci', 'srch_co']);
+    expedia.drop(columns = ["date_time", "srch_ci", "srch_co"]);
     start_time = time.time()
     expedia.corr(show = False);
     print(f"elapsed time = {time.time() - start_time}")
@@ -485,7 +485,7 @@ To return a :py:mod:`~verticapy.vDataFrame` to a previously saved structure, use
     expedia = expedia.load();
     print(expedia.shape())
 
-Because :py:mod:`~verticapy.vDataFrame` are views of data stored in the connected Vertica database, any modifications made to the :py:mod:`~verticapy.vDataFrame` are not reflected in the underlying data in the database. To save a :py:mod:`~verticapy.vDataFrame`'s relation to the database, use the :py:func:`~verticapy.vDataFrame.to_db` method.
+Because :py:mod:`~verticapy.vDataFrame` are views of data stored in the connected Vertica database, any modifications made to the :py:mod:`~verticapy.vDataFrame` are not reflected in the underlying data in the database. To save a :py:mod:`~verticapy.vDataFrame` relation to the database, use the :py:func:`~verticapy.vDataFrame.to_db` method.
 
 It's good practice to examine the expected disk usage of the :py:mod:`~verticapy.vDataFrame` before exporting it to the database:
 

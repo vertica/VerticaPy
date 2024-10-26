@@ -86,7 +86,7 @@ Full Stack
 
           10 mins
           ^^^^^^^^
-          Uncover the 'Magic' methods of the vDataFrame, 
+          Uncover the ``Magic`` methods of the vDataFrame, 
           revealing powerful functionalities and enhancing 
           your data manipulation skills.
 

@@ -8,7 +8,7 @@ Vertica is an analytical database with many advanced functions. While Vertica ob
 
 While the SDK is somewhat difficult to use, VerticaPy makes it easy by generating UDFs from python code and importing them into Vertica for you.
 
-To demonstrate this, let's look at the following example. We want to bring into Vertica two functions from the 'math' module. We also want to import our own custom 'normalize_titanic' function defined in the 'pmath.py' file.
+To demonstrate this, let's look at the following example. We want to bring into Vertica two functions from the ``math`` module. We also want to import our own custom ``normalize_titanic`` function defined in the ``pmath.py`` file.
 
 .. ipython:: python
 

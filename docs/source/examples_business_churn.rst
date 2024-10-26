@@ -159,7 +159,7 @@ Let's compute the correlations between the different variables and the response 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_churn_corr.html
 
-Many features have a strong correlation with the 'Churn' variable. For example, the customers that have a 'Month to Month' contract are more likely to churn. Having this type of contract gives customers a lot of flexibility and allows them to leave at any time. New customers are also likely to churn.
+Many features have a strong correlation with the ``Churn`` variable. For example, the customers that have a ``Month to Month`` contract are more likely to churn. Having this type of contract gives customers a lot of flexibility and allows them to leave at any time. New customers are also likely to churn.
 
 .. code-block:: python
 
@@ -203,7 +203,7 @@ ________
 Machine Learning
 -----------------
 
-:py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` is a very powerful algorithm and we can use it to detect churns. Let's split our :py:mod:`~verticapy.vDataFrame` into training and testing set to evaluate our model.
+:py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` is a very powerful algorithm and we can use it to detect churns. Let's split our :py:mod:`~verticapy.vDataFrame` into training and testing set to evaluate our model.
 
 .. ipython:: python
 
@@ -293,7 +293,7 @@ Based on our model, most churning customers are at least one of the following:
 - New Telco customers
 - Have a monthly contract
 
-Notice that customers have a 'Fiber Optic' option are also likely to churn. Let's check if this relationship is causal by computing some aggregations.
+Notice that customers have a ``Fiber Optic`` option are also likely to churn. Let's check if this relationship is causal by computing some aggregations.
 
 .. code-block:: python
 
@@ -333,7 +333,7 @@ Notice that customers have a 'Fiber Optic' option are also likely to churn. Let'
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_churn_table_groupby.html
 
-It seems like the 'Fiber Optic' option in and of itself doesn't lead to churning, but customers that have this option tend to churn because their contract puts them into one of the three categories we listed before: they're paying more.
+It seems like the ``Fiber Optic`` option in and of itself doesn't lead to churning, but customers that have this option tend to churn because their contract puts them into one of the three categories we listed before: they're paying more.
 
 To retain these customers, we'll need to make some changes to what types of contracts we offer.
 

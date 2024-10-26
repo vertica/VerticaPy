@@ -3,7 +3,7 @@
 COVID-19
 =========
 
-This example uses the 'covid19' dataset to predict the number of deaths and cases one day in advance. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/covid19/covid19.ipynb>`_.
+This example uses the ``covid19`` dataset to predict the number of deaths and cases one day in advance. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/covid19/covid19.ipynb>`_.
 
 - **date:** Date of the record.
 - **cases:** Number of people infected.
@@ -91,7 +91,7 @@ We have data from January 2020 to the beginning of May.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_covid19_table_describe_2.html
 
-We'll try to predict the number of future deaths by using the statistics from previous days. We can drop the columns 'county' and 'fips', since the scope of our analysis is focused on the United States and the FIPS code isn't relevant to our predictions.
+We'll try to predict the number of future deaths by using the statistics from previous days. We can drop the columns ``county`` and ``fips``, since the scope of our analysis is focused on the United States and the FIPS code isn't relevant to our predictions.
 
 .. code-block:: python
 
@@ -260,7 +260,7 @@ As you would expect, there's a clear correlation between the number of people in
 
     covid19.corr(["deaths", "cases"])
 
-A vector autoregression (VAR) model can be very good to do the predictions. But first, let's encode the states to look at their influence.
+A vector autoregression (:py:mod:`~verticapy.machine_learning.vertica.tsa.VAR`) model can be very good to do the predictions. But first, let's encode the states to look at their influence.
 
 .. code-block:: python
 

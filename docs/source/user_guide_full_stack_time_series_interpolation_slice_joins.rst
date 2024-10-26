@@ -116,7 +116,7 @@ VerticaPy achieves this with its close integration with Vertica; by leveraging V
 
     print(interpolate.current_relation())
 
-Having sliced data on regular interval of time can often make it easier to join your the data with other datasets. For example, let's join the 'weather' dataset with the 'smart_meters_consumption' dataset on 'dateUTC'.
+Having sliced data on regular interval of time can often make it easier to join your the data with other datasets. For example, let's join the ``weather`` dataset with the ``smart_meters_consumption`` dataset on ``dateUTC``.
 
 .. code-block:: python
 

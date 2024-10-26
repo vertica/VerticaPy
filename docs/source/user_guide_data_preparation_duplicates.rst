@@ -6,7 +6,7 @@ Duplicates
 
 When merging different data sources, we're likely to end up with duplicates that can add a lot of bias to and skew our data. Just imagine running a Telco marketing campaign and not removing your duplicates: you'll end up targeting the same person multiple times!
 
-Let's use the Iris dataset to understand the tools VerticaPy gives you for handling duplicate values.
+Let's use the ``iris`` dataset to understand the tools VerticaPy gives you for handling duplicate values.
 
 .. code-block:: python
 

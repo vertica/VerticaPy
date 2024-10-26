@@ -23,7 +23,7 @@ To complement the study, we'll also use the shanghai_districts dataset, which co
 - **area :** Area of the district in square kilometers.
 - **population :** Population of the district.
 - **density :** Density of the district.
-- **geometry :** Polygon of type 'Geometry' that contains the coordinates of the district.
+- **geometry :** Polygon of type ``Geometry`` that contains the coordinates of the district.
 
 You can download the Jupyter notebook of this study `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/base_station/base_station.ipynb>`_.
 
@@ -174,7 +174,7 @@ Detecting outliers
 
 Since we're only concerned about the base stations in Shanghai, 
 let's begin by finding the global outliers in our our Shanghai 
-Telecom dataset, 'cdr'. First, we load the "World" dataset, a 
+Telecom dataset, ``cdr``. First, we load the "World" dataset, a 
 predefined dataset in VerticaPy, and then plot on a map of China 
 to see if any points fall outside of Shanghai. We can then drop 
 these outliers using the z-score method.
@@ -224,7 +224,7 @@ Understanding Shanghai's Districts
 +++++++++++++++++++++++++++++++++++
 
 Let's check the districts on the map. The Huangpu district is 
-the urban "hub" of sorts and the most central of Shanghai's 
+the urban ``hub`` of sorts and the most central of Shanghai's 
 districts, so we'll pay it some special attention. We'll be 
 referring to the Huangpu district as Shanghai's "downtown" 
 in this study.

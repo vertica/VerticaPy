@@ -90,12 +90,12 @@ We do, however, have enough data to make a good model for white wines, so let's 
 
 .. code-block:: python
 
-    winequality.filter(winequality["color"] == 'white').drop(["good", "color"])
+    winequality.filter(winequality["color"] == "white").drop(["good", "color"])
 
 .. ipython:: python
     :suppress:
 
-    winequality.filter(winequality["color"] == 'white').drop(["good", "color"])
+    winequality.filter(winequality["color"] == "white").drop(["good", "color"])
     res = winequality
     html_file = open("SPHINX_DIRECTORY/figures/examples_winequality_table_filter.html", "w")
     html_file.write(res._repr_html_())
@@ -123,7 +123,7 @@ Let's draw the correlation matrix of the dataset.
 
 We can see a strong correlation between the density and the alcohol degree (the alcohol degree describes the density of pure ethanol in the wine).
 
-We can drop the 'density' column since it doesn't influence the quality of the white wine (instead, its presence will just bias the data).
+We can drop the ``density`` column since it doesn't influence the quality of the white wine (instead, its presence will just bias the data).
 
 .. code-block:: python
 
@@ -193,7 +193,7 @@ KNN is sensitive to unnormalized data so we'll have to normalize our data.
 Machine Learning
 -----------------
 
-Let's create our KNN model.
+Let's create our ``KNN`` model.
 
 .. code-block:: python
 

@@ -24,7 +24,7 @@ To create a good linear regression model, it's important to:
 Example without decomposition
 ------------------------------
 
-Let's use the 'africa_education' dataset to compute a linear regression model of students' performance in school.
+Let's use the ``africa_education`` dataset to compute a linear regression model of students' performance in school.
 
 .. code-block:: ipython
     

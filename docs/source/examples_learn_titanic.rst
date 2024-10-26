@@ -3,7 +3,7 @@
 Titanic
 ========
 
-This example uses the 'titanic' dataset to predict the survival of passengers on the Titanic. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/learn/titanic/titanic.ipynb>`_.
+This example uses the ``titanic`` dataset to predict the survival of passengers on the Titanic. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/learn/titanic/titanic.ipynb>`_.
 
 We will follow the data science cycle (Data Exploration - Data Preparation - Data Modeling - Model Evaluation - Model Deployment) to solve this problem.
 
@@ -241,7 +241,7 @@ Let's move on to outliers. We have several tools for locating outliers (:py:mod:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_3.html
 
-Let's encode the column "sex" so we can use it with numerical methods.
+Let's encode the column ``sex`` so we can use it with numerical methods.
 
 .. code-block:: python
 
@@ -259,7 +259,7 @@ Let's encode the column "sex" so we can use it with numerical methods.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_titanic_table_drop_clean_4.html
 
-The column "age" has too many missing values and since most machine learning algorithms can't handle missing values, we need to impute our data. Let's fill the missing values using the average "age" of the passengers that have the same "pclass" and "sex".
+The column ``age`` has too many missing values and since most machine learning algorithms can't handle missing values, we need to impute our data. Let's fill the missing values using the average ``age`` of the passengers that have the same "pclass" and "sex".
 
 .. code-block:: python
 
@@ -297,7 +297,7 @@ Let's draw the correlation matrix to see the links between variables.
 
 Fare correlates strongly with family size. This is about what you would expect: a larger family means more tickets, and more tickets means a greater fare.
 
-Survival correlates strongly with whether or not a passenger has a lifeboat (the "boat" variable). Still, to increase the generality of our model, we should avoid predictions based on just one variable. Let's split the study into two use cases:
+Survival correlates strongly with whether or not a passenger has a lifeboat (the ``boat`` variable). Still, to increase the generality of our model, we should avoid predictions based on just one variable. Let's split the study into two use cases:
 
 - Passengers with a lifeboat
 - Passengers without a lifeboat
@@ -384,7 +384,6 @@ Apart from a decent amount of these passengers being third-class passengers, it 
 Passengers without a lifeboat
 ++++++++++++++++++++++++++++++
 
-
 Let's move on to passengers without a lifeboat.
 
 .. code-block:: python
@@ -459,7 +458,7 @@ One of our predictors is categorical: the passenger title. Some of these predict
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_titanic_table_ml_cv.html
 
-This dataset is pretty unbalanced so we'll use an AUC to evaluate it. Looking at our table, our model has an average AUC of more than 0.9, so our model is quite good.
+This dataset is pretty unbalanced so we'll use an ``AUC`` to evaluate it. Looking at our table, our model has an average AUC of more than 0.9, so our model is quite good.
 
 We can now build a model with the entire dataset.
 

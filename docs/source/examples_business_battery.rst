@@ -196,7 +196,8 @@ To see how the voltage changes during the cycle, we extract the initial and fina
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_battery_cycling_info.html
 
-We can see from the "duration" column that charging seems to take a longer time than discharging. 
+We can see from the "duration" column that charging seems to take a longer time than discharging.
+
 Let's visualize this trend with an animated graph.
 
 .. code-block:: python
@@ -241,7 +242,8 @@ The animated graph below shows how the cycles change throughout time. Another wa
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_battery_bar_type.html
 
-In general, charging cycles are longer than discharging cycles. 
+In general, charging cycles are longer than discharging cycles.
+ 
 Let's examine how voltage changes between cycles and their transitions.
 
 .. code-block:: python
@@ -589,7 +591,7 @@ Machine Learning
 
 :py:mod:`~verticapy.machine_learning.vertica.automl.AutoML` tests several models and returns input scores for each. We can use this to find the best model for our dataset.
 
-.. note:: We are only using the three algorithms, but you can change the ``estimator`` parameter to try all the 'native' algorithms: ``estimator = 'native' ``.
+.. note:: We are only using the three algorithms, but you can change the ``estimator`` parameter to try all the ``native`` algorithms: ``estimator = 'native' ``.
 
 .. code-block:: python
 

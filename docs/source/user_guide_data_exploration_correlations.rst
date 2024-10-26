@@ -50,7 +50,7 @@ The Pearson correlation coefficient is a very common correlation function. In th
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_2.html
 
-We can see that 'tenure' is well-correlated to the 'TotalCharges', which makes sense.
+We can see that ``tenure`` is well-correlated to the ``TotalCharges``, which makes sense.
 
 .. code-block:: python
 
@@ -72,14 +72,14 @@ We can see that 'tenure' is well-correlated to the 'TotalCharges', which makes s
 
     churn.corr(["tenure", "TotalCharges"], method = "pearson")
 
-Note, however, that having a low Pearson relationship imply that the variables aren't correlated. For example, let's compute the Pearson correlation coefficient between 'tenure' and 'TotalCharges' to the power of 20.
+Note, however, that having a low Pearson relationship imply that the variables aren't correlated. For example, let's compute the Pearson correlation coefficient between ``tenure`` and ``TotalCharges`` to the power of 20.
 
 .. ipython:: python
 
     churn["TotalCharges^20"] = churn["TotalCharges"] ** 20
     churn.corr(["tenure", "TotalCharges^20"], method = "pearson")
 
-We know that the 'tenure' and 'TotalCharges' are strongly linearly correlated. However we can notice that the correlation between the 'tenure' and 'TotalCharges' to the power of 20 is not very high. Indeed, the Pearson correlation coefficient is not robust for monotonic relationships, but rank-based correlations are. Knowing this, we'll calculate the Spearman's rank correlation coefficient instead.
+We know that the ``tenure`` and ``TotalCharges`` are strongly linearly correlated. However we can notice that the correlation between the ``tenure`` and ``TotalCharges`` to the power of 20 is not very high. Indeed, the Pearson correlation coefficient is not robust for monotonic relationships, but rank-based correlations are. Knowing this, we'll calculate the Spearman's rank correlation coefficient instead.
 
 .. code-block:: ipython
     
@@ -144,7 +144,7 @@ Notice that the Kendall rank correlation coefficient will also detect the monoto
 
 However, the Kendall rank correlation coefficient is very computationally expensive, so we'll generally use Pearson and Spearman when dealing with correlations between numerical variables.
 
-Binary features are considered numerical, but this isn't technically accurate. Since binary variables can only take two values, calculating correlations between a binary and numerical variable can lead to misleading results. To account for this, we'll want to use the 'Biserial Point' method to calculate the Point-Biserial correlation coefficient. This powerful method will help us understand the link between a binary variable and a numerical variable.
+Binary features are considered numerical, but this isn't technically accurate. Since binary variables can only take two values, calculating correlations between a binary and numerical variable can lead to misleading results. To account for this, we'll want to use the ``Biserial Point`` method to calculate the Point-Biserial correlation coefficient. This powerful method will help us understand the link between a binary variable and a numerical variable.
 
 .. code-block:: python
 
@@ -162,7 +162,7 @@ Binary features are considered numerical, but this isn't technically accurate. S
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_7.html
 
-Lastly, we'll look at the relationship between categorical columns. In this case, the 'Cramer's V' method is very efficient. Since there is no position in the Euclidean space for those variables, the 'Cramer's V' coefficients cannot be negative (which is a sign of an opposite relationship) and they will range in the interval ``[0,1]``.
+Lastly, we'll look at the relationship between categorical columns. In this case, the ``Cramer's V`` method is very efficient. Since there is no position in the Euclidean space for those variables, the ``Cramer's V`` coefficients cannot be negative (which is a sign of an opposite relationship) and they will range in the interval ``[0,1]``.
 
 .. code-block:: python
 

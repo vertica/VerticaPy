@@ -4,7 +4,9 @@
 Normalization
 ==============
 
-Normalizing data is crucial when using machine learning algorithms because of how sensitive most of them are to un-normalized data. For example, the neighbors-based and ``k-means`` algorithms use the ``p-distance`` in their learning phase. Normalization is the first step before using a linear regression due to Gauss-Markov assumptions.
+Normalizing data is crucial when using machine learning algorithms because of how sensitive most of them are to un-normalized data. For example, the neighbors-based and ``k-means`` algorithms use the ``p-distance`` in their learning phase.
+
+Normalization is the first step before using a linear regression due to Gauss-Markov assumptions.
 
 Unnormalized data can also create complications for the convergence of some ML algorithms. Normalization is also a way to encode the data and to retain the global distribution. When we know the estimators to use to normalize the data, we can easily un-normalize the data and come back to the original distribution.
 
@@ -14,7 +16,7 @@ There are three main normalization techniques:
 - **Robust Z-Score:** We reduce and center the feature values using the median and the median absolute deviation. This normalization is robust to outliers.
 - **Min-Max:**  We reduce the feature values by using a bijection to ``[0,1]``. The max will reach 1 and the min will reach 0. This normalization is robust to outliers.
 
-To demonstrate data normalization in VerticaPy, we will use the well-known 'Titanic' dataset.
+To demonstrate data normalization in VerticaPy, we will use the well-known ``titanic`` dataset.
 
 .. code-block:: python
 
@@ -36,7 +38,7 @@ To demonstrate data normalization in VerticaPy, we will use the well-known 'Tita
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_table_norm_1.html
 
-Let's look at the 'fare' and 'age' of the passengers.
+Let's look at the ``fare`` and ``age`` of the passengers.
 
 .. code-block:: python
 
@@ -59,7 +61,7 @@ These lie in different numerical intervals so it's probably a good idea to norma
 
     help(titanic["age"].normalize)
 
-The three main normalization techniques are available. Let's normalize the 'fare' and the 'age' using the 'MinMax' method.
+The three main normalization techniques are available. Let's normalize the ``fare`` and the ``age`` using the ``MinMax`` method.
 
 .. code-block:: python
 

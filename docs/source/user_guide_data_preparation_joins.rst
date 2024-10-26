@@ -80,15 +80,15 @@ Third, we have the names of each airline.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_table_join_3.html
 
-Notice that each dataset has a primary or secondary key on which to join the data. For example, we can join the 'flights' dataset to the 'airlines' and 'airport' datasets using the corresponding IATA code.
+Notice that each dataset has a primary or secondary key on which to join the data. For example, we can join the ``flights`` dataset to the ``airlines`` and ``airport`` datasets using the corresponding ``IATA`` code.
 
-To join datasets in VerticaPy, use the vDataFrame's :py:func:`~verticapy.vDataFrame.join` method.
+To join datasets in VerticaPy, use the vDataFrame.:py:func:`~verticapy.vDataFrame.join` method.
 
 .. ipython:: python
 
     help(vp.vDataFrame.join)
 
-Let's use a left join to merge the 'airlines' dataset and the 'flights' dataset.
+Let's use a left join to merge the ``airlines`` dataset and the ``flights`` dataset.
 
 .. code-block:: python
 
@@ -174,7 +174,7 @@ To avoid duplicate information, splitting the data into different tables is very
 
 Cross joins are special: they don't need a key. Cross joins are used to perform mathematical operations.
 
-Let's use a cross join of the 'airports' dataset on itself to compute the distance between every airport.
+Let's use a cross join of the ``airports`` dataset on itself to compute the distance between every airport.
 
 .. code-block:: python
 

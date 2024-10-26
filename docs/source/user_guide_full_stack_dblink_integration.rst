@@ -7,28 +7,19 @@ DBLINK in VerticaPy
 Introduction
 -------------
 
-
-Starting with VerticaPy 0.12.0, you can work with other databases, 
-such as PostgresQL and mySQL, using DBLINK functionality. 
-DBLINK is a Vertica User Defined Transform Function coded in 
-C++ that runs SQL against other databases. To setup and learn 
-more about DBLINK in Vertica, please view the 
+Starting with VerticaPy 0.12.0, you can work with other databases, such as PostgresQL and mySQL, using ``DBLINK`` functionality. ``DBLINK`` is a Vertica User Defined Transform Function coded in ``C++`` that runs ``SQL`` against other databases. To setup and learn more about DBLINK in Vertica, please view the 
 `github repo <https://github.com/vertica/dblink>`_.
 
-In order to use this new functionality, we first need to install the 
-ODBC driver and manager, as well as configure DBLINK on all nodes 
-of the cluster. Configuration entails three files:
+In order to use this new functionality, we first need to install the ``ODBC`` driver and manager, as well as configure ``DBLINK`` on all nodes of the cluster. Configuration entails three files:
 
 - dblink.cids
 - odbc.ini
 - odbcinst.ini
 
 
-These files provide the host server address, username, and password, 
-as well as the database name that we want to access. In future versions, 
-we are planning to simplify this process and automate the creation of these files. 
+These files provide the host server address, username, and password, as well as the database name that we want to access. In future versions, we are planning to simplify this process and automate the creation of these files. 
 
-In the next section, let's work through an example of a database in PostgreSQL.
+In the next section, let's work through an example of a database in ``PostgreSQL``.
 
 Connecting to an External Database
 -----------------------------------
@@ -40,14 +31,9 @@ Connecting to an External Database
 
 
 
-We first need to provide the connection information that we have set up 
-in the Connection Identifier Database file (dblink.cids). We can select 
-a special character symbol to identify this connection.
+We first need to provide the connection information that we have set up in the Connection Identifier Database file (``dblink.cids``). We can select a special character symbol to identify this connection.
 
-Let's try to set up a connection with an external PostgreSQL database, 
-which we name "pgdb". The connection details for "pgdb", including 
-server name, user name etc., are in the configuration files 
-mentioned in the introduction section.
+Let's try to set up a connection with an external ``PostgreSQL`` database, which we name ``pgdb``. The connection details for ``pgdb``, including server name, user name etc., are in the configuration files mentioned in the introduction section.
 
 .. code-block:: python
 
@@ -62,7 +48,7 @@ Creating a vDataFrame
 ---------------------
 
 We can create a vDataFrame from a table stored in an external 
-database by setting the 'external' parameter to True. 
+database by setting the ``external`` parameter to True. 
 SQL can be used to fetch required data, and we can provide 
 an identifying symbol that can be used for fetching perform queries with SQL.
 
@@ -148,8 +134,7 @@ it pushes the aggregation query to the database.
     # Turning on SQL output to view the queries
     vp.set_option("sql_on",True)
 
-Let's look at the count query again, and see how VerticaPy 
-is pushing it to the external database.
+Let's look at the count query again, and see how VerticaPy is pushing it to the external database.
 
 .. code-block:: python
 
@@ -195,9 +180,6 @@ Let's also look at the "min" method:
             ) VERTICAPY_SUBTABLE 
             LIMIT 1', 
             rowset=500) OVER ()
-
-
-
 
 For the above examples, the queries were pushed to the external database.
 
@@ -475,12 +457,10 @@ Let's take a look at the airports table that we have in our MySQL database.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
 
-
-
 Flights Data Vertica
 +++++++++++++++++++++
 
-We'll now read a locally stored CSV file with the flights data and materialize it in Vertica.
+We'll now read a locally stored ``CSV`` file with the flights data and materialize it in Vertica.
 
 .. code-block:: python
 
@@ -724,18 +704,10 @@ We can now perform the same query involving the three tables:
 Conclusion
 ------------
 
-With the combination of Verticapy and DBLINK, we can now 
-work with multiple datasets stored in different databases. 
-We can work simultaneously with external tables, Vertica 
-tables, and Pandas DataFrame in a **single query**! There is 
-no need to materialize the table before use because it's 
-all taken care of in the background.
+With the combination of Verticapy and DBLINK, we can now work with multiple datasets stored in different databases. We can work simultaneously with external tables, Vertica tables, and Pandas DataFrame in a **single query**! There is no need to materialize the table before use because it's all taken care of in the background.
 
-The cherry on the cake is the ease-of-use that is enabled 
-by VerticaPy and its Python-like syntax.
+The cherry on the cake is the ease-of-use that is enabled by VerticaPy and its Python-like syntax.
 
-Queries that required paragraph upon paragraph to execute 
-can now be done **efficiently** with only a **few intuitive lines of code**.
+Queries that required paragraph upon paragraph to execute can now be done **efficiently** with only a **few intuitive lines of code**.
 
-This new functionality opens up many possibilities for 
-data querying and manipulation in Vertica.
+This new functionality opens up many possibilities for data querying and manipulation in Vertica.

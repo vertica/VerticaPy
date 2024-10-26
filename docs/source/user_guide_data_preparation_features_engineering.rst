@@ -5,12 +5,13 @@ Features Engineering
 =====================
 
 While preparing our data, we need to think constantly about the most suitable features we can use to achieve our overall goals.
+
 Features engineering makes use of many techniques - too many to go over in this short lesson. We'll focus on the most popular ones.
 
 Customized Features Engineering
 --------------------------------
 
-To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.eval` method of the :py:mod:`~verticapy.vDataFrame`. Let's look at an example with the well-known 'Titanic' dataset.
+To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.eval` method of the :py:mod:`~verticapy.vDataFrame`. Let's look at an example with the well-known ``titanic`` dataset.
 
 .. code-block:: python
     
@@ -34,7 +35,7 @@ To build a customized feature, you can use the :py:func:`~verticapy.vDataFrame.e
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_table_fe_1.html
 
-The feature 'parch' corresponds to the number of parents and children on-board. The feature 'sibsp' corresponds to the number of siblings and spouses on-board. We can create the feature 'family size' which is equal to parch + sibsp + 1.
+The feature ``parch`` corresponds to the number of parents and children on-board. The feature ``sibsp`` corresponds to the number of siblings and spouses on-board. We can create the feature ``family_size`` which is equal to ``parch + sibsp + 1``.
 
 .. code-block:: python
     
@@ -116,7 +117,7 @@ Let's extract the title using regular expressions.
 Advanced Analytical Functions
 ------------------------------
 
-The 'analytic' method contains the many advanced analytical functions in VerticaPy.
+The :py:func:`~verticapy.vDataFrame.analytic` method contains the many advanced analytical functions in VerticaPy.
 
 .. ipython:: python
 

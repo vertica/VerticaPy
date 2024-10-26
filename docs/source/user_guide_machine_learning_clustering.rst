@@ -6,7 +6,7 @@ Clustering
 
 Clustering algorithms are used to segment data or to find anomalies. Generally speaking, clustering algorithms are sensitive to unnormalized data, so it's important to properly prepare your data beforehand.
 
-For example, if we consider the 'titanic' dataset, the features 'fare' and 'age' don't have values within the same interval; that is, 'fare' can be much higher than the 'age'. Applying a clustering algorithm to this kind of dataset would create misleading clusters.
+For example, if we consider the ``titanic`` dataset, the features ``fare`` and ``age`` don't have values within the same interval; that is, ``fare`` can be much higher than the ``age``. Applying a clustering algorithm to this kind of dataset would create misleading clusters.
 
 To create a clustering model, we'll start by importing the ``k-means`` algorithm.
 
@@ -51,7 +51,7 @@ We can then fit the model with our data.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_ml_plot_clustering_1.html
 
-While there aren't any real metrics for evaluating unsupervised models, metrics used during computation can help us to understand the quality of the model. For example, a ``k-means`` model with fewer clusters and when the ``k-means`` score, 'Between-Cluster SS / Total SS' is close to 1.
+While there aren't any real metrics for evaluating unsupervised models, metrics used during computation can help us to understand the quality of the model. For example, a ``k-means`` model with fewer clusters and when the ``k-means`` score, ``Between-Cluster SS / Total SS`` is close to 1.
 
 .. ipython:: python
 

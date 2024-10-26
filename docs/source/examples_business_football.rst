@@ -907,7 +907,7 @@ Let's export the result to our Vertica database.
 Team Rankings with k-means
 ---------------------------
 
-To compute a ``k-means`` model, we need to find a value for 'k'. Let's draw an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
+To compute a ``k-means`` model, we need to find a value for ``k``. Let's draw an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
 
 .. code-block:: python
 
@@ -1865,7 +1865,7 @@ We need to impute these missing values.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_all_matchs_final_1.html
 
-Let's export the result to our Vertica database using the variable 'match_sample' to avoid counting the same game twice.
+Let's export the result to our Vertica database using the variable ``match_sample`` to avoid counting the same game twice.
 
 .. code-block:: python
 

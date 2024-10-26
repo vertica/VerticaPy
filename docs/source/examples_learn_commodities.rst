@@ -3,7 +3,7 @@
 Commodities
 ============
 
-This example uses the 'Commodities' dataset to predict the price of different commodities. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/learn/winequality/winequality.ipynb>`_.
+This example uses the ``commodities`` dataset to predict the price of different commodities. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/learn/winequality/winequality.ipynb>`_.
 
 - **date:** Date of the record.
 - **Gold:** Price per ounce of Gold.
@@ -210,7 +210,7 @@ Our hypothesis is correct. We can also look at the correlation between the elaps
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_commodities_table_corr_1.html
 
-In the last plot, it's a bit hard to tell if 'Spread' is stationary. Let's draw it alone.
+In the last plot, it's a bit hard to tell if ``Spread`` is stationary. Let's draw it alone.
 
 .. code-block:: python
 
@@ -286,7 +286,7 @@ After each local minimum, there is a local maximum. Let's look at the number of 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_commodities_table_plot_pacf_2.html
 
-We can clearly see the influence of the last two values on 'Spread', which makes sense. When the curve slightly changes its direction, it will increase/decrease until reaching a new local maximum/minimum. Only the recent values can help the prediction in case of autoregressive periodical model. The local minimums of interest rate spreads are indicators of an economic crisis.
+We can clearly see the influence of the last two values on ``Spread``, which makes sense. When the curve slightly changes its direction, it will increase/decrease until reaching a new local maximum/minimum. Only the recent values can help the prediction in case of autoregressive periodical model. The local minimums of interest rate spreads are indicators of an economic crisis.
 
 We saw the correlation between the price-per-barrel of Oil and the time. Let's look at the time series plot of this variable.
 

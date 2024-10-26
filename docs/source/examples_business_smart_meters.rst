@@ -174,7 +174,7 @@ In VerticaPy, you can interpolate joins; Vertica will find the closest timestamp
 Segmenting Latitude & Longitude using Clustering
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
-The dataset 'sm_meters' is pretty important. In particular, the type of residence is probably a good predictor for electricity usage. We can create clusters of the different regions with k-means clustering based on longitude and latitude. Let's find the most suitable 'k' using an elbow curve and scatter plot.
+The dataset 'sm_meters' is pretty important. In particular, the type of residence is probably a good predictor for electricity usage. We can create clusters of the different regions with k-means clustering based on longitude and latitude. Let's find the most suitable ``k`` using an elbow curve and scatter plot.
 
 .. code-block:: python
 
@@ -263,7 +263,7 @@ The elbow curve seems to confirm that five is the optimal number of clusters, so
         ],
     )
 
-Let's add our clusters to the vDataFrame.
+Let's add our clusters to the :py:mod:`~verticapy.vDataFrame`.
 
 .. ipython:: python
 
@@ -298,7 +298,7 @@ Let's draw a scatter plot of the different regions.
 Dataset Enrichment
 +++++++++++++++++++
 
-Let's join 'sm_meters' with 'sm_consumption_weather'.
+Let's join ``sm_meters`` with ``sm_consumption_weather``.
 
 .. code-block:: python
 
@@ -833,7 +833,8 @@ Looking at the residual plot, we can see that the error variance varies by quite
 
     het_breuschpagan(sm_consumption_final, "residual", predictors)
 
-The p-value is 4.81% and sits around the 5% threshold, so we can't really draw any conclusions.
+The ``p-value`` is 4.81% and sits around the 5% threshold, so we can't really draw any conclusions.
+
 Let's look at the entire regression report.
 
 .. code-block:: python

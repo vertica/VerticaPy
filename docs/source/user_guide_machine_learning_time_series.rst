@@ -6,7 +6,7 @@ Time Series
 
 Time series models are a type of regression on a dataset with a timestamp label.
 
-The following example creates a time series model to predict the number of forest fires in Brazil with the 'Amazon' dataset.
+The following example creates a time series model to predict the number of forest fires in Brazil with the ``amazon`` dataset.
 
 .. code-block::
 
@@ -29,7 +29,7 @@ The following example creates a time series model to predict the number of fores
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_ml_table_ts_1.html
 
-The feature 'date' tells us that we should be working with a time series model. To do predictions on time series, we use previous values called 'lags'.
+The feature ``date`` tells us that we should be working with a time series model. To do predictions on time series, we use previous values called ``lags``.
 
 To help visualize the seasonality of forest fires, we'll draw some autocorrelation plots.
 

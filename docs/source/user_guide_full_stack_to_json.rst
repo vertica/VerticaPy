@@ -7,9 +7,7 @@ Example: XGBoost.to_json
 Connect to Vertica
 --------------------
 
-For a demonstration on how to create a new connection to Vertica, 
-see :ref:`connection`. In this example, we will use an 
-existing connection named 'VerticaDSN'.
+For a demonstration on how to create a new connection to Vertica, see :ref:`connection`. In this example, we will use an existing connection named ``VerticaDSN``.
 
 .. code-block:: python
 
@@ -20,9 +18,9 @@ Create a Schema (Optional)
 ---------------------------
 
 Schemas allow you to organize database objects in a collection, similar to a namespace. If you create a database object 
-without specifying a schema, Vertica uses the 'public' schema. For example, to specify the 'example_table' in 'example_schema', you would use: 'example_schema.example_table'.
+without specifying a schema, Vertica uses the ``public`` schema. For example, to specify the ``example_table`` in ``example_schema``, you would use: ``example_schema.example_table``.
 
-To keep things organized, this example creates the 'xgb_to_json' schema and drops it (and its associated tables, views, etc.) at the end:
+To keep things organized, this example creates the ``xgb_to_json`` schema and drops it (and its associated tables, views, etc.) at the end:
 
 .. ipython:: python
     :suppress:
@@ -57,7 +55,7 @@ Create a vDataFrame
 
 vDataFrames allow you to prepare and explore your data without modifying its representation in your Vertica database. Any changes you make are applied to the vDataFrame as modifications to the SQL query for the table underneath.
 
-To create a vDataFrame out of a table in your Vertica database, specify its schema and table name with the standard SQL syntax. For example, to create a vDataFrame out of the 'titanic' table in the 'xgb_to_json' schema:
+To create a vDataFrame out of a table in your Vertica database, specify its schema and table name with the standard SQL syntax. For example, to create a vDataFrame out of the ``titanic`` table in the ``xgb_to_json`` schema:
 
 .. ipython:: python
 
@@ -73,11 +71,11 @@ was created with, the VerticaPy :py:mod:`~verticapy.machine_learning.vertica.ens
 and then references a model in Vertica, so it must be stored in a 
 schema like any other database object.
 
-This example creates the 'my_model' :py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` model in 
-the 'xgb_to_json' schema:
+This example creates the ``my_model`` :py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` model in 
+the ``xgb_to_json`` schema:
 
 This example loads the Titanic dataset with the load_titanic function 
-into a table called 'titanic' in the 'xgb_to_json' schema:
+into a table called ``titanic`` in the ``xgb_to_json`` schema:
 
 .. ipython:: python
 
@@ -94,8 +92,7 @@ Prepare the Data
 While Vertica XGBoost supports columns of type VARCHAR, Python XGBoost does not, so you must encode the categorical 
 columns you want to use. You must also drop or impute missing values.
 
-This example drops 'age', 'fare', 'sex', 'embarked' and 'survived' columns from the vDataFrame and then encodes the 
-'sex' and 'embarked' columns. These changes are applied to the vDataFrame's query and does not affect the main "xgb_to_json.titanic' table stored in Vertica:
+This example drops ``age``, ``fare``, ``sex``, ``embarked`` and ``survived`` columns from the vDataFrame and then encodes the ``sex`` and ``embarked`` columns. These changes are applied to the vDataFrame's query and does not affect the main ``xgb_to_json.titanic`` table stored in Vertica:
 
 .. ipython:: python
 
@@ -175,7 +172,7 @@ To export and save the model as a JSON file, specify a filename:
 
     model.to_json("exported_xgb_model.json");
 
-Unlike Python XGBoost, Vertica does not store some information like 'sum_hessian' or 'loss_changes,' and the exported model from :py:func:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier.to_json` replaces this information with a list of zeroes. These information are replaced by a list filled with zeros.
+Unlike Python XGBoost, Vertica does not store some information like ``sum_hessian`` or ``loss_changes``, and the exported model from :py:func:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier.to_json` replaces this information with a list of zeroes. These information are replaced by a list filled with zeros.
 
 Make Predictions with an Exported Model
 ----------------------------------------
@@ -202,10 +199,7 @@ For multiclass classifiers, the probabilities returned by the VerticaPy and the 
 Clean the Example Environment
 ------------------------------
 
-Drop the 'xgb_to_json' schema, using CASCADE to drop any 
-database objects stored inside (the 'titanic' table, the 
-:py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` 
-model, etc.), then delete the 'exported_xgb_model.json' file:
+Drop the ``xgb_to_json`` schema, using CASCADE to drop any database objects stored inside (the ``titanic`` table, the :py:mod:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier` model, etc.), then delete the ``exported_xgb_model.json`` file:
 
 .. ipython:: python
 
@@ -216,15 +210,8 @@ model, etc.), then delete the 'exported_xgb_model.json' file:
 Conclusion
 -----------
 
-VerticaPy lets you to create, train, evaluate, and export 
-Vertica machine learning models. There are some notable 
-nuances when importing a Vertica XGBoost model into 
-Python XGBoost, but these do not affect the accuracy of the model or its predictions:
+VerticaPy lets you to create, train, evaluate, and export Vertica machine learning models. There are some notable nuances when importing a Vertica XGBoost model into Python XGBoost, but these do not affect the accuracy of the model or its predictions:
 
-Some information computed during the training phase may not 
-be stored (e.g. 'sum_hessian' and 'loss_changes').
-The exact probabilities of multiclass classifiers in a 
-Vertica model may differ from those in Python, but bot  h 
-will make the same predictions.
-Python XGBoost does not support categorical predictors, 
-so you must encode them before training the model in VerticaPy.
+Some information computed during the training phase may not be stored (e.g. ``sum_hessian`` and ``loss_changes``).
+
+The exact probabilities of multiclass classifiers in a Vertica model may differ from those in Python, but bot  ``h`` will make the same predictions. Python XGBoost does not support categorical predictors, so you must encode them before training the model in VerticaPy.

@@ -108,7 +108,7 @@ Data Exploration and Preparation
 ---------------------------------
 
 Let's look at the links between all the variables. 
-Remember our goal: find a way to predict students' final scores ('zralocp' & 'zmalocp').
+Remember our goal: find a way to predict students' final scores (``zralocp`` & ``zmalocp``).
 
 .. code-block:: python
 
@@ -175,9 +175,9 @@ Let's take a look at the missing values.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_africa_count_percent.html
 
-Many values are missing for 'zraloct' which is the teachers' test score. We need to find a way to impute them as they represent more than 10% of the dataset. For the others that represent less than 5% of the dataset, our goal is to identify what improves student performance, so we can filter them.
+Many values are missing for ``zraloct`` which is the teachers' test score. We need to find a way to impute them as they represent more than 10% of the dataset. For the others that represent less than 5% of the dataset, our goal is to identify what improves student performance, so we can filter them.
 
-We'll use two variables to impute the teachers' scores: TEACHER'S SEX (XSEX) and Teacher's Training (XQPROFES).
+We'll use two variables to impute the teachers' scores: TEACHER'S SEX (``XSEX``) and Teacher's Training (``XQPROFES``).
 
 
 .. code-block:: python
@@ -277,7 +277,7 @@ We can add the prediction to the :py:mod:`~verticapy.vDataFrame` and draw the sc
 
     # Filtering and drawing Africa
     africa_world = africa_world[africa_world["continent"] == "Africa"]
-    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor='black',)
+    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor = "black",)
 
 .. ipython:: python
     :suppress:
@@ -291,7 +291,7 @@ We can add the prediction to the :py:mod:`~verticapy.vDataFrame` and draw the sc
 
 .. ipython:: python
 
-    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor='black',)
+    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor = "black",)
     @savefig examples_africa_geo_plot.png
     africa.scatter(
         ["lon", "lat"],
@@ -362,14 +362,11 @@ These scores are quite good! Let's fit all the data and keep the most important 
 
     predictors = model.features_importance(show = False)["index"]
 
-We can see here that socioeconomic status and a student's country 
-tend to strongly influence the students work quality. 
-This makes sense: you would expect that having poor studying 
-conditions (unstable government, difficulties at home, etc.) 
-would lead to worse results. For now, let's just consider the 20 most important variables.
+We can see here that socioeconomic status and a student's country tend to strongly influence the students work quality. 
+This makes sense: you would expect that having poor studying conditions (unstable government, difficulties at home, etc.) would lead to worse results. For now, let's just consider the 20 most important variables.
 
 Let's do some tuning to find the best parameters for the use case. 
-Our goal will be to optimize the 'median_absolute_error'.
+Our goal will be to optimize the ``median_absolute_error``.
 
 .. code-block:: python
 
@@ -403,7 +400,7 @@ Our goal will be to optimize the 'median_absolute_error'.
         'nbins': 20,
     }
 
-Our model is excellent. Let's create one for the students' standardized reading score ('zralocp').
+Our model is excellent. Let's create one for the students' standardized reading score (``zralocp``).
 
 .. code-block:: python
 
@@ -435,7 +432,7 @@ Our model is excellent. Let's create one for the students' standardized reading 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_africa_reg_report_zralocp.html
 
-We'll also create one for the students' standardized mathematics score ('zmalocp').
+We'll also create one for the students' standardized mathematics score (``zmalocp``).
 
 .. code-block:: python
 
@@ -600,13 +597,7 @@ Now, let's see how a student's nationality might affect their performance.
     :file: SPHINX_DIRECTORY/figures/examples_africa_bar_10_country_long.html
 
 The students' nationalities seem to have big impact. 
-For example, Swaziland, Kenya, and Tanzanie are probably 
-overrating the bad students (90% of the scores are greater 
-than the average (500)) whereas some countries like Zambia, 
-South Africa, and Malawi are underrating their students 
-(90% of the scores are under 480). This could be related to the 
-global education in the country: some education systems could 
-be harder than the others. Let's break this down by region.
+For example, Swaziland, Kenya, and Tanzanie are probably overrating the bad students (90% of the scores are greater than the average (500)) whereas some countries like Zambia, South Africa, and Malawi are underrating their students (90% of the scores are under 480). This could be related to the global education in the country: some education systems could be harder than the others. Let's break this down by region.
 
 .. code-block:: python
 
@@ -658,7 +649,7 @@ The same applies to the regions. Let's look at student age.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_africa_bar_page.html
 
-Let's look at the the variables 'PLIGHT' (a student's main lighting source) and 'PREPEAT' (repeated years).
+Let's look at the the variables ``PLIGHT`` (a student's main lighting source) and ``PREPEAT`` (repeated years).
 
 .. code-block:: python
 
@@ -714,10 +705,10 @@ Another factor in a student's performance might be their method of transportatio
 We can clearly see that the more inconvenient it is to get to school, 
 the worse students tend to perform.
 
-Let's look at the influence of the 'district'.
+Let's look at the influence of the ``district``.
 
 Predictably, better teachers generally lead to better results. 
-Let's look at the influence of the 'district'.
+Let's look at the influence of the ``district``.
 
 .. code-block:: python
 
@@ -749,7 +740,8 @@ After assessing several predictors of student-performance, we can hypothesize so
 Machine Learning: Finding the Best Students
 ---------------------------------------------
 
-To find the best students we can use each school's ID (the SCHOOL variable) and compute the average score. 
+To find the best students we can use each school's ID (the ``SCHOOL`` variable) and compute the average score.
+
 We can then order these by descending average score and note the top five students at each school.
 
 .. code-block:: python

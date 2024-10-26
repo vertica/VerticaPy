@@ -3,7 +3,7 @@
 Pokemon
 ========
 
-This example uses the 'pokemon' and 'combats' datasets to predict the winner of a 1-on-1 Pokemon battle. You can download the Jupyter Notebook of the study here and two datasets:
+This example uses the ``pokemon`` and ``combats`` datasets to predict the winner of a 1-on-1 Pokemon battle. You can download the Jupyter Notebook of the study here and two datasets:
 
 `pokemon <https://github.com/vertica/VerticaPy/tree/master/examples/learn/pokemon/pokemons.csv>`_
 
@@ -89,9 +89,9 @@ Let's ingest the datasets.
 Data Exploration and Preparation
 ---------------------------------
 
-The table 'combats' will be joined to the table 'pokemon' to predict the winner.
+The table ``combats`` will be joined to the table ``pokemon`` to predict the winner.
 
-The 'pokemon' table contains the information on each Pokemon. Let's describe this table.
+The ``pokemon`` table contains the information on each Pokemon. Let's describe this table.
 
 .. code-block:: python
 
@@ -108,7 +108,7 @@ The 'pokemon' table contains the information on each Pokemon. Let's describe thi
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_describe.html
 
-The pokemon's 'Name', 'Generation', and whether or not it's 'Legendary' will never influence the outcome of the battle, so we can drop these columns.
+The pokemon's ``Name``, ``Generation``, and whether or not it's ``Legendary`` will never influence the outcome of the battle, so we can drop these columns.
 
 .. code-block:: python
 
@@ -137,7 +137,7 @@ The pokemon's 'Name', 'Generation', and whether or not it's 'Legendary' will nev
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_drop.html
 
-The 'ID' will be the key to join the data. By joining the data, we will be able to create more relevant features.
+The ``ID`` will be the key to join the data. By joining the data, we will be able to create more relevant features.
 
 .. ipython:: python
 
@@ -187,7 +187,7 @@ The 'ID' will be the key to join the data. By joining the data, we will be able 
             ]
     )
 
-Features engineering is the key. Here, we can create features that describe the stat differences between the first and second Pokemon. We can also change 'winner' to a binary value: 1 if the first pokemon won and 0 otherwise.
+Features engineering is the key. Here, we can create features that describe the stat differences between the first and second Pokemon. We can also change ``winner`` to a binary value: 1 if the first pokemon won and 0 otherwise.
 
 .. ipython:: python
 
@@ -231,7 +231,7 @@ Missing values can not be handled by most machine learning models. Let's see whi
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_clean_1.html
 
-In terms of missing values, our only concern is the Pokemon's second type (Type_2_1 and Type_2_2). Since some Pokemon only have one type, these features are MNAR (missing values not at random). We can impute the missing values by creating another category.
+In terms of missing values, our only concern is the Pokemon's second type (``Type_2_1`` and ``Type_2_2``). Since some Pokemon only have one type, these features are MNAR (missing values not at random). We can impute the missing values by creating another category.
 
 .. code-block:: python
 

@@ -374,7 +374,7 @@ It is also possible to use SHP datasets to draw maps.
   africa_world = africa_world[africa_world["continent"] == "Africa"]
   ax = africa_world["geometry"].geo_plot(
       color = "white",
-      edgecolor='black',
+      edgecolor = "black",
   );
   # displaying schools in Africa
   @savefig user_guides_data_exploration_africa_scatter.png
@@ -390,7 +390,7 @@ Time-series plots are also available with the :py:func:`~verticapy.vDataFrame.pl
 .. ipython:: python
 
   amazon = load_amazon();
-  amazon.filter(amazon["state"]._in(['ACRE', 'RIO DE JANEIRO', 'PARÁ']));
+  amazon.filter(amazon["state"]._in(["ACRE", "RIO DE JANEIRO", "PARÁ"]));
   @savefig user_guides_data_exploration_amazon_time.png
   amazon["number"].plot(ts = "date", by = "state")
 
