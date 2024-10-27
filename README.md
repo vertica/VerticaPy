@@ -6,20 +6,18 @@
 
 :loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
 
-:warning: The old website has been relocated to https://www.vertica.com/python/old/ and will be discontinued soon. We strongly recommend upgrading to the new major release before August 2024.
-
-:warning: The following README is for VerticaPy 1.0.x and onwards, and so some of the elements may not be present in the previous versions.
+:warning: The following README is for VerticaPy 1.1.x and onwards, and so some of the elements may not be present in the previous versions.
 
 :scroll: Some basic syntax can be found in [the cheat sheet](assets/cheat_sheet/).
 
-📰 Check out the latest newsletter [here](assets/news_letter/1.0.x/VerticaPy_Newsletter.pdf).
+📰 Check out the latest newsletter [here](assets/news_letter/1.1.x/VerticaPy_Newsletter.pdf).
 
 # VerticaPy
 
 [![PyPI version](https://badge.fury.io/py/verticapy.svg)](https://badge.fury.io/py/verticapy)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/verticapy?color=yellowgreen)](https://anaconda.org/conda-forge/verticapy)
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 [![codecov](https://codecov.io/gh/vertica/VerticaPy/branch/master/graph/badge.svg?token=a6GiFYI9at)](https://codecov.io/gh/vertica/VerticaPy)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
@@ -169,7 +167,7 @@ VerticaPy's theme-switching option ensures that users can tailor their experienc
 <br>
 
 ### SQL Magic
-You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.jupyter.extensions.sql_magic.sql_magic.html#verticapy.jupyter.extensions.sql_magic.sql_magic'>SQL Magic</a>:
+You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation/1.1.x/html/api/verticapy.jupyter.extensions.sql_magic.sql_magic.html#verticapy.jupyter.extensions.sql_magic.sql_magic'>SQL Magic</a>:
 
 #### Example
 
@@ -183,7 +181,7 @@ Execute your SQL queries.
 SELECT version();
 
 # Output
-# Vertica Analytic Database v11.0.1-0
+# Vertica Analytic Database v24.4-0
 ```
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
@@ -222,7 +220,7 @@ ON flight_vertica.ORIGIN_AIRPORT = airports.IATA_CODE;
 ```
 In the example above, the 'flight_vertica' table is stored in Vertica, whereas the 'airports' table is stored in MySQL. We can associate special symbols "&&&" to the different databases to fetch the data. The best part is that all the aggregation is pushed to the databases (i.e. it is not done in memory)!
 
-For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about using DBLINK in VerticaPy, check out the [documentation page](https://www.vertica.com/python/documentation/1.0.x/html/notebooks/full_stack/dblink_integration/).
+For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about using DBLINK in VerticaPy, check out the [documentation page](https://www.vertica.com/python/documentation/1.1.x/html/notebooks/full_stack/dblink_integration/).
 
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
@@ -262,7 +260,7 @@ https://www.vertica.com/python/documentation/chart.html
 
 - **Data Ingestion**
 
-  VerticaPy allows users to ingest data from a diverse range of sources, such as AVRO, Parquet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.read_file.html)", VerticaPy automatically infers the source type and the data type.
+  VerticaPy allows users to ingest data from a diverse range of sources, such as AVRO, Parquet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation/1.1.x/html/api/verticapy.read_file.html)", VerticaPy automatically infers the source type and the data type.
 
   ```python
   import verticapy as vp
@@ -325,7 +323,7 @@ We can even see the SQL underneath every VerticaPy command by turning on the gen
      PARSER FJsonParser()
 ```
 
-VerticaPy provides functions for importing other specific file types, such as [read_json](#https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.read_json.html#verticapy.read_json) and [read_csv](#https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.read_csv.html). Since these functions focus on a particular file type, they offer more options for tackling the data. For example, [read_json](#https://www.vertica.com/python/documentation/1.0.x/html/api/verticapy.read_json.html#verticapy.read_json) has a "flatten_arrays" parameter that allows you to flatten nested JSON arrays.
+VerticaPy provides functions for importing other specific file types, such as [read_json](#https://www.vertica.com/python/documentation/1.1.x/html/api/verticapy.read_json.html#verticapy.read_json) and [read_csv](#https://www.vertica.com/python/documentation/1.1.x/html/api/verticapy.read_csv.html). Since these functions focus on a particular file type, they offer more options for tackling the data. For example, [read_json](#https://www.vertica.com/python/documentation/1.1.x/html/api/verticapy.read_json.html#verticapy.read_json) has a "flatten_arrays" parameter that allows you to flatten nested JSON arrays.
 
 - **Data Exploration**
 
@@ -396,7 +394,7 @@ titanic.corr(method="spearman", focus="survived")
 
 - **Data Preparation**
 
-  Whether you are [joining multiple tables](https://www.vertica.com/python/documentation/1.0.x/html/notebooks/data_prep/joins/), [encoding](https://www.vertica.com/python/documentation/1.0.x/html/notebooks/data_prep/encoding/), or [filling missing values](https://www.vertica.com/python/documentation/1.0.x/html/notebooks/data_prep/missing_values/), VerticaPy has everything and more in one package.
+  Whether you are [joining multiple tables](https://www.vertica.com/python/documentation/1.1.x/html/notebooks/data_prep/joins/), [encoding](https://www.vertica.com/python/documentation/1.1.x/html/notebooks/data_prep/encoding/), or [filling missing values](https://www.vertica.com/python/documentation/1.1.x/html/notebooks/data_prep/missing_values/), VerticaPy has everything and more in one package.
 
 ```python
 import random
@@ -413,7 +411,7 @@ data.outliers_plot(columns="Heights")
 
 - **Machine Learning**
 
-  ML is the strongest suite of VerticaPy as it capitalizes on the speed of in-database training and prediction by using SQL in the background to interact with the database. ML for VerticaPy covers a vast array of tools, including [time series forecasting](https://www.vertica.com/python/documentation/1.0.x/html/notebooks/ml/time_series/), [clustering](https://www.vertica.com/python/documentation/1.0.x/html/notebooks/ml/clustering/), and [classification](https://www.vertica.com/python/documentation/1.0.x/html/notebooks/ml/classification/). 
+  ML is the strongest suite of VerticaPy as it capitalizes on the speed of in-database training and prediction by using SQL in the background to interact with the database. ML for VerticaPy covers a vast array of tools, including [time series forecasting](https://www.vertica.com/python/documentation/1.1.x/html/notebooks/ml/time_series/), [clustering](https://www.vertica.com/python/documentation/1.1.x/html/notebooks/ml/clustering/), and [classification](https://www.vertica.com/python/documentation/1.1.x/html/notebooks/ml/classification/). 
 
 ```python
 # titanic_vd is already loaded
@@ -596,7 +594,7 @@ Enjoy!
 
 ### Contributing
 
-For a short guide on contribution standards, see the <a href='https://www.vertica.com/python/documentation/1.0.x/html/contribution_guidelines.html'>Contribution Guidelines</a>.
+For a short guide on contribution standards, see the <a href='https://www.vertica.com/python/documentation/1.1.x/html/contribution_guidelines.html'>Contribution Guidelines</a>.
 
 ### Communication
 
