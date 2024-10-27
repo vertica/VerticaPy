@@ -149,7 +149,7 @@ class ARIMA(TimeSeriesModelBase):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Initialization
@@ -881,7 +881,7 @@ class ARMA(TimeSeriesModelBase):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Initialization
@@ -1620,7 +1620,7 @@ class AR(TimeSeriesModelBase):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Initialization
@@ -2309,7 +2309,7 @@ class MA(TimeSeriesModelBase):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Initialization
@@ -3049,7 +3049,7 @@ class VAR(AR):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Initialization

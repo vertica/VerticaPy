@@ -33,13 +33,10 @@ This document will guide you through the contribution process. For code contribu
   contribution_guidelines_code
   tolerance
 
-
 Some other options are:
 
 - Bug Reports
 - Feature Requests
-
-
 
 Bug Reports
 ------------
@@ -55,4 +52,4 @@ Feel free to share your ideas for how to improve *VerticaPy*. We're always open 
 You can open an `issue <https://github.com/vertica/VerticaPy/issues>`_
 with details describing what feature(s) you'd like to be added or changed.
    
-If you would like to implement the feature yourself, open an issue to ask before working on it. Once approved, please refer to :ref:`contribution_guidelines.code`.
+If you would like to implement the feature yourself, open an issue to ask before working on it. Once approved, please refer to :ref:`contribution_guidelines.code` .
