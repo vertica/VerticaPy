@@ -160,9 +160,11 @@ It took an order of magnitude more to load into memory compared with the time re
 .. ipython:: python
 
     import matplotlib.pyplot as plt
-    @savefig ug_intro_vdf_plot
+
+    @savefig ug_intro_vdf_plot.png
     plt.plot(L_nrows, L_time)
-    @savefig ug_intro_vdf_plot_2
+
+    @savefig ug_intro_vdf_plot_2.png
     plt.show()
 
 Even after the data is loaded into memory, the performance is very slow. The following example removes non-numeric columns from the dataset, then computes a correlation matrix:
