@@ -556,6 +556,14 @@ body {
   height: 520px; /* Adjust the desired height */
 }
 
+/* Cards on Examples Page */
+.custom-class-img-top-examples {
+  height: 280px;
+}
+.custom-card-examples{
+  height: 420px;
+}
+
 
 /* Cards on Machine Learning page */
 .custom-card-3 {
