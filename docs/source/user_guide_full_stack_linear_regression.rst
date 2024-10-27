@@ -571,7 +571,7 @@ We can verify the Gauss-Markov assumptions with our :py:mod:`~verticapy.machine_
     :okwarning:
 
     vp.set_option("plotting_lib","plotly")
-    fig = africa_pca.corr()
+    fig = africa_pca.corr(with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_18.html")
 
 .. raw:: html
