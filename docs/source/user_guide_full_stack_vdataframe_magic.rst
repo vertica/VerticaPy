@@ -246,7 +246,7 @@ Not Equal Operator (!=)
 'Pythonic' Invokation of Vertica Functions
 -------------------------------------------
 
-You can easily apply Vertica functions to your :py:mod:`~verticapy.vDataFrame`. Here, we use Vertica's COALESCE function to impute the ``age`` of the passengers in our dataset.
+You can easily apply Vertica functions to your :py:mod:`~verticapy.vDataFrame`. Here, we use Vertica's ``COALESCE`` function to impute the ``age`` of the passengers in our dataset.
 
 .. code-block:: ipython
 

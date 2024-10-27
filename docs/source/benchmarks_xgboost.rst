@@ -10,7 +10,7 @@ Vertica vs Amazon Redshift | Python | PySpark
 
 .. important::
 
-  |  *Version Details*
+  |  **Version Details**
   |  **Vertica:** 23.4
   |  **Amazon Redshift:** Jan 2023
   |  **Amazon Sagemaker:** Jan 2023
@@ -594,7 +594,7 @@ The comparison analysis on both datasets follows:
 
 
 
-.. tab:: Amazon dataset analysis
+.. tab:: ``amazon`` dataset analysis
 
 
   Below are the results from different experiments of parameters. 

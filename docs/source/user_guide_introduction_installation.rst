@@ -69,6 +69,6 @@ For an interactive start guide, you can use the :py:func:`~verticapy.help_start(
 
     vp.help_start()
 
-.. image:: ../../source/_static/website/user_guides/introduction/user_guide_installation_help_start.PNG
+.. image:: ../../docs/source/_static/website/user_guides/introduction/user_guide_installation_help_start.PNG
     :width: 50%
     :align: center

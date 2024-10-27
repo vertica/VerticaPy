@@ -608,7 +608,7 @@ def plot_acf_pacf(
         without interfering with functions from other
         libraries.
 
-    For this example, we will use the Amazon dataset.
+    For this example, we will use the ``amazon`` dataset.
 
     .. code-block:: python
 

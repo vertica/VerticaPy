@@ -321,12 +321,12 @@ Let's compare the importance of our features.
     :file: SPHINX_DIRECTORY/figures/ug_fs_plot_lr_10.html
 
 The following factors seem to have the greatest influence on a student's performance:
-- Having a good teacher.
-- Being of good socio-economic status.
-- Tanzanian teachers tend to overrate their students.
-- Age (younger students tend to perform better).
-- Being able to get to school by car.
-Let's add the prediction to the vDataFrame to see how our model performs its estimations.
+ - Having a good teacher.
+ - Being of good socio-economic status.
+ - Tanzanian teachers tend to overrate their students.
+ - Age (younger students tend to perform better).
+ - Being able to get to school by car.
+Let's add the prediction to the :py:mod:`~verticapy.vDataFrame` to see how our model performs its estimations.
 
 .. code-block:: python
 

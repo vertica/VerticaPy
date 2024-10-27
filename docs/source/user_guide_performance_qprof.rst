@@ -4,25 +4,25 @@
 Getting started with Query Profiler
 ====================================
 
-This starter notebook will help you get up and running with the Query Profiler (:py:func:`~verticapy.performance.vertica.QueryProfiler`) tool in VerticaPyLab and demonstrate functionality through various examples and use cases.
+This starter notebook will help you get up and running with the Query Profiler (:py:mod:`~verticapy.performance.vertica.QueryProfiler`) tool in VerticaPyLab and demonstrate functionality through various examples and use cases.
 
 This tool is a work in progress and the VerticaPy team is continuously adding new features.
 
-See also :py:func:`~verticapy.performance.vertica.QueryProfiler`, 
+See also :py:mod:`~verticapy.performance.vertica.QueryProfiler`, 
 :py:func:`~verticapy.performance.vertica.QueryProfilerInterface`, 
 :py:func:`~verticapy.performance.vertica.QueryProfilerComparison`.
 
 VerticaPyLab
 -------------
 
-The easiest way to use the :py:func:`~verticapy.performance.vertica.QueryProfiler` tool is through VerticaPyLab. For installation instructions, see :ref:`getting_started`.
+The easiest way to use the :py:mod:`~verticapy.performance.vertica.QueryProfiler` tool is through VerticaPyLab. For installation instructions, see :ref:`getting_started`.
 
-Before using the :py:func:`~verticapy.performance.vertica.QueryProfiler` tool, confirm that you are connected to a Vertica database. If not, follow the connection instructions in a Jupyter notebook or connect using the Connect option on the VerticaPyLab homepage.
+Before using the :py:mod:`~verticapy.performance.vertica.QueryProfiler` tool, confirm that you are connected to a Vertica database. If not, follow the connection instructions in a Jupyter notebook or connect using the Connect option on the VerticaPyLab homepage.
 
 QueryProfiler
 --------------
 
-The :py:func:`~verticapy.performance.vertica.QueryProfiler` object is a python object that includes many built-in methods for analyzing queries and their performance. There are a few different ways to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object.
+The :py:mod:`~verticapy.performance.vertica.QueryProfiler` object is a python object that includes many built-in methods for analyzing queries and their performance. There are a few different ways to create a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object.
 
 Create and save a QueryProfiler object
 +++++++++++++++++++++++++++++++++++++++
@@ -37,10 +37,10 @@ First, import the verticapy package and load the datasets:
     titanic = load_titanic()
     amazon = load_amazon()
 
-Create :py:func:`~verticapy.performance.vertica.QueryProfiler` object from transaction id and statement id
+Create :py:mod:`~verticapy.performance.vertica.QueryProfiler` object from transaction id and statement id
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Before creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, take a look at the data used by the query:
+Before creating the :py:mod:`~verticapy.performance.vertica.QueryProfiler` object, take a look at the data used by the query:
 
 .. code-block:: python
 
@@ -72,7 +72,7 @@ Before creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` obje
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_titanic.html
 
-We can now run some queries to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object. One way to do so is by using the queries ``statement_id`` and ``transaction_id``.
+We can now run some queries to create a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object. One way to do so is by using the queries ``statement_id`` and ``transaction_id``.
 
 To allow for SQL execution in Jupyter cells, load the sql extension:
 
@@ -176,7 +176,7 @@ Next, let us run the queries:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_sql_2.html
 
-In order to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object from a query, we need the queries statement_id and transaction_id, both of which are found in the QUERY_REQUESTS system table:
+In order to create a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object from a query, we need the queries statement_id and transaction_id, both of which are found in the QUERY_REQUESTS system table:
 
 .. code-block:: python
 
@@ -184,13 +184,13 @@ In order to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` obj
 
     qprof = QueryProfiler((45035996273780927,76))
 
-To create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object w/ multiple queries, provide a list of tuples
+To create a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object w/ multiple queries, provide a list of tuples
 
 .. code-block:: python
 
     qprof = QueryProfilerInterface([(45035996273780927,74), (45035996273780075,6)])
 
-Once the :py:func:`~verticapy.performance.vertica.QueryProfiler` object is created, you can run the get_queries() method to view the queries contained in the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
+Once the :py:mod:`~verticapy.performance.vertica.QueryProfiler` object is created, you can run the get_queries() method to view the queries contained in the :py:mod:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. code-block:: python
   
@@ -213,14 +213,14 @@ Once the :py:func:`~verticapy.performance.vertica.QueryProfiler` object is creat
 To visualize the query plan, run :py:func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
 which is customizable, allowing you to specify certain metrics or focus on a specified tree path:
 
-.. image:: ../../source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.PNG
+.. image:: ../../docs/source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.PNG
     :width: 80%
     :align: center
 
-Create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object directly from a query
+Create a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object directly from a query
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-You can also create the :py:func:`~verticapy.performance.vertica.QueryProfiler` Object directly from an SQL Command:
+You can also create the :py:mod:`~verticapy.performance.vertica.QueryProfiler` Object directly from an SQL Command:
 
 .. code-block:: python
 
@@ -234,7 +234,7 @@ You can also create the :py:func:`~verticapy.performance.vertica.QueryProfiler` 
 Save the QueryProfiler object in a target schema
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
-After you create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, you can save it to a target schema. 
+After you create a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object, you can save it to a target schema. 
 
 In this example, we will save the object to the ``sc_demo`` schema:
 
@@ -242,7 +242,7 @@ In this example, we will save the object to the ``sc_demo`` schema:
 
     vp.create_schema("sc_demo")
 
-To save the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, specify the ``target_schema`` and, optionally, a ``key_id`` (it is a unique key which is used to search for the stored Qprof object) when creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
+To save the :py:mod:`~verticapy.performance.vertica.QueryProfiler` object, specify the ``target_schema`` and, optionally, a ``key_id`` (it is a unique key which is used to search for the stored Qprof object) when creating the :py:mod:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. code-block:: python
 
@@ -254,10 +254,10 @@ To save the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, spec
         overwrite = True,
     )
 
-Load a :py:func:`~verticapy.performance.vertica.QueryProfiler` object
+Load a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object
 ----------------------------------------------------------------------
 
-To load a previously saved :py:func:`~verticapy.performance.vertica.QueryProfiler`, simply provide its ``target_schema`` and ``key_id``:
+To load a previously saved :py:mod:`~verticapy.performance.vertica.QueryProfiler`, simply provide its ``target_schema`` and ``key_id``:
 
 .. code-block:: python
 
@@ -272,12 +272,12 @@ To load a previously saved :py:func:`~verticapy.performance.vertica.QueryProfile
 Export and import
 ------------------
 
-You can export and import :py:func:`~verticapy.performance.vertica.QueryProfiler` objects as .tar files.
+You can export and import :py:mod:`~verticapy.performance.vertica.QueryProfiler` objects as .tar files.
 
 Export
 +++++++
 
-To export a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.export_profile` method:
+To export a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.export_profile` method:
 
 .. code-block:: python
 
@@ -290,7 +290,7 @@ To export a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use 
 Import
 +++++++
 
-To import a :py:func:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.import_profile` method and provide the ``target_schema`` and ``key_id``.
+To import a :py:mod:`~verticapy.performance.vertica.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.import_profile` method and provide the ``target_schema`` and ``key_id``.
 
 Make sure the ``key_id`` is unique/unused. Let us create a new schema to load this into:
 
@@ -308,12 +308,12 @@ Make sure the ``key_id`` is unique/unused. Let us create a new schema to load th
 Methods & attributes
 ---------------------
 
-The :py:func:`~verticapy.performance.vertica.QueryProfiler` object includes many useful methods and attributes to aid in the analysis of query performence.
+The :py:mod:`~verticapy.performance.vertica.QueryProfiler` object includes many useful methods and attributes to aid in the analysis of query performence.
 
 Access performance tables
 ++++++++++++++++++++++++++
 
-With the :py:func:`~verticapy.performance.vertica.QueryProfiler` object, you can access any of the following tables:
+With the :py:mod:`~verticapy.performance.vertica.QueryProfiler` object, you can access any of the following tables:
 
 .. ipython:: python
 
@@ -373,7 +373,7 @@ Or the ``QUERY_CONSUMPTION`` table:
 Get query information
 ++++++++++++++++++++++
 
-You can retrieve the query information, such as ``transaction_id`` and ``statement_id``, from the :py:func:`~verticapy.performance.vertica.QueryProfiler` object:
+You can retrieve the query information, such as ``transaction_id`` and ``statement_id``, from the :py:mod:`~verticapy.performance.vertica.QueryProfiler` object:
 
 .. ipython:: python
     :okwarning:
@@ -459,10 +459,10 @@ To view the cpu time of the query in a bar graph:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_cpu_bar.html
 
-:py:func:`~verticapy.performance.vertica.QueryProfiler` execution report
+:py:mod:`~verticapy.performance.vertica.QueryProfiler` execution report
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-The :py:func:`~verticapy.performance.vertica.QueryProfiler` object can also generate a report that includes various performence metrics, including which operation took the most amount of time:
+The :py:mod:`~verticapy.performance.vertica.QueryProfiler` object can also generate a report that includes various performence metrics, including which operation took the most amount of time:
 
 .. code-block:: python
     
@@ -496,7 +496,7 @@ To view the query execution details:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_last.html
 
-:py:func:`~verticapy.performance.vertica.QueryProfiler` Summary Report Export
+:py:mod:`~verticapy.performance.vertica.QueryProfiler` Summary Report Export
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 You can also easily export the entire report in an HTML format. This report can be read without having any connection to database or a jupyter environment making it very convenient to share and analyze offline.

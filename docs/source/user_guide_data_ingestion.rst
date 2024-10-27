@@ -148,7 +148,7 @@ In the following example, we will use :py:func:`~verticapy.read_csv` to ingest a
 
     titanic = load_titanic()
 
-To convert a subset of the dataset to a CSV file, select the desired rows in the dataset and use the :py:func:`~verticapy.to_csv` :py:mod:`~verticapy.vDataFrame` method:
+To convert a subset of the dataset to a CSV file, select the desired rows in the dataset and use the :py:func:`~verticapy.vDataFrame.to_csv` :py:mod:`~verticapy.vDataFrame` method:
 
 .. ipython:: python
 
@@ -231,6 +231,6 @@ Other file types
 
 For more information about other file-specific ingestion functions, see the following reference pages, which include examples:
 
-- pandas DataFrames: :py:func:`~verticapy.read_pandas` and :py:func:`~verticapy.pandas_to_vertica`
+- pandas DataFrames: :py:func:`~verticapy.read_pandas`
 - Avro: :py:func:`~verticapy.read_avro`
 - SHP: :py:func:`~verticapy.read_shp`

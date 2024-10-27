@@ -347,7 +347,7 @@ It is also possible to:
 
 - Cast ``str`` to ``array``.
 - Cast complex data types to ``json`` str.
-- Cast ``str`` to ``VMAP``s.
+- Cast ``str`` to ``VMAP``
 - And much more...
 
 Multiple File Ingestion
@@ -448,7 +448,7 @@ To check for a flex table, we can use the following function:
 
     isflextable(table_name = "laliga_verticapy_test_json", schema = "complex_vmap_test")
 
-We can then manually materialize the flextable using the convenient :py:func:`~vDataFrame.to_db`` method:
+We can then manually materialize the flextable using the convenient :py:func:`~vDataFrame.to_db` method:
 
 .. ipython:: python
 

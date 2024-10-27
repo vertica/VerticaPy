@@ -3,7 +3,7 @@
 Spam
 =====
 
-This example uses the 'Spam' dataset to detect SMS spam. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/spam/spam.ipynb>`_.
+This example uses the ``spam`` dataset to detect SMS spam. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/spam/spam.ipynb>`_.
 
 - **v1:** the SMS type (spam or ham).
 - **v2:** SMS content.

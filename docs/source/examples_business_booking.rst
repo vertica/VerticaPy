@@ -146,12 +146,13 @@ If a user looks at the same hotel several times, then it might mean that they're
     :file: SPHINX_DIRECTORY/figures/examples_expedia_analytic.html
 
 We can now aggregate the session and get some useful statistics out of it:
-- **end_session_date_time:** Date and time when the session ends.
-- **session_duration:** Session duration.
-- **is_booking:** 1 if the user booked during the session, 0 otherwise.
-- **trip_duration:** Trip duration.
-- **orig_destination_distance:** Average of the physical distances between the hotels and the customer.
-- **srch_family_cnt:** The number of people specified in the hotel room.
+
+ - **end_session_date_time:** Date and time when the session ends.
+ - **session_duration:** Session duration.
+ - **is_booking:** 1 if the user booked during the session, 0 otherwise.
+ - **trip_duration:** Trip duration.
+ - **orig_destination_distance:** Average of the physical distances between the hotels and the customer.
+ - **srch_family_cnt:** The number of people specified in the hotel room.
 
 .. ipython:: python
 

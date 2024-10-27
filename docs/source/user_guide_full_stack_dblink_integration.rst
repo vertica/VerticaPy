@@ -41,7 +41,7 @@ Let's try to set up a connection with an external ``PostgreSQL`` database, which
     vp.set_external_connection(
         cid = "pgdb",
         rowset = 500,
-        symbol = "&"
+        symbol = "&",
     )
 
 Creating a vDataFrame
@@ -58,10 +58,9 @@ an identifying symbol that can be used for fetching perform queries with SQL.
     tab_data = vp.vDataFrame(
         input_relation = "airports",
         external = True,
-        symbol = "&"
+        symbol = "&",
     )
-    tab_data
-
+    tab_data.head(100)
 
 .. ipython:: python
     :suppress:
@@ -111,7 +110,7 @@ Or the count of the datapoints:
     Every time we perform these calculations or call the vDataFrame, it runs the SQL 
     query to fetch all the data from the external database. After retrieving the 
     entire table, the operations are computed by Vertica. In order to push the 
-    queries to a remote database, we can use the option "sql_push_ext". When we 
+    queries to a remote database, we can use the option ``sql_push_ext``. When we 
     create a vDataFrame with this option activated, all the aggregations are done 
     on the external database using SQL.
 

@@ -235,7 +235,7 @@ The :py:mod:`~verticapy.vDataFrame` structure
 
 Now that we've seen the performance and memory benefits of the vDataFrame, let's dig into some of the underlying structures and methods that produce these great results.
 
-:py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`s. To view all :py:mod:`vDataColumn`s in a :py:mod:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.get_columns` method:
+:py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`. To view all :py:mod:`~verticapy.vDataColumn` in a :py:mod:`~verticapy.vDataFrame` , use the :py:func:`~verticapy.vDataFrame.get_columns` method:
 
 .. ipython:: python
 

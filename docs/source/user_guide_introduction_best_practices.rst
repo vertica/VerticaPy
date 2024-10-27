@@ -304,7 +304,7 @@ Filter unnecessary data
 Filtering your data is a crucial step in data preparation. Proper filtering avoids unnecessary computations and greatly 
 improves the performance of each method call. While the performance impact can be minimal for small datasets, filtering large datasets is key to improving performance.
 
-For example, if we are only interested in analyzing Titanic passengers who didn't have a lifeboat, we can filter on this requirement using the :ref:`~verticapy.vDataFrame.filter` method: 
+For example, if we are only interested in analyzing Titanic passengers who didn't have a lifeboat, we can filter on this requirement using the :py:func:`~verticapy.vDataFrame.filter` method: 
 
 .. code-block:: python
 
@@ -321,7 +321,7 @@ For example, if we are only interested in analyzing Titanic passengers who didn'
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_filter.html
 
-To drop unnecessary columns from your vDataFrame, use the :func:`~verticapy.vDataFrame.drop` method:
+To drop unnecessary columns from your vDataFrame, use the :py:func:`~verticapy.vDataFrame.drop` method:
 
 .. code-block:: python
 

@@ -77,10 +77,8 @@ Pandas
 .. autosummary:: 
    :toctree: api/
 
-   pandas_to_vertica
    read_pandas
    
-
 _____
 
 In-memory Arrays

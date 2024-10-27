@@ -281,7 +281,7 @@ We can see that the Fiber Optic option in particular seems to be directly linked
 
 It seems that users with the Fiber Optic option tend more to churn not because of the option itself, but probably because of the type of contracts and the monthly charges the users are paying to get it. Be careful when dealing with identifying correlations! Remember: correlation doesn't imply causation!
 
-Another important type of correlation is the autocorrelation. Let's use the Amazon dataset to understand it.
+Another important type of correlation is the autocorrelation. Let's use the ``amazon`` dataset to understand it.
 
 .. code-block:: ipython
     

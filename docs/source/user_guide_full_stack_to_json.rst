@@ -12,6 +12,7 @@ For a demonstration on how to create a new connection to Vertica, see :ref:`conn
 .. code-block:: python
 
     import verticapy as vp
+    
     vp.connect("VerticaDSN")
 
 Create a Schema (Optional)

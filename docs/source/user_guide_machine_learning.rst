@@ -23,6 +23,19 @@ Machine Learning
 
     .. grid-item::
 
+      .. card:: Time series
+        :link: user_guide.machine_learning.time_series
+        :link-type: ref
+        :text-align: center
+        :class-card: custom-card-14
+
+        5 mins
+        ^^^^^^^
+        Uncover insights from time-ordered data, exploring 
+        trends and making predictions based on temporal patterns.
+
+    .. grid-item::
+
       .. card:: Regression
           :link: user_guide.machine_learning.regression
           :link-type: ref
@@ -65,19 +78,6 @@ Machine Learning
 
     .. grid-item::
 
-        .. card:: Time series
-          :link: user_guide.machine_learning.time_series
-          :link-type: ref
-          :text-align: center
-          :class-card: custom-card-14
-
-          5 mins
-          ^^^^^^^
-          Uncover insights from time-ordered data, exploring 
-          trends and making predictions based on temporal patterns.
-
-    .. grid-item::
-
         .. card:: Model management
           :link: user_guide.machine_learning.model_tracking
           :link-type: ref
@@ -94,8 +94,8 @@ Machine Learning
   :maxdepth: 1
   
   user_guide_machine_learning_introduction
+  user_guide_machine_learning_time_series
   user_guide_machine_learning_regression
   user_guide_machine_learning_classification
   user_guide_machine_learning_clustering
-  user_guide_machine_learning_time_series
   user_guide_machine_learning_model_tracking

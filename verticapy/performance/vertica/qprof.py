@@ -177,7 +177,7 @@ class QueryProfiler:
             make the process much more expensive.
     ignore_operators_check: bool, optional
         If set to ``False`` additional tests are done
-        on ``operator_id``s.
+        on ``operator_id``
     iterchecks: bool, optional
         If set to ``True``, the checks are done
         iteratively instead of using a unique
@@ -1712,7 +1712,7 @@ class QueryProfiler:
             when this parameter is set to ``False``.
         ignore_operators_check: bool, optional
             If set to ``False`` additional tests are done
-            on ``operator_id``s.
+            on ``operator_id``
 
             .. note::
 
