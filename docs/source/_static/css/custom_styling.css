@@ -563,6 +563,10 @@ body {
 .custom-card-examples{
   height: 420px;
 }
+/* Cards on Examples/Business Page */
+.custom-card-examples-business{
+  height: 500px;
+}
 
 
 /* Cards on Machine Learning page */
