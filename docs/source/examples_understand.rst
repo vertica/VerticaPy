@@ -13,12 +13,16 @@ Understand
         :link: examples.business.africa_education
         :link-type: ref
         :text-align: center
-        :class-card: custom-card-8
-        :class-footer: user_guide_footer
+        :class-card: custom-card-examples-understand
 
-        10 Nmins
+        10 mins
         ^^^^^^^^^^^^^^
-        Details...
+        Explore the pivotal factors shaping academic success 
+        among African students in our in-depth study. Uncover 
+        the key influencers that impact school scores and gain 
+        valuable insights for fostering a conducive learning 
+        environment. Engage with the data-driven exploration 
+        of educational dynamics.
 
 .. grid:: 1 1 2 2
 
@@ -29,12 +33,17 @@ Understand
         :link: examples.business.amazon
         :link-type: ref
         :text-align: center
-        :class-card: custom-card-8
-        :class-footer: user_guide_footer
+        :class-card: custom-card-examples-understand
 
-        10 Nmins
+        10 mins
         ^^^^^^^^^^^^^^
-        Details...
+        Embark on an exploration of the Amazon rainforest's 
+        future with our state-specific predictions in Brazil. 
+        Utilizing cutting-edge time series models, we forecast 
+        environmental changes, providing crucial insights into 
+        the preservation and conservation efforts required for 
+        each region. Witness the power of data-driven foresight 
+        as we navigate the dynamic landscape of the Amazon.
 
 .. grid:: 1 1 2 2
 
@@ -45,12 +54,17 @@ Understand
         :link: examples.business.covid19
         :link-type: ref
         :text-align: center
-        :class-card: custom-card-8
-        :class-footer: user_guide_footer
+        :class-card: custom-card-examples-understand
 
-        10 Nmins
+        10 mins
         ^^^^^^^^^^^^^^
-        Details...
+        Delve into the world of COVID-19 statistics on our platform, 
+        where we employ advanced time series models for accurate 
+        predictions of cases and fatalities. Stay informed with 
+        data-driven projections, empowering you with valuable 
+        insights into the evolving landscape of the pandemic. 
+        Experience the precision of our predictive analytics 
+        as we navigate through the complexities of COVID-19 trends.
 
 
 .. toctree::
