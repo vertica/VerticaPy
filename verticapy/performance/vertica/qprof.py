@@ -3639,6 +3639,7 @@ class QueryProfiler:
             "total ascending",
             "total descending",
         ] = "total descending",
+        extract: Optional[str] = "concat_info",
         show: bool = True,
         **style_kwargs,
     ) -> Union[PlottingObject, vDataFrame]:
@@ -3676,6 +3677,16 @@ class QueryProfiler:
             - category descending
             - total ascending
             - total descending
+
+        extract: str, optional
+            [Only used when ``show = True``]
+            What to extract from the path line.
+
+            - concat_info: Nicely formatted information.
+            - None | all: All the path line.
+            - cost: Path ID + Cost.
+            - rows: Path ID + Rows.
+            - operator: Path ID + Operator.
 
         show: bool, optional
             If set to True, the Plotting object
@@ -3739,7 +3750,13 @@ class QueryProfiler:
                 (read_from_disk_bytes // (1024 * 1024))::numeric(18, 2) AS read_mb,
                 (received_bytes // (1024 * 1024))::numeric(18, 2) AS in_mb,
                 (sent_bytes // (1024 * 1024))::numeric(18, 2) AS out_mb,
-                left(path_line, 80) AS path_line
+                left(path_line, 80) AS path_line,
+                'PATH ID: ' || path_id || ' | OPERATOR: ' || REGEXP_SUBSTR(path_line, '([A-Z]+(?: [A-Z]+)*)', 1)
+                    || ' | COST: ' || REGEXP_SUBSTR(path_line, 'Cost: (\\d+)', 1, 1, '', 1) || ' | ROWS: ' ||
+                    REGEXP_SUBSTR(path_line, 'Rows: (\\d+[A-Z]*)', 1, 1, '', 1) AS concat_info,
+                'PATH ID: ' || path_id || ' | OPERATOR: ' || REGEXP_SUBSTR(path_line, '([A-Z]+(?: [A-Z]+)*)', 1) AS operator,
+                'PATH ID: ' || path_id || ' | COST: ' || REGEXP_SUBSTR(path_line, 'Cost: (\\d+)', 1, 1, '', 1) AS cost,
+                'PATH ID: ' || path_id || ' | ROWS: ' || REGEXP_SUBSTR(path_line, 'Rows: (\\d+[A-Z]*)', 1, 1, '', 1) AS rows
             FROM v_monitor.query_plan_profiles
             WHERE transaction_id={self.transaction_id} AND
                   statement_id={self.statement_id}{where}
@@ -3751,7 +3768,10 @@ class QueryProfiler:
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         if show:
             self._check_vdf_empty(vdf)
-            fun = self._get_chart_method(vdf["path_line"], kind)
+            x = extract
+            if x not in ["concat_info", "operator", "cost", "rows"]:
+                x = "path_line"
+            fun = self._get_chart_method(vdf[x], kind)
             return fun(
                 method="sum",
                 of="running_time",

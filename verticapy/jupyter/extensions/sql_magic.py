@@ -122,6 +122,11 @@ def sql_magic(
         Output File. You  can use this option
         if  you want to export the  result of
         the query to  the CSV or JSON format.
+    -stdin: bool, optional
+        If set to ``False`` and you're trying
+        to perform a local copy, the parser
+        will not replace the file name with
+        ``STDIN``, simplifying the ingestion.
 
     Returns
     -------
@@ -794,6 +799,7 @@ def sql_magic(
                 "-ncols",
                 "-c",
                 "--command",
+                "-stdin",
             ):
                 if option.lower() in ("-f", "--file"):
                     if "-f" in options:
@@ -815,6 +821,13 @@ def sql_magic(
                     if "-ncols" in options:
                         raise ValueError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(options_dict[option])
+                elif option.lower() in ("-stdin",):
+                    if "-stdin" in options:
+                        raise ValueError("Duplicate option '-stdin'.")
+                    if options_dict[option].lower() in ("f", "false", "0"):
+                        options["-stdin"] = False
+                    else:
+                        options["-stdin"] = True
 
             else:
                 warning_message = (
@@ -857,8 +870,8 @@ def sql_magic(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries
             )
             warning_message = (
-                f"External Query detected but no corresponding Connection "
-                "Identifier Database is defined (Using the symbol '{s}'). "
+                "External Query detected but no corresponding Connection "
+                f"Identifier Database is defined (Using the symbol '{s}'). "
                 "Use the function connect.set_external_connection to set "
                 "one with the correct symbol."
             )
@@ -931,20 +944,26 @@ def sql_magic(
                 query_type = "undefined"
 
             if (query_type == "COPY") and ("from local" in query.lower()):
-                query = re.split("from local", query, flags=re.IGNORECASE)
-                if query[1].split(" ")[0]:
-                    file_name = query[1].split(" ")[0]
-                else:
-                    file_name = query[1].split(" ")[1]
-                query = (
-                    "".join(query[0])
-                    + "FROM"
-                    + "".join(query[1]).replace(file_name, "STDIN")
-                )
-                if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
-                    file_name = file_name[1:-1]
+                if "-stdin" in options and not (options["-stdin"]):
+                    _executeSQL(query, print_time_sql=False)
 
-                _executeSQL(query, method="copy", path=file_name, print_time_sql=False)
+                else:
+                    query = re.split("from local", query, flags=re.IGNORECASE)
+                    if query[1].split(" ")[0]:
+                        file_name = query[1].split(" ")[0]
+                    else:
+                        file_name = query[1].split(" ")[1]
+                    query = (
+                        "".join(query[0])
+                        + "FROM"
+                        + "".join(query[1]).replace(file_name, "STDIN")
+                    )
+                    if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
+                        file_name = file_name[1:-1]
+
+                    _executeSQL(
+                        query, method="copy", path=file_name, print_time_sql=False
+                    )
 
             elif (
                 (i < n - 1)
