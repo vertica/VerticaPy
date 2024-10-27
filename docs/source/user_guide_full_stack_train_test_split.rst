@@ -29,7 +29,7 @@ In VerticaPy, the :py:func:`~verticapy.vDataFrame.train_test_split` method uses 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_tts_1.html
 
-The ``SEEDED_RANDOM`` function chooses a number in the interval ``[0,1)``. Since the seed is user-provided, these results are reproducible. In this example, passing '0' as the seed always returns the same value.
+The ``SEEDED_RANDOM`` function chooses a number in the interval ``[0,1)``. Since the seed is user-provided, these results are reproducible. In this example, passing ``0`` as the seed always returns the same value.
 
 .. code-block:: ipython
     
@@ -94,7 +94,7 @@ Note that ``SEEDED_RANDOM`` depends on the order of your data. That is, if your 
 
     train, test = titanic.train_test_split(order_by = {"fare": "asc"})
 
-Even if the 'fare' has duplicates, ordering the data alone will drastically decrease the likelihood of a collision.
+Even if the ``fare`` has duplicates, ordering the data alone will drastically decrease the likelihood of a collision.
 
 Let's create a model and evaluate it.
 

@@ -54,12 +54,12 @@ Let's create a Virtual DataFrame of the dataset.
     from verticapy.datasets import load_winequality
     winequality = load_winequality()
     res = winequality.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_winequality_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_winequality_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_winequality_table_head.html
 
 Data Exploration and Preparation
 ----------------------------------
@@ -74,12 +74,12 @@ Let's explore the data by displaying descriptive statistics of all the columns.
     :suppress:
 
     res = winequality.describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_winequality_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_winequality_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_winequality_table_describe.html
 
 The quality of a wine is based on the equilibrium between certain components:
  - **For red wines:** tannin/smoothness/acidity
@@ -90,19 +90,19 @@ We do, however, have enough data to make a good model for white wines, so let's 
 
 .. code-block:: python
 
-    winequality.filter(winequality["color"] == 'white').drop(["good", "color"])
+    winequality.filter(winequality["color"] == "white").drop(["good", "color"])
 
 .. ipython:: python
     :suppress:
 
-    winequality.filter(winequality["color"] == 'white').drop(["good", "color"])
+    winequality.filter(winequality["color"] == "white").drop(["good", "color"])
     res = winequality
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_winequality_table_filter.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_winequality_table_filter.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_filter.html
+    :file: SPHINX_DIRECTORY/figures/examples_winequality_table_filter.html
 
 Let's draw the correlation matrix of the dataset.
 
@@ -116,14 +116,14 @@ Let's draw the correlation matrix of the dataset.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = winequality.corr(method = "spearman", width = 800, height = 800)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_winequality_table_corr_matrix.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_winequality_table_corr_matrix.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_corr_matrix.html
+    :file: SPHINX_DIRECTORY/figures/examples_winequality_table_corr_matrix.html
 
 We can see a strong correlation between the density and the alcohol degree (the alcohol degree describes the density of pure ethanol in the wine).
 
-We can drop the 'density' column since it doesn't influence the quality of the white wine (instead, its presence will just bias the data).
+We can drop the ``density`` column since it doesn't influence the quality of the white wine (instead, its presence will just bias the data).
 
 .. code-block:: python
 
@@ -134,12 +134,12 @@ We can drop the 'density' column since it doesn't influence the quality of the w
 
     winequality.drop(["density"])
     res = winequality
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_winequality_table_drop.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_winequality_table_drop.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_drop.html
+    :file: SPHINX_DIRECTORY/figures/examples_winequality_table_drop.html
 
 We're working with the scores given by wine tasters, so it's likely that two closely competing wines will have a similar score. Knowing this, a ``k-nearest neighbors`` (KNN) model would be best.
 
@@ -183,17 +183,17 @@ KNN is sensitive to unnormalized data so we'll have to normalize our data.
         method = "robust_zscore",
     )
     res = winequality
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_winequality_table_normalize.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_winequality_table_normalize.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_normalize.html
+    :file: SPHINX_DIRECTORY/figures/examples_winequality_table_normalize.html
 
 Machine Learning
 -----------------
 
-Let's create our KNN model.
+Let's create our ``KNN`` model.
 
 .. code-block:: python
 
@@ -213,12 +213,12 @@ Let's create our KNN model.
     predictors = winequality.get_columns(exclude_columns = ["quality"])
     model = KNeighborsRegressor(name = "winequality_KNN", n_neighbors = 50)
     res = cross_validate(model, winequality, predictors, "quality")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_winequality_table_ml_cv.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_winequality_table_ml_cv.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_winequality_table_ml_cv.html
+    :file: SPHINX_DIRECTORY/figures/examples_winequality_table_ml_cv.html
 
 Our model is pretty good. Our predicted scores have a median absolute error of less than 0.5. 
 If we want to improve this model, we'll probably need more relevant features.

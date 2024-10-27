@@ -3,7 +3,7 @@
 Booking
 ========
 
-This example uses the 'Expedia' dataset to predict, based on site activity, whether a user is likely to make a booking. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/booking/booking.ipynb>`_ and the dataset `here <https://www.kaggle.com/c/expedia-hotel-recommendations/data>`_.
+This example uses the ``expedia`` dataset to predict, based on site activity, whether a user is likely to make a booking. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/booking/booking.ipynb>`_ and the dataset `here <https://www.kaggle.com/c/expedia-hotel-recommendations/data>`_.
 
 - **cnt:** Number of similar events in the context of the same user session.
 - **user_location_city:** The ID of the city in which the customer is located.
@@ -59,14 +59,14 @@ Let's create a Virtual DataFrame of the dataset.
 .. ipython:: python
     :suppress:
 
-    expedia = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/booking/expedia.csv")
+    expedia = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/booking/expedia.csv")
     res = expedia.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_expedia_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_table_head.html
 
 .. warning::
     
@@ -77,7 +77,7 @@ Data Exploration and Preparation
 
 Sessionization is the process of gathering clicks for a certain period of time. We usually consider that after 30 minutes of inactivity, the user session ends (``date_time - lag(date_time) > 30 minutes``). For these kinds of use cases, aggregating sessions with meaningful statistics is the key for making accurate predictions.
 
-We start by using the :py:func:`~verticapy.vDataFrame.sessionize` method to create the variable 'session_id'. We can then use this variable to aggregate the data.
+We start by using the :py:func:`~verticapy.vDataFrame.sessionize` method to create the variable ``session_id``. We can then use this variable to aggregate the data.
 
 .. code-block:: python
 
@@ -97,12 +97,12 @@ We start by using the :py:func:`~verticapy.vDataFrame.sessionize` method to crea
         session_threshold = "30 minutes", 
         name = "session_id",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_sessionize.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_expedia_sessionize.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_sessionize.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_sessionize.html
 
 The duration of the trip should also influence/be indicative of the user's behavior on the site, so we'll take that into account.
 
@@ -138,12 +138,12 @@ If a user looks at the same hotel several times, then it might mean that they're
         name = "mode_hotel_cluster",
         add_count = True,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_analytic.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_expedia_analytic.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_analytic.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_analytic.html
 
 We can now aggregate the session and get some useful statistics out of it:
 - **end_session_date_time:** Date and time when the session ends.
@@ -186,14 +186,14 @@ Let's look at the missing values.
     :suppress:
 
     res = expedia.count_percent()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_count_percent.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_expedia_count_percent.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_count_percent.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_count_percent.html
 
-Let's impute the missing values for 'avg_distance' and 'trip_duration'.
+Let's impute the missing values for ``avg_distance`` and ``trip_duration``.
 
 .. code-block:: python
 
@@ -205,12 +205,12 @@ Let's impute the missing values for 'avg_distance' and 'trip_duration'.
 
     expedia["avg_distance" ].fillna(method = "avg")
     res = expedia["trip_duration"].fillna(method = "avg")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_fillna_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_expedia_fillna_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_fillna_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_fillna_1.html
 
 We can then look at the links between the variables. We will use Spearman's rank correleation coefficient to get all the monotonic relationships.
 
@@ -223,18 +223,18 @@ We can then look at the links between the variables. We will use Spearman's rank
 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
-    fig = expedia.corr(method = "spearman")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_expedia_corr.html")
+    fig = expedia.corr(method = "spearman", width = 750, with_numbers = False)
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_expedia_corr.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_corr.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_corr.html
 
-We can see huge links between some of the variables ('mode_hotel_cluster_count' and 'session_duration') and our response variable ('is_booking'). A logistic regression would work well in this case because the response and predictors have a monotonic relationship.
+We can see huge links between some of the variables (``mode_hotel_cluster_count`` and ``session_duration``) and our response variable (``is_booking``). A logistic regression would work well in this case because the response and predictors have a monotonic relationship.
 
 Machine Learning
 -----------------
 
-Let's create our :py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` model.
+Let's create our :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` model.
 
 .. ipython:: python
 
@@ -268,12 +268,12 @@ None of our coefficients are rejected (``pvalue = 0``). Let's look at their impo
     :suppress:
 
     fig = model_logit.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_expedia_features_importance.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_expedia_features_importance.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_features_importance.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_features_importance.html
 
-It looks like there are two main predictors: 'mode_hotel_cluster_count' and 'trip_duration'. According to our model, users likely to make a booking during a particular session will tend to:
+It looks like there are two main predictors: ``mode_hotel_cluster_count`` and ``trip_duration``. According to our model, users likely to make a booking during a particular session will tend to:
 
 - look at the same hotel many times.
 - look for a shorter trip duration.
@@ -297,14 +297,14 @@ Let's add our prediction to the :py:mod:`~verticapy.vDataFrame`.
         name = "booking_prob_logit",
         pos_label = 1,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_predict_proba_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_expedia_predict_proba_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_predict_proba_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_predict_proba_1.html
 
-While analyzing the following boxplot (prediction partitioned by 'is_booking'), we can notice that the ``cutoff`` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
+While analyzing the following boxplot (prediction partitioned by ``is_booking``), we can notice that the ``cutoff`` is around 0.22 because most of the positive predictions have a probability between 0.23 and 0.5. Most of the negative predictions are between 0.05 and 0.2.
 
 .. code-block:: python
 
@@ -315,10 +315,10 @@ While analyzing the following boxplot (prediction partitioned by 'is_booking'), 
     :okwarning:
 
     fig = expedia["booking_prob_logit"].boxplot(by = "is_booking")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_expedia_predict_boxplot_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_expedia_predict_boxplot_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_predict_boxplot_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_predict_boxplot_1.html
 
 Let's confirm our hypothesis by computing the best ``cutoff``.
 
@@ -336,12 +336,12 @@ Let's look at the efficiency of our model with a cutoff of 0.22.
     :suppress:
 
     res = model_logit.report(cutoff = 0.22)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_expedia_cutoff_best.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_expedia_cutoff_best.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_cutoff_best.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_cutoff_best.html
 
 ROC Curve:
 +++++++++++
@@ -354,10 +354,10 @@ ROC Curve:
     :suppress:
 
     fig = model_logit.roc_curve()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_expedia_roc_curve_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_expedia_roc_curve_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_expedia_roc_curve_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_expedia_roc_curve_1.html
 
 We're left with an excellent model. With this, we can predict whether a user will book a hotel during a specific session and make adjustments to our site accordingly. For example, to influence a user to make a booking, we could propose new hotels.
 

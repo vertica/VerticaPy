@@ -103,12 +103,12 @@ Load the datasets into the :py:mod:`~verticapy.vDataFrame` with :py:func:`~verti
     :suppress:
 
     artists = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/spotify/artists.csv", 
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/spotify/artists.csv", 
         schema = "spotify", 
         parse_nrows = 100,
     )
     res = artists.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spotify_artists_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spotify_artists_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
@@ -117,19 +117,19 @@ Load the datasets into the :py:mod:`~verticapy.vDataFrame` with :py:func:`~verti
     tracks.head(100)
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_artists_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_artists_table.html
 
 .. ipython:: python
     :suppress:
 
-    tracks  = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/spotify/tracks.csv",schema = "spotify",parse_nrows = 100)
+    tracks  = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/spotify/tracks.csv",schema = "spotify",parse_nrows = 100)
     res = tracks.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spotify_tracks_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spotify_tracks_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_tracks_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_tracks_table.html
 
 .. warning::
     
@@ -179,10 +179,10 @@ We can visualize the top 60 most-followed Polish artists with a bar chart.
         max_cardinality = 50,
         width = 800,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_polish_followers_bar.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_polish_followers_bar.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_polish_followers_bar.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_polish_followers_bar.html
 
 We can do the same with the most popular tracks. For example, we can graph Monika Brodka's most popular tracks like so:
 
@@ -212,10 +212,10 @@ We can do the same with the most popular tracks. For example, we can graph Monik
         max_cardinality = 25,
         width = 800,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_brodka_popularity_bar.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_brodka_popularity_bar.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_brodka_popularity_bar.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_brodka_popularity_bar.html
 
 To get an idea of what makes Monika Brodka's songs popular, let's create a boxplot of the numerical feature distribution of her tracks.
 
@@ -252,10 +252,10 @@ To get an idea of what makes Monika Brodka's songs popular, let's create a boxpl
 
     # create a boxplot of the above features
     fig = brodka_tracks.boxplot(columns = numerical_features)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_boxplot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_boxplot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_boxplot.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_boxplot.html
 
 Timing is a classic factor for success, so let's look at the popularity of Monika's songs over time with a smooth curve.
 
@@ -294,10 +294,10 @@ Timing is a classic factor for success, so let's look at the popularity of Monik
 
     # plot the smoothed curve for popularity of her songs
     fig = brodka_tracks.plot(ts = "release_date", columns = ["smoothed_popularity"]) 
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_brodka_release_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_brodka_release_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_brodka_release_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_brodka_release_plot.html
 
 Numerical-feature Analysis
 ---------------------------
@@ -350,10 +350,10 @@ features change and correlate with each other in Monika's most popular songs.
         ts = "release_year", 
         columns = numerical_features,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_brodka_release_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_brodka_release_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_brodka_release_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_brodka_release_plot.html
 
 .. code-block::
 
@@ -365,10 +365,10 @@ features change and correlate with each other in Monika's most popular songs.
     :okwarning:
 
     fig = tracks[tracks[numerical_features]].corr()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_tracks_corr.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_tracks_corr.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_tracks_corr.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_tracks_corr.html
 
 Feature Engineering
 --------------------
@@ -455,12 +455,12 @@ Additionally, we manipulate our data a bit to make things easier later on:
     )
     polish_tracks["nb_singers"].add(1)
     res = polish_tracks
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spotify_polish_tracks_clean_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spotify_polish_tracks_clean_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_polish_tracks_clean_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_polish_tracks_clean_table.html
 
 Define a list of predictors and the response, and then save the normalized version of the final dataset to the database.
 
@@ -564,10 +564,10 @@ Train the model.
     :okwarning:
 
     fig = auto_model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_automl_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_automl_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_automl_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_automl_plot.html
 
 Extract the best model according to :py:mod:`~verticapy.machine_learning.vertica.automl.AutoML`. From here, we can look at the model type and its hyperparameters.
 
@@ -621,12 +621,12 @@ Thanks to :py:mod:`~verticapy.machine_learning.vertica.automl.AutoML`, we know b
         polish_tracks, 
         name = "estimated_popularity",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spotify_lr_prediction.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spotify_lr_prediction.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_lr_prediction.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_lr_prediction.html
 
 View the regression report and the importance of each feature.
 
@@ -639,12 +639,12 @@ View the regression report and the importance of each feature.
     :okwarning:
 
     res = rf_model.regression_report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spotify_lr_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spotify_lr_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_lr_report.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_lr_report.html
 
 .. code-block::
 
@@ -655,10 +655,10 @@ View the regression report and the importance of each feature.
     :okwarning:
 
     fig = rf_model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_lr_featrures.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_lr_featrures.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_lr_featrures.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_lr_featrures.html
 
 To see how our model performs, let's plot the popularity and estimated popularity of songs by other Polish artists like Brodka and Akcent.
 
@@ -692,10 +692,10 @@ To see how our model performs, let's plot the popularity and estimated popularit
         ts = "name", 
         columns = ["popularity", "estimated_popularity"],
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_lr_brodaka_predict_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_lr_brodaka_predict_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_lr_brodaka_predict_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_lr_brodaka_predict_plot.html
 
 .. code-block::
 
@@ -733,10 +733,10 @@ To see how our model performs, let's plot the popularity and estimated popularit
             "estimated_popularity",
         ],
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_lr_akcent_predict_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_lr_akcent_predict_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_lr_akcent_predict_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_lr_akcent_predict_plot.html
 
 Group Artists using Track Features
 ------------------------------------
@@ -790,12 +790,12 @@ Let's start by taking the averages of these numerical features for each artist.
     # save relation to the database as "artists_features"
     artists_features.to_db('"spotify"."artists_features"')
     res = artists_features
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spotify_artists_features.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spotify_artists_features.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_artists_features.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_artists_features.html
 
 Grouping means clustering, so we use an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
 
@@ -832,10 +832,10 @@ Grouping means clustering, so we use an :py:func:`~verticapy.machine_learning.mo
     :okwarning:
 
     fig = elbow_curve
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_lr_elbow.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_lr_elbow.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_lr_elbow.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_lr_elbow.html
 
 Let's define and use the Vertica ``k-means`` algorithm to create a model that can group artists together.
 
@@ -871,10 +871,10 @@ Plot the result of the k-means algoritm:
     :okwarning:
 
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_spotify_cluster_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_spotify_cluster_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_cluster_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_cluster_plot.html
 
 .. ipython:: python
 
@@ -905,12 +905,12 @@ Let's see how our model groups these artists together:
     :okwarning:
 
     res = pred_genres["artists", "pred_genres"].sort({"pred_genres": "desc"})
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_spotify_pred_genres.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_spotify_pred_genres.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_spotify_pred_genres.html
+    :file: SPHINX_DIRECTORY/figures/examples_spotify_pred_genres.html
 
 Conclusion
 -----------

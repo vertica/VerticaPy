@@ -552,6 +552,11 @@ body {
   height: 370px; /* Adjust the desired height */
 }
 
+.custom-card-customer-test {
+  height: 520px; /* Adjust the desired height */
+}
+
+
 /* Cards on Machine Learning page */
 .custom-card-3 {
   height: 250px; /* Adjust the desired height */
@@ -1014,6 +1019,7 @@ article, article .align-default {
     height: 400px; /* Adjust the desired height */
     /* Add more styles as needed */
   }
+
 }
 
 @media (max-width: 36em) {
@@ -1054,6 +1060,7 @@ article, article .align-default {
 .custom-card-14 {
   height: 190px;
 }
+
 }
 
 @media (max-width: 62em) {
@@ -1081,6 +1088,7 @@ article, article .align-default {
 .custom-card-15 {
   height: 240px;
 }
+
 }
 @media (max-width: 90em) {
   .right-content {
@@ -1140,7 +1148,11 @@ article, article .align-default {
 @media (max-width: 40em) {
   .home_button_container{
     /* display: none */
-}
+  }
+  /* Cards on Index page */
+  .custom-card-customer-test {
+    height: 450px; /* Adjust the desired height */
+  }
 }
 
 /* Loader GIF for pages */

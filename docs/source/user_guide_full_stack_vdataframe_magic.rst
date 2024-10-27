@@ -1,10 +1,10 @@
 .. _user_guide.full_stack.vdataframe_magic:
 
 ======================================
-The 'Magic' Methods of the vDataFrame
+The ``Magic`` Methods of the vDataFrame
 ======================================
 
-VerticaPy 0.3.2 introduces the 'Magic' methods, which offer some additional flexilibility for mathematical operations in the :py:mod:`~verticapy.vDataFrame`. These methods let you handle many operations in a 'pandas-like' or Pythonic style.
+VerticaPy 0.3.2 introduces the ``Magic`` methods, which offer some additional flexilibility for mathematical operations in the :py:mod:`~verticapy.vDataFrame`. These methods let you handle many operations in a ``pandas-like`` or Pythonic style.
 
 .. code-block:: ipython
 
@@ -27,10 +27,10 @@ VerticaPy 0.3.2 introduces the 'Magic' methods, which offer some additional flex
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_1.html
 
-Feature Engineering, 'pandas'-style
+Feature Engineering, ``pandas``-style
 ------------------------------------
 
-You can create new features with in a 'pandas' style.
+You can create new features with in a ``pandas`` style.
 
 .. code-block:: ipython
 
@@ -94,7 +94,7 @@ You can also create features from various mathematical functions.
 Conditional Operators
 ----------------------
 
-You can now filter your data with conditional operators like and ('&'), or ('|'), equals ('=='), not equals (!=), and more!
+You can now filter your data with conditional operators like and (``&``), or (``|``), equals (``==``), not equals (!=), and more!
 
 Equal Operator (==)
 ++++++++++++++++++++
@@ -246,7 +246,7 @@ Not Equal Operator (!=)
 'Pythonic' Invokation of Vertica Functions
 -------------------------------------------
 
-You can easily apply Vertica functions to your :py:mod:`~verticapy.vDataFrame`. Here, we use Vertica's COALESCE function to impute the 'age' of the passengers in our dataset.
+You can easily apply Vertica functions to your :py:mod:`~verticapy.vDataFrame`. Here, we use Vertica's COALESCE function to impute the ``age`` of the passengers in our dataset.
 
 .. code-block:: ipython
 
@@ -286,13 +286,13 @@ To access a single row, we just have to specify the index.
 
 .. code-block:: python
 
-    titanic[0]
+    titanic[0:1]
 
 .. ipython:: python
     :suppress:
     :okwarning:
 
-    res = titanic[0]
+    res = titanic[0:1]
     html_file = open("SPHINX_DIRECTORY/figures/ug_fs_table_vdfm_15.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()

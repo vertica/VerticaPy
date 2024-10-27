@@ -22,15 +22,15 @@ Let's use the `Telco Churn dataset <https://github.com/vertica/VerticaPy/blob/ma
 
     import verticapy as vp
     churn = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/churn/customers.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/churn/customers.csv",
     )
     res = churn.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_de_table_corr_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_de_table_corr_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_table_corr_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_table_corr_1.html
 
 The Pearson correlation coefficient is a very common correlation function. In this case, it helped us to find linear links between the variables. Having a strong Pearson relationship means that the two input variables are linearly correlated.
 
@@ -45,12 +45,12 @@ The Pearson correlation coefficient is a very common correlation function. In th
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.corr(method = "pearson")
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_2.html
 
-We can see that 'tenure' is well-correlated to the 'TotalCharges', which makes sense.
+We can see that ``tenure`` is well-correlated to the ``TotalCharges``, which makes sense.
 
 .. code-block:: python
 
@@ -63,23 +63,23 @@ We can see that 'tenure' is well-correlated to the 'TotalCharges', which makes s
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.scatter(["tenure", "TotalCharges"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_3.html
 
 .. ipython:: python
 
     churn.corr(["tenure", "TotalCharges"], method = "pearson")
 
-Note, however, that having a low Pearson relationship imply that the variables aren't correlated. For example, let's compute the Pearson correlation coefficient between 'tenure' and 'TotalCharges' to the power of 20.
+Note, however, that having a low Pearson relationship imply that the variables aren't correlated. For example, let's compute the Pearson correlation coefficient between ``tenure`` and ``TotalCharges`` to the power of 20.
 
 .. ipython:: python
 
     churn["TotalCharges^20"] = churn["TotalCharges"] ** 20
     churn.corr(["tenure", "TotalCharges^20"], method = "pearson")
 
-We know that the 'tenure' and 'TotalCharges' are strongly linearly correlated. However we can notice that the correlation between the 'tenure' and 'TotalCharges' to the power of 20 is not very high. Indeed, the Pearson correlation coefficient is not robust for monotonic relationships, but rank-based correlations are. Knowing this, we'll calculate the Spearman's rank correlation coefficient instead.
+We know that the ``tenure`` and ``TotalCharges`` are strongly linearly correlated. However we can notice that the correlation between the ``tenure`` and ``TotalCharges`` to the power of 20 is not very high. Indeed, the Pearson correlation coefficient is not robust for monotonic relationships, but rank-based correlations are. Knowing this, we'll calculate the Spearman's rank correlation coefficient instead.
 
 .. code-block:: ipython
     
@@ -89,12 +89,12 @@ We know that the 'tenure' and 'TotalCharges' are strongly linearly correlated. H
     :suppress:
 
     res = churn.corr(method = "spearman", show = False)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_de_table_corr_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_de_table_corr_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_table_corr_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_table_corr_4.html
 
 .. code-block:: python
 
@@ -107,10 +107,10 @@ We know that the 'tenure' and 'TotalCharges' are strongly linearly correlated. H
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.corr(method = "spearman")
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_5.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_5.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_5.html
 
 The Spearman's rank correlation coefficient determines the monotonic relationships between the variables.
 
@@ -131,10 +131,10 @@ We can notice that Spearman's rank correlation coefficient stays the same if one
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.corr(method = "kendall")
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_6.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_6.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_6.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_6.html
 
 Notice that the Kendall rank correlation coefficient will also detect the monotonic relationship.
 
@@ -144,7 +144,7 @@ Notice that the Kendall rank correlation coefficient will also detect the monoto
 
 However, the Kendall rank correlation coefficient is very computationally expensive, so we'll generally use Pearson and Spearman when dealing with correlations between numerical variables.
 
-Binary features are considered numerical, but this isn't technically accurate. Since binary variables can only take two values, calculating correlations between a binary and numerical variable can lead to misleading results. To account for this, we'll want to use the 'Biserial Point' method to calculate the Point-Biserial correlation coefficient. This powerful method will help us understand the link between a binary variable and a numerical variable.
+Binary features are considered numerical, but this isn't technically accurate. Since binary variables can only take two values, calculating correlations between a binary and numerical variable can lead to misleading results. To account for this, we'll want to use the ``Biserial Point`` method to calculate the Point-Biserial correlation coefficient. This powerful method will help us understand the link between a binary variable and a numerical variable.
 
 .. code-block:: python
 
@@ -157,12 +157,12 @@ Binary features are considered numerical, but this isn't technically accurate. S
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.corr(method = "biserial")
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_7.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_7.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_7.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_7.html
 
-Lastly, we'll look at the relationship between categorical columns. In this case, the 'Cramer's V' method is very efficient. Since there is no position in the Euclidean space for those variables, the 'Cramer's V' coefficients cannot be negative (which is a sign of an opposite relationship) and they will range in the interval ``[0,1]``.
+Lastly, we'll look at the relationship between categorical columns. In this case, the ``Cramer's V`` method is very efficient. Since there is no position in the Euclidean space for those variables, the ``Cramer's V`` coefficients cannot be negative (which is a sign of an opposite relationship) and they will range in the interval ``[0,1]``.
 
 .. code-block:: python
 
@@ -175,10 +175,10 @@ Lastly, we'll look at the relationship between categorical columns. In this case
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.corr(method = "cramer")
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_8.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_8.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_8.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_8.html
 
 Sometimes, we just need to look at the correlation between a response and other variables. The parameter ``focus`` will isolate and show us the specified correlation vector.
 
@@ -193,10 +193,10 @@ Sometimes, we just need to look at the correlation between a response and other 
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = churn.corr(method = "cramer", focus = "Churn")
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_9.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_9.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_9.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_9.html
 
 Sometimes a correlation coefficient can lead to incorrect assumptions, so we should always look at the coefficient ``p-value``.
 
@@ -235,10 +235,10 @@ The type of internet service also seems to correlate with churning. Let's split 
             "InternetService_Fiber_optic",
         ],
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_10.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_10.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_10.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_10.html
 
 We can see that the Fiber Optic option in particular seems to be directly linked to a customer's likelihood to churn. Let's compute some aggregations to find a causal relationship.
 
@@ -272,12 +272,12 @@ We can see that the Fiber Optic option in particular seems to be directly linked
             'AVG("monthlycharges") AS "monthlycharges"',
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_de_table_corr_11.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_de_table_corr_11.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_table_corr_11.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_table_corr_11.html
 
 It seems that users with the Fiber Optic option tend more to churn not because of the option itself, but probably because of the type of contracts and the monthly charges the users are paying to get it. Be careful when dealing with identifying correlations! Remember: correlation doesn't imply causation!
 
@@ -297,12 +297,12 @@ Another important type of correlation is the autocorrelation. Let's use the Amaz
 
     amazon = load_amazon()
     res = amazon.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_de_table_corr_12.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_de_table_corr_12.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_table_corr_12.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_table_corr_12.html
 
 Our goal is to predict the number of forest fires in Brazil. To do this, we can draw an autocorrelation plot and a partial autocorrelation plot.
 
@@ -329,10 +329,10 @@ Our goal is to predict the number of forest fires in Brazil. To do this, we can 
         p = 24,
         method = "pearson",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_13.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_13.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_13.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_13.html
 
 .. code-block:: python
 
@@ -355,10 +355,10 @@ Our goal is to predict the number of forest fires in Brazil. To do this, we can 
         by = ["state"],
         p = 8,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_de_plot_corr_14.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_de_plot_corr_14.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_de_plot_corr_14.html
+    :file: SPHINX_DIRECTORY/figures/ug_de_plot_corr_14.html
 
 We can see the seasonality forest fires.
 

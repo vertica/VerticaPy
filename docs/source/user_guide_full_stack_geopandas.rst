@@ -6,7 +6,7 @@ Integrating with GeoPandas
 
 As of version 0.4.0, VerticaPy features GeoPandas integration. This allows you to easily export a :py:mod:`~verticapy.vDataFrame` as a GeoPandas DataFrame, giving you more control over geospatial data.
 
-This example demonstrates the advantages of GeoPandas integration with the 'world' dataset.
+This example demonstrates the advantages of GeoPandas integration with the ``world`` dataset.
 
 .. code-block:: python
 
@@ -123,7 +123,7 @@ You can also draw maps using the :py:func:`~verticapy.vDataFrame.geo_plot` metho
     africa_world = africa_world[africa_world["continent"] == "Africa"]
     ax = africa_world["geometry"].geo_plot(
         color = "white",
-        edgecolor='black',
+        edgecolor = 'black',
     )
 
     # displaying schools in Africa

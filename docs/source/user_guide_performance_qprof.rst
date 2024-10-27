@@ -50,12 +50,12 @@ Before creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` obje
     :suppress:
 
     res = amazon.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_amazon.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_amazon.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_amazon.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_amazon.html
 
 .. code-block:: python
 
@@ -65,12 +65,12 @@ Before creating the :py:func:`~verticapy.performance.vertica.QueryProfiler` obje
     :suppress:
 
     res = titanic.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_titanic.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_titanic.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_titanic.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_titanic.html
 
 We can now run some queries to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object. One way to do so is by using the queries ``statement_id`` and ``transaction_id``.
 
@@ -107,12 +107,12 @@ Next, let us run the queries:
     """
     res = vp.vDataFrame(query)
     query_1 = query
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_sql.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_sql.html
 
 .. code-block:: python
 
@@ -169,12 +169,12 @@ Next, let us run the queries:
     """
     query_2 = query
     res = vp.vDataFrame(query_2)
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_sql_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_sql_2.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_sql_2.html
 
 In order to create a :py:func:`~verticapy.performance.vertica.QueryProfiler` object from a query, we need the queries statement_id and transaction_id, both of which are found in the QUERY_REQUESTS system table:
 
@@ -203,12 +203,12 @@ Once the :py:func:`~verticapy.performance.vertica.QueryProfiler` object is creat
     from verticapy.performance.vertica import QueryProfiler, QueryProfilerInterface
     qprof = QueryProfilerInterface([query_1, query_2])
     res = qprof.get_queries()
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_get_queries.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_get_queries.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_get_queries.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_get_queries.html
 
 To visualize the query plan, run :py:func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
 which is customizable, allowing you to specify certain metrics or focus on a specified tree path:
@@ -329,12 +329,12 @@ For example, view the ``QUERY_EVENTS`` table:
   :suppress:
 
   res = qprof.get_table("query_events")
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_events.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_query_events.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_events.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_query_events.html
 
 Or the ``DC_EXPLAIN_PLANS`` table:
 
@@ -346,12 +346,12 @@ Or the ``DC_EXPLAIN_PLANS`` table:
     :suppress:
 
     res = qprof.get_table('dc_explain_plans')
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_dc_explain_plans.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_dc_explain_plans.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_dc_explain_plans.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_dc_explain_plans.html
 
 Or the ``QUERY_CONSUMPTION`` table:
 
@@ -363,12 +363,12 @@ Or the ``QUERY_CONSUMPTION`` table:
     :suppress:
 
     res = qprof.get_table("query_consumption")
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_consumption.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_query_consumption.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_consumption.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_query_consumption.html
 
 Get query information
 ++++++++++++++++++++++
@@ -416,7 +416,7 @@ View the number of query steps in a bar graph:
         file.write(html_text)
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_bar.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_bar.html
 
 .. ipython:: python
 
@@ -438,10 +438,10 @@ To view the query plan profile in a pie chart:
 
     vp.set_option("plotting_lib", "plotly")
     fig = qprof.get_qplan_profile(kind = "pie")
-    fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_pie.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_pie.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_pie.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_pie.html
 
 To view the cpu time of the query in a bar graph:
 
@@ -454,10 +454,10 @@ To view the cpu time of the query in a bar graph:
     :okwarning:
 
     fig = qprof.get_cpu_time(kind="bar")
-    fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_cpu_bar.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_cpu_bar.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_cpu_bar.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_cpu_bar.html
 
 :py:func:`~verticapy.performance.vertica.QueryProfiler` execution report
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -473,12 +473,12 @@ The :py:func:`~verticapy.performance.vertica.QueryProfiler` object can also gene
     :okwarning:
 
     res = qprof.get_qexecution_report().sort({"exec_time_us": "desc"})
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_query_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_query_report.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_query_report.html
 
 To view the query execution details:
 
@@ -491,10 +491,10 @@ To view the query execution details:
     :okwarning:
 
     fig = qprof.get_qexecution()
-    fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_performance_qprof_last.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_last.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guides_performance_qprof_last.html
+    :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_last.html
 
 :py:func:`~verticapy.performance.vertica.QueryProfiler` Summary Report Export
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

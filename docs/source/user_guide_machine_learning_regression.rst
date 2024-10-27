@@ -29,7 +29,7 @@ Let's predict the total charges of the Telco customers using their tenure. We wi
     import verticapy as vp
 
     churn = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/churn/customers.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/churn/customers.csv",
     )
 
 Next, we can import a linear regression model.
@@ -61,10 +61,10 @@ We can then fit the model with our data.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_ml_plot_regression_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_ml_plot_regression_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_plot_regression_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_plot_regression_1.html
 
 We have many metrics to evaluate the model.
 
@@ -77,13 +77,13 @@ We have many metrics to evaluate the model.
     :okwarning:
 
     res = model.report()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_table_regression_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_table_regression_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_table_regression_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_table_regression_2.html
 
 Our example forgoes splitting the data into training and testing, which is important for real-world work. Our main goal in this lesson is to look at the metrics used to evaluate regressions. The most famous metric is ``R2``: generally speaking, the closer ``R2`` is to 1, the better the model is.
 
-In the next lesson, we'll go over classification models.
+In the next lesson, we'll go over :ref:`user_guide.machine_learning.classification`

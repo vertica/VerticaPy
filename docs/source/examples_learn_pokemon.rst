@@ -3,7 +3,7 @@
 Pokemon
 ========
 
-This example uses the 'pokemon' and 'combats' datasets to predict the winner of a 1-on-1 Pokemon battle. You can download the Jupyter Notebook of the study here and two datasets:
+This example uses the ``pokemon`` and ``combats`` datasets to predict the winner of a 1-on-1 Pokemon battle. You can download the Jupyter Notebook of the study here and two datasets:
 
 `pokemon <https://github.com/vertica/VerticaPy/tree/master/examples/learn/pokemon/pokemons.csv>`_
 
@@ -60,14 +60,14 @@ Let's ingest the datasets.
 
     import verticapy.sql.functions as fun
 
-    combats = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/pokemon/fights.csv")
+    combats = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/pokemon/fights.csv")
     res = combats.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_combats_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_combats_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_combats_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_combats_table.html
 
 .. code-block:: python
 
@@ -77,21 +77,21 @@ Let's ingest the datasets.
 .. ipython:: python
     :suppress:
 
-    pokemon = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/pokemon/pokemons.csv")
+    pokemon = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/pokemon/pokemons.csv")
     res = pokemon.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_pokemon_table_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_pokemon_table_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_table_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_2.html
 
 Data Exploration and Preparation
 ---------------------------------
 
-The table 'combats' will be joined to the table 'pokemon' to predict the winner.
+The table ``combats`` will be joined to the table ``pokemon`` to predict the winner.
 
-The 'pokemon' table contains the information on each Pokemon. Let's describe this table.
+The ``pokemon`` table contains the information on each Pokemon. Let's describe this table.
 
 .. code-block:: python
 
@@ -101,14 +101,14 @@ The 'pokemon' table contains the information on each Pokemon. Let's describe thi
     :suppress:
 
     res = pokemon.describe(method = "categorical", unique = True)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_pokemon_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_pokemon_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_describe.html
 
-The pokemon's 'Name', 'Generation', and whether or not it's 'Legendary' will never influence the outcome of the battle, so we can drop these columns.
+The pokemon's ``Name``, ``Generation``, and whether or not it's ``Legendary`` will never influence the outcome of the battle, so we can drop these columns.
 
 .. code-block:: python
 
@@ -130,14 +130,14 @@ The pokemon's 'Name', 'Generation', and whether or not it's 'Legendary' will nev
             "Name",
         ]
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_pokemon_table_drop.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_pokemon_table_drop.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_table_drop.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_drop.html
 
-The 'ID' will be the key to join the data. By joining the data, we will be able to create more relevant features.
+The ``ID`` will be the key to join the data. By joining the data, we will be able to create more relevant features.
 
 .. ipython:: python
 
@@ -187,7 +187,7 @@ The 'ID' will be the key to join the data. By joining the data, we will be able 
             ]
     )
 
-Features engineering is the key. Here, we can create features that describe the stat differences between the first and second Pokemon. We can also change 'winner' to a binary value: 1 if the first pokemon won and 0 otherwise.
+Features engineering is the key. Here, we can create features that describe the stat differences between the first and second Pokemon. We can also change ``winner`` to a binary value: 1 if the first pokemon won and 0 otherwise.
 
 .. ipython:: python
 
@@ -224,14 +224,14 @@ Missing values can not be handled by most machine learning models. Let's see whi
     :suppress:
 
     res = fights.count()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_pokemon_table_clean_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_pokemon_table_clean_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_table_clean_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_clean_1.html
 
-In terms of missing values, our only concern is the Pokemon's second type (Type_2_1 and Type_2_2). Since some Pokemon only have one type, these features are MNAR (missing values not at random). We can impute the missing values by creating another category.
+In terms of missing values, our only concern is the Pokemon's second type (``Type_2_1`` and ``Type_2_2``). Since some Pokemon only have one type, these features are MNAR (missing values not at random). We can impute the missing values by creating another category.
 
 .. code-block:: python
 
@@ -243,12 +243,12 @@ In terms of missing values, our only concern is the Pokemon's second type (Type_
 
     fights["Type_2_1"].fillna("No")
     res = fights["Type_2_2"].fillna("No")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_pokemon_table_clean_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_pokemon_table_clean_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_table_clean_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_table_clean_2.html
 
 Let's use the current_relation method to see how our data preparation so far on the :py:mod:`~verticapy.vDataFrame` generates SQL code.
 
@@ -270,10 +270,10 @@ Let's look at the correlations between all the variables.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = fights.corr(method = "spearman")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_pokemon_corr.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_pokemon_corr.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_corr.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_corr.html
 
 Many variables are correlated to the response column. We have enough information to create our predictive model.
 
@@ -311,12 +311,12 @@ Some really important features are categorical. Random forest can handle them. B
         nbins = 100,
     )
     res = cross_validate(model, fights, predictors, "Winner")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_pokemon_cv.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_pokemon_cv.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_cv.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_cv.html
 
 We have an excellent model with an average AUC of more than 99%. Let's create a model with the entire dataset and look at the importance of each feature.
 
@@ -339,10 +339,10 @@ We have an excellent model with an average AUC of more than 99%. Let's create a 
         "Winner",
     )
     fig = model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_pokemon_features_importance_ml.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_pokemon_features_importance_ml.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_pokemon_features_importance_ml.html
+    :file: SPHINX_DIRECTORY/figures/examples_pokemon_features_importance_ml.html
 
 Based on our model, it seems that a Pokemon's speed and attack stats are the strongest predictors for the winner of a battle.
 

@@ -1248,3 +1248,5 @@ class QueryProfilerComparison:
         Displays the final side-by-side UI.
         """
         print_message(self.side_by_side_ui, "display")
+
+    get_qplan_tree = display

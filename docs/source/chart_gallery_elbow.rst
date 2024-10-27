@@ -31,7 +31,7 @@ This information is crucial for selecting an appropriate value for the number
 of clusters in a dataset. By leveraging the insights gained from the Elbow Curve, 
 data analysts can enhance the efficiency of their clustering models, avoid 
 overfitting or underfitting, and make informed decisions to achieve optimal model performance.
-Let's begin by importing ``VerticaPy``.
+Let's begin by importing ```verticapy```.
 
 
 
@@ -58,7 +58,7 @@ visualization needs.
 
 .. note::
     
-    To select the desired plotting library, we simply need to use the ``set_option`` 
+    To select the desired plotting library, we simply need to use the `:py:func:`~verticapy.set_option`` 
     function. VerticaPy offers the flexibility to smoothly transition between 
     different plotting libraries. In instances where a particular graphic is 
     not supported by the chosen library or is not supported within the VerticaPy 
@@ -80,7 +80,7 @@ plotting libraries.
 
         vp.set_option("plotting_lib", "plotly")
 
-    We can switch to using the `plotly` module.
+    We can switch to using the ``plotly`` module.
 
     .. code-block:: python
         
@@ -115,7 +115,7 @@ plotting libraries.
 
         vp.set_option("plotting_lib", "highcharts")
 
-    We can switch to using the `highcharts` module.
+    We can switch to using the ``highcharts`` module.
 
     .. code-block:: python
         
@@ -152,7 +152,7 @@ plotting libraries.
 
         vp.set_option("plotting_lib", "matplotlib")
 
-    We can switch to using the `matplotlib` module.
+    We can switch to using the ``matplotlib`` module.
 
     .. code-block:: python
         

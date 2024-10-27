@@ -150,13 +150,13 @@ in speed for both the modes:
                 y=[height],
                 marker_color=color,
                 text=[height],
-                textposition='outside',
+                textposition = 'outside',
                 name=label,
             ))
         fig.update_layout(
-        title='31.29 M rows & 2559 columns',
-        yaxis=dict(title='Execution Time (secs)'),
-        bargap=0.2,
+        title = '31.29 M rows & 2559 columns',
+        yaxis = dict(title = 'Execution Time (secs)'),
+        bargap = 0.2,
         width = 400,
         height = 500
         )
@@ -205,19 +205,19 @@ in speed for both the modes:
         )
         for label, height, color in zip(labels, heights, colors):
             fig.add_trace(go.Bar(
-                x=[label],
-                y=[height],
-                marker_color=color,
-                text=[height],
-                textposition='outside',
-                name=label,
+                x = [label],
+                y = [height],
+                marker_color = color,
+                text = [height],
+                textposition = 'outside',
+                name = label,
             ))
         fig.update_layout(
-        title='100M rows & 2 columns',
-        yaxis=dict(title='Execution Time (ms)'),
-        bargap=0.2,
-        width = 400,
-        height = 500
+            title = '100M rows & 2 columns',
+            yaxis = dict(title = 'Execution Time (ms)'),
+            bargap = 0.2,
+            width = 400,
+            height = 500,
         )
         fig.write_html("SPHINX_DIRECTORY/figures/user_defined_functions_udx_top_k.html")
 
@@ -270,15 +270,15 @@ in speed for both the modes:
                 y=[height],
                 marker_color=color,
                 text=[height],
-                textposition='outside',
+                textposition = 'outside',
                 name=label,
             ))
         fig.update_layout(
-        title='100M rows & 2 columns',
-        yaxis=dict(title='Execution Time (ms)'),
-        bargap=0.2,
-        width = 400,
-        height = 500
+            title='100M rows & 2 columns',
+            yaxis=dict(title='Execution Time (ms)'),
+            bargap=0.2,
+            width = 400,
+            height = 500,
         )
         fig.write_html("SPHINX_DIRECTORY/figures/user_defined_functions_udx_shorter_string.html")
 

@@ -27,12 +27,12 @@ Vertica a dataset with information about titanic passengers:
 
     from verticapy.datasets import load_titanic
     res = load_titanic()
-    html_file = open("/project/data/VerticaPy/docs/figures/user_guide_introduction_best_practices_laod_titanic.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_laod_titanic.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/user_guide_introduction_best_practices_laod_titanic.html
+    :file: SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_laod_titanic.html
 
 You can create a :py:mod:`~verticapy.vDataFrame` from either an existing relation or a customized relation.
 
@@ -55,12 +55,12 @@ To create a :py:mod:`~verticapy.vDataFrame` using a customized relation, specify
 
     import verticapy as vp
     res = vp.vDataFrame("SELECT pclass, AVG(survived) AS survived FROM titanic GROUP BY 1")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_intro_vdf_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_1.html
 
 For more examples of creating vDataFrames, see :py:mod:`~verticapy.vDataFrame`.
 
@@ -89,7 +89,7 @@ Once the data is loaded into the Vertica database, we can create a :py:mod:`~ver
     vp.drop("public.expedia")
     @suppress
     vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/booking/expedia.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/booking/expedia.csv",
         schema = "public", 
         parse_nrows = 20000000,
     )
@@ -144,7 +144,7 @@ Now, to compare the above result with in-memory loading, we load about half the 
     for nrows in L_nrows:
         start_time = time.time()
         expedia_df = pd.read_csv(
-            "/project/data/VerticaPy/docs/source/_static/website/examples/data/booking/expedia.csv",
+            "SPHINX_DIRECTORY/source/_static/website/examples/data/booking/expedia.csv",
             nrows = nrows,
         )
         elapsed_time = time.time() - start_time
@@ -169,7 +169,7 @@ Even after the data is loaded into memory, the performance is very slow. The fol
 
 .. ipython:: python
 
-    columns_to_drop = ['date_time', 'srch_ci', 'srch_co'] ;
+    columns_to_drop = ["date_time", "srch_ci", "srch_co"] ;
     expedia_df = expedia_df.drop(columns_to_drop, axis=1);
     start_time = time.time()
     expedia_df.corr();
@@ -180,7 +180,7 @@ Let's compare the performance in-database using a :py:mod:`~verticapy.vDataFrame
 .. ipython:: python
 
     # Remove non-numeric columns
-    expedia.drop(columns = ['date_time', 'srch_ci', 'srch_co']);
+    expedia.drop(columns = ["date_time", "srch_ci", "srch_co"]);
     start_time = time.time()
     expedia.corr(show = False);
     print(f"elapsed time = {time.time() - start_time}")
@@ -218,12 +218,12 @@ Compare this with vDataFrame:
     :suppress:
 
     res = expedia.memory_usage()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_intro_vdf_mem.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_mem.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_mem.html
+    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_mem.html
 
 The :py:mod:`~verticapy.vDataFrame` only uses about 37KB! By storing the data in the Vertica database, and only recording the 
 user's data modifications in memory, the memory usage is reduced to a minimum. 
@@ -235,7 +235,7 @@ The :py:mod:`~verticapy.vDataFrame` structure
 
 Now that we've seen the performance and memory benefits of the vDataFrame, let's dig into some of the underlying structures and methods that produce these great results.
 
-:py:mod:`~verticapy.vDataFrame`s are composed of columns called :py:mod:`vDataColumn`s. To view all :py:mod:`vDataColumn`s in a :py:mod:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.get_columns` method:
+:py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`s. To view all :py:mod:`vDataColumn`s in a :py:mod:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.get_columns` method:
 
 .. ipython:: python
 
@@ -255,12 +255,12 @@ To access a :py:mod:`~verticapy.vDataColumn`, specify the column name in square 
     :suppress:
 
     res = expedia["is_booking"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_intro_vdf_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_describe.html
+    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_describe.html
 
 Each :py:mod:`~verticapy.vDataColumn` has its own catalog to save user modifications. In the previous example, we computed 
 some aggregations for the ``is_booking`` column. Let's look at the catalog for that :py:mod:`~verticapy.vDataColumn`:
@@ -345,12 +345,12 @@ We can also view the vDataFrame's backend SQL code generation by setting the ``s
     :suppress:
 
     res = expedia["cnt"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_intro_vdf_describe_cnt.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_describe_cnt.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_describe_cnt.html
+    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_describe_cnt.html
 
 To control whether each query outputs its elasped time, use the ``time_on`` parameter of the :py:func:`~verticapy.set_option` function:
 
@@ -395,7 +395,7 @@ Notice that the ``is_package`` column has been removed from the ``SELECT`` state
 vDataFrame attributes and management
 -------------------------------------
 
-The :py:mod:`~verticapy.vDataFrame` has many attributes and methods, some of which were demonstrated in the above examples. :py:mod:`~verticapy.vDataFrame`s have two types of attributes:
+The :py:mod:`~verticapy.vDataFrame` has many attributes and methods, some of which were demonstrated in the above examples. :py:mod:`~verticapy.vDataFrame` have two types of attributes:
 
 - Virtual Columns (vDataColumn)
 - Main attributes (columns, main_relation ...)
@@ -411,7 +411,7 @@ The vDataFrame's main attributes are stored in the ``_vars`` dictionary:
 Data types
 -----------
 
-:py:mod:`~verticapy.vDataFrame`s use the data types of its :py:mod:`~verticapy.vDataColumn`s. The behavior of some :py:mod:`~verticapy.vDataFrame` methods depend on the data type of the columns.
+:py:mod:`~verticapy.vDataFrame` use the data types of its :py:mod:`~verticapy.vDataColumn`. The behavior of some :py:mod:`~verticapy.vDataFrame` methods depend on the data type of the columns.
 
 For example, computing a histogram for a numerical data type is not the same as computing a histogram for a categorical data type. 
 
@@ -436,12 +436,12 @@ the vDataColumns in a :py:mod:`~verticapy.vDataFrame` using the
     :suppress:
 
     res = expedia.dtypes()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_dtypes.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_expedia_dtypes.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_dtypes.html
+    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_expedia_dtypes.html
 
 To convert the data type of a vDataColumn, use the :py:func:`~verticapy.vDataColumn.astype` method:
 
@@ -471,12 +471,12 @@ The :py:func:`~verticapy.vDataFrame.save` and :py:func:`~verticapy.vDataFrame.lo
 
     expedia.save()
     res = expedia.filter("is_booking = 1")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_filter.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_expedia_filter.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_filter.html
+    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_expedia_filter.html
 
 To return a :py:mod:`~verticapy.vDataFrame` to a previously saved structure, use the :py:func:`~verticapy.vDataFrame.load` function:
 
@@ -485,7 +485,7 @@ To return a :py:mod:`~verticapy.vDataFrame` to a previously saved structure, use
     expedia = expedia.load();
     print(expedia.shape())
 
-Because :py:mod:`~verticapy.vDataFrame`s are views of data stored in the connected Vertica database, any modifications made to the :py:mod:`~verticapy.vDataFrame` are not reflected in the underlying data in the database. To save a :py:mod:`~verticapy.vDataFrame`'s relation to the database, use the :py:func:`~verticapy.vDataFrame.to_db` method.
+Because :py:mod:`~verticapy.vDataFrame` are views of data stored in the connected Vertica database, any modifications made to the :py:mod:`~verticapy.vDataFrame` are not reflected in the underlying data in the database. To save a :py:mod:`~verticapy.vDataFrame` relation to the database, use the :py:func:`~verticapy.vDataFrame.to_db` method.
 
 It's good practice to examine the expected disk usage of the :py:mod:`~verticapy.vDataFrame` before exporting it to the database:
 
@@ -497,12 +497,12 @@ It's good practice to examine the expected disk usage of the :py:mod:`~verticapy
     :suppress:
 
     res = expedia.expected_store_usage(unit = "Gb")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_storage_gb.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_expedia_storage_gb.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_intro_vdf_expedia_storage_gb.html
+    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_expedia_storage_gb.html
 
 If you decide that there is sufficient space to store the :py:mod:`~verticapy.vDataFrame` in the database, run the :py:func:`~verticapy.vDataFrame.to_db`  method:
 

@@ -3,7 +3,7 @@
 Amazon
 =======
 
-This example uses the 'Amazon' dataset to predict the number of forest fires in Brazil. You can download a copy of the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/amazon/amazon.ipynb>`_.
+This example uses the ``amazon`` dataset to predict the number of forest fires in Brazil. You can download a copy of the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/amazon/amazon.ipynb>`_.
 
 - **date:** Date of the record
 - **number:** Number of forest fires
@@ -46,12 +46,12 @@ Let's create a Virtual DataFrame of the dataset.
 
     amazon = load_amazon()
     res = amazon.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_amazon_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_amazon_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_head.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -66,12 +66,12 @@ We can explore our data by displaying descriptive statistics of all the columns.
     :suppress:
 
     res = amazon.describe(method = "categorical", unique = True)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_amazon_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_amazon_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_describe.html
 
 Using the :py:func:`~verticapy.vDataFrame.describe` method, we can see that our data ranges from the beginning of 1998 to the end of 2017.
 
@@ -83,12 +83,12 @@ Using the :py:func:`~verticapy.vDataFrame.describe` method, we can see that our 
     :suppress:
 
     res = amazon["date"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_amazon_table_describe_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_amazon_table_describe_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_describe_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_describe_2.html
 
 Brazil has dry and rainy seasons. Knowing this, we would expect that the frequency of forest fires vary between seasons. Let's confirm our hypothesis using an autocorrelation plot with 48 lags (4 years).
 
@@ -112,10 +112,10 @@ Brazil has dry and rainy seasons. Knowing this, we would expect that the frequen
         by = ["state"],
         p = 48,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_amazon_table_acf.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_amazon_table_acf.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_acf.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_acf.html
 
 The process is not stationary. Let's use a Dickey-Fuller test to confirm our hypothesis.
 
@@ -143,12 +143,12 @@ The process is not stationary. Let's use a Dickey-Fuller test to confirm our hyp
         by = ["state"], 
         p = 48,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_amazon_adfuller.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_amazon_adfuller.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_adfuller.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_adfuller.html
 
 The effects of each season seem pretty clear. We can see this graphically using the cumulative sum of the number of forest fires partitioned by states. If our hypothesis is correct, we should see staircase functions.
 
@@ -180,10 +180,10 @@ The effects of each season seem pretty clear. We can see this graphically using 
         ts = "date", 
         by = "state",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_amazon_table_cum_sum.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_amazon_table_cum_sum.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_cum_sum.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_cum_sum.html
 
 We can clearly observe the seasonality within each state, which contributes to an overall global seasonality. Let's plot the total number of forest fires to illustrate this more clearly.
 
@@ -214,10 +214,10 @@ We can clearly observe the seasonality within each state, which contributes to a
         ],
     )
     fig = amazon["number"].plot(ts = "date")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_amazon_table_plot_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_amazon_table_plot_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_plot_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_plot_2.html
 
 Although it would be preferable to use seasonal decomposition and predict the residuals, let's build an ARIMA model on the data.
 
@@ -256,12 +256,12 @@ Since the seasonality occurs monthly, we set ``p = 12``. There is no trend in th
         ts = "date",
     )
     res = model.regression_report(start = 50)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_amazon_table_ml_cv.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_amazon_table_ml_cv.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_ml_cv.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_ml_cv.html
 
 Our model is quite good. Let's look at our predictions.
 
@@ -287,10 +287,10 @@ Our model is quite good. Let's look at our predictions.
         npredictions = 40,
         method = "auto",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_amazon_table_plot_ml_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_amazon_table_plot_ml_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_amazon_table_plot_ml_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_amazon_table_plot_ml_2.html
 
 The plot shows that our model has successfully captured the seasonality present in the data. However, to improve the model, we should remove the seasonality and focus on predicting the residuals directly. The current model is not entirely stable and requires further adjustments.
 

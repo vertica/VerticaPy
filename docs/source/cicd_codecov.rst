@@ -18,7 +18,7 @@ reducing the likelihood of undiscovered bugs.
 
 
 For the latest statistics on code-coverage of 
-``VerticaPy`` please look at 
+```verticapy``` please look at 
 `this link <https://app.codecov.io/gh/vertica/VerticaPy>`_.
 
 .. image:: /_static/img_code_coverage_1.PNG
@@ -27,7 +27,7 @@ For the latest statistics on code-coverage of
 
 
 Not only does it provide a wholistic view of the 
-``VerticaPy`` library, but it also gives the 
+```verticapy``` library, but it also gives the 
 contributors and in-depth understanding of which 
 folders/functions are lacking behind the most. 
 

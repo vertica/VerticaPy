@@ -20,8 +20,12 @@ Vertica Documentation
         Documentation 1.0.x
     </div>
 
-Below are the links for relevant ** Vertica** documentation:
+Below are the links for relevant ``Vertica`` documentation:
 
+- `24.4.x <https://docs.vertica.com/24.4.x/en/>`_
+- `24.3.x <https://docs.vertica.com/24.3.x/en/>`_
+- `24.2.x <https://docs.vertica.com/24.2.x/en/>`_
+- `24.1.x <https://docs.vertica.com/24.1.x/en/>`_
 - `23.4.x <https://docs.vertica.com/23.4.x/en/>`_
 - `23.3.x <https://docs.vertica.com/23.3.x/en/>`_
 - `12.0.x <https://docs.vertica.com/12.0.x/en/>`_

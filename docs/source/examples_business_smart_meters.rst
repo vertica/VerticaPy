@@ -76,7 +76,7 @@ Create the :py:mod:`~verticapy.vDataFrame` of the datasets:
     :suppress:
 
     sm_consumption = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_consumption.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/smart_meters/sm_consumption.csv",
         dtype = {
             "meterID": "Integer",
             "dateUTC": "Timestamp(6)",
@@ -84,21 +84,21 @@ Create the :py:mod:`~verticapy.vDataFrame` of the datasets:
         }
     )
     sm_weather = vp.read_csv(
-        "/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_weather.csv",
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/smart_meters/sm_weather.csv",
         dtype = {
             "dateUTC": "Timestamp(6)",
             "temperature": "Float(22)",
             "humidity": "Float(22)",
         }
     )
-    sm_meters = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/smart_meters/sm_meters.csv")
+    sm_meters = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/smart_meters/sm_meters.csv")
     res = sm_consumption.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_table_head.html
 
 .. code-block:: python
 
@@ -108,12 +108,12 @@ Create the :py:mod:`~verticapy.vDataFrame` of the datasets:
     :suppress:
 
     res = sm_weather.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_weather_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_weather_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_weather_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_weather_table_head.html
 
 .. code-block:: python
 
@@ -123,12 +123,12 @@ Create the :py:mod:`~verticapy.vDataFrame` of the datasets:
     :suppress:
 
     res = sm_weather.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_meters_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_meters_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_meters_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_meters_table_head.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -164,17 +164,17 @@ In VerticaPy, you can interpolate joins; Vertica will find the closest timestamp
         expr2 = ["humidity", "temperature"],
     )
     res = sm_consumption_weather.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_table.html
 
 Segmenting Latitude & Longitude using Clustering
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
-The dataset 'sm_meters' is pretty important. In particular, the type of residence is probably a good predictor for electricity usage. We can create clusters of the different regions with k-means clustering based on longitude and latitude. Let's find the most suitable 'k' using an elbow curve and scatter plot.
+The dataset 'sm_meters' is pretty important. In particular, the type of residence is probably a good predictor for electricity usage. We can create clusters of the different regions with k-means clustering based on longitude and latitude. Let's find the most suitable ``k`` using an elbow curve and scatter plot.
 
 .. code-block:: python
 
@@ -184,12 +184,12 @@ The dataset 'sm_meters' is pretty important. In particular, the type of residenc
     :suppress:
 
     res = sm_meters.agg(["min", "max"])
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_meters_agg_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_meters_agg_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_meters_agg_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_meters_agg_table.html
 
 .. ipython:: python
     :okwarning:
@@ -234,10 +234,10 @@ Based on the scatter plot, five seems like the optimal number of clusters. Let's
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = elbow(sm_meters, ["longitude", "latitude"], n_cluster = (3, 8))
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_meters_elbow_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_sm_meters_elbow_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_meters_elbow_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_meters_elbow_1.html
 
 The elbow curve seems to confirm that five is the optimal number of clusters, so let's create a ``k-means`` model with that in mind.
 
@@ -263,7 +263,7 @@ The elbow curve seems to confirm that five is the optimal number of clusters, so
         ],
     )
 
-Let's add our clusters to the vDataFrame.
+Let's add our clusters to the :py:mod:`~verticapy.vDataFrame`.
 
 .. ipython:: python
 
@@ -298,7 +298,7 @@ Let's draw a scatter plot of the different regions.
 Dataset Enrichment
 +++++++++++++++++++
 
-Let's join 'sm_meters' with 'sm_consumption_weather'.
+Let's join ``sm_meters`` with ``sm_consumption_weather``.
 
 .. code-block:: python
 
@@ -326,12 +326,12 @@ Let's join 'sm_meters' with 'sm_consumption_weather'.
         ],
     )
     res = sm_consumption_weather_region.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_table.html
 
 Handling Missing Values
 ++++++++++++++++++++++++
@@ -346,12 +346,12 @@ Let's take care of our missing values.
     :suppress:
 
     res = sm_consumption_weather_region.count_percent()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_count_percent_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_count_percent_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_count_percent_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_count_percent_table.html
 
 The variable 'value' has a few missing values that we can drop.
 
@@ -365,12 +365,12 @@ The variable 'value' has a few missing values that we can drop.
 
     sm_consumption_weather_region["value"].dropna()
     res = sm_consumption_weather_region.count()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_count_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_count_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_count_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_count_2.html
 
 Interpolation & Aggregations
 +++++++++++++++++++++++++++++
@@ -422,12 +422,12 @@ To get an equally-sliced dataset, we can then interpolate to fill any gaps. This
         by = ["meterID"],
     )
     res = sm_consumption_weather_region_clean.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_clean_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_clean_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_weather_region_clean_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_clean_1.html
 
 Let's aggregate the data to figure out the monthly energy consumption for each smart meter. We can then save the result in the Vertica database.
 
@@ -489,12 +489,12 @@ Let's aggregate the data to figure out the monthly energy consumption for each s
         relation_type = "table",
         inplace = True,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_month_clean_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_month_clean_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_month_clean_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_month_clean_2.html
 
 Understanding the Data & Detecting Outliers
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -515,10 +515,10 @@ Looking at three different smart meters, we can see a clear decrease in energy c
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 10]["value"].plot(ts = "date_month")
-    fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_10.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/sm_consumption_month_plot_10.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_10.html
+    :file: SPHINX_DIRECTORY/figures/sm_consumption_month_plot_10.html
 
 .. code-block:: python
 
@@ -529,10 +529,10 @@ Looking at three different smart meters, we can see a clear decrease in energy c
     :okwarning:
 
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 12]["value"].plot(ts = "date_month")
-    fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_12.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/sm_consumption_month_plot_12.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_12.html
+    :file: SPHINX_DIRECTORY/figures/sm_consumption_month_plot_12.html
 
 .. code-block:: python
 
@@ -543,10 +543,10 @@ Looking at three different smart meters, we can see a clear decrease in energy c
     :okwarning:
 
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 14]["value"].plot(ts = "date_month")
-    fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_14.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/sm_consumption_month_plot_14.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_14.html
+    :file: SPHINX_DIRECTORY/figures/sm_consumption_month_plot_14.html
 
 This behavior seems to be seasonal, but we don't have enough data to prove this.
 
@@ -567,12 +567,12 @@ Let's find outliers in the distribution by computing the ZSCORE per meterID.
     avg = fun.avg(sm_consumption_month["value"])._over(by = [sm_consumption_month["meterID"]])
     sm_consumption_month["value_zscore"] = (sm_consumption_month["value"] - avg) / std
     res = sm_consumption_month.search("value_zscore > 4")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_value_zscore_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_value_zscore_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_value_zscore_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_value_zscore_1.html
 
 Four smart meters are outliers in energy consumption. We'll need to investigate to get more information.
 
@@ -585,10 +585,10 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
     :okwarning:
 
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 364]["value"].plot(ts = "date_month")
-    fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_364.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_364.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_364.html
+    :file: SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_364.html
 
 .. code-block:: python
 
@@ -599,10 +599,10 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
     :okwarning:
 
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 399]["value"].plot(ts = "date_month")
-    fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_399.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_399.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_399.html
+    :file: SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_399.html
 
 .. code-block:: python
 
@@ -613,10 +613,10 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
     :okwarning:
 
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 809]["value"].plot(ts = "date_month")
-    fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_809.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_809.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_809.html
+    :file: SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_809.html
 
 .. code-block:: python
 
@@ -627,10 +627,10 @@ Four smart meters are outliers in energy consumption. We'll need to investigate 
     :okwarning:
 
     fig = sm_consumption_month[sm_consumption_month["meterID"] == 951]["value"].plot(ts = "date_month")
-    fig.write_html("/project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_951.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_951.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/sm_consumption_month_plot_1_951.html
+    :file: SPHINX_DIRECTORY/figures/sm_consumption_month_plot_1_951.html
 
 Data Encoding & Bivariate Analysis
 +++++++++++++++++++++++++++++++++++
@@ -655,12 +655,12 @@ Since most of our data is categorical, let's encode them with One-hot encoding. 
         max_cardinality = 20,
     )
     res = sm_consumption_month.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_month_clean_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_month_clean_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_month_clean_4.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_month_clean_4.html
 
 Let's compute the Pearson correlation matrix.
 
@@ -671,11 +671,11 @@ Let's compute the Pearson correlation matrix.
 .. ipython:: python
     :suppress:
 
-    fig = sm_consumption_month.corr()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_month_corr_2.html")
+    fig = sm_consumption_month.corr(width = 820, with_numbers = False)
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_sm_consumption_month_corr_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_month_corr_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_month_corr_2.html
 
 There's a clear correlation between the month and energy consumption, but this isn't causal. Instead, we can think of the weather as having the direct influence on energy consumption. To accomodate for this view, we'll use the temperature as a predictor (rather than the month).
 
@@ -689,10 +689,10 @@ There's a clear correlation between the month and energy consumption, but this i
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = sm_consumption_month.corr(focus = "value")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_month_corr_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_sm_consumption_month_corr_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_month_corr_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_month_corr_3.html
 
 Global Behavior
 ++++++++++++++++
@@ -725,10 +725,10 @@ Let's look at this globally.
         ],
     )
     fig = sm_consumption_final.plot(ts = "date_month", columns = ["avg_value"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_final_7.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_sm_consumption_final_7.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_final_7.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_final_7.html
 
 We expect to see a fall in energy consumption during summer and then an increase during the winter. A simple prediction could use the average value a year before.
 
@@ -750,10 +750,10 @@ We expect to see a fall in energy consumption during summer and then an increase
         fun.lag(sm_consumption_final["avg_value"], 12)._over(order_by = ["date_month"]),
     )
     fig = sm_consumption_final.plot(ts = "date_month", columns = ["prediction", "avg_value"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_final_8.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_sm_consumption_final_8.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_final_8.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_final_8.html
 
 .. ipython:: python
 
@@ -793,12 +793,12 @@ Let's create our model.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     res = model.report("details")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_9.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_model_report_9.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_9.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_model_report_9.html
 
 The model seems to be good with an adjusted R2 of 77.5%, and the F-Statistic indicates that at least one of the two predictors is useful. Let's look at the residual plot.
 
@@ -820,10 +820,10 @@ The model seems to be good with an adjusted R2 of 77.5%, and the F-Statistic ind
     )
     sm_consumption_final["residual"] = sm_consumption_final["avg_value"] - sm_consumption_final["value_prediction"]
     fig = sm_consumption_final.scatter(["avg_value", "residual"])
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_sm_consumption_final_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_sm_consumption_final_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_final_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_final_1.html
 
 Looking at the residual plot, we can see that the error variance varies by quite a bit. A possible suspect might be heteroscedasticity. Let's verify our hypothesis using a Breusch-Pagan test.
 
@@ -833,7 +833,8 @@ Looking at the residual plot, we can see that the error variance varies by quite
 
     het_breuschpagan(sm_consumption_final, "residual", predictors)
 
-The p-value is 4.81% and sits around the 5% threshold, so we can't really draw any conclusions.
+The ``p-value`` is 4.81% and sits around the 5% threshold, so we can't really draw any conclusions.
+
 Let's look at the entire regression report.
 
 .. code-block:: python
@@ -846,12 +847,12 @@ Let's look at the entire regression report.
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     res = model.report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_10.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_sm_consumption_model_report_10.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
     
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_sm_consumption_model_report_10.html
+    :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_model_report_10.html
 
 Our model is very good; its median absolute error is around 13kWh.
 With this model, we can make predictions about the energy consumption of households per region. If the usage exceeds what the model predicts, we can raise an alert and respond, for example, by regulating the electricity distributed to the region.

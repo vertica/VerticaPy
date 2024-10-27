@@ -108,7 +108,7 @@ Data Exploration and Preparation
 ---------------------------------
 
 Let's look at the links between all the variables. 
-Remember our goal: find a way to predict students' final scores ('zralocp' & 'zmalocp').
+Remember our goal: find a way to predict students' final scores (``zralocp`` & ``zmalocp``).
 
 .. code-block:: python
 
@@ -120,11 +120,11 @@ Remember our goal: find a way to predict students' final scores ('zralocp' & 'zm
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     africa = africa.sample(x = 0.1)
-    fig = africa.corr(width = 900)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africe_corr_matrix.html")
+    fig = africa.corr(width = 800, with_numbers = False)
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africe_corr_matrix.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africe_corr_matrix.html
+    :file: SPHINX_DIRECTORY/figures/examples_africe_corr_matrix.html
 
 Some variables are useless because they are categorizations of others. 
 For example, most scores can go from 0 to 1000, and some variables are created by mapping these variables to a reduced interval (for example: 0 to 10), so we can drop them.
@@ -168,16 +168,16 @@ Let's take a look at the missing values.
     :suppress:
 
     res = africa.count_percent()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_africa_count_percent.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_africa_count_percent.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_count_percent.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_count_percent.html
 
-Many values are missing for 'zraloct' which is the teachers' test score. We need to find a way to impute them as they represent more than 10% of the dataset. For the others that represent less than 5% of the dataset, our goal is to identify what improves student performance, so we can filter them.
+Many values are missing for ``zraloct`` which is the teachers' test score. We need to find a way to impute them as they represent more than 10% of the dataset. For the others that represent less than 5% of the dataset, our goal is to identify what improves student performance, so we can filter them.
 
-We'll use two variables to impute the teachers' scores: TEACHER'S SEX (XSEX) and Teacher's Training (XQPROFES).
+We'll use two variables to impute the teachers' scores: TEACHER'S SEX (``XSEX``) and Teacher's Training (``XQPROFES``).
 
 
 .. code-block:: python
@@ -198,12 +198,12 @@ We'll use two variables to impute the teachers' scores: TEACHER'S SEX (XSEX) and
     )
     africa.dropna()
     res = africa
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_africa_after_drop.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_africa_after_drop.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_after_drop.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_after_drop.html
 
 
 Now that we have a clean dataset, we can use a Random Forest Regressor to understand what tends to influence the a student's final score.
@@ -239,10 +239,10 @@ These clusters can be used as inputs by our model.
         n_cluster = (1, 30),
         show = True,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_elbow.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_elbow.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_elbow.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_elbow.html
 
 Eight seems to be a suitable number of clusters. Let's compute a ``k-means`` model.
 
@@ -277,7 +277,7 @@ We can add the prediction to the :py:mod:`~verticapy.vDataFrame` and draw the sc
 
     # Filtering and drawing Africa
     africa_world = africa_world[africa_world["continent"] == "Africa"]
-    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor='black',)
+    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor = "black",)
 
 .. ipython:: python
     :suppress:
@@ -291,7 +291,7 @@ We can add the prediction to the :py:mod:`~verticapy.vDataFrame` and draw the sc
 
 .. ipython:: python
 
-    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor='black',)
+    ax = africa_world["geometry"].geo_plot(color = "white", edgecolor = "black",)
     @savefig examples_africa_geo_plot.png
     africa.scatter(
         ["lon", "lat"],
@@ -362,14 +362,11 @@ These scores are quite good! Let's fit all the data and keep the most important 
 
     predictors = model.features_importance(show = False)["index"]
 
-We can see here that socioeconomic status and a student's country 
-tend to strongly influence the students work quality. 
-This makes sense: you would expect that having poor studying 
-conditions (unstable government, difficulties at home, etc.) 
-would lead to worse results. For now, let's just consider the 20 most important variables.
+We can see here that socioeconomic status and a student's country tend to strongly influence the students work quality. 
+This makes sense: you would expect that having poor studying conditions (unstable government, difficulties at home, etc.) would lead to worse results. For now, let's just consider the 20 most important variables.
 
 Let's do some tuning to find the best parameters for the use case. 
-Our goal will be to optimize the 'median_absolute_error'.
+Our goal will be to optimize the ``median_absolute_error``.
 
 .. code-block:: python
 
@@ -403,7 +400,7 @@ Our goal will be to optimize the 'median_absolute_error'.
         'nbins': 20,
     }
 
-Our model is excellent. Let's create one for the students' standardized reading score ('zralocp').
+Our model is excellent. Let's create one for the students' standardized reading score (``zralocp``).
 
 .. code-block:: python
 
@@ -428,14 +425,14 @@ Our model is excellent. Let's create one for the students' standardized reading 
         response,
     )
     res = model_africa_rf_zralocp.regression_report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_africa_reg_report_zralocp.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_africa_reg_report_zralocp.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_reg_report_zralocp.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_reg_report_zralocp.html
 
-We'll also create one for the students' standardized mathematics score ('zmalocp').
+We'll also create one for the students' standardized mathematics score (``zmalocp``).
 
 .. code-block:: python
 
@@ -460,12 +457,12 @@ We'll also create one for the students' standardized mathematics score ('zmalocp
         response,
     )
     res = model_africa_rf_zmalocp.regression_report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_africa_reg_report_zmalocp.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_africa_reg_report_zmalocp.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_reg_report_zmalocp.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_reg_report_zmalocp.html
 
 Let's look at the feature importance for each model.
 
@@ -479,10 +476,10 @@ Let's look at the feature importance for each model.
 
     vp.set_option("plotting_lib", "plotly")
     fig = model_africa_rf_zralocp.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_feature_zralocp.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_feature_zralocp.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_feature_zralocp.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_feature_zralocp.html
 
 .. code-block:: python
 
@@ -493,10 +490,10 @@ Let's look at the feature importance for each model.
     :okwarning:
 
     fig = model_africa_rf_zmalocp.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_feature_zmalocp.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_feature_zmalocp.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_feature_zmalocp.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_feature_zmalocp.html
 
 Feature importance between between math score and the reading score are almost identical.
 
@@ -540,10 +537,10 @@ Let's visualize our model. We begin by creating a bubble plot using the two scor
         by = "PENGLISH",
         max_nb_points = 2000,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_scatter_bubble.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_scatter_bubble.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_scatter_bubble.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_scatter_bubble.html
 
 Notable influences are home language and the socioeconomic status. 
 It seems like students that both speak Engish at home often (but not all the time) and have a comfortable standard of living tend to perform the best.
@@ -569,10 +566,10 @@ Now, let's see how a student's nationality might affect their performance.
         max_cardinality = 50,
         width = 800,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_90_country_long.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_bar_90_country_long.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_90_country_long.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_bar_90_country_long.html
 
 .. code-block:: python
 
@@ -594,19 +591,13 @@ Now, let's see how a student's nationality might affect their performance.
         max_cardinality = 50,
         width = 800,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_10_country_long.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_bar_10_country_long.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_10_country_long.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_bar_10_country_long.html
 
 The students' nationalities seem to have big impact. 
-For example, Swaziland, Kenya, and Tanzanie are probably 
-overrating the bad students (90% of the scores are greater 
-than the average (500)) whereas some countries like Zambia, 
-South Africa, and Malawi are underrating their students 
-(90% of the scores are under 480). This could be related to the 
-global education in the country: some education systems could 
-be harder than the others. Let's break this down by region.
+For example, Swaziland, Kenya, and Tanzanie are probably overrating the bad students (90% of the scores are greater than the average (500)) whereas some countries like Zambia, South Africa, and Malawi are underrating their students (90% of the scores are under 480). This could be related to the global education in the country: some education systems could be harder than the others. Let's break this down by region.
 
 .. code-block:: python
 
@@ -628,10 +619,10 @@ be harder than the others. Let's break this down by region.
         max_cardinality = 50,
         width = 1000,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_district.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_bar_district.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_district.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_bar_district.html
 
 The same applies to the regions. Let's look at student age.
 
@@ -653,12 +644,12 @@ The same applies to the regions. Let's look at student age.
         of = "pred_zmalocp",
         max_cardinality = 50,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_page.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_bar_page.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_page.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_bar_page.html
 
-Let's look at the the variables 'PLIGHT' (a student's main lighting source) and 'PREPEAT' (repeated years).
+Let's look at the the variables ``PLIGHT`` (a student's main lighting source) and ``PREPEAT`` (repeated years).
 
 .. code-block:: python
 
@@ -679,10 +670,10 @@ Let's look at the the variables 'PLIGHT' (a student's main lighting source) and 
         of = "pred_zmalocp",
         width = 850,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_prepeat_plight.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_bar_prepeat_plight.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_prepeat_plight.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_bar_prepeat_plight.html
 
 We can see that students who never repeated a year and have light at home tend to do better in school than those who don't.
 
@@ -706,18 +697,18 @@ Another factor in a student's performance might be their method of transportatio
         of = "pred_zmalocp",
         width = 850,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_ptravel2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_bar_ptravel2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_ptravel2.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_bar_ptravel2.html
 
 We can clearly see that the more inconvenient it is to get to school, 
 the worse students tend to perform.
 
-Let's look at the influence of the 'district'.
+Let's look at the influence of the ``district``.
 
 Predictably, better teachers generally lead to better results. 
-Let's look at the influence of the 'district'.
+Let's look at the influence of the ``district``.
 
 .. code-block:: python
 
@@ -737,10 +728,10 @@ Let's look at the influence of the 'district'.
         of = "pred_zmalocp",
         h = 100,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_bar_district_50_pred.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_bar_district_50_pred.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_bar_district_50_pred.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_bar_district_50_pred.html
 
 Here, we can see that Chicualacuala has a very high median score, so we can conclude that a students' district might impact their performance in school.
 
@@ -749,7 +740,8 @@ After assessing several predictors of student-performance, we can hypothesize so
 Machine Learning: Finding the Best Students
 ---------------------------------------------
 
-To find the best students we can use each school's ID (the SCHOOL variable) and compute the average score. 
+To find the best students we can use each school's ID (the ``SCHOOL`` variable) and compute the average score.
+
 We can then order these by descending average score and note the top five students at each school.
 
 .. code-block:: python
@@ -912,10 +904,10 @@ Let's create a logistic regression to understand what circumstances allowed thes
     model_africa_logit_best = LogisticRegression(name="africa_logit_best",solver="BFGS")
     model_africa_logit_best.fit(africa,predictors,"best")
     fig = model_africa_logit_best.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_africa_feature_final.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_africa_feature_final.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_africa_feature_final.html
+    :file: SPHINX_DIRECTORY/figures/examples_africa_feature_final.html
 
 We can see that the best students tend to be young, speak English at home, come from a good socioeconomic background, have a father with a degree, and live relatively close to school.
 

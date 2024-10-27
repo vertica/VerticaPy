@@ -14,7 +14,7 @@ There are 3 main types of missing values:
 
 Different types of missing values tend to suggest different methods for imputing them. For example, when dealing with MCAR values, you can use mathematical aggregations to impute the missing values. For MNAR values, we can simply create another category. MAR values, however, we'll need to do some more investigation before deciding how to impute the data.
 
-To see how to handle missing values in VerticaPy, we'll use the well-known 'Titanic' dataset.
+To see how to handle missing values in VerticaPy, we'll use the well-known ``titanic`` dataset.
 
 .. code-block:: python
 
@@ -29,12 +29,12 @@ To see how to handle missing values in VerticaPy, we'll use the well-known 'Tita
     from verticapy.datasets import load_titanic
     titanic = load_titanic()
     res = titanic.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_mv_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_mv_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_mv_1.html
 
 We can examine the missing values with the :py:func:`~verticapy.vDataFrame.count` method.
 
@@ -46,14 +46,14 @@ We can examine the missing values with the :py:func:`~verticapy.vDataFrame.count
     :suppress:
 
     res = titanic.count_percent()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_mv_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_mv_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_mv_2.html
 
-The missing values for 'boat' are MNAR; missing values simply indicate that the passengers didn't pay for a lifeboat. We can replace all the missing values with a new category 'No Lifeboat' using the :py:func:`~verticapy.vDataFrame.fillna` method.
+The missing values for ``boat`` are MNAR; missing values simply indicate that the passengers didn't pay for a lifeboat. We can replace all the missing values with a new category ``No Lifeboat`` using the :py:func:`~verticapy.vDataFrame.fillna` method.
 
 .. code-block:: python
 
@@ -65,14 +65,14 @@ The missing values for 'boat' are MNAR; missing values simply indicate that the 
 
     titanic["boat"].fillna("No Lifeboat")
     res = titanic["boat"]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_mv_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_mv_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_mv_3.html
 
-Missing values for 'age' seem to be MCAR, so the best way to impute them is with mathematical aggregations. Let's impute the age using the average age of passengers of the same sex and class.
+Missing values for ``age`` seem to be MCAR, so the best way to impute them is with mathematical aggregations. Let's impute the age using the average age of passengers of the same sex and class.
 
 .. code-block:: python
 
@@ -90,14 +90,14 @@ Missing values for 'age' seem to be MCAR, so the best way to impute them is with
         by = ["pclass", "sex"],
     )
     res = titanic["age"]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_mv_4.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_mv_4.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_4.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_mv_4.html
 
-The features 'embarked' and 'fare' have a couple missing values. Instead of using a technique to impute them, we can just drop them with the :py:func:`~verticapy.vDataFrame.dropna` method.
+The features ``embarked`` and ``fare`` have a couple missing values. Instead of using a technique to impute them, we can just drop them with the :py:func:`~verticapy.vDataFrame.dropna` method.
 
 .. code-block:: python
 
@@ -109,12 +109,12 @@ The features 'embarked' and 'fare' have a couple missing values. Instead of usin
 
     titanic["fare"].dropna()
     res = titanic["embarked"].dropna()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_dp_table_mv_5.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_dp_table_mv_5.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_dp_table_mv_5.html
+    :file: SPHINX_DIRECTORY/figures/ug_dp_table_mv_5.html
 
 The :py:func:`~verticapy.vDataFrame.fillna` method offers many options. Let's use the :py:func:`help` function to view its parameters.
 

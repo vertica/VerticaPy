@@ -9,14 +9,14 @@ The Credit Card Fraud Detection dataset contains credit card transactions from S
 
 To preserve the cardholders' confidentiality, we cannot access the original features and background information about the data.
 
-'Time' and 'Amount' are the only features that have not been transformed with PCA.
+``Time`` and ``Amount`` are the only features that have not been transformed with PCA.
 
 - **V1, V2,..., V28:** principal components from PCA.
 - **Time:** Number of seconds elapsed between this transaction and the first transaction in the dataset.
 - **Amount:** Transaction amount.
 - **Class:** Response variable, where a value of 1 indicates fraudulent activity.
 
-'Amount' will be useful for example-dependent cost-sensitive learning.
+``Amount`` will be useful for example-dependent cost-sensitive learning.
 
 We will follow the entire Data Science cycle (Data Exploration, Data Preparation, Data Modeling, Model Evaluation, Model Deployment) to solve this problem.
 
@@ -52,14 +52,14 @@ Let's create a Virtual DataFrame of the dataset.
 .. ipython:: python
     :suppress:
 
-    creditcard = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/credit_card_fraud/creditcard.csv")
+    creditcard = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/credit_card_fraud/creditcard.csv")
     res = creditcard.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_table_head.html
 
 .. warning::
     
@@ -78,14 +78,14 @@ Let's explore the data by displaying descriptive statistics of all the columns.
     :suppress:
 
     res = creditcard.describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_describe.html
 
-It'll be difficult to work on the principal components (V1 through V28) without knowing what they mean. The only features we can work on are 'Time' and 'Amount'.
+It'll be difficult to work on the principal components (V1 through V28) without knowing what they mean. The only features we can work on are ``Time`` and ``Amount``.
 
 Let's convert the number of seconds elapsed to the correct date and time. We know that the records were ingested in September 2013, so we'll use that to create the new feature.
 
@@ -97,12 +97,12 @@ Let's convert the number of seconds elapsed to the correct date and time. We kno
     :suppress:
 
     res = creditcard["Time"].apply("TIMESTAMPADD(second, {}::int, '2013-09-01 00:00:00'::timestamp)")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_apply.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_apply.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_apply.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_apply.html
 
 When performing machine learning, we'll take the data from two days and split it into a training set (first day) and a test set (second day).
 
@@ -114,12 +114,12 @@ When performing machine learning, we'll take the data from two days and split it
     :suppress:
 
     res = creditcard["Time"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_describe_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_describe_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_describe_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_describe_2.html
 
 Fraudulent activity probably isn't uniform across all hours of the day, so we'll extract the hour from the time and see how that influences the prediction.
 
@@ -137,12 +137,12 @@ Fraudulent activity probably isn't uniform across all hours of the day, so we'll
 
     creditcard["hour"] = fun.hour(creditcard["Time"])
     res = creditcard[["Time", "hour"]]
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_sample_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_sample_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_sample_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_sample_1.html
 
 We can visualize the frequency of fraudulent transactions throughout the day with a histogram.
 
@@ -157,10 +157,10 @@ We can visualize the frequency of fraudulent transactions throughout the day wit
     import verticapy
     verticapy.set_option("plotting_lib", "plotly")
     fig = creditcard["hour"].hist(method = "avg", of = "Class")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_hist.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_hist.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_hist.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_hist.html
 
 It seems like most fraudulent activity happens at night.
 
@@ -181,17 +181,17 @@ The transaction amount also likely differs between fraudulent and genuine transa
         method = "avg", 
         of = "Amount",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_bar.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_bar.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_bar.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_bar.html
 
 Let's create some new features and move forward from there.
 
 Features Engineering
 ---------------------
 
-Since all data (besides 'Time' and 'Amount') are encoded, we're somewhat limited in creating features.
+Since all data (besides ``Time`` and ``Amount``) are encoded, we're somewhat limited in creating features.
 One way to work with this limitation for time series is with moving windows.
 
 In lieu of customer IDs, we'll aggregate on the transaction amount over some partitions. Let's compute some features to analyze the transaction amount and frequencies across different windows: 5 hours preceding, 5 minutes preceding, and 5 seconds preceding. Choosing these windows is pretty subjective, but we can close in on the most relevant windows after some more extensive testing.
@@ -250,12 +250,12 @@ In lieu of customer IDs, we'll aggregate on the transaction amount over some par
         by = ["Amount"],
         order_by = ["Time"],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_rolling.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_rolling.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_rolling.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_rolling.html
 
 As an aside, we could also create some features that represent different parts of the day, but won't be useful for our use case since we're only working with data for two days' worth of data.
 
@@ -269,11 +269,11 @@ Let's look at the correlation matrix and see which features influence our predic
     :suppress:
     :okwarning:
 
-    fig = creditcard.corr(width = 800)
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_corr_2.html")
+    fig = creditcard.corr(width = 850, with_numbers = False)
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_corr_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_corr_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_corr_2.html
 
 Our new features aren't linearly correlated with our response, but some of the components seem to have a large influence on our prediction. We'll use these when we create our model.
 
@@ -303,12 +303,12 @@ To simplify things, let's save the dataset into a new table.
         relation_type = "table",
         inplace = True,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_to_db.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_to_db.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_to_db.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_to_db.html
 
 Data Modeling
 --------------
@@ -330,7 +330,7 @@ Supervision
 
 Supervising would make this pretty easy since it would just be a binary classification problem. We can use different algorithms to optimize the prediction. Our dataset is unbalanced, so the AUC might be a good metric to evaluate the model. The PRC AUC would also be a relevant metric.
 
-:py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
+:py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
 
 .. code-block:: python
 
@@ -362,12 +362,12 @@ Supervising would make this pretty easy since it would just be a binary classifi
     )
     model.fit(train, predictors, response, test)
     res = model.classification_report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_classification_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_classification_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_classification_report.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_classification_report.html
 
 Based on the report, our model is very good at detecting non-fraudulent events; the AUC is high and the PRC AUC is very good. We can use this model to filter obvious events and to get some insight on the importance of each feature.
 
@@ -380,10 +380,10 @@ Based on the report, our model is very good at detecting non-fraudulent events; 
     :okwarning:
 
     fig = model.features_importance()
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_features_importance_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_features_importance_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_features_importance_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_features_importance_1.html
 
 Some PCA components seem to be very relevant and will be essential for finding anomalies.
 
@@ -401,7 +401,7 @@ Due to the complexity of the computations, anomalies are difficult to detect in 
 
 - **Machine Learning:** We need to use easily-deployable algorithms to perform real-time fraud detection. Isolation forests and ``k-means`` can be easily deployed and they work well for detecting anomalies.
 - **Rules & Thresholds:** The z-score can be an efficient solution for detecting global outliers.
-- **Decomposition:** Robust :py:mod:`~verticapy.machine_learning.vertica.PCA` is another technique for detecting outliers.
+- **Decomposition:** Robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` is another technique for detecting outliers.
 
 Before using these techniques, let's draw some scatter plots to get a better idea of what kind of anomalies we can expect.
 
@@ -423,10 +423,10 @@ Before using these techniques, let's draw some scatter plots to get a better ide
         by = "Class", 
         max_nb_points = 5000000,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_scatter_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_scatter_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_scatter_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_scatter_1.html
 
 .. code-block:: python
 
@@ -443,10 +443,10 @@ Before using these techniques, let's draw some scatter plots to get a better ide
         ["V12", "V17", "V10"], 
         by = "Class",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_scatter_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_scatter_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_scatter_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_scatter_2.html
 
 In this case, the anomalies seem pretty clear global outliers of the distributions. When doing unsupervised learning, we don't have this information in advance.
 
@@ -488,10 +488,10 @@ Once we deploy the unsupervised model and can reliably detect suspicious transac
         ["V12", "V17", "V10", "V14", "V16"], 
         n_cluster = [1, 2, 10, 20, 30],
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_elbow.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_elbow.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_elbow.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_elbow.html
 
 10 seems to be a suitable number of clusters, so let's try out 20 clusters and see if the collective outliers cluster together. We can then then evaluate each cluster independently and see which clusters have the most anomalies.
 
@@ -528,12 +528,12 @@ Let's direct our attention to the smallest clusters.
             "SUM(Class) / 492 AS total_fraud",
         ],
     ).sort("total")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_groupby_ml.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_groupby_ml.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_groupby_ml.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_groupby_ml.html
 
 Notice that clusters with fewer elemenets tend to contain much more fraudulent events than the others. This methodology makes ``k-means`` a good algorithm for catching collective outliers. Combining ``k-means`` with other techniques like z-score, we can find most of the outliers of the distribution.
 
@@ -574,12 +574,12 @@ Let's use the ``Z-score`` to detect global outliers of the distribution.
             "SUM(Class) / 492 AS total_fraud",
         ],
     ).sort("total")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_groupby_2_ml.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_creditcardfraud_groupby_2_ml.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_groupby_2_ml.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_groupby_2_ml.html
 
 .. code-block:: python
 
@@ -598,10 +598,10 @@ Let's use the ``Z-score`` to detect global outliers of the distribution.
         ["V12", "V17",],
         threshold = 5.0,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_outliers_plot_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_outliers_plot_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_outliers_plot_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_outliers_plot_3.html
 
 We can see that we can caught more than 71% of the fraudulent activity in less than 1% of the dataset.
 
@@ -632,17 +632,17 @@ Other algorithms could be used to solve the problem with more precision if we co
     lof_creditcard = model.predict()
     lof_creditcard["outliers"] = "(CASE WHEN lof_score > 2 THEN 1 ELSE 0 END)"
     fig = lof_creditcard.scatter(["V12", "V17", "V10"], by = "outliers")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_lof_plot_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_lof_plot_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_creditcardfraud_ml_lof_plot_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_lof_plot_1.html
 
 We can catch outliers with a neighbors score. Again, the main problem with these sorts of algorithms is that what they have in precision, they lack in speed, which makes them unsuitable for scoring new data. This is why it's important to focus on scalable techniques like ``k-means``.
 
 Other Techniques
 +++++++++++++++++
 
-Other scalable techniques that can solve this problem are robust :py:mod:`~verticapy.machine_learning.vertica.PCA` and isolation forest.
+Other scalable techniques that can solve this problem are robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` and isolation forest.
 
 Conclusion
 -----------

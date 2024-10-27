@@ -46,7 +46,7 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
     file.write(html_text)
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_bar.html
 
 .. code-block::
 
@@ -61,7 +61,7 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
     file.write(html_text)
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_pie.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_pie.html
 
 .. code-block::
 
@@ -76,7 +76,7 @@ Let's start with pies and histograms. Drawing the pie or histogram of a categori
     file.write(html_text)
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_home_dest_bar.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_home_dest_bar.html
 
 These methods will draw the most occurent categories and merge the others. To change the number of elements, you can use the ``max_cardinality`` parameter.
 
@@ -93,7 +93,7 @@ These methods will draw the most occurent categories and merge the others. To ch
     file.write(html_text)
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_home_dest_bar_max_cardinality.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_home_dest_bar_max_cardinality.html
 
 When dealing with numerical data types, the process is different. Vertica needs to discretize the numerical features to draw them. You can choose the bar width (``h`` parameter) or let VerticaPy compute an optimal width using the Freedman-Diaconis rule.
 
@@ -110,7 +110,7 @@ When dealing with numerical data types, the process is different. Vertica needs 
     file.write(html_text)
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_age_hist.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_age_hist.html
 
 .. code-block::
 
@@ -125,7 +125,7 @@ When dealing with numerical data types, the process is different. Vertica needs 
     file.write(html_text)
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_age_hist_h5.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_age_hist_h5.html
 
 You can also change the occurences by another aggregation with the ``method`` and ``of`` parameters.
 
@@ -142,7 +142,7 @@ You can also change the occurences by another aggregation with the ``method`` an
     file.write(html_text)
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_age_hist_avs.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_age_hist_avs.html
 
 VerticaPy uses the same process for other graphics, like 2-dimensional histograms and bar charts.
 
@@ -161,10 +161,10 @@ Let us showcase another plotting library for these plots.
   # Setting the plotting lib
   vp.set_option("plotting_lib", "plotly")
   fig = titanic.bar(["pclass", "survived"])
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_surv.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_bar_pclass_surv.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_surv.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_bar_pclass_surv.html
 
 .. note:: VerticaPy has three main plotting libraries. Look at :ref:`chart_gallery` section for all the different plots.
 
@@ -184,10 +184,10 @@ Let us showcase another plotting library for these plots.
       method = "avg",
       of = "survived",
   )
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_fare.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_bar_pclass_fare.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_fare.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_bar_pclass_fare.html
 
 Pivot tables give us aggregated information for every category and are more powerful than histograms or bar charts.
 
@@ -210,10 +210,10 @@ Pivot tables give us aggregated information for every category and are more powe
       of = "survived",
       fill_none = np.nan,
   )
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_fare_fill.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_bar_pclass_fare_fill.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_bar_pclass_fare_fill.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_bar_pclass_fare_fill.html
 
 Box plots are useful for understanding statistical dispersion.
 
@@ -226,10 +226,10 @@ Box plots are useful for understanding statistical dispersion.
   :okwarning:
 
   fig = titanic.boxplot(columns = ["age", "fare"])
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_boxplot.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_boxplot.html
 
 .. code-block::
     
@@ -240,10 +240,10 @@ Box plots are useful for understanding statistical dispersion.
   :okwarning:
 
   fig = titanic["age"].boxplot()
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot_one.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_boxplot_one.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_titanic_boxplot_one.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_titanic_boxplot_one.html
 
 Scatter and bubble plots are also useful for identifying patterns in your data. Note, however, that these methods don't use aggregations; VerticaPy downsamples the data before plotting. You can use the ``max_nb_points`` to limit the number of points and avoid unnecessary memory usage.
 
@@ -266,10 +266,10 @@ Scatter and bubble plots are also useful for identifying patterns in your data. 
       by = "Species", 
       max_nb_points = 1000,
   )
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_iris_scatter.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_iris_scatter.html
 
 Now, let us look at a 3D scatter plot.
 
@@ -290,10 +290,10 @@ Now, let us look at a 3D scatter plot.
       by = "Species", 
       max_nb_points = 1000,
   )
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter_3d.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_iris_scatter_3d.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter_3d.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_iris_scatter_3d.html
 
 Similarly, we can plot a bubble plot:
 
@@ -316,10 +316,10 @@ Similarly, we can plot a bubble plot:
       by = "Species",
       max_nb_points = 1000,
   )
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter_bubble.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_iris_scatter_bubble.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_iris_scatter_bubble.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_iris_scatter_bubble.html
 
 For more information on scatter look at :py:func:`verticapy.vDataFrame.scatter`.
 
@@ -362,7 +362,7 @@ Hexbin, scatter, and bubble plots also allow you to provide a background image. 
       ["lon", "lat"],
       method = "avg",
       of = "zralocp",
-      img = "/project/data/VerticaPy/docs/source/_static/website/user_guides/data_exploration/africa.png"
+      img = "SPHINX_DIRECTORY/source/_static/website/user_guides/data_exploration/africa.png"
   )
 
 It is also possible to use SHP datasets to draw maps.
@@ -374,7 +374,7 @@ It is also possible to use SHP datasets to draw maps.
   africa_world = africa_world[africa_world["continent"] == "Africa"]
   ax = africa_world["geometry"].geo_plot(
       color = "white",
-      edgecolor='black',
+      edgecolor = "black",
   );
   # displaying schools in Africa
   @savefig user_guides_data_exploration_africa_scatter.png
@@ -390,7 +390,7 @@ Time-series plots are also available with the :py:func:`~verticapy.vDataFrame.pl
 .. ipython:: python
 
   amazon = load_amazon();
-  amazon.filter(amazon["state"]._in(['ACRE', 'RIO DE JANEIRO', 'PARÁ']));
+  amazon.filter(amazon["state"]._in(["ACRE", "RIO DE JANEIRO", "PARÁ"]));
   @savefig user_guides_data_exploration_amazon_time.png
   amazon["number"].plot(ts = "date", by = "state")
 
@@ -416,7 +416,7 @@ Since time-series plots do not aggregate the data, it's important to choose the 
       by = "state", 
       start_date = "2010-01-01",
   )
-  fig.write_html("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_amazon_time_plot.html")
+  fig.write_html("SPHINX_DIRECTORY/figures/user_guides_data_exploration_amazon_time_plot.html")
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_amazon_time_plot.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_amazon_time_plot.html

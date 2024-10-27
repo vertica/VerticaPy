@@ -38,13 +38,13 @@ General
 
 In this example, we will demonstrate how to create a model tree visualization using Graphviz. It's important to note that these plots are purely illustrative and are based on generated data.
 
-Let's begin by importing `VerticaPy`.
+Let's begin by importing ``verticapy``.
 
 .. ipython:: python
 
     import verticapy as vp
 
-Let's also import `numpy` to create a random dataset.
+Let's also import ``numpy`` to create a random dataset.
 
 .. ipython:: python
 

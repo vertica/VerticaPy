@@ -27,14 +27,14 @@ Let's use the `churn dataset <https://github.com/vertica/VerticaPy/blob/master/e
 .. ipython:: python
   :suppress:
 
-  vdf = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/user_guides/data_exploration/churn.csv")
+  vdf = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/user_guides/data_exploration/churn.csv")
   res = vdf.agg(func = ["min", "10%", "median", "90%", "max", "kurtosis", "unique"])
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_agg.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_agg.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_agg.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_agg.html
 
 Some methods, like :py:func:`~verticapy.vDataFrame.describe`, are abstractions of the :py:func:`~verticapy.vDataFrame.agg` method; they simplify the call to computing specific aggregations.
 
@@ -46,12 +46,12 @@ Some methods, like :py:func:`~verticapy.vDataFrame.describe`, are abstractions o
   :suppress:
 
   res = vdf.describe()
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_describe.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_describe.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_describe.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_describe.html
 
 .. code-block::
 
@@ -61,12 +61,12 @@ Some methods, like :py:func:`~verticapy.vDataFrame.describe`, are abstractions o
   :suppress:
 
   res = vdf.describe(method = "all")
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_all.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_all.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_all.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_all.html
 
 .. code-block::
 
@@ -76,12 +76,12 @@ Some methods, like :py:func:`~verticapy.vDataFrame.describe`, are abstractions o
   :suppress:
 
   res = vdf.describe(method = "categorical")
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_categorical.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_categorical.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_categorical.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_describe_categorical.html
 
 Multi-column aggregations can also be called with many built-in methods. For example, you can compute the :py:func:`~verticapy.vDataFrameavg` of all the numerical columns in just one line.
 
@@ -93,26 +93,26 @@ Multi-column aggregations can also be called with many built-in methods. For exa
   :suppress:
 
   res = vdf.avg()
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_avg.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_avg.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_vdf_avg.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_avg.html
 
-Or just the 'median' of a specific column.
+Or just the ``median`` of a specific column.
 
 .. ipython:: python
 
   vdf["tenure"].median()
 
-The approximate median is automatically computed. Set the parameter 'approx' to False to get the exact median.
+The approximate median is automatically computed. Set the parameter ``approx`` to False to get the exact median.
 
 .. ipython:: python
 
   vdf["tenure"].median(approx = False)
 
-You can also use the 'groupby' method to compute customized aggregations.
+You can also use the :py:func:`~verticapy.vDataFrame.groupby` method to compute customized aggregations.
 
 .. code-block:: python
 
@@ -139,12 +139,12 @@ You can also use the 'groupby' method to compute customized aggregations.
           "AVG(DECODE(Churn, 'Yes', 1, 0)) AS Churn",
       ],
   )
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_group_by.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_group_by.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_group_by.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_group_by.html
 
 .. code-block:: python
 
@@ -177,12 +177,12 @@ You can also use the 'groupby' method to compute customized aggregations.
           fun.max(vdf["tenure"])._as("max_tenure"),
       ],
   )
-  html_file = open("/project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_group_by_python.html", "w")
+  html_file = open("SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_group_by_python.html", "w")
   html_file.write(res._repr_html_())
   html_file.close()
 
 .. raw:: html
-  :file: /project/data/VerticaPy/docs/figures/user_guides_data_exploration_descriptive_stats_group_by_python.html
+  :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_group_by_python.html
 
 Computing many aggregations at the same time can be resource intensive. 
 You can use the parameters ``ncols_block`` and ``processes`` to manage the ressources.

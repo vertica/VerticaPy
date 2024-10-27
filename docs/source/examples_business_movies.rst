@@ -59,14 +59,14 @@ Let's take a look at the first few entries in the dataset.
 
     vp.drop("movies", method="schema")
     vp.create_schema("movies")
-    filmtv_movies = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/movies/movies.csv", schema = "movies")
+    filmtv_movies = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/movies/movies.csv", schema = "movies")
     res = filmtv_movies.head(5)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_table.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_table.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_table.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_table.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -83,12 +83,12 @@ First, let's explore the dataset.
     :suppress:
 
     res = filmtv_movies.describe(method = "categorical", unique = True)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_describe_cat.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_describe_cat.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_describe_cat.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_describe_cat.html
 
 We can drop the 'description' and 'notes' columns since these fields are empty for most of our dataset.
 
@@ -101,14 +101,14 @@ We can drop the 'description' and 'notes' columns since these fields are empty f
 
     filmtv_movies.drop(["description", "notes"])
     res = filmtv_movies
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_drop.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_drop.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_drop.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_drop.html
 
-We have access to more than 50000 movies in 27 different genres. Let's organize our list by their average rating.
+We have access to more than ``50000`` movies in ``27`` different genres. Let's organize our list by their average rating.
 
 .. code-block:: python
 
@@ -119,12 +119,12 @@ We have access to more than 50000 movies in 27 different genres. Let's organize 
 
     filmtv_movies.sort({"avg_vote" : "desc"})
     res = filmtv_movies.sort({"avg_vote" : "desc"})
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_avg_vote_sort.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_avg_vote_sort.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_avg_vote_sort.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_avg_vote_sort.html
 
 Since we want properly averaged scores, let's just consider the top 10 movies that have at least 10 votes.
 
@@ -142,14 +142,14 @@ Since we want properly averaged scores, let's just consider the top 10 movies th
         conditions = [filmtv_movies["votes"] > 10], 
         order_by = {"avg_vote" : "desc" },
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_search_votes.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_search_votes.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_search_votes.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_search_votes.html
 
-We can see classic movies like 'The Godfather' and 'Greed'. Let's smooth the avg_vote using a linear regression to make it more representative.
+We can see classic movies like ``The Godfather`` and ``Greed``. Let's smooth the avg_vote using a linear regression to make it more representative.
 
 To create our model we could use the votes, the category, the duration, etc. but let's go with the director and main actors. 
 
@@ -176,7 +176,7 @@ We can extract the five main actors for each movie with regular expressions.
     :suppress:
 
     for i in range(1, 5):
-        filmtv_movies2 = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/movies/movies.csv")
+        filmtv_movies2 = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/movies/movies.csv")
         filmtv_movies2.regexp(
             column = "actors",
             method = "substr",
@@ -189,12 +189,12 @@ We can extract the five main actors for each movie with regular expressions.
         else:
             filmtv_movies = filmtv_movies.append(filmtv_movies2)
     res = filmtv_movies["actor"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_describe_actors.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_describe_actors.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examplexamples_movies_describe_actorses_movies_search_votes.html
+    :file: SPHINX_DIRECTORY/figures/examplexamples_movies_describe_actorses_movies_search_votes.html
 
 By aggregating the data, we can find the number of actors and the number of votes by actor. 
 We can then normalize the data using the min-max method and quantify the notoriety of the actors.
@@ -227,12 +227,12 @@ We can then normalize the data using the min-max method and quantify the notorie
     )
     actors_stats["actor"].dropna()
     res = actors_stats["notoriety_actors"].normalize(method = "minmax")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_normalize_actors.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_normalize_actors.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_normalize_actors.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_normalize_actors.html
 
 Let's look at the top ten actors by notoriety.
 
@@ -254,12 +254,12 @@ Let's look at the top ten actors by notoriety.
             "castings_actors" : "desc",
         },
     ).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_actors_notr_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_actors_notr_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_actors_notr_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_actors_notr_head.html
 
 As expected, we get a list of very popular actors like Robert De Niro, Morgan Freeman, and Clint Eastwood.
 
@@ -288,12 +288,12 @@ Let's do the same for the directors.
         ],
     )
     res = director_stats["notoriety_director"].normalize(method = "minmax")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_notoriety_director.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_notoriety_director.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_notoriety_director.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_notoriety_director.html
 
 Now let's look at the top 10 movie directors.
 
@@ -315,12 +315,12 @@ Now let's look at the top 10 movie directors.
             "castings_director" : "desc",
         },
     ).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_notoriety_director_head_order.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_notoriety_director_head_order.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_notoriety_director_head_order.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_notoriety_director_head_order.html
 
 Again, we get a list of popular directors like Steven Spielberg, Woody Allen, and Clint Eastwood.
 
@@ -404,12 +404,12 @@ Let's compute some statistics on our dataset.
     :suppress:
 
     res = filmtv_movies_complete.describe(method = "all")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_describe.html
 
 We can use the movie's release year to get create three categories.
 
@@ -429,12 +429,12 @@ We can use the movie's release year to get create three categories.
         filmtv_movies_complete["year"] < 1990, "Old",
         filmtv_movies_complete["year"] >= 2000, "Recent", "90s",
     ) 
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_casewhen.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_casewhen.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_casewhen.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_casewhen.html
 
 Now, let's look at the countries that made the most movies.
 
@@ -452,12 +452,12 @@ Now, let's look at the countries that made the most movies.
         columns = ["country"], 
         expr = ["COUNT(*)"],
     ).sort({"count" : "desc"}).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_country_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_country_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_country_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_country_head.html
 
 We can use this variable to create language groups.
 
@@ -537,12 +537,12 @@ We can use this variable to create language groups.
             vp.StringSQL("REGEXP_LIKE(Country, '{}')".format("|".join(Russian_Est_Europe))), 'Russian_Est_Europe',
             vp.StringSQL("REGEXP_LIKE(Country, '{}')".format("|".join(Grec_Balkan))), 'Grec_Balkan', 
             'Others') 
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_language.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_language.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_language.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_language.html
 
 We can do the same for the genres.
 
@@ -578,14 +578,14 @@ We can do the same for the genres.
          vp.StringSQL("REGEXP_LIKE(Genre, 'Horror')"), 'Horror', 
          'Others'
     ) 
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_category_genre.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_category_genre.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_category_genre.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_category_genre.html
 
-Since we're more concerned with the 'Category' at this point, we can drop 'genre.'
+Since we're more concerned with the ``Category`` at this point, we can drop ``genre``.
 
 .. code-block:: python
 
@@ -606,14 +606,15 @@ Let's look at the missing values.
     :suppress:
 
     res = filmtv_movies_complete.count_percent()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_missing_vals.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_missing_vals.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_missing_vals.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_missing_vals.html
 
-Let's impute the missing values for 'notoriety_actors' and 'castings_actors' using different techniques. 
+Let's impute the missing values for ``notoriety_actors`` and ``castings_actors`` using different techniques.
+
 We can then drop the few remaining missing values.
 
 .. code-block:: python
@@ -653,12 +654,12 @@ We can then drop the few remaining missing values.
     )
     filmtv_movies_complete.dropna()
     res = filmtv_movies_complete
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_after_drop.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_after_drop.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_after_drop.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_after_drop.html
 
 Before we export the data, we should normalize the numerical columns to get the dummies of the different categories.
 
@@ -747,12 +748,12 @@ Let's create a model to evaluate an unbiased score for each different movie.
     :okwarning:
 
     res = model.report()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_model_report.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_model_report.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_model_report.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_model_report.html
 
 The model is good. Let's add it in our :py:mod:`~verticapy.vDataFrame`.
 
@@ -771,14 +772,14 @@ The model is good. Let's add it in our :py:mod:`~verticapy.vDataFrame`.
         filmtv_movies_complete,
         name = "unbiased_vote",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_model_predict.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_model_predict.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_complete_model_predict.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_complete_model_predict.html
 
-Since a score can't be greater than 10 or less than 0, we need to adjust the 'unbiased_vote'.
+Since a score can't be greater than 10 or less than 0, we need to adjust the ``unbiased_vote``.
 
 .. ipython:: python
 
@@ -842,12 +843,12 @@ Let's look at the top movies.
             "avg_vote" : "desc",
         },
     ).head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_top_movie_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_top_movie_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_top_movie_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_top_movie_head.html
 
 Great, our results are more consistent. Psycho, Pulp Fiction, and The Godfather are among the top movies.
 
@@ -864,12 +865,12 @@ Since ``k-means`` clustering is sensitive to unnormalized data, let's normalize 
     :suppress:
 
     res = filmtv_movies_complete["unbiased_vote"].normalize(method = "minmax")
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_normalize_minmax.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_normalize_minmax.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_normalize_minmax.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_normalize_minmax.html
 
 Let's compute the :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
 
@@ -911,10 +912,10 @@ Let's compute the :py:func:`~verticapy.machine_learning.model_selection.elbow` c
 
     verticapy.set_option("plotting_lib", "plotly")
     fig = elbow_chart
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_elbow_plot.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_movies_filmtv_elbow_plot.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_elbow_plot.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_elbow_plot.html
 
 By looking at the elbow curve, we can choose 15 clusters. Let's create a ``k-means`` model.
 
@@ -927,7 +928,6 @@ By looking at the elbow curve, we can choose 15 clusters. Let's create a ``k-mea
     model_kmeans.clusters_
 
 Let's add the clusters in the :py:mod:`~verticapy.vDataFrame`.
-
 
 .. code-block:: python
 
@@ -943,12 +943,12 @@ Let's add the clusters in the :py:mod:`~verticapy.vDataFrame`.
         filmtv_movies_complete, 
         name = "movies_cluster",
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_predict.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_predict.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_predict.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_predict.html
 
 Let's look at the different clusters.
 
@@ -984,12 +984,12 @@ Let's look at the different clusters.
             "Category",
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_0_search.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_0_search.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_0_search.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_0_search.html
 
 .. code-block:: python
 
@@ -1023,12 +1023,12 @@ Let's look at the different clusters.
             "Category",
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_1_search.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_1_search.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_1_search.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_1_search.html
 
 .. code-block:: python
 
@@ -1062,12 +1062,12 @@ Let's look at the different clusters.
             "Category",
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_2_search.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_2_search.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_2_search.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_2_search.html
 
 .. code-block:: python
 
@@ -1101,12 +1101,12 @@ Let's look at the different clusters.
             "Category",
         ],
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_3_search.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_3_search.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_movies_filmtv_movie_cluster_3_search.html
+    :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_movie_cluster_3_search.html
 
 Each cluster consists of similar movies. These clusters can be used to give movie recommendations or help streaming platforms group movies together.
 

@@ -24,7 +24,7 @@ Geospatial Plots
 General
 -------
 
-Let's begin by importing the dataset module of `VerticaPy`. It provides a range of datasets for both training and exploring VerticaPy's capabilities.
+Let's begin by importing the dataset module of ``verticapy``. It provides a range of datasets for both training and exploring VerticaPy's capabilities.
 
 .. ipython:: python
 
@@ -69,7 +69,7 @@ VerticaPy provides the option to create various types of geospatial plots, inclu
 
         vp.set_option("plotting_lib", "matplotlib")
 
-    We can switch to using the `matplotlib` module.
+    We can switch to using the ``matplotlib`` module.
 
     .. code-block:: python
         

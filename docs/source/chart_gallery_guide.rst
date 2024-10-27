@@ -22,7 +22,7 @@ Switching Between Libraries
 
 VerticaPy provides flexibility by allowing you to choose among different charting libraries: Matplotlib, Highcharts, and Plotly. Depending on your needs and preferences, you can switch between these libraries when creating charts.
 
-Let's begin by importing `VerticaPy`.
+Let's begin by importing ``verticapy``.
 
 .. ipython:: python
 
@@ -32,7 +32,7 @@ Please click on the tabs to explore how you can seamlessly switch between differ
 
 .. tab:: Plotly
 
-    We can switch to using the `plotly` module.
+    We can switch to using the ``plotly`` module.
 
     .. code-block:: python
         
@@ -40,7 +40,7 @@ Please click on the tabs to explore how you can seamlessly switch between differ
 
 .. tab:: Highcharts
 
-    We can switch to using the `highcharts` module.
+    We can switch to using the ``highcharts`` module.
 
     .. code-block:: python
         
@@ -48,7 +48,7 @@ Please click on the tabs to explore how you can seamlessly switch between differ
 
 .. tab:: Matplotlib
 
-    We can switch to using the `matplotlib` module.
+    We can switch to using the ``matplotlib`` module.
 
     .. code-block:: python
         
@@ -83,7 +83,7 @@ With these two distinct approaches, VerticaPy empowers you to seamlessly create 
 
     vp.set_option("plotting_lib", "plotly")
 
-Let's also import `numpy` to create a random dataset.
+Let's also import ``numpy`` to create a random dataset.
 
 .. ipython:: python
 
@@ -135,13 +135,13 @@ We load the VerticaPy `chart` extension.
 
     %load_ext verticapy.chart
 
-In Python, the histogram interval `h` is automatically computed, while in SQL, you need to manually specify the binning for the chart. Additionally, in magic cells, you can use the operator `:` to indicate that you want to use a Python variable, and then assign a value to `h`.
+In Python, the histogram interval ``h`` is automatically computed, while in SQL, you need to manually specify the binning for the chart. Additionally, in magic cells, you can use the operator `:` to indicate that you want to use a Python variable, and then assign a value to ``h``.
 
 .. code-block:: python
 
 	h = 2
 
-We write the SQL query using Jupyter magic cells. You can change the type of plots using the `k` option.
+We write the SQL query using Jupyter magic cells. You can change the type of plots using the ``k`` option.
 
 .. code-block:: sql
     
@@ -168,14 +168,14 @@ Understanding Parameters
 
 The Chart Gallery offers various parameters to customize your visualizations. Two important parameters to understand are:
 
-1. `h` (Bar Bin Interval): In 1D and 2D graphics, `h` represents the bar bin interval. VerticaPy automatically computes this value, but you can also choose it based on your data characteristics.
+1. ``h`` (Bar Bin Interval): In 1D and 2D graphics, ``h`` represents the bar bin interval. VerticaPy automatically computes this value, but you can also choose it based on your data characteristics.
 
 2. `max_cardinality`: This parameter controls the maximum number of categories to display in charts. Understanding how to set this parameter is crucial for creating informative visualizations.
 
-Bar Bin Interval: `h`
+Bar Bin Interval: ``h``
 ~~~~~~~~~~~~~~~~~~~~~
 
-`h` is a crucial parameter as it determines how numerical columns are binned. In our example, we can bin 'score1' and 'score2'. If no values are entered, VerticaPy will use methods like Sturges and Freedman Diaconis to determine the bin size for these two numerical features. Alternatively, you can specify a tuple (h1, h2) to set custom bin sizes.
+``h`` is a crucial parameter as it determines how numerical columns are binned. In our example, we can bin ``score1`` and ``score2``. If no values are entered, VerticaPy will use methods like Sturges and Freedman Diaconis to determine the bin size for these two numerical features. Alternatively, you can specify a tuple (h1, h2) to set custom bin sizes.
 
 .. code-block:: python
           

@@ -130,7 +130,7 @@ User Guide
   :maxdepth: 1
   
   user_guide_introduction
-  notebooks/data_ingestion/index.ipynb
+  user_guide_data_ingestion
   user_guide_data_exploration
   user_guide_data_preparation
   user_guide_machine_learning

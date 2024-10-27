@@ -75,12 +75,12 @@ Let's try both:
     from verticapy.datasets import load_laliga
     data = load_laliga()
     res = data.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_data.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_data.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_data.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_data.html
 
 Similar to the use of :py:func:`~verticapy.read_json` above, we can use :py:func:`~verticapy.read_file` to ingest the complex data directly:
 
@@ -94,7 +94,7 @@ Similar to the use of :py:func:`~verticapy.read_json` above, we can use :py:func
     data.head(100)
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_data.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_data.html
 
 We can also use the handy ``genSQL`` parameter to generate (but not execute) the SQL needed to create the final relation:
 
@@ -179,12 +179,12 @@ structure consisting of many sub-columns. We can convert this column into a JSON
     :suppress:
 
     res = data
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_data_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_data_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_data_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_data_2.html
 
 As with a normal :py:mod:`~verticapy.vDataFrame`, we can easily extract the values from the sub-columns:
 
@@ -196,12 +196,12 @@ As with a normal :py:mod:`~verticapy.vDataFrame`, we can easily extract the valu
     :suppress:
 
     res = data["away_team"]["away_team_gender"]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_data_3.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_data_3.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_data_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_data_3.html
 
 We can view any nested data structure by index:
 
@@ -213,12 +213,12 @@ We can view any nested data structure by index:
     :suppress:
 
     res = data["competition"]["competition_id"]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_nested.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_nested.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_nested.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_nested.html
 
 These nested structures can be used to create features:
 
@@ -244,7 +244,7 @@ We can even flatten the nested structure inside a json file, either flattening t
     :okwarning:
 
     vp.drop("complex_vmap_test.laliga_flat")
-    path = "/project/data/VerticaPy/docs"
+    path = "SPHINX_DIRECTORY"
     path = path[0:-5] + "/verticapy/datasets/data/"
     data = vp.read_json(
         path = path + "laliga/2008.json",
@@ -254,12 +254,12 @@ We can even flatten the nested structure inside a json file, either flattening t
         flatten_maps=True,
     )
     res = data.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_flatten.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_flatten.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_flatten.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_flatten.html
 
 We can see that all the columns from the JSON file have been flattened and multiple columns have been created for each 
 sub-column. This causes some loss in data structure, but makes it easy to see the data and to use it for model building.
@@ -290,7 +290,7 @@ To deconvolve the nested structure, we can use the ``flatten_arrays`` parameter 
     :okwarning:
 
     vp.drop("complex_vmap_test.laliga_flat")
-    path = "/project/data/VerticaPy/docs"
+    path = "SPHINX_DIRECTORY"
     path = path[0:-5] + "/verticapy/datasets/data/"
     data = vp.read_json(
         path = path + "laliga/2008.json",
@@ -300,12 +300,12 @@ To deconvolve the nested structure, we can use the ``flatten_arrays`` parameter 
         flatten_arrays=True,
     )
     res = data.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_flatten_arrays.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_flatten_arrays.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_flatten_arrays.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_flatten_arrays.html
 
 We can even convert columns into other formats, such as string:
 
@@ -318,12 +318,12 @@ We can even convert columns into other formats, such as string:
 
     data["home_team.managers.0.nickname"].astype(str)
     res = data
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_flatten_arrays_astype.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_flatten_arrays_astype.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_flatten_arrays_astype.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_flatten_arrays_astype.html
 
 Or integer:
 
@@ -336,12 +336,12 @@ Or integer:
 
     data["match_week"].astype(int)
     res = data
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_flatten_arrays_astype_int.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_flatten_arrays_astype_int.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_flatten_arrays_astype_int.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_flatten_arrays_astype_int.html
 
 It is also possible to:
 
@@ -397,7 +397,7 @@ When we do not materialize a table, it automatically becomes a flextable:
     :okwarning:
 
     vp.drop("complex_vmap_test.laliga_verticapy_test_json")
-    path = "/project/data/VerticaPy/docs"
+    path = "SPHINX_DIRECTORY"
     path = path[0:-5] + "/verticapy/datasets/data/"
     data = vp.read_json(
         path = path + "laliga/*.json",
@@ -407,12 +407,12 @@ When we do not materialize a table, it automatically becomes a flextable:
         materialize = False,
     )
     res = data.head(100)
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_materialize.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_materialize.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_materialize.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_materialize.html
 
 Some of the columns are ``VMAPs``:
 
@@ -433,12 +433,12 @@ We can easily flatten the VMaps virtual columns by using the :py:func:`~vDataFra
 
     data.flat_vmap(managers).drop(managers)
     res = data
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_materialize_flat.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_materialize_flat.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-     :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_materialize_flat.html
+     :file: SPHINX_DIRECTORY/figures/ug_fs_complex_materialize_flat.html
 
 To check for a flex table, we can use the following function:
 
@@ -478,12 +478,12 @@ First, we load the dataset.
 
     from verticapy.datasets import load_amazon
     res = data = load_amazon()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_cities.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_cities.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_cities.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_cities.html
 
 Once we have data in the form of :py:mod:`~verticapy.vDataFrame`, we can readily convert it to a ``JSON`` file:
 
@@ -551,13 +551,15 @@ Let's search for the changed name:
 .. ipython:: python
     :suppress:
 
-    res = data[data["state"] == "XXXX"]
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_fs_complex_cities_search.html", "w")
+    res = vp.vDataFrame("""
+    select * from complex_vmap_test.amazon_edit where state ilike '%XXXX%'
+    """)
+    html_file = open("SPHINX_DIRECTORY/figures/ug_fs_complex_cities_search.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_fs_complex_cities_search.html
+    :file: SPHINX_DIRECTORY/figures/ug_fs_complex_cities_search.html
 
 Now to clean everything up, we can drop our temporary schema:
 

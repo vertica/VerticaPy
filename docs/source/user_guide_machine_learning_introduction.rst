@@ -14,7 +14,7 @@ Supervised Learning
 Supervised Learning techniques map an input to an output based on some example dataset. This type of learning consists of two main types:
 - **Regression:** The Response is numerical (``Linear Regression``, ``SVM Regression``, ``RF Regression``...).
 - **Classification:** The Response is categorical (``Gradient Boosting``, ``Naive Bayes``, ``Logistic Regression``...).
-For example, predicting the total charges of a Telco customer using their tenure would be a type of regression. The following code is drawing a linear regression using the 'TotalCharges' as a function of the 'tenure' in the `telco churn dataset <https://github.com/vertica/VerticaPy/tree/master/docs/source/notebooks/data_exploration/correlations/data>`_.
+For example, predicting the total charges of a Telco customer using their tenure would be a type of regression. The following code is drawing a linear regression using the ``TotalCharges`` as a function of the ``tenure`` in the `telco churn dataset <https://github.com/vertica/VerticaPy/tree/master/docs/source/notebooks/data_exploration/correlations/data>`_.
 
 .. code-block:: python
 
@@ -35,17 +35,17 @@ For example, predicting the total charges of a Telco customer using their tenure
     import verticapy as vp
     vp.set_option("plotting_lib", "plotly")
 
-    churn = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/user_guides/data_exploration/churn.csv")
+    churn = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/user_guides/data_exploration/churn.csv")
 
     from verticapy.machine_learning.vertica import LinearRegression
 
     model = LinearRegression()
     model.fit(churn, ["tenure"], "TotalCharges")
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_1.html
 
 In contrast, when we have to predict a categorical column, we're dealing with classification.
 
@@ -66,12 +66,12 @@ In the following example, we use a ``Linear Support Vector Classification`` (SVC
 
     iris = load_iris()
     res = iris.one_hot_encode()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_table_introduction_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_table_introduction_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_table_introduction_1.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_table_introduction_1.html
 
 .. code-block:: python
 
@@ -90,17 +90,17 @@ In the following example, we use a ``Linear Support Vector Classification`` (SVC
     model = LinearSVC()
     model.fit(iris, ["PetalLengthCm", "SepalLengthCm"], "Species_Iris-setosa")
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_2.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_2.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_2.html
 
-When we have more than two categories, we use the expression 'Multiclass Classification' instead of 'Classification'.
+When we have more than two categories, we use the expression ``Multiclass Classification`` instead of ``Classification``.
 
 Unsupervised Learning
 ----------------------
 
-These algorithms are to used to segment the data (``k-means``, :py:mod:`~verticapy.machine_learning.vertica.DBSCAN`, etc.) or to detect anomalies (:py:mod:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, ``Z-Score`` Techniques...). In particular, they're useful for finding patterns in data without labels. For example, let's use a k-means algorithm to create different clusters on the Iris dataset. Each cluster will represent a flower's species.
+These algorithms are to used to segment the data (``k-means``, :py:mod:`~verticapy.machine_learning.vertica.DBSCAN`, etc.) or to detect anomalies (:py:mod:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, ``Z-Score`` Techniques...). In particular, they're useful for finding patterns in data without labels. For example, let's use a ``k-means`` algorithm to create different clusters on the Iris dataset. Each cluster will represent a flower's species.
 
 .. code-block:: python
 
@@ -119,9 +119,11 @@ These algorithms are to used to segment the data (``k-means``, :py:mod:`~vertica
     model = KMeans(n_cluster = 3)
     model.fit(iris, ["PetalLengthCm", "SepalLengthCm"])
     fig = model.plot()
-    fig.write_html("/project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_plot_introduction_3.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_plot_introduction_3.html
 
-In this section, we went over a few of the many ML algorithms available in VerticaPy. In the next lesson, we'll cover creating a regression model.
+In this section, we went over a few of the many ML algorithms available in VerticaPy.
+
+In the next lesson, we'll go over :ref:`user_guide.machine_learning.time_series`

@@ -3,7 +3,7 @@
 COVID-19
 =========
 
-This example uses the 'covid19' dataset to predict the number of deaths and cases one day in advance. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/covid19/covid19.ipynb>`_.
+This example uses the ``covid19`` dataset to predict the number of deaths and cases one day in advance. You can download the Jupyter Notebook of the study `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/covid19/covid19.ipynb>`_.
 
 - **date:** Date of the record.
 - **cases:** Number of people infected.
@@ -45,14 +45,14 @@ Let's create a Virtual DataFrame of the dataset. The dataset is available `here 
 .. ipython:: python
     :suppress:
 
-    covid19 = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/covid19/deaths.csv")
+    covid19 = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/covid19/deaths.csv")
     res = covid19.head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_commodities_table_head.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_commodities_table_head.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_head.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_head.html
 
 Data Exploration and Preparation
 ---------------------------------
@@ -67,12 +67,12 @@ Let's explore the data by displaying descriptive statistics of all the columns.
     :suppress:
 
     res = covid19.describe(method = "categorical", unique = True)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_covid19_table_describe.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_covid19_table_describe.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_describe.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_describe.html
 
 We have data from January 2020 to the beginning of May.
 
@@ -84,14 +84,14 @@ We have data from January 2020 to the beginning of May.
     :suppress:
 
     res = covid19["date"].describe()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_covid19_table_describe_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_covid19_table_describe_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_describe_2.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_describe_2.html
 
-We'll try to predict the number of future deaths by using the statistics from previous days. We can drop the columns 'county' and 'fips', since the scope of our analysis is focused on the United States and the FIPS code isn't relevant to our predictions.
+We'll try to predict the number of future deaths by using the statistics from previous days. We can drop the columns ``county`` and ``fips``, since the scope of our analysis is focused on the United States and the FIPS code isn't relevant to our predictions.
 
 .. code-block:: python
 
@@ -101,12 +101,12 @@ We'll try to predict the number of future deaths by using the statistics from pr
     :suppress:
 
     res = covid19.drop(["fips", "county"])
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_covid19_table_drop_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_covid19_table_drop_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_drop_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_drop_1.html
 
 Let's sum the number of deaths and cases by state and date.
 
@@ -142,12 +142,12 @@ Let's sum the number of deaths and cases by state and date.
         ],
     )
     res = covid19.head(10)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_covid19_table_clean_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_covid19_table_clean_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_clean_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_clean_1.html
 
 Let's look at the autocorrelation graphic of the number of deaths.
 
@@ -171,10 +171,10 @@ Let's look at the autocorrelation graphic of the number of deaths.
         by = ["state"],
         p = 24,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_covid19_table_plot_acf.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_covid19_table_plot_acf.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_plot_acf.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_plot_acf.html
 
 The process doesn't seem to be stationary. Let's use a Dickey-Fuller test to confirm our hypothesis.
 
@@ -203,12 +203,12 @@ The process doesn't seem to be stationary. Let's use a Dickey-Fuller test to con
         by = ["state"], 
         p = 12,
     )
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_covid19_adfuller_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_covid19_adfuller_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_adfuller_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_adfuller_1.html
 
 We can look at the cumulative number of deaths and its exponentiality.
 
@@ -226,10 +226,10 @@ We can look at the cumulative number of deaths and its exponentiality.
         ts = "date", 
         by = "state",
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_covid19_table_plot_3.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_covid19_table_plot_3.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_plot_3.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_plot_3.html
 
 Let's plot this for the entire country.
 
@@ -249,10 +249,10 @@ Let's plot this for the entire country.
         [fun.sum(covid19["deaths"])._as("deaths")],
     )
     fig = covid["deaths"].plot(ts = "date")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_covid19_table_plot_4.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_covid19_table_plot_4.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_plot_4.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_plot_4.html
 
 As you would expect, there's a clear correlation between the number of people infected and the number of deaths.
 
@@ -260,7 +260,7 @@ As you would expect, there's a clear correlation between the number of people in
 
     covid19.corr(["deaths", "cases"])
 
-A vector autoregression (VAR) model can be very good to do the predictions. But first, let's encode the states to look at their influence.
+A vector autoregression (:py:mod:`~verticapy.machine_learning.vertica.tsa.VAR`) model can be very good to do the predictions. But first, let's encode the states to look at their influence.
 
 .. code-block:: python
 
@@ -270,12 +270,12 @@ A vector autoregression (VAR) model can be very good to do the predictions. But 
     :suppress:
 
     res = covid19["state"].one_hot_encode()
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_covid19_one_hot_encode_1.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_covid19_one_hot_encode_1.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_one_hot_encode_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_one_hot_encode_1.html
 
 Because of the upward monotonic trend, we can also look at the correlation between the days elapsed and the number of cases.
 
@@ -302,10 +302,10 @@ Let's see the correlation between the number of deaths and the other variables.
     :suppress:
 
     fig = covid19.corr(focus = "deaths")
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_covid19_table_plot_corr_5.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_covid19_table_plot_corr_5.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_plot_corr_5.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_plot_corr_5.html
 
 We can see clearly a high correlation for some variables. We can use them to compute a ``SARIMAX`` model, but we'll stick to a :py:mod:`~verticapy.machine_learning.vertica.VAR` model for this study.
 
@@ -324,7 +324,7 @@ Let's compute the total number of deaths and cases to create our VAR model.
 .. ipython:: python
     :suppress:
 
-    covid19 = vp.read_csv("/project/data/VerticaPy/docs/source/_static/website/examples/data/covid19/deaths.csv").groupby(
+    covid19 = vp.read_csv("SPHINX_DIRECTORY/source/_static/website/examples/data/covid19/deaths.csv").groupby(
         ["date"],
         [
             fun.sum(covid19["deaths"])._as("deaths"),
@@ -364,12 +364,12 @@ Let's create a :py:mod:`~verticapy.machine_learning.vertica.VAR` model to predic
         return_report = True,
     )
     res = model.score(start = 20)
-    html_file = open("/project/data/VerticaPy/docs/figures/examples_covid19_table_ml_score.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/examples_covid19_table_ml_score.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_ml_score.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_ml_score.html
 
 Our model is not bad. Let's predict the number of deaths in a near future.
 
@@ -395,10 +395,10 @@ Cases:
         npredictions = 10,
         idx = 0,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_covid19_table_pred_plot_0.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_covid19_table_pred_plot_0.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_pred_plot_0.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_pred_plot_0.html
 
 Deaths:
 ++++++++
@@ -422,10 +422,10 @@ Deaths:
         npredictions = 10,
         idx = 1,
     )
-    fig.write_html("/project/data/VerticaPy/docs/figures/examples_covid19_table_pred_plot_1.html")
+    fig.write_html("SPHINX_DIRECTORY/figures/examples_covid19_table_pred_plot_1.html")
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/examples_covid19_table_pred_plot_1.html
+    :file: SPHINX_DIRECTORY/figures/examples_covid19_table_pred_plot_1.html
 
 The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the VAR model.
 

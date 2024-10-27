@@ -29,7 +29,7 @@ Seasonal Decompose Plot
 General
 -------
 
-Let's begin by importing the dataset module of `VerticaPy`. It provides a range of datasets for both training and exploring VerticaPy's capabilities.
+Let's begin by importing the dataset module of ``verticapy``. It provides a range of datasets for both training and exploring VerticaPy's capabilities.
 
 .. code-block:: python
 
@@ -85,13 +85,13 @@ To create a seasonal decomposition plot, we must visualize the primary time seri
 
         vp.set_option("plotting_lib", "plotly")
 
-    We can switch to using the `plotly` module.
+    We can switch to using the ``plotly`` module.
 
     .. code-block:: python
         
         vp.set_option("plotting_lib", "plotly")
 
-    We can first create custom subplot array using `plotly`. The dimensions are set to 3 x 2.
+    We can first create custom subplot array using ``plotly``. The dimensions are set to 3 x 2.
 
     .. code-block:: python
 
@@ -194,7 +194,7 @@ To create a seasonal decomposition plot, we must visualize the primary time seri
         ax3 = fig.add_subplot(324)
         ax4 = fig.add_subplot(326)
 
-    We can switch to using the `matplotlib` module.
+    We can switch to using the ``matplotlib`` module.
 
     .. code-block:: python
         

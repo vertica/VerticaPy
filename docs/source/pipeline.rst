@@ -115,7 +115,7 @@ Documentation
 Ingestion
 ~~~~~~~~~
 
-For more information on how to customize this step: `DataLoader Parameters <https://docs.vertica.com/latest/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`__ and `Copy Parameters <https://docs.vertica.com/latest/en/sql-reference/statements/copy/>`__.
+For more information on how to customize this step: `DataLoader Parameters <https://docs.vertica.com/latest/en/sql-reference/statements/create-statements/create-data-loader/#arguments>`_  and `Copy Parameters <https://docs.vertica.com/latest/en/sql-reference/statements/copy/>`_ .
 
 .. code:: yaml
 
@@ -289,7 +289,7 @@ You may want to compute metrics for your newly created model. The results are st
 Scheduler
 ~~~~~~~~~
 
-For more information to on how to customize this step: `Cron Wiki <https://en.wikipedia.org/wiki/Cron>`__ and `Vertica Schedulers <https://docs.vertica.com/latest/en/sql-reference/statements/create-statements/create-schedule/>`__.
+For more information to on how to customize this step: `Cron Wiki <https://en.wikipedia.org/wiki/Cron>`_  and `Vertica Schedulers <https://docs.vertica.com/latest/en/sql-reference/statements/create-statements/create-schedule/>`_ .
 
 If you would like the ``ingestion`` or ``train`` steps to continously update on a set
 schedule use the ``schedule`` key. The schedule follows the cron format.

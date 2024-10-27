@@ -43,7 +43,7 @@ Data Exploration
 
     .. grid-item::
 
-        .. card:: Coorelation & dependencies
+        .. card:: Correlation & dependencies
           :link: user_guide.data_exploration.correlation
           :link-type: ref
           :text-align: center
@@ -58,3 +58,11 @@ Data Exploration
           allowing you to identify patterns and dependencies 
           crucial for informed decision-making and predictive 
           modeling.
+
+.. toctree::
+  :hidden:
+  :maxdepth: 1
+  
+  user_guide_data_exploration_descriptive_statistics
+  user_guide_data_exploration_charts
+  user_guide_data_exploration_correlations

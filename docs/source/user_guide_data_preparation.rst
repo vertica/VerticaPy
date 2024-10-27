@@ -119,3 +119,16 @@ Data Preparation
 
           Create new informative features to 
           enhance the predictive power of your models.
+
+.. toctree::
+  :hidden:
+  :maxdepth: 1
+  
+  user_guide_data_preparation_joins
+  user_guide_data_preparation_duplicates
+  user_guide_data_preparation_outliers
+  user_guide_data_preparation_missing_values
+  user_guide_data_preparation_encoding
+  user_guide_data_preparation_normalization
+  user_guide_data_preparation_decomposition
+  user_guide_data_preparation_features_engineering

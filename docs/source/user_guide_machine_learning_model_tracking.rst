@@ -92,12 +92,12 @@ So far we have only added three models to the experiment, but we could add many 
     :okwarning:
 
     res = my_experiment_1.list_models()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_model_tracking_list_models.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_model_tracking_list_models.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_model_tracking_list_models.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_model_tracking_list_models.html
 
 .. ipython:: python
 
@@ -112,7 +112,7 @@ scenarios where there is often a large number of leftover models. The :py:func:`
     my_experiment_1.drop(keeping_models=[top_model.model_name])
 
 Experiments are also helpful for performing grid search on hyper-parameters. The following example shows how they can 
-be used to study the impact of the max_iter parameter on the prediction performance of :py:mod:`~verticapy.machine_learning.vertica.LogisticRegression` models.
+be used to study the impact of the max_iter parameter on the prediction performance of :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` models.
 
 .. ipython:: python
     :okwarning:
@@ -171,12 +171,12 @@ To see the list of all models registered as ``top_model_demo``, use the ``list_m
     :okwarning:
 
     res = rm.list_models()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_model_tracking_list_models_2.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_model_tracking_list_models_2.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_model_tracking_list_models_2.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_model_tracking_list_models_2.html
 
 The model we just registered has a status of "under_review". The next step is to change the status of the model to "staging", which is meant for A/B testing the model. Assuming the model performs well, we will promote it to the "production" status. Please note that we should specify the right version of the registered model from the above table.
 
@@ -209,12 +209,12 @@ If you want to run the predict function on a model with a status other than "pro
     :okwarning:
 
     res = rm.predict(titanic_vDF, X = predictors, name = "predicted_value")
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_model_tracking_predict.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_model_tracking_predict.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_model_tracking_predict.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_model_tracking_predict.html
 
 ``DBADMIN`` and users who are granted ``SELECT`` privileges on the ``v_monitor.model_status_history`` table are able to monitor the status history of registered models.
 
@@ -227,15 +227,17 @@ If you want to run the predict function on a model with a status other than "pro
     :okwarning:
 
     res = rm.list_status_history()
-    html_file = open("/project/data/VerticaPy/docs/figures/ug_ml_model_tracking_list_status_history.html", "w")
+    html_file = open("SPHINX_DIRECTORY/figures/ug_ml_model_tracking_list_status_history.html", "w")
     html_file.write(res._repr_html_())
     html_file.close()
 
 .. raw:: html
-    :file: /project/data/VerticaPy/docs/figures/ug_ml_model_tracking_list_status_history.html
+    :file: SPHINX_DIRECTORY/figures/ug_ml_model_tracking_list_status_history.html
 
 Conclusion
 -----------
 
 
 The addition of model tracking and model versioning to the VerticaPy toolkit greatly improves VerticaPy's MLOps capabilities. We are constantly working to improve VerticaPy and address the needs of data scientists who wish to harness the power of Vertica database to empower their data analyses. If you have any comments or questions, don't hesitate to reach out in the VerticaPy github community.
+
+This concludes the fundamental lessons on machine learning algorithms in VerticaPy.

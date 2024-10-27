@@ -127,13 +127,14 @@ ________
 Customer Testimonials
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. grid:: 1 2 2 2
+.. grid:: 1 1 2 2
 
     .. grid-item::
 
         .. card:: Carenne Ludeña
           :img-top: _static/website/about_us/testimonials/testi-author1.jpg
           :text-align: center
+          :class-card: custom-card-customer-test
           :class-img-top: custom-class-img-top-index-page
 
           "Using Vertica ML, we now get results in almost real-time without any wait. Our new approach [in-database machine learning using Vertica] allows for tens of millions of models being calculated over filtered aggregated data in seconds and re-written in the database for almost real-time availability. This has been a real game changer for us."
@@ -146,6 +147,7 @@ Customer Testimonials
         .. card:: Rolando Castaños
           :img-top: _static/website/about_us/testimonials/testi-author2.jpg
           :text-align: center
+          :class-card: custom-card-customer-test
           :class-img-top: custom-class-img-top-index-page
 
           "Vertica is a data science ready database. You only have to know your business and let Vertica do the job. You don't need to be or have a data scientist, just use the out-of-the-box ML algorithms, feed data and in a matter of seconds you'll see insights, knowledge, predictions and more."
@@ -158,6 +160,7 @@ Customer Testimonials
         .. card:: Dr. Jochen Schlosser
           :img-top: _static/website/about_us/testimonials/testi-author3.jpg
           :text-align: center
+          :class-card: custom-card-customer-test
           :class-img-top: custom-class-img-top-index-page
 
           "The ML capabilities of Vertica enable us to help advertisers navigate the omnichannel world, based on scalability, relevance, and efficiency. Vertica enables us to analyze very large sets of structured and unstructured data in real time, and includes ML capabilities that help us drive our offer to both media owners and their advertisers."
@@ -170,6 +173,7 @@ Customer Testimonials
         .. card:: Abhishek Sharma
           :img-top: _static/website/about_us/testimonials/testi-author4.jpg
           :text-align: center
+          :class-card: custom-card-customer-test
           :class-img-top: custom-class-img-top-index-page
 
           "Vertica’s new in-database machine learning capabilities are like gold! We are extremely excited to train our Machine Learning models on our data in Vertica and ship them with our platform to run on our customers’ clusters. This is something that is much harder with any other tool. It will improve our competitive positioning."
@@ -182,6 +186,7 @@ Customer Testimonials
         .. card:: Bruce Yen
           :img-top: _static/website/about_us/testimonials/testi-author5.jpg
           :text-align: center
+          :class-card: custom-card-customer-test
           :class-img-top: custom-class-img-top-index-page
 
           "Vertica is crucial for enabling us to be more agile with data. Our Vertica platform is instrumental in many areas of our business—creating predictive algorithms, serving up product recommendations, powering insight to our mobile apps, and generating daily reports and ad-hoc queries."
@@ -194,6 +199,7 @@ Customer Testimonials
         .. card:: Stéphane Ozboyaci
           :img-top: _static/website/about_us/testimonials/testi-author6.jpg
           :text-align: center
+          :class-card: custom-card-customer-test
           :class-img-top: custom-class-img-top-index-page
 
           "Vertica in Eon Mode and AI Capabilities Align Perfectly with our Vision. We are delighted with Vertica’s AI-driven computational capabilities and the flexibility it gives us to consolidate and visualize the data in user-friendly real-time dashboards that benefit our internal stakeholders and our customers."
@@ -212,6 +218,7 @@ Customer Testimonials
     connection
     whats_new
     contribution_guidelines
+    examples
     api
     chart_gallery
     user_guide
