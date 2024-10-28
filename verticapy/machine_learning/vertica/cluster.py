@@ -1311,14 +1311,14 @@ class KPrototypes(KMeans):
         :suppress:
         :okexcept:
 
-        result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
+        result = model.predict(data, ["color", "sulphates"], name = "Cluster IDs")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kprototypes_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. code-block:: python
 
-        model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
+        model.predict(data, ["color", "sulphates"], name = "Cluster IDs")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kprototypes_prediction.html
