@@ -275,6 +275,60 @@ Linear SVR
    LinearSVR.object_type
 
 
+Partial Least Squares (PLS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: verticapy.machine_learning.vertica
+   
+.. autosummary::
+   :toctree: api/
+
+   linear_model.PLSRegression
+
+.. currentmodule:: verticapy.machine_learning.vertica.linear_model
+
+**Methods:**
+
+.. autosummary::
+   :toctree: api/
+
+   PLSRegression.contour
+   PLSRegression.deploySQL
+   PLSRegression.does_model_exists
+   PLSRegression.drop
+   PLSRegression.export_models
+   PLSRegression.features_importance
+   PLSRegression.fit
+   PLSRegression.get_attributes
+   PLSRegression.get_match_index
+   PLSRegression.get_params
+   PLSRegression.get_plotting_lib
+   PLSRegression.get_vertica_attributes
+   PLSRegression.import_models
+   PLSRegression.plot
+   PLSRegression.predict
+   PLSRegression.register
+   PLSRegression.regression_report
+   PLSRegression.report
+   PLSRegression.score
+   PLSRegression.set_params
+   PLSRegression.summarize
+   PLSRegression.to_binary
+   PLSRegression.to_memmodel
+   PLSRegression.to_pmml
+   PLSRegression.to_python
+   PLSRegression.to_sql
+   PLSRegression.to_tf
+
+
+**Attributes:**
+
+.. autosummary::
+   :toctree: api/
+
+   PLSRegression._model_type
+
+
 Poisson Regression
 ~~~~~~~~~~~~~~~~~~~~~~
 

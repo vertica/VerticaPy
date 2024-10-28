@@ -1,7 +1,7 @@
 .. _whats_new_v1_1_0:
 
 ===============
-Version 1.0.1
+Version 1.1.0
 ===============
 
 This release encompasses all the features introduced in 1.0.0 (see :ref:`whats_new_v1_0_0`) 
@@ -45,7 +45,8 @@ This allows users to enter the alter session SQL before profiling the queries.
 QueryProfilerInterface
 +++++++++++++++++++++++
 
- - Added many more metrics for the profiled queries such as:
+ 
+- Added many more metrics for the profiled queries such as:
 
   - rows_filtered_sip
   - container_rows_filtered_sip
@@ -60,7 +61,7 @@ QueryProfilerInterface
 QueryProfilerComparison
 ++++++++++++++++++++++++
 
- - :py:class:`~verticapy.performance.vertica.qprof.QueryProfilerComparison` class offers an extended set of functionalities, enabling the creation of complex trees with multiple metrics.
+- :py:class:`~verticapy.performance.vertica.qprof.QueryProfilerComparison` class offers an extended set of functionalities, enabling the creation of complex trees with multiple metrics.
   
 .. code-block:: python
     

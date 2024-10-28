@@ -160,9 +160,11 @@ It took an order of magnitude more to load into memory compared with the time re
 .. ipython:: python
 
     import matplotlib.pyplot as plt
-    @savefig ug_intro_vdf_plot
+
+    @savefig ug_intro_vdf_plot.png
     plt.plot(L_nrows, L_time)
-    @savefig ug_intro_vdf_plot_2
+
+    @savefig ug_intro_vdf_plot_2.png
     plt.show()
 
 Even after the data is loaded into memory, the performance is very slow. The following example removes non-numeric columns from the dataset, then computes a correlation matrix:
@@ -235,7 +237,7 @@ The :py:mod:`~verticapy.vDataFrame` structure
 
 Now that we've seen the performance and memory benefits of the vDataFrame, let's dig into some of the underlying structures and methods that produce these great results.
 
-:py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`s. To view all :py:mod:`vDataColumn`s in a :py:mod:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.get_columns` method:
+:py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`. To view all :py:mod:`~verticapy.vDataColumn` in a :py:mod:`~verticapy.vDataFrame` , use the :py:func:`~verticapy.vDataFrame.get_columns` method:
 
 .. ipython:: python
 

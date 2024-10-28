@@ -13,8 +13,9 @@ Examples
         :link: examples.learn
         :link-type: ref
         :img-top: _static/website/examples/images/learn.jpg
+        :class-img-top: custom-class-img-top-examples
         :text-align: center
-        :class-card: custom-card-8
+        :class-card: custom-card-examples
         :class-footer: user_guide_footer
 
         5 Notebooks
@@ -26,9 +27,10 @@ Examples
       .. card:: Understand
         :link: examples.understand
         :img-top: _static/website/examples/images/understand.jpg
+        :class-img-top: custom-class-img-top-examples
         :link-type: ref
         :text-align: center
-        :class-card: custom-card-8
+        :class-card: custom-card-examples
         :class-footer: user_guide_footer
 
         3 Notebooks
@@ -41,13 +43,14 @@ Examples
         :link: examples.business
         :link-type: ref
         :img-top: _static/website/examples/images/business.jpg
+        :class-img-top: custom-class-img-top-examples
         :text-align: center
-        :class-card: custom-card-8
+        :class-card: custom-card-examples
         :class-footer: user_guide_footer
 
         10 Nmins
         ^^^^^^^^^^^^^^
-        Details...
+        Solve real-world problems with VerticaPy.
           
 
           

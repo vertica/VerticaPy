@@ -5,15 +5,15 @@ Introduction to Machine Learning
 =================================
 
 One of the last stages of the data science life cycle is the Data Modeling. Machine learning algorithms are a set of statistical techniques that build mathematical models from training data. These algorithms come in two types:
-- **Supervised:** these algorithms are used when we want to predict a response column.
-- **Unsupervised:** these algorithms are used when we want to detect anomalies or when we want to segment the data. No response column is needed.
+ - **Supervised:** these algorithms are used when we want to predict a response column.
+ - **Unsupervised:** these algorithms are used when we want to detect anomalies or when we want to segment the data. No response column is needed.
 
 Supervised Learning
 --------------------
 
 Supervised Learning techniques map an input to an output based on some example dataset. This type of learning consists of two main types:
-- **Regression:** The Response is numerical (``Linear Regression``, ``SVM Regression``, ``RF Regression``...).
-- **Classification:** The Response is categorical (``Gradient Boosting``, ``Naive Bayes``, ``Logistic Regression``...).
+ - **Regression:** The Response is numerical (``Linear Regression``, ``SVM Regression``, ``RF Regression``...).
+ - **Classification:** The Response is categorical (``Gradient Boosting``, ``Naive Bayes``, ``Logistic Regression``...).
 For example, predicting the total charges of a Telco customer using their tenure would be a type of regression. The following code is drawing a linear regression using the ``TotalCharges`` as a function of the ``tenure`` in the `telco churn dataset <https://github.com/vertica/VerticaPy/tree/master/docs/source/notebooks/data_exploration/correlations/data>`_.
 
 .. code-block:: python

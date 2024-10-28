@@ -3,7 +3,7 @@
 Movies Scoring and Clustering 
 ==============================
 
-This example uses the 'filmtv_movies' dataset to evaluate the quality of the movies and create clusters of similar movies. 
+This example uses the ``filmtv_movies`` dataset to evaluate the quality of the movies and create clusters of similar movies. 
 You can download the Jupyter notebook `here <https://github.com/vertica/VerticaPy/blob/master/examples/business/movies/movies.ipynb>`_.
 
 The columns provided include:

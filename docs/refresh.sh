@@ -25,7 +25,7 @@ make html
 python3 remove_pattern.py
 
 # Fix search directory for top nav bar + logo
-python3 fix_links
+python3 fix_links.py
 
 # Create Manual TOC tree
 python3 create_toc_tree.py

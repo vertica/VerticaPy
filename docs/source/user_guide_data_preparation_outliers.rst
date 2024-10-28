@@ -10,9 +10,9 @@ Some machine learning algorithms are sensitive to outliers. In fact, they can de
 
 Outliers consist of three main types:
 
-- **Global Outliers:** Values far outside the entirety of their source dataset.
-- **Contextual Outliers:** Values deviate significantly from the rest of the data points in the same context.
-- **Collective Outliers:** Values that aren't global or contextual outliers, but as a collection deviate significantly from the entire dataset.
+ - **Global Outliers:** Values far outside the entirety of their source dataset.
+ - **Contextual Outliers:** Values deviate significantly from the rest of the data points in the same context.
+ - **Collective Outliers:** Values that aren't global or contextual outliers, but as a collection deviate significantly from the entire dataset.
 
 Global outliers are often the most critical type and can add a significant amount of bias into the data. Fortunately, we can easily identify these outliers by computing the ``Z-Score``.
 
@@ -94,7 +94,7 @@ It is also possible to draw an outlier plot using the :py:func:`~verticapy.vData
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_4.html
 
-We've detected some global outliers in the distribution and we can impute these with the :py:func:`~verticapy.vDataFrame.fill_outliers` method.
+We've detected some global outliers in the distribution and we can impute these with the :py:func:`~verticapy.vDataColumn.fill_outliers` method.
 
 Generally, you can identify global outliers with the ``Z-Score``. We'll consider a ``Z-Score`` greater than 3 indicates that the datapoint is an outlier. Some less precise techniques consider the data points belonging in the first and last alpha-quantile as outliers. You're free to choose either of these strategies when filling outliers.
 

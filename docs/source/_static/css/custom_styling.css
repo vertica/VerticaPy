@@ -556,6 +556,32 @@ body {
   height: 520px; /* Adjust the desired height */
 }
 
+/* Cards on Examples Page */
+.custom-class-img-top-examples {
+  height: 280px;
+}
+.custom-card-examples{
+  height: 420px;
+}
+/* Cards on Examples/Business Page */
+.custom-card-examples-business{
+  height: 500px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+/* Cards on Examples/Learn Page */
+.custom-card-examples-learn{
+  height: 500px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+/* Cards on Examples/understand Page */
+.custom-card-examples-understand{
+  height: 550px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
 
 /* Cards on Machine Learning page */
 .custom-card-3 {

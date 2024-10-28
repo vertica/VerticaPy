@@ -375,7 +375,7 @@ The variable 'value' has a few missing values that we can drop.
 Interpolation & Aggregations
 +++++++++++++++++++++++++++++
 
-Since power outages seem relatively common in each area, and the "value" represents the electricity consumed during 30 minute intervals (in kWh), it'd be a good idea to interpolate and aggregate the data to get a monthly average in electricity consumption per region.
+Since power outages seem relatively common in each area, and the ``value`` represents the electricity consumed during 30 minute intervals (in kWh), it'd be a good idea to interpolate and aggregate the data to get a monthly average in electricity consumption per region.
 
 Let's save our new dataset in the Vertica database.
 
@@ -550,7 +550,7 @@ Looking at three different smart meters, we can see a clear decrease in energy c
 
 This behavior seems to be seasonal, but we don't have enough data to prove this.
 
-Let's find outliers in the distribution by computing the ZSCORE per meterID.
+Let's find outliers in the distribution by computing the `ZSCORE`` per ``meterID``.
 
 .. code-block:: python
 

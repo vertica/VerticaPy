@@ -62,19 +62,19 @@ def help_start() -> None:
             return
     link = None
     if response == 0:
-        link = "https://www.vertica.com/python/old/quick-start.php"
+        link = "https://www.vertica.com/python/documentation/1.1.x/html/getting_started.html"
     elif response == 1:
-        link = "https://www.vertica.com/python/old/documentation_last/datasets/"
+        link = "https://www.vertica.com/python/documentation/1.1.x/html/datasets.html"
     elif response == 2:
-        link = "https://www.vertica.com/python/old/examples/"
+        link = "https://www.vertica.com/python/documentation/1.1.x/html/examples.html"
     elif response == 3:
         link = "https://github.com/vertica/VerticaPy/"
     elif response == 4:
-        link = "https://www.vertica.com/python/old/documentation_last/utilities/set_option/"
+        link = "https://www.vertica.com/python/documentation/1.1.x/html/api/verticapy.set_option.html"
     elif response == 5:
-        link = "https://www.vertica.com/python/old/documentation_last/datasets/"
+        link = "https://www.vertica.com/python/documentation/1.1.x/html/datasets.html"
     elif response == 6:
-        link = "https://www.vertica.com/python/old/documentation_last/extensions/sql/"
+        link = "https://www.vertica.com/python/documentation/1.1.x/html/api/verticapy.jupyter.extensions.sql_magic.sql_magic.html"
     elif response == -1:
         message = "Thank you for using the VerticaPy help module."
     elif response == 666:

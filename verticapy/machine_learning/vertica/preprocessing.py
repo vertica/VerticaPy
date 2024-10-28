@@ -103,7 +103,7 @@ def balance(
     The following examples provide a basic understanding
     of usage. For more detailed examples, please refer to
     the :ref:`user_guide.machine_learning` or the
-    `Examples <https://www.vertica.com/python/old/examples/>`_
+    :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -1159,7 +1159,7 @@ class Scaler(Preprocessing):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -1629,7 +1629,7 @@ class OneHotEncoder(Preprocessing):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning

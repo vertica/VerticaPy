@@ -123,7 +123,7 @@ The :py:func:`~verticapy.vDataFrame.analytic` method contains the many advanced 
 
     help(vp.vDataFrame.analytic)
 
-To demonstrate some of these techniques, let's use the Amazon dataset and perform some computations.
+To demonstrate some of these techniques, let's use the ``amazon`` dataset and perform some computations.
 
 .. code-block:: python
     

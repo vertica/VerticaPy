@@ -750,7 +750,7 @@ class ElasticNet(LinearModel, Regressor):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -1268,7 +1268,7 @@ class Lasso(LinearModel, Regressor):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -1791,7 +1791,7 @@ class LinearRegression(LinearModel, Regressor):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -2317,7 +2317,7 @@ class PLSRegression(LinearModel, Regressor):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -2414,13 +2414,7 @@ class PLSRegression(LinearModel, Regressor):
 
     .. code-block::
 
-        model = PLSRegression(
-            tol = 1e-6,
-            penalty = 'L2',
-            C = 1,
-            max_iter = 100,
-            fit_intercept = True,
-        )
+        model = PLSRegression()
 
     .. hint::
 
@@ -2441,13 +2435,7 @@ class PLSRegression(LinearModel, Regressor):
         :suppress:
 
         from verticapy.machine_learning.vertica import PLSRegression
-        model = PLSRegression(
-            tol = 1e-6,
-            penalty = 'L2',
-            C = 1,
-            max_iter = 100,
-            fit_intercept = True,
-        )
+        model = PLSRegression()
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -3043,7 +3031,7 @@ class PoissonRegressor(LinearModel, Regressor):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -3553,7 +3541,7 @@ class Ridge(LinearModel, Regressor):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning
@@ -4132,7 +4120,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     basic understanding of usage.
     For more detailed examples, please
     refer to the :ref:`user_guide.machine_learning`
-    or the `Examples <https://www.vertica.com/python/old/examples/>`_
+    or the :ref:`examples`
     section on the website.
 
     Load data for machine learning

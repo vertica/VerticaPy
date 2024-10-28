@@ -5,13 +5,13 @@ Credit Card Fraud
 
 In this example, we use VerticaPy to detect fraudulent credit card transactions. You can download the Jupyter notebook `here <https://github.com/vertica/VerticaPy/blob/master/examples/understand/business/credit_card_fraud/credit-card-fraud.ipynb>`_ and the dataset `here <https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud>`_.
 
-The Credit Card Fraud Detection dataset contains credit card transactions from September 2013 by European cardholders. It contains numerical input variables from a principal component analysis (PCA) transformation.
+The Credit Card Fraud Detection dataset contains credit card transactions from September 2013 by European cardholders. It contains numerical input variables from a principal component analysis (:py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`) transformation.
 
 To preserve the cardholders' confidentiality, we cannot access the original features and background information about the data.
 
-``Time`` and ``Amount`` are the only features that have not been transformed with PCA.
+``Time`` and ``Amount`` are the only features that have not been transformed with :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`.
 
-- **V1, V2,..., V28:** principal components from PCA.
+- **V1, V2,..., V28:** principal components from :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`.
 - **Time:** Number of seconds elapsed between this transaction and the first transaction in the dataset.
 - **Amount:** Transaction amount.
 - **Class:** Response variable, where a value of 1 indicates fraudulent activity.
@@ -385,7 +385,7 @@ Based on the report, our model is very good at detecting non-fraudulent events; 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_features_importance_1.html
 
-Some PCA components seem to be very relevant and will be essential for finding anomalies.
+Some :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` components seem to be very relevant and will be essential for finding anomalies.
 
 Unsupervised Learning
 ++++++++++++++++++++++
@@ -393,7 +393,7 @@ Unsupervised Learning
 There are many unsupervised learning techniques, but not all of them will be useful for detecting anomalies. Since there's no rigid mathematical definition for what an outlier is, finding anomalies becomes somewhat subjective.
 To solve this problem, we have to evaluate our constraints and needs. Do we need to find anomalies in real-time? Do we have a time constraint?
 
-- **Real-time:** We don't have access to historical data, so we need an easy way to preprocess the data that is wholly independent from historical data, and the model must be simple to deploy at the source of the data stream. For example, we might use simple preprocessing techniques like normalization, standardization or One-Hot Encoding instead of more complex ones like windows, interpolation, or intersection. Isolation forests, k-means, robust PCA, or global outlier detection using z-score would be ideal, whereas local outlier factor, DBSCAN, or other hard-to-deploy methods cannot be used.
+- **Real-time:** We don't have access to historical data, so we need an easy way to preprocess the data that is wholly independent from historical data, and the model must be simple to deploy at the source of the data stream. For example, we might use simple preprocessing techniques like normalization, standardization or One-Hot Encoding instead of more complex ones like windows, interpolation, or intersection. Isolation forests, k-means, robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`, or global outlier detection using z-score would be ideal, whereas local outlier factor, DBSCAN, or other hard-to-deploy methods cannot be used.
 - **Near Real-time:** We have access to historical data and our preprocessing method must be fast. The model has to be simple to score with. We can use any preprocessing technique as long as it is fast enough, which of course varies. Since this is still a real-time use case, we should still avoid any hard-to-deploy algorithms like DBSCAN or local outlier factor.
 - **No time constraint:** We can use any techniques we want.
 

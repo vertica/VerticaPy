@@ -38,9 +38,6 @@ def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
     """
     Applies any Vertica function on the input
     expressions.
-    Please check-out the Vertica Documentation
-    to see the available functions:
-    https://www.vertica.com/docs/
 
     Parameters
     ----------

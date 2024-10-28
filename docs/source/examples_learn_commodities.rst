@@ -320,12 +320,12 @@ Moving on to the correlation matrix, we can see many events that changed drastic
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_commodities_table_corr_2.html
 
-We can see strong correlations between most of the variables. A vector autoregression (:py:mod:`~verticapy.machine_learning.vertica.VAR`) model seems ideal.
+We can see strong correlations between most of the variables. A vector autoregression (:py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR`) model seems ideal.
 
 Machine Learning
 -----------------
 
-Let's create the :py:mod:`~verticapy.machine_learning.vertica.VAR` model to predict the value of various commodities.
+Let's create the :py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR` model to predict the value of various commodities.
 
 .. code-block:: python
 
@@ -342,6 +342,7 @@ Let's create the :py:mod:`~verticapy.machine_learning.vertica.VAR` model to pred
 .. ipython:: python
     :suppress:
     :okwarning:
+    :okexcept:
 
     from verticapy.machine_learning.vertica import VAR
 
@@ -371,6 +372,7 @@ Gold
 .. ipython:: python
     :suppress:
     :okwarning:
+    :okexcept:
 
     fig = model.plot(idx = 0, npredictions = 60)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_commodities_table_pred_plot_0.html")
@@ -388,6 +390,7 @@ Oil:
 .. ipython:: python
     :suppress:
     :okwarning:
+    :okexcept:
 
     fig = model.plot(idx = 1, npredictions = 60)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_commodities_table_pred_plot_1.html")
@@ -405,6 +408,7 @@ Spread:
 .. ipython:: python
     :suppress:
     :okwarning:
+    :okexcept:
 
     fig = model.plot(idx = 2, npredictions = 60)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_commodities_table_pred_plot_2.html")
@@ -422,6 +426,7 @@ Vix:
 .. ipython:: python
     :suppress:
     :okwarning:
+    :okexcept:
 
     fig = model.plot(idx = 3, npredictions = 60)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_commodities_table_pred_plot_3.html")
@@ -439,6 +444,7 @@ Dol_Eur:
 .. ipython:: python
     :suppress:
     :okwarning:
+    :okexcept:
 
     fig = model.plot(idx = 4, npredictions = 60)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_commodities_table_pred_plot_4.html")
@@ -446,7 +452,7 @@ Dol_Eur:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_commodities_table_pred_plot_4.html
 
-The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the :py:mod:`~verticapy.machine_learning.vertica.VAR` model.
+The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the :py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR` model.
 
 Conclusion
 -----------

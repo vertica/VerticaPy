@@ -260,7 +260,7 @@ As you would expect, there's a clear correlation between the number of people in
 
     covid19.corr(["deaths", "cases"])
 
-A vector autoregression (:py:mod:`~verticapy.machine_learning.vertica.tsa.VAR`) model can be very good to do the predictions. But first, let's encode the states to look at their influence.
+A vector autoregression (:py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR`) model can be very good to do the predictions. But first, let's encode the states to look at their influence.
 
 .. code-block:: python
 
@@ -307,9 +307,9 @@ Let's see the correlation between the number of deaths and the other variables.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_covid19_table_plot_corr_5.html
 
-We can see clearly a high correlation for some variables. We can use them to compute a ``SARIMAX`` model, but we'll stick to a :py:mod:`~verticapy.machine_learning.vertica.VAR` model for this study.
+We can see clearly a high correlation for some variables. We can use them to compute a ``SARIMAX`` model, but we'll stick to a :py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR` model for this study.
 
-Let's compute the total number of deaths and cases to create our VAR model.
+Let's compute the total number of deaths and cases to create our :py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR` model.
 
 .. code-block:: python
 
@@ -335,7 +335,7 @@ Let's compute the total number of deaths and cases to create our VAR model.
 Machine Learning
 -----------------
 
-Let's create a :py:mod:`~verticapy.machine_learning.vertica.VAR` model to predict the number of COVID-19 deaths and cases in the USA.
+Let's create a :py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR` model to predict the number of COVID-19 deaths and cases in the USA.
 
 .. code-block:: python
 
@@ -427,7 +427,7 @@ Deaths:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_covid19_table_pred_plot_1.html
 
-The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the VAR model.
+The model performs well but may be somewhat unstable. To improve it, we could apply data preparation techniques, such as seasonal decomposition, before building the :py:mod:`~verticapy.machine_learning.vertica.tsa.arima.VAR` model.
 
 Conclusion
 -----------
