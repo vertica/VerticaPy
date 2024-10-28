@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-import random
+import secrets
 from typing import Literal, Optional, Union, TYPE_CHECKING
 from collections.abc import Iterable
 
@@ -850,7 +850,7 @@ class vDFFilter(vDFAgg):
             )
             name = (
                 "__verticapy_duplicated_index__"
-                + str(random.randint(0, 10000000))
+                + str(secrets.randbelow(10000001))
                 + "_"
             )
             self.eval(
@@ -1760,14 +1760,14 @@ class vDFFilter(vDFAgg):
             )
         by = format_type(by, dtype=list)
         by = self.format_colnames(by)
-        random_int = random.randint(0, 10000000)
+        random_int = secrets.randbelow(10000001)
         name = f"__verticapy_random_{random_int}__"
         name2 = f"__verticapy_random_{random_int + 1}__"
         vdf = self.copy()
         assert 0 < x < 1, ValueError("Parameter 'x' must be between 0 and 1")
         if method == "random":
             random_state = conf.get_option("random_state")
-            random_seed = random.randint(int(-10e6), int(10e6))
+            random_seed = secrets.randbelow(2000001) - 1000000
             if isinstance(random_state, int):
                 random_seed = random_state
             random_func = _seeded_random_function(random_seed)

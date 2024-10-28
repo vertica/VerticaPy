@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-import random
+import secrets
 import time
 from typing import Literal, Optional, Union
 
@@ -557,7 +557,7 @@ def cross_validate(
         estimator.drop()
         random_state = conf.get_option("random_state")
         random_state = (
-            random.randint(int(-10e6), int(10e6))
+            secrets.randbelow(2000001) - 1000000
             if not random_state
             else random_state + i
         )

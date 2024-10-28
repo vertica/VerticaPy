@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-import random
+import secrets
 from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
@@ -2090,7 +2090,7 @@ class vDFMachineLearning(vDFScaler):
         random_seed = (
             random_state
             if isinstance(random_state, int)
-            else random.randint(int(-10e6), int(10e6))
+            else secrets.randbelow(2000001) - 1000000
         )
         random_func = _seeded_random_function(random_seed)
         q = _executeSQL(

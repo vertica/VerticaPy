@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random
+import secrets
 from typing import Literal, Optional
 
 import numpy as np
@@ -105,8 +105,12 @@ class SVMClassifierPlot(HighchartsBase):
                 [-self.data["coef"][0] / self.data["coef"][1], i / 100]
                 for i in range(-100, 101)
             ]
-            data_1 = [[xi, 2 * (random.random() - 0.5)] for xi in x1]
-            data_0 = [[xi, 2 * (random.random() - 0.5)] for xi in x0]
+            data_1 = [
+                [xi, 2 * (secrets.randbelow(10000001) / 10000000 - 0.5)] for xi in x1
+            ]
+            data_0 = [
+                [xi, 2 * (secrets.randbelow(10000001) / 10000000 - 0.5)] for xi in x0
+            ]
         elif len(self.layout["columns"]) == 3:
             y = self.data["X"][:, 1]
             y0, y1 = y[w == 0], y[w == 1]

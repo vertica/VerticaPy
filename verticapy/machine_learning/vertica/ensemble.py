@@ -140,7 +140,7 @@ class XGBoost(Tree):
         n_nodes = len(attributes[0])
         split_conditions = []
         parents = [0 for i in range(n_nodes)]
-        parents[0] = random.randint(n_nodes + 1, 999999999)
+        parents[0] = min(secrets.randbelow(1000000000) + n_nodes + 1, 999999999)
         for i in range(n_nodes):
             left_child = attributes[0][i]
             right_child = attributes[1][i]

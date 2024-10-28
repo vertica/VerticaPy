@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random
+import secrets
 from typing import Literal, Optional
 import numpy as np
 
@@ -97,7 +97,10 @@ class SVMClassifierPlot(MatplotlibBase):
                 all_scatter += [
                     ax.scatter(
                         x,
-                        [2 * (random.random() - 0.5) for xi in x],
+                        [
+                            2 * (secrets.randbelow(10000001) / 10000000 - 0.5)
+                            for xi in x
+                        ],
                         **self._update_dict(s, style_kwargs, i),
                     )
                 ]

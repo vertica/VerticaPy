@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime
-import random
+import secrets
 from typing import Optional, Union
 
 from verticapy._typing import SQLColumns, TYPE_CHECKING
@@ -289,7 +289,7 @@ class vDFRolling(vDFCorr):
         if func in ("kurtosis", "skewness", "aad", "prod", "jb"):
             if func in ("skewness", "kurtosis", "aad", "jb"):
                 columns_0_str = columns[0].replace('"', "").lower()
-                random_int = random.randint(0, 10000000)
+                random_int = secrets.randbelow(10000001)
                 mean_name = f"{columns_0_str}_mean_{random_int}"
                 std_name = f"{columns_0_str}_std_{random_int}"
                 count_name = f"{columns_0_str}_count_{random_int}"
