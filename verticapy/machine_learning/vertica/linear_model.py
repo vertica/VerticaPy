@@ -2414,13 +2414,7 @@ class PLSRegression(LinearModel, Regressor):
 
     .. code-block::
 
-        model = PLSRegression(
-            tol = 1e-6,
-            penalty = 'L2',
-            C = 1,
-            max_iter = 100,
-            fit_intercept = True,
-        )
+        model = PLSRegression()
 
     .. hint::
 
@@ -2441,13 +2435,7 @@ class PLSRegression(LinearModel, Regressor):
         :suppress:
 
         from verticapy.machine_learning.vertica import PLSRegression
-        model = PLSRegression(
-            tol = 1e-6,
-            penalty = 'L2',
-            C = 1,
-            max_iter = 100,
-            fit_intercept = True,
-        )
+        model = PLSRegression()
 
     Model Training
     ^^^^^^^^^^^^^^^
