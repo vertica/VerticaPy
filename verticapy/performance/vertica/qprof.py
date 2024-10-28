@@ -34,7 +34,10 @@ from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._utils._sql._vertica_version import vertica_version
+from verticapy._utils._sql._vertica_version import (
+    check_minimum_version,
+    vertica_version,
+)
 
 from verticapy.performance.vertica.collection.profile_export import ProfileExport
 from verticapy.performance.vertica.collection.profile_import import ProfileImport
@@ -973,6 +976,7 @@ class QueryProfiler:
 
     # Init Functions
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,

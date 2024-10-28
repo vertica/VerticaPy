@@ -20,7 +20,9 @@ import types
 from typing import Optional, Union
 
 import verticapy._config.config as conf
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._print import print_message
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.jupyter._javascript import read_package_file, replace_value
 from verticapy.jupyter._widgets import Visualizer, Item, makeItems
@@ -39,6 +41,8 @@ class QueryProfilerInterface(QueryProfilerStats):
     features.
     """
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         transactions: Union[None, str, list[int], list[tuple[int, int]]] = None,
@@ -1003,6 +1007,8 @@ class QueryProfilerComparison:
     qprof2 (QueryProfilerInterface): The second QueryProfilerInterface instance for comparison.
     """
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(self, qprof1, qprof2):
         self.qprof1 = qprof1
         self.qprof2 = qprof2
