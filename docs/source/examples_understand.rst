@@ -10,7 +10,7 @@ Understand
     
       .. card:: Africa Education
         :img-top: _static/website/examples/images/africa_education.jpg
-        :link: examples.business.africa_education
+        :link: examples.understand.africa_education
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-understand
@@ -30,7 +30,7 @@ Understand
     
       .. card:: Amazon
         :img-top: _static/website/examples/images/amazon.jpg
-        :link: examples.business.amazon
+        :link: examples.understand.amazon
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-understand
@@ -51,7 +51,7 @@ Understand
     
       .. card:: Covid 19
         :img-top: _static/website/examples/images/covid19.jpg
-        :link: examples.business.covid19
+        :link: examples.understand.covid19
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-understand

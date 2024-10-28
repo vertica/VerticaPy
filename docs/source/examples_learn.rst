@@ -10,7 +10,7 @@ Learn
     
       .. card:: Commodities
         :img-top: _static/website/examples/images/commodities.jpg
-        :link: examples.business.commodities
+        :link: examples.learn.commodities
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-learn
@@ -27,7 +27,7 @@ Learn
     
       .. card:: Iris
         :img-top: _static/website/examples/images/iris.jpg
-        :link: examples.business.iris
+        :link: examples.learn.iris
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-learn
@@ -45,7 +45,7 @@ Learn
     
       .. card:: Pokemon
         :img-top: _static/website/examples/images/pokemon.jpg
-        :link: examples.business.pokemon
+        :link: examples.learn.pokemon
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-learn
@@ -63,7 +63,7 @@ Learn
     
       .. card:: Titanic
         :img-top: _static/website/examples/images/titanic.jpg
-        :link: examples.business.titanic
+        :link: examples.learn.titanic
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-learn
@@ -80,7 +80,7 @@ Learn
     
       .. card:: Wine quality
         :img-top: _static/website/examples/images/winequality.jpg
-        :link: examples.business.winequality
+        :link: examples.learn.winequality
         :link-type: ref
         :text-align: center
         :class-card: custom-card-examples-learn
