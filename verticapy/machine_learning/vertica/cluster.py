@@ -161,6 +161,7 @@ class Clustering(Unsupervised):
 
         .. ipython:: python
             :suppress:
+            :okexcept:
 
             result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_prediction.html", "w")
@@ -602,6 +603,7 @@ class KMeans(Clustering):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_prediction.html", "w")
@@ -1307,6 +1309,7 @@ class KPrototypes(KMeans):
 
     .. ipython:: python
         :suppress:
+        :okexcept:
 
         result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kprototypes_prediction.html", "w")
@@ -1932,6 +1935,7 @@ class BisectingKMeans(KMeans, Tree):
     .. ipython:: python
         :suppress:
         :okwarning:
+        :okexcept:
 
         result = model.predict(data, ["density", "sulphates"])
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_prediction.html", "w")
@@ -2338,6 +2342,7 @@ class BisectingKMeans(KMeans, Tree):
 
         .. ipython:: python
             :suppress:
+            :okexcept:
 
             result = model.get_tree()
             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_get_tree.html", "w")
@@ -2773,6 +2778,7 @@ class DBSCAN(VerticaModel):
 
     .. ipython:: python
         :suppress:
+        :okexcept:
 
         result = model.predict()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dbscan_prediction.html", "w")
@@ -3229,6 +3235,7 @@ class DBSCAN(VerticaModel):
 
         .. ipython:: python
             :suppress:
+            :okexcept:
 
             result = model.predict()
             html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_dbscan_prediction_fun.html", "w")
@@ -3630,6 +3637,7 @@ class NearestCentroid(MulticlassClassifier):
 
     .. ipython:: python
         :suppress:
+        :okexcept:
 
         result = model.report()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report.html", "w")
@@ -3657,6 +3665,7 @@ class NearestCentroid(MulticlassClassifier):
 
     .. ipython:: python
         :suppress:
+        :okexcept:
 
         result = model.report(cutoff = 0.2)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report_cutoff.html", "w")
@@ -3697,6 +3706,7 @@ class NearestCentroid(MulticlassClassifier):
 
     .. ipython:: python
         :suppress:
+        :okexcept:
 
         result = model.predict(
             test,
@@ -3749,6 +3759,7 @@ class NearestCentroid(MulticlassClassifier):
 
     .. ipython:: python
         :suppress:
+        :okexcept:
 
         result = model.predict_proba(
             test,
