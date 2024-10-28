@@ -13,10 +13,17 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
 
 .. tab:: In-Database
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
+
     .. image:: ../../docs/source/_static/website/about_us/opentext-network-database-share-ico-48.svg
         :width: 10%
         :align: center
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
 
     VerticaPy Harnesses the Power of Vertica.
 
@@ -32,10 +39,17 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
 
 .. tab:: Ease of Use
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
+
     .. image:: ../../docs/source/_static/website/about_us/opentext-process-maze-ico-48.svg
         :width: 10%
         :align: center
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
 
     Seamless Learning Experience: VerticaPy's Familiarity akin to sklearn and pandas.
 
@@ -51,10 +65,17 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
 
 .. tab:: Advanced Analytics
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
+
     .. image:: ../../docs/source/_static/website/about_us/opentext-ai-ai-ico-48.svg
         :width: 10%
         :align: center
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
 
     Advanced Analytics Elevated: Exploring the Realm of VerticaPy.
 
@@ -70,10 +91,17 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
 
 .. tab:: Dynamic Visualizations
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
+
     .. image:: ../../docs/source/_static/website/about_us/opentext-performance-chart-line-bar-noaxis-ico-48.svg
         :width: 10%
         :align: center
 
+    .. raw:: html
+
+        <div style="height: 20px;"></div>
 
     Visualize Insights with Precision: Unleash the Power of VerticaPy Charts
 
