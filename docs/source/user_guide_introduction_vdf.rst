@@ -69,12 +69,13 @@ In-memory vs. in-database
 
 The following examples demonstrate the performance advantages of loading and processing data in-database versus in-memory.
 
-First, we download the `Expedia dataset <https://www.kaggle.com/competitions/expedia-hotel-recommendations/data>`_ from Kaggle and then load it into Vertica:
+First, we download the `Expedia dataset <https://www.kaggle.com/competitions/expedia-hotel-recommendations/data>`_ from Kaggle and 
+then load it into Vertica:
 
 .. note:: 
     
-    In this example, we are only taking a subset of the entire dataset to save time. 
-    But as per our studies, the benifits increase exponentially if the size of the data gets larger.
+    In this example, we are only showing the steps without actually computing the results because of hte size of database.
+    If you performt the analysis, you will note the difference in orders of magnitude. In-database is much faster.
 
 .. code-block:: python
 
@@ -82,22 +83,15 @@ First, we download the `Expedia dataset <https://www.kaggle.com/competitions/exp
 
 Once the data is loaded into the Vertica database, we can create a :py:mod:`~verticapy.vDataFrame` using the relation that contains the Expedia dataset:
 
-.. ipython:: python
+.. code-block:: python
 
     import time
-    @suppress
-    vp.drop("public.expedia")
-    @suppress
-    vp.read_csv(
-        "SPHINX_DIRECTORY/source/_static/website/examples/data/booking/expedia.csv",
-        schema = "public", 
-        parse_nrows = 20000000,
-    )
+
     start_time = time.time()
     expedia = vp.vDataFrame("public.expedia")
     print("elapsed time = {}".format(time.time() - start_time))
 
-The :py:mod:`~verticapy.vDataFrame` was created in about a second. All the data—about 4GB—is stored in Vertica, requiring no in-memory data loading.
+All the data—about 4GB—is stored in Vertica, requiring no in-memory data loading.
 
 Now, to compare the above result with in-memory loading, we load about half the dataset into pandas:
 
@@ -108,68 +102,26 @@ Now, to compare the above result with in-memory loading, we load about half the 
      has less than 2GB of memory.
 
 .. code-block:: python
-
-    import pandas as pd
-
-    L_nrows = [10000, 100000, 149814]
-    L_time = []
-    for nrows in L_nrows:
-        start_time = time.time()
-        expedia_df = pd.read_csv("expedia.csv", nrows = nrows)
-        elapsed_time = time.time() - start_time
-        L_time.append(elapsed_time)
-
-.. code-block:: python
     
     import pandas as pd
 
-    L_nrows = [10000, 100000, 149814]
-    L_time = []
-    for nrows in L_nrows:
-        start_time = time.time()
-        expedia_df = pd.read_csv(
-            "expedia.csv",
-            nrows = nrows,
-        )
-        elapsed_time = time.time() - start_time
-        L_time.append(elapsed_time)
+    start_time = time.time()
+    expedia_df = pd.read_csv(
+        "expedia.csv",
+    )
+    print("elapsed time = {}".format(time.time() - start_time))
 
-.. ipython:: python
-    :suppress:
 
-    import pandas as pd
+You will notice that it will take orders of magnitude more to load into memory compared 
+with the time required to create the :py:mod:`~verticapy.vDataFrame`. Loading data into 
+pandas is quite fast when the data volume is low (less than some MB), but as the size of 
+the dataset increases, the load time can become exponentially more expensive.
 
-    L_nrows = [10000, 100000, 149814]
-    L_time = []
-    for nrows in L_nrows:
-        start_time = time.time()
-        expedia_df = pd.read_csv(
-            "SPHINX_DIRECTORY/source/_static/website/examples/data/booking/expedia.csv",
-            nrows = nrows,
-        )
-        elapsed_time = time.time() - start_time
-        L_time.append(elapsed_time)
 
-.. ipython:: python
+Even after the data is loaded into memory, the performance is very slow. 
+The following example removes non-numeric columns from the dataset, then computes a correlation matrix:
 
-    for i in range(len(L_time)):
-        print("nrows = {}; elapsed time = {}".format(L_nrows[i], L_time[i]))
-
-It took an order of magnitude more to load into memory compared with the time required to create the :py:mod:`~verticapy.vDataFrame`. Loading data into pandas is quite fast when the data volume is low (less than some MB), but as the size of the dataset increases, the load time can become exponentially more expensive, as seen in the following plot:
-
-.. ipython:: python
-
-    import matplotlib.pyplot as plt
-
-    @savefig ug_intro_vdf_plot.png
-    plt.plot(L_nrows, L_time)
-
-    @savefig ug_intro_vdf_plot_2.png
-    plt.show()
-
-Even after the data is loaded into memory, the performance is very slow. The following example removes non-numeric columns from the dataset, then computes a correlation matrix:
-
-.. ipython:: python
+.. code-block:: python
 
     columns_to_drop = ["date_time", "srch_ci", "srch_co"] ;
     expedia_df = expedia_df.drop(columns_to_drop, axis=1);
@@ -177,9 +129,10 @@ Even after the data is loaded into memory, the performance is very slow. The fol
     expedia_df.corr();
     print(f"elapsed time = {time.time() - start_time}")
 
-Let's compare the performance in-database using a :py:mod:`~verticapy.vDataFrame` to compute the correlation matrix of the entire dataset:
+Let's compare the performance in-database using a :py:mod:`~verticapy.vDataFrame` to compute 
+the correlation matrix of the entire dataset:
 
-.. ipython:: python
+.. code-block:: python
 
     # Remove non-numeric columns
     expedia.drop(columns = ["date_time", "srch_ci", "srch_co"]);
@@ -187,17 +140,21 @@ Let's compare the performance in-database using a :py:mod:`~verticapy.vDataFrame
     expedia.corr(show = False);
     print(f"elapsed time = {time.time() - start_time}")
 
-VerticaPy also caches the computed aggregations. With this cache available, we can repeat the correlation matrix computation almost instantaneously:
+VerticaPy also caches the computed aggregations. With this cache available, 
+we can repeat the correlation matrix computation almost instantaneously:
 
 .. note:: 
     
-    If necessary, you can deactivate the cache by calling the :py:func:`~verticapy.set_option` function with the ``cache`` parameter set to False.
+    If necessary, you can deactivate the cache by calling the :py:func:`~verticapy.set_option` 
+    function with the ``cache`` parameter set to False.
 
-.. ipython:: python
+.. code-block:: python
 
     start_time = time.time()
     expedia.corr(show = False);
     print(f"elapsed time = {time.time() - start_time}")
+
+You will notice that the result can re-fetched instantaneously. .
 
 Memory usage 
 +++++++++++++
@@ -206,31 +163,21 @@ Now, we will examine how the memory usage compares between in-memory and in-data
 
 First, use the pandas ``info()`` method to explore the DataFrame's memory usage:
 
-.. ipython:: python
+.. code-block:: python
 
     expedia_df.info()
 
-Compare this with vDataFrame:
+You should observe that the size is the same is that of the original file. 
 
-.. code-block:: python
-
-    expedia.memory_usage()
-
-.. ipython:: python
-    :suppress:
-
-    res = expedia.memory_usage()
-    html_file = open("SPHINX_DIRECTORY/figures/ug_intro_vdf_mem.html", "w")
-    html_file.write(res._repr_html_())
-    html_file.close()
-
-.. raw:: html
-    :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_mem.html
-
-The :py:mod:`~verticapy.vDataFrame` only uses about 37KB! By storing the data in the Vertica database, and only recording the 
+Compare this with vDataFrame - The :py:mod:`~verticapy.vDataFrame` only uses about 37KB! 
+By storing the data in the Vertica database, and only recording the 
 user's data modifications in memory, the memory usage is reduced to a minimum. 
 
-With VerticaPy, we can take advantage of Vertica's structure and scalability, providing fast queries without ever loading the data into memory. In the above examples, we've seen that in-memory processing is much more expensive in both computation and memory usage. This often leads to the decesion to downsample the data, which sacrfices the possibility of further data insights.
+With VerticaPy, we can take advantage of Vertica's structure and scalability, 
+providing fast queries without ever loading the data into memory. 
+In the above examples, we've seen that in-memory processing is much more 
+expensive in both computation and memory usage. This often leads to the 
+decesion to downsample the data, which sacrfices the possibility of further data insights.
 
 The :py:mod:`~verticapy.vDataFrame` structure
 ----------------------------------------------
@@ -238,6 +185,17 @@ The :py:mod:`~verticapy.vDataFrame` structure
 Now that we've seen the performance and memory benefits of the vDataFrame, let's dig into some of the underlying structures and methods that produce these great results.
 
 :py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`. To view all :py:mod:`~verticapy.vDataColumn` in a :py:mod:`~verticapy.vDataFrame` , use the :py:func:`~verticapy.vDataFrame.get_columns` method:
+
+.. ipython:: python
+    :suppress:
+
+    vp.drop("public.expedia")
+    vp.read_csv(
+        "SPHINX_DIRECTORY/source/_static/website/examples/data/booking/expedia.csv",
+        schema = "public", 
+        parse_nrows = 20000000,
+    )
+    expedia = vp.vDataFrame("public.expedia")
 
 .. ipython:: python
 
@@ -367,6 +325,8 @@ The aggregation's for each vDataColumn are saved to its catalog. If we again cal
 
 .. ipython:: python
 
+    import time
+    
     start_time = time.time()
     expedia.corr();
     print("elapsed time = {}".format(time.time() - start_time))
