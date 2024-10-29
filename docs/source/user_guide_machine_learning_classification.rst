@@ -8,7 +8,7 @@ Classifications are ML algorithms used to predict categorical response columns. 
 
 To understand how to create a classification model, let's predict the species of flowers with the Iris dataset.
 
-We'll start by importing the Random Forest Classifier.
+We'll start by importing the ``Random Forest Classifier``.
 
 .. ipython:: python
 
@@ -91,7 +91,7 @@ You can also add the probabilities.
 
 Our example forgoes splitting the data into training and testing, which is important for real-world work. Our main goal in this lesson is to look at the metrics used to evaluate classifications. The most famous metric is accuracy: generally speaking, the closer accuracy is to 1, the better the model is. However, taking metrics at face value can lead to incorrect interpretations.
 
-For example, let's say our goal is to identify bank fraud. Fraudulent activity is relatively rare, so let's say that they represent less than 1% of the data. If we were to predict that there are no frauds in the dataset, we'd end up with an accuracy of 99%. This is why ROC ``AUC`` and PRC ``AUC`` are more robust metrics.
+For example, let's say our goal is to identify bank fraud. Fraudulent activity is relatively rare, so let's say that they represent less than ``1%`` of the data. If we were to predict that there are no frauds in the dataset, we'd end up with an accuracy of ``99%``. This is why ROC ``AUC`` and PRC ``AUC`` are more robust metrics.
 
 That said, a good model is simply a model that might solve a the given problem. In that regard, any model is better than a random one.
 

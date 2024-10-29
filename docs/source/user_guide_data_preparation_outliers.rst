@@ -56,7 +56,7 @@ Let's focus on a patient's maximum heart rate (thalach) and the cholesterol (cho
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_2.html
 
-We can see some outliers of the distribution: people with high cholesterol and others with a very low heart rate. Let's compute the global outliers using the :py:func:`~verticapy.vDataFrame.outlier` method.
+We can see some outliers of the distribution: people with high cholesterol and others with a very low heart rate. Let's compute the global outliers using the :py:func:`~verticapy.vDataFrame.outliers` method.
 
 .. code-block:: python
 
@@ -192,7 +192,7 @@ Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or lo
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_7.html
 
-While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers when computing the clusters, ``LOF`` computes an outlier score. Generally, a ``LOF`` Score greater than 1.5 indicates an outlier.
+While :py:mod:`~verticapy.machine_learning.vertica.cluster.DBSCAN` identifies outliers when computing the clusters, ``LOF`` computes an outlier score. Generally, a ``LOF`` Score greater than 1.5 indicates an outlier.
 
 .. code-block:: python
 
@@ -244,4 +244,4 @@ While :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` identifies outliers w
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_9.html
 
-We have many other techniques like the ``k-means`` clustering for finding outliers, but the most important method is using the ``Z-Score``. After identifying outliers, we just have to decide how to impute the missing values. We'll focus on missing values in the next lesson.
+We have many other techniques like the :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` clustering for finding outliers, but the most important method is using the ``Z-Score``. After identifying outliers, we just have to decide how to impute the missing values. We'll focus on missing values in the next lesson.

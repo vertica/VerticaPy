@@ -8,7 +8,7 @@ The easiest way to understand data is to aggregate it.
 An aggregation is a number or a category which summarizes the data. 
 VerticaPy lets you compute all well-known aggregation in a single line.
 
-The :py:func:`~verticapy.vDataFrame.agg` method is the best way to compute multiple aggregations on multiple columns at the same time.
+The :py:func:`~verticapy.vDataFrame.aggregate` method is the best way to compute multiple aggregations on multiple columns at the same time.
 
 .. ipython:: python
 
@@ -36,7 +36,7 @@ Let's use the `churn dataset <https://github.com/vertica/VerticaPy/blob/master/e
 .. raw:: html
   :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_descriptive_stats_vdf_agg.html
 
-Some methods, like :py:func:`~verticapy.vDataFrame.describe`, are abstractions of the :py:func:`~verticapy.vDataFrame.agg` method; they simplify the call to computing specific aggregations.
+Some methods, like :py:func:`~verticapy.vDataFrame.describe`, are abstractions of the :py:func:`~verticapy.vDataFrame.aggregate` method; they simplify the call to computing specific aggregations.
 
 .. code-block::
 
@@ -189,4 +189,4 @@ You can use the parameters ``ncols_block`` and ``processes`` to manage the resso
 
 For example, the parameter ``ncols_block`` will divide the main query into smaller using a specific number of columns. The parameter ``processes`` allows you to manage the number of queries you want to send at the same time. 
 
-An entire example is available in the :py:func:`~verticapy.vDataFrame.agg` documentation.
+An entire example is available in the :py:func:`~verticapy.vDataFrame.aggregate` documentation.

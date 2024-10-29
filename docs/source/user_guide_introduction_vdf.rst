@@ -392,17 +392,17 @@ The generated SQL for the relation changes according to the user's modifications
     expedia["is_package"].drop();
     print(expedia.current_relation())
 
-Notice that the ``is_package`` column has been removed from the ``SELECT`` statement and the ``orig_destination_distance`` is now using a ``COALESCE SQL`` function.
+Notice that the ``is_package`` column has been removed from the ``SELECT`` statement and the ``orig_destination_distance`` is now using a ``COALESCE`` SQL function.
 
 vDataFrame attributes and management
 -------------------------------------
 
 The :py:mod:`~verticapy.vDataFrame` has many attributes and methods, some of which were demonstrated in the above examples. :py:mod:`~verticapy.vDataFrame` have two types of attributes:
 
-- Virtual Columns (vDataColumn)
-- Main attributes (columns, main_relation ...)
+- Virtual Columns (:py:mod:`~verticapy.vDataColumn`)
+- Main attributes ( ``columns`` , ``main_relation`` ...)
 
-The vDataFrame's main attributes are stored in the ``_vars`` dictionary:
+The :py:mod:`~verticapy.vDataFrame` main attributes are stored in the ``_vars`` dictionary:
 
 .. note:: You should never change these attributes manually.
 

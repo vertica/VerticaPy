@@ -40,11 +40,11 @@ The :py:func:`~verticapy.read_file` function inspects and ingests files in any o
 Some of the supported function options include:
 
 - ``dtype``: provide a dictionary of data types for the columns, where the keys are the column names and the values are the column data types. The data types in the dictionary replace the automatically predicted data types.
-- ``insert``: if set to True, the data is ingested into the relation specified by the ``table_name`` and, optionally, the ``schema`` parameters.
+- ``insert``: if set to ``True``, the data is ingested into the relation specified by the ``table_name`` and, optionally, the ``schema`` parameters.
 - ``table_name``: specifies the name of the table to create in the Vertica database, or the name of the table to which the data is inserted.
-- ``temporary_table``: if set to True, creates a temporary table.
-- ``ingest_local``: if set to True, the file is ingested from the local machine. In this case, the ``dtypes`` parameter is optional; if no value is provided, the function predicts the data type of each column.
-- ``genSQL``: if set to True, the function generates the SQL code the creates the table but does not execute it. This is a convenient way to check the final relation types.
+- ``temporary_table``: if set to ``True``, creates a temporary table.
+- ``ingest_local``: if set to ``True``, the file is ingested from the local machine. In this case, the ``dtypes`` parameter is optional; if no value is provided, the function predicts the data type of each column.
+- ``genSQL``: if set to ``True``, the function generates the SQL code the creates the table but does not execute it. This is a convenient way to check the final relation types.
 
 For a full list of supported options, see the documentation or use the :py:func:`~verticapy.help` function.
 
@@ -54,7 +54,7 @@ For a full list of supported options, see the documentation or use the :py:func:
 
 In the following examples, we will demonstrate how to use the :py:func:`~verticapy.read_file` function to ingest data into Vertica. Both file location options, in-database and local, will be explored.
 
-Let's begin with the case where the file is located in the database. We'll ingest the iris.csv file, a popular classification dataset. First, before we ingest the file, run the function with the ``genSQL`` parameter set to True to view the SQL that will be used to create the table. Because the file is located in the database, we must specify the data types for each column with the ``dtypes`` parameter:
+Let's begin with the case where the file is located in the database. We'll ingest the iris.csv file, a popular classification dataset. First, before we ingest the file, run the function with the ``genSQL`` parameter set to ``True`` to view the SQL that will be used to create the table. Because the file is located in the database, we must specify the data types for each column with the ``dtypes`` parameter:
 
 .. note:: 
 
@@ -110,9 +110,9 @@ To ingest the file into Vertica, remove the ``genSQL`` parameter from the above 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guide_data_ingestion_iris.html
 
-When the file to ingest is not located on your local machine, and is on the server instead, then you must set the ``ingest_local`` parameter to False. 
+When the file to ingest is not located on your local machine, and is on the server instead, then you must set the ``ingest_local`` parameter to ``False``. 
 
-``ingest_local`` is True by default.
+``ingest_local`` is ``True`` by default.
 
 .. note:: In some cases where the CSV file has a very complex structure, local ingestion might fail. If this occurs, you will have to move the file into the database and then ingest the file from that location.
 
@@ -136,7 +136,7 @@ In addition to :py:func:`~verticapy.read_file`, you can also ingest CSV files wi
 - ``sep``: specify the column separator.
 - ``parse_nrows``: the function creates a file of nrows from the data file to identify 
 the data types. This file is then dropped and the entire data file is ingested. If your data file is large, this data type inference process should speed up the file ingestion speed.
-- ``materialize``: if set to True, the flex table used to ingest the data file is materialized into a table; otherwise, the data remains in a flex table.
+- ``materialize``: if set to ``True``, the flex table used to ingest the data file is materialized into a table; otherwise, the data remains in a flex table.
 
 For a full list of supported options, see :py:func:`~verticapy.read_csv` or use the :py:func:`~verticapy.help` function.
 
@@ -204,7 +204,7 @@ As with CSV files, VerticaPy provides a file-specific ingestion function for JSO
 - ``usecols``: provide a list of JSON parameters to ingest. Other JSON parameters are ignored.
 - ``start_point``: name the key in the JSON load data at which to begin parsing
 - ``flatten_maps``: set whether sub-maps within the JSON data are flattened.
-- ``materialize``: if set to True, the flex table used to ingest the data is materialized into a table.
+- ``materialize``: if set to ``True``, the flex table used to ingest the data is materialized into a table.
 
 For a full list of supported options, see the :py:func:`~verticapy.read_json` or use the :py:func:`~verticapy.help` function.
 

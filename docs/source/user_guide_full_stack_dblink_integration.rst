@@ -7,15 +7,14 @@ DBLINK in VerticaPy
 Introduction
 -------------
 
-Starting with VerticaPy 0.12.0, you can work with other databases, such as PostgresQL and mySQL, using ``DBLINK`` functionality. ``DBLINK`` is a Vertica User Defined Transform Function coded in ``C++`` that runs ``SQL`` against other databases. To setup and learn more about DBLINK in Vertica, please view the 
+Starting with VerticaPy 0.12.0, you can work with other databases, such as ``PostgreSQL`` and ``mySQL``, using ``DBLINK`` functionality. ``DBLINK`` is a Vertica User Defined Transform Function coded in ``C++`` that runs ``SQL`` against other databases. To setup and learn more about DBLINK in Vertica, please view the 
 `github repo <https://github.com/vertica/dblink>`_.
 
 In order to use this new functionality, we first need to install the ``ODBC`` driver and manager, as well as configure ``DBLINK`` on all nodes of the cluster. Configuration entails three files:
 
-- dblink.cids
-- odbc.ini
-- odbcinst.ini
-
+- ``dblink.cids``
+- ``odbc.ini``
+- ``odbcinst.ini``
 
 These files provide the host server address, username, and password, as well as the database name that we want to access. In future versions, we are planning to simplify this process and automate the creation of these files. 
 
@@ -28,8 +27,6 @@ Connecting to an External Database
 
     # Importing VerticaPy
     import verticapy as vp
-
-
 
 We first need to provide the connection information that we have set up in the Connection Identifier Database file (``dblink.cids``). We can select a special character symbol to identify this connection.
 
@@ -44,13 +41,13 @@ Let's try to set up a connection with an external ``PostgreSQL`` database, which
         symbol = "&",
     )
 
-Creating a vDataFrame
----------------------
+Creating a :py:mod:`~verticapy.vDataFrame`
+-------------------------------------------
 
-We can create a vDataFrame from a table stored in an external 
-database by setting the ``external`` parameter to True. 
-SQL can be used to fetch required data, and we can provide 
-an identifying symbol that can be used for fetching perform queries with SQL.
+We can create a :py:mod:`~verticapy.vDataFrame` from a table stored in an external 
+database by setting the ``external`` parameter to ``True``. 
+
+SQL can be used to fetch required data, and we can provide an identifying symbol that can be used for fetching perform queries with SQL.
 
 .. code-block:: python
 
@@ -79,8 +76,8 @@ an identifying symbol that can be used for fetching perform queries with SQL.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
 
+All :py:mod:`~verticapy.vDataFrame` methods are available for this imported table. 
 
-All vDataFrame functions are available for this imported table. 
 For example, we can get all the column names:
 
 .. ipython:: python
@@ -90,12 +87,10 @@ For example, we can get all the column names:
 
 Or the column data types:
 
-
 .. ipython:: python
 
     # Get data types of all columns inside the dataset
     tab_data.dtypes()
-
 
 Or the count of the datapoints:
 
@@ -104,26 +99,21 @@ Or the count of the datapoints:
     # Counting all elements inside each column
     tab_data.count()
 
-
 .. note::
 
-    Every time we perform these calculations or call the vDataFrame, it runs the SQL 
-    query to fetch all the data from the external database. After retrieving the 
-    entire table, the operations are computed by Vertica. In order to push the 
-    queries to a remote database, we can use the option ``sql_push_ext``. When we 
-    create a vDataFrame with this option activated, all the aggregations are done 
-    on the external database using SQL.
+    Every time we perform these calculations or call the :py:mod:`~verticapy.vDataFrame`, it runs the SQL query to fetch all the data from the external database. After retrieving the entire table, the operations are computed by Vertica. In order to push the queries to a remote database, we can use the option ``sql_push_ext``. When we create a :py:mod:`~verticapy.vDataFrame` with this option activated, all the aggregations are done on the external database using SQL.
 
 .. code-block:: python
 
     # Creating a vDataFrame and setting sql_push_ext to True, which tries 
     # to push SQL queries to external database (where possible).
-    Ext_Table=vp.vDataFrame(input_relation = "airports",
-                            external = True,
-                            symbol = "&",
-                            sql_push_ext = True)
-    Ext_Table
-
+    Ext_Table = vp.vDataFrame(
+        input_relation = "airports",
+        external = True,
+        symbol = "&",
+        sql_push_ext = True,
+    )
+    Ext_Table.head(100)
 
 If we look at the SQL generated in background, we can see that 
 it pushes the aggregation query to the database.
@@ -158,7 +148,7 @@ Let's look at the count query again, and see how VerticaPy is pushing it to the 
         rowset=500) OVER ()
 
 
-Let's also look at the "min" method:
+Let's also look at the :py:func:`~verticapy.vDataFrame.min` method:
 
 .. code-block:: python
 
@@ -182,11 +172,9 @@ Let's also look at the "min" method:
 
 For the above examples, the queries were pushed to the external database.
 
-If the function is unique to Vertica, it automatically fetches 
-the data from the external database to compute on the Vertica server.
+If the function is unique to Vertica, it automatically fetches the data from the external database to compute on the Vertica server.
 
-Let's try an example with the :py:func:`~verticapy.vDataFrame.describe` function, which is a 
-unique Vertica function.    
+Let's try an example with the :py:func:`~verticapy.vDataFrame.describe` function, which is a unique Vertica function.    
 
 .. code-block:: python
 
@@ -249,13 +237,11 @@ Using SQL Magic Cells
     %load_ext verticapy.sql
 
 We can use magic cells to call external tables using special characters 
-like ``$$$`` and ``%%%``. If we have multiple external databases, 
-we can specify special characters for each.
+like ``$$$`` and ``%%%``. If we have multiple external databases, we can specify special characters for each.
 
 This makes writing queries a lot more convenient and visually appealing!
 
-Now we will try to get fetch data from our external database ``pgdb``, 
-whose special character is ``&``.
+Now we will try to get fetch data from our external database ``pgdb``, whose special character is ``&``.
 
 .. code-block:: python
 
@@ -263,12 +249,10 @@ whose special character is ``&``.
     /* Getting all data from airports table which is placed in the PostgreSQL database represented by "&". */
     SELECT * FROM &&& airports &&&;
 
-
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
 
-To perform all regular queries, all we need to do is 
-call the table with its name inside three special characters.
+To perform all regular queries, all we need to do is call the table with its name inside three special characters.
 
 We'll now try out some queries:
 
@@ -294,8 +278,7 @@ Count the elements inside the table:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_count.html
 
-
-Find the IATA_CODE where CITY is "Allentown":
+Find the ``IATA_CODE`` where ``CITY`` is ``Allentown``:
 
 .. code-block:: python
 
@@ -324,10 +307,9 @@ Find the IATA_CODE where CITY is "Allentown":
 .. note:: Any query that we write inside the ``&&&`` signs is also sent to the external database to be run.
 
 
-So, instead of just calling the whole table, we can query it using 
-the same special character padding.
+So, instead of just calling the whole table, we can query it using the same special character padding.
 
-For example, let's select all elements inside the airports table:
+For example, let's select all elements inside the ``airports`` table:
 
 .. code-block:: python
 
@@ -381,12 +363,11 @@ You can connect and use multiple datasets from different databases.
 
 In this example we will get:
 
-- Airline data from PostgreSQL
-- Airport data from MySQL
+- Airline data from ``PostgreSQL``
+- Airport data from ``MySQL``
 - Flights data from Vertica
 
 The datasets can be found `here <https://www.kaggle.com/datasets/usdot/flight-delays>`_.
-
 
 Airline Data in PostgreSQL
 +++++++++++++++++++++++++++
@@ -399,10 +380,10 @@ We can set up a new connection in just one line by referencing the alias inside 
     vp.set_external_connection(
         cid="pgdb",
         rowset=500,
-        symbol="$"
+        symbol="$",
     )
 
-Let's look at the airline table that we have in our postgreSQL database.
+Let's look at the airline table that we have in our ``postgreSQL`` database.
 
 .. code-block:: python
 
@@ -430,9 +411,7 @@ Let's look at the airline table that we have in our postgreSQL database.
 Airports Data in MySQL
 ++++++++++++++++++++++
 
-We can create another new connection by providing the cid reference 
-for our MySQL database. We'll also provide a unique special character, 
-which is not used for any other connection.
+We can create another new connection by providing the ``cid`` reference for our ``MySQL`` database. We'll also provide a unique special character, which is not used for any other connection.
 
 .. code-block:: python
 
@@ -440,18 +419,16 @@ which is not used for any other connection.
     vp.set_external_connection(
         cid="mysql",
         rowset=500,
-        symbol="&"
+        symbol="&",
     )
 
-Let's take a look at the airports table that we have in our MySQL database.
+Let's take a look at the airports table that we have in our ``MySQL`` database.
 
 .. code-block:: python
 
     %%sql
     /* Fetch all the data from the table airports in "mysql" database */
     SELECT * FROM &&& airports &&&;
-
-
 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_airports_table.html
@@ -497,12 +474,10 @@ Joins and Queries Across Multiple Databases
 
 Now we can run queries that execute through multiple sources.
 
-Let's try to find the ``TAIL_NUMBER`` and ``Departing City`` for 
-all the flights by joining the two tables:
+Let's try to find the ``TAIL_NUMBER`` and ``Departing City`` for all the flights by joining the two tables:
 
-- flight_vertica (stored in Vertica)
-- airports (stored in MySQL)
-
+- ``flight_vertica`` (stored in Vertica)
+- ``airports`` (stored in ``MySQL``)
 
 .. code-block:: python
 
@@ -530,11 +505,10 @@ all the flights by joining the two tables:
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_join.html
 
-Let's try another query to find the ``TAIL_NUMBER`` and ``AIRLINE`` 
-of all the flights by joining the two tables:
+Let's try another query to find the ``TAIL_NUMBER`` and ``AIRLINE`` of all the flights by joining the two tables:
 
-- flight_vertica (stored in Vertica)
-- airline (stored in PostgreSQL)
+- ``flight_vertica`` (stored in Vertica)
+- ``airline`` (stored in ``PostgreSQL``)
 
 .. code-block:: python
 
@@ -567,9 +541,9 @@ We can even try queries that require multiple joins.
 In the following example, we try to get the ``TAIL_NUMBER``, 
 ``AIRLINE``, and ``CITY`` details for all the flights by joining:
 
-- flight_local table (stored in Vertica)
-- airline table (stored in PostgreSQL)
-- airports table (stored in MySQL)
+- ``flight_local`` table (stored in Vertica)
+- ``airline`` table (stored in ``PostgreSQL``)
+- ``airports`` table (stored in ``MySQL``)
 
 .. code-block:: python
 
@@ -604,7 +578,7 @@ In the following example, we try to get the ``TAIL_NUMBER``,
 Pandas.DataFrame
 -----------------
 
-The joins also work with pandas.Dataframe. We can perform the same query that required multiple joins, but now with a local Pandas dataframe.
+The joins also work with ``pandas.Dataframe``. We can perform the same query that required multiple joins, but now with a local Pandas dataframe.
 
 We can read a local passengers CSV file using :py:func:`~verticapy.read_csv` or we could create an artificial dataset as well.
 
@@ -652,11 +626,10 @@ We can read a local passengers CSV file using :py:func:`~verticapy.read_csv` or 
 
 We can now perform the same query involving the three tables:
 
-- flight_vertica table (stored in Vertica)
-- passengers_pandas table (pandas.DataFrame stored in-memory)
-- airline table (stored in PostgreSQL)
-- airports table (stored in MySQL)
-
+- ``flight_vertica`` table (stored in Vertica)
+- ``passengers_pandas`` table (``pandas.DataFrame`` stored in-memory)
+- ``airline`` table (stored in ``PostgreSQL``)
+- ``airports`` table (stored in ``MySQL``)
 
 .. code-block:: python
 
@@ -701,9 +674,9 @@ We can now perform the same query involving the three tables:
     :file: SPHINX_DIRECTORY/figures/ug_fs_dblink_multi_mega_join.html
 
 Conclusion
-------------
+-----------
 
-With the combination of Verticapy and DBLINK, we can now work with multiple datasets stored in different databases. We can work simultaneously with external tables, Vertica tables, and Pandas DataFrame in a **single query**! There is no need to materialize the table before use because it's all taken care of in the background.
+With the combination of Verticapy and ``DBLINK``, we can now work with multiple datasets stored in different databases. We can work simultaneously with external tables, Vertica tables, and Pandas DataFrame in a **single query**! There is no need to materialize the table before use because it's all taken care of in the background.
 
 The cherry on the cake is the ease-of-use that is enabled by VerticaPy and its Python-like syntax.
 

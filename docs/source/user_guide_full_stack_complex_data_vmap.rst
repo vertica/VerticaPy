@@ -54,9 +54,9 @@ Loading Complex Data
 
 There are two ways to load a nested data file:
 
-- Load directly using :py:func:`~verticapy.read_json`. In this case, you will need to use an additional parameter to identify all the data types. The function loads the data using flex tables and VMaps (Native Vertica MAPS, which are flexible but not optimally performant).
+- Load directly using :py:func:`~verticapy.read_json`. In this case, you will need to use an additional parameter to identify all the data types. The function loads the data using flex tables and ``VMaps`` (Native Vertica ``MAPS``, which are flexible but not optimally performant).
 
-- Load using :py:func:`~verticapy.read_file`. The function preidcts the complex data structure.
+- Load using :py:func:`~verticapy.read_file`. The function predicts the complex data structure.
 
 Let's try both:
 
@@ -168,8 +168,7 @@ We can also use the handy ``genSQL`` parameter to generate (but not execute) the
 Feature Exploration
 ---------------------
 
-In the generated SQL from the above example, we can see that the ``away_team`` column is a ROW type with a complex 
-structure consisting of many sub-columns. We can convert this column into a JSON and view its contents:
+In the generated SQL from the above example, we can see that the ``away_team`` column is a ``ROW`` type with a complex structure consisting of many sub-columns. We can convert this column into a ``JSON`` and view its contents:
 
 .. code-block:: python
 
@@ -261,16 +260,13 @@ We can even flatten the nested structure inside a json file, either flattening t
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_complex_flatten.html
 
-We can see that all the columns from the JSON file have been flattened and multiple columns have been created for each 
-sub-column. This causes some loss in data structure, but makes it easy to see the data and to use it for model building.
+We can see that all the columns from the JSON file have been flattened and multiple columns have been created for each sub-column. This causes some loss in data structure, but makes it easy to see the data and to use it for model building.
 
-It is important to note that the data type of certain columns (home_team.managers) is now ``VMap``, and not the ``ROW`` 
-type that we saw in the above cells. Even though both are used to capture nested data, there is in a subtle difference between the two.
+It is important to note that the data type of certain columns (``home_team.managers``) is now ``VMap``, and not the ``ROW`` type that we saw in the above cells. Even though both are used to capture nested data, there is in a subtile difference between the two.
 
 - **VMap:** More flexible as it stores the data as a string of maps, allowing the ingestion of data in varying shapes. The shape is not fixed and new keys can easily be handled. This is a great option when we don't know the structure in advance, or if the structure changes over time.
 
-- **Row:** More rigid because the dictionaries, including all the data types, are fixed when they are defined. Newly 
-parsed keys are ignored. But because of it's rigid structure, it is much more performant than VMaps. They are best used when the file structure is known in advance.
+- **Row:** More rigid because the dictionaries, including all the data types, are fixed when they are defined. Newly parsed keys are ignored. But because of it's rigid structure, it is much more performant than VMaps. They are best used when the file structure is known in advance.
 
 To deconvolve the nested structure, we can use the ``flatten_arrays`` parameter in order to make the output strictly formatted. However, it can be an expensive process.
 
@@ -353,7 +349,7 @@ It is also possible to:
 Multiple File Ingestion
 ------------------------
 
-If we have multiple files with the same extension, we can easily ingest them using the "*" operator:
+If we have multiple files with the same extension, we can easily ingest them using the ``*`` operator:
 
 .. code-block:: python
 
@@ -364,7 +360,7 @@ If we have multiple files with the same extension, we can easily ingest them usi
         schema = "complex_vmap_test",
     )
 
-We can also do this for other file types. For example, csv:
+We can also do this for other file types. For example, ``CSV``:
 
 .. code-block:: python
 
@@ -422,7 +418,7 @@ Some of the columns are ``VMAPs``:
     for m in managers:
         print(data[m].isvmap())
 
-We can easily flatten the VMaps virtual columns by using the :py:func:`~vDataFrame.flat_vmap`` method:
+We can easily flatten the VMaps virtual columns by using the :py:func:`~verticapy.vDataFrame.flat_vmap` method:
 
 .. code-block:: python
 
@@ -448,7 +444,7 @@ To check for a flex table, we can use the following function:
 
     isflextable(table_name = "laliga_verticapy_test_json", schema = "complex_vmap_test")
 
-We can then manually materialize the flextable using the convenient :py:func:`~vDataFrame.to_db` method:
+We can then manually materialize the flextable using the convenient :py:func:`~verticapy.vDataFrame.to_db` method:
 
 .. ipython:: python
 

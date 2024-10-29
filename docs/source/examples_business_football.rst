@@ -28,7 +28,7 @@ This example uses the following version of VerticaPy:
 
     vp.__version__
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN``. 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
@@ -562,7 +562,7 @@ Let's export the result to our Vertica database.
 Team KPIs
 ++++++++++
 
-We use just two variables to track teams: away_team and home_team. This makes it a bit difficult to compute new features. We need to duplicate the dataset and intervert the two teams. This way, we can compute KPIs using a partition by the first team to avoid double-counting any games.
+We use just two variables to track teams: ``away_team`` and ``home_team``. This makes it a bit difficult to compute new features. We need to duplicate the dataset and intervert the two teams. This way, we can compute KPIs using a partition by the first team to avoid double-counting any games.
 
 .. code-block:: python
 
@@ -907,7 +907,7 @@ Let's export the result to our Vertica database.
 Team Rankings with k-means
 ---------------------------
 
-To compute a ``k-means`` model, we need to find a value for ``k``. Let's draw an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
+To compute a :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` model, we need to find a value for ``k``. Let's draw an :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to find a suitable number of clusters.
 
 .. code-block:: python
 
@@ -1962,7 +1962,7 @@ It's time to make predictions about the outcomes of games. We have a lot of vari
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_football_clean_kpi_ml_1.html
 
-Our model is excellent! 57% of accuracy on 3 categories - it's almost twice as good as a random model.
+Our model is excellent! ``57%`` of accuracy on 3 categories - it's almost twice as good as a random model.
 
 .. ipython:: python
 

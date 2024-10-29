@@ -84,7 +84,7 @@ This example uses the following version of VerticaPy:
 
     vp.__version__
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN``. 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
@@ -244,7 +244,7 @@ These clusters can be used as inputs by our model.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_africa_elbow.html
 
-Eight seems to be a suitable number of clusters. Let's compute a ``k-means`` model.
+Eight seems to be a suitable number of clusters. Let's compute a :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` model.
 
 .. code-block:: python
 

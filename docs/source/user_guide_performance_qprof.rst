@@ -9,8 +9,8 @@ This starter notebook will help you get up and running with the Query Profiler (
 This tool is a work in progress and the VerticaPy team is continuously adding new features.
 
 See also :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` , 
-:py:func:`~verticapy.performance.vertica.qprof_interface.QueryProfilerInterface` , 
-:py:func:`~verticapy.performance.vertica.qprof_interface.QueryProfilerComparison` .
+:py:mod:`~verticapy.performance.vertica.qprof_interface.QueryProfilerInterface` , 
+:py:mod:`~verticapy.performance.vertica.qprof_interface.QueryProfilerComparison` .
 
 VerticaPyLab
 -------------
@@ -290,7 +290,7 @@ To export a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object,
 Import
 +++++++
 
-To import a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.import_profile` method and provide the ``target_schema`` and ``key_id``.
+To import a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile` method and provide the ``target_schema`` and ``key_id``.
 
 Make sure the ``key_id`` is unique/unused. Let us create a new schema to load this into:
 

@@ -280,7 +280,7 @@ Many variables are correlated to the response column. We have enough information
 Machine Learning
 -----------------
 
-Some really important features are categorical. Random forest can handle them. Besides, we need trees deep enough to compare all the different types.
+Some really important features are categorical. ``Random Forest`` can handle them. Besides, we need trees deep enough to compare all the different types.
 
 .. code-block:: python
 
@@ -318,7 +318,7 @@ Some really important features are categorical. Random forest can handle them. B
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_pokemon_cv.html
 
-We have an excellent model with an average AUC of more than 99%. Let's create a model with the entire dataset and look at the importance of each feature.
+We have an excellent model with an average ``AUC`` of more than ``99%``. Let's create a model with the entire dataset and look at the importance of each feature.
 
 .. code-block:: python
 
