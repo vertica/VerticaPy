@@ -1000,14 +1000,14 @@ class QueryProfilerInterface(QueryProfilerStats):
 
 class QueryProfilerComparison:
     """
-    Initializes a ``QueryProfilerComparison`` object with 
-    two ``QueryProfilerInterface`` instances for side-by-side 
+    Initializes a ``QueryProfilerComparison`` object with
+    two ``QueryProfilerInterface`` instances for side-by-side
     comparison.
 
     Parameters:
-     - qprof1 (``QueryProfilerInterface``): The first 
+     - qprof1 (``QueryProfilerInterface``): The first
         ``QueryProfilerInterface`` instance for comparison.
-     - qprof2 (``QueryProfilerInterface``): The second 
+     - qprof2 (``QueryProfilerInterface``): The second
         ``QueryProfilerInterface`` instance for comparison.
     """
 
@@ -1083,7 +1083,7 @@ class QueryProfilerComparison:
 
     def _create_controls(self):
         """
-        Creates side-by-side controls for 
+        Creates side-by-side controls for
         both ``qprof1`` and ``qprof2``.
         """
         q1_control = self.qprof1._accordions
@@ -1105,15 +1105,15 @@ class QueryProfilerComparison:
 
     def _sync_accordion_selection(self):
         """
-        Synchronizes the accordion selection of ``qprof1`` 
-        and ``qprof2``.  When an accordion is selected in 
-        ``qprof1``, it automatically updates the selection 
+        Synchronizes the accordion selection of ``qprof1``
+        and ``qprof2``.  When an accordion is selected in
+        ``qprof1``, it automatically updates the selection
         in ``qprof2``.
         """
 
         def on_accordion_change(change):
             """
-            Callback function to update ``qprof2`` accordion 
+            Callback function to update ``qprof2`` accordion
             selection when ``qprof1`` accordion selection changes.
             """
             if change["name"] == "selected_index":
@@ -1129,7 +1129,7 @@ class QueryProfilerComparison:
 
         def on_metric_dropdown1_change(change):
             """
-            Callback function to update ``qprof2`` dropdown 
+            Callback function to update ``qprof2`` dropdown
             selection when ``qprof1`` dropdown selection changes.
             """
             val = change["new"]
@@ -1163,8 +1163,8 @@ class QueryProfilerComparison:
 
         def on_metric_dropdown2_change(change):
             """
-            Callback function to update ``qprof2`` 
-            dropdown selection when ``qprof1`` 
+            Callback function to update ``qprof2``
+            dropdown selection when ``qprof1``
             dropdown selection changes.
             """
             val = change["new"]
@@ -1234,7 +1234,7 @@ class QueryProfilerComparison:
 
     def unsync_all_checkboxes(self):
         """
-        Unbind synchronization of checkboxes 
+        Unbind synchronization of checkboxes
         between ``qprof1`` and ``qprof2``.
         """
 
