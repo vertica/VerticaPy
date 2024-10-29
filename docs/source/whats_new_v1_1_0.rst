@@ -87,7 +87,7 @@ QueryProfilerComparison
 Deprecations
 -------------
 
-Because of the re-structuring of VerticaPy, some parts of the heirarchy has changed.
+Because of the re-structuring of VerticaPy, some parts of the hierarchy has changed.
 
 Please look at the latest doc for the up-to-date imports.
 

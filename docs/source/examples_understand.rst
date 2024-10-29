@@ -24,8 +24,6 @@ Understand
         environment. Engage with the data-driven exploration 
         of educational dynamics.
 
-.. grid:: 1 1 2 2
-
     .. grid-item::
     
       .. card:: Amazon
@@ -45,8 +43,6 @@ Understand
         each region. Witness the power of data-driven foresight 
         as we navigate the dynamic landscape of the Amazon.
 
-.. grid:: 1 1 2 2
-
     .. grid-item::
     
       .. card:: Covid 19
@@ -65,7 +61,6 @@ Understand
         insights into the evolving landscape of the pandemic. 
         Experience the precision of our predictive analytics 
         as we navigate through the complexities of COVID-19 trends.
-
 
 .. toctree::
   :maxdepth: 1

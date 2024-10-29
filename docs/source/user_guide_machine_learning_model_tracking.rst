@@ -115,6 +115,13 @@ Experiments are also helpful for performing grid search on hyper-parameters. The
 be used to study the impact of the max_iter parameter on the prediction performance of :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` models.
 
 .. ipython:: python
+    :suppress:
+    :okwarning:
+
+    import verticapy as vp
+    vp.set_option("plotting_lib", "matplotlib")
+
+.. ipython:: python
     :okwarning:
 
     # creating an experiment
@@ -133,9 +140,10 @@ be used to study the impact of the max_iter parameter on the prediction performa
         my_experiment_2.add_model(model)
         
     # plotting prc_auc vs max_iter
+    @savefig my_experiment_2_plot_max_iter_prc.png
     my_experiment_2.plot("max_iter", "prc_auc")
 
-    # cleaning all the models associated to the experimen from the database
+    # cleaning all the models associated to the experiment from the database
     my_experiment_2.drop()
 
 Model Versioning
