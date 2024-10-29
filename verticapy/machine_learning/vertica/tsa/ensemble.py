@@ -106,7 +106,7 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
         amazon_full = vpd.load_amazon()
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_amazon.html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
 
     .. ipython:: python
         :suppress:
@@ -182,10 +182,10 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(idx = 0, npredictions = 5)
-        fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_tsa_ensemble_timeseriesbycategory_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ensemble_timeseriesbycategory_1.html")
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_tsa_ensemble_timeseriesbycategory_1.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ensemble_timeseriesbycategory_1.html
 
     .. note::
 
