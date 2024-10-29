@@ -3,10 +3,9 @@
 The Virtual DataFrame
 =====================
 
-The Virtual DataFrame (vDataFrame) is the core object of the VerticaPy library. Leveraging the power of Vertica and the flexibility of Python, the :py:mod:`~verticapy.vDataFrame` is a Python object that lets you manipulate the data representation in a Vertica database without modifying the underlying data. The data represented by a :py:mod:`~verticapy.vDataFrame` remains in the Vertica database, bypassing the limitations of working memory. When a :py:mod:`~verticapy.vDataFrame` is created or altered, VerticaPy formulates the operation as an SQL query and pushes the computation to the Vertica database, harnessing Vertica's massive parallel processing and in-built functions. Vertica then aggregates and returns the result to VerticaPy. In essence, vDataFrames behave similar to `views <https://docs.vertica.com/latest/en/data-analysis/views/>`_ in the Vertica database.
+The Virtual DataFrame (:py:mod:`~verticapy.vDataFrame`) is the core object of the VerticaPy library. Leveraging the power of Vertica and the flexibility of Python, the :py:mod:`~verticapy.vDataFrame` is a Python object that lets you manipulate the data representation in a Vertica database without modifying the underlying data. The data represented by a :py:mod:`~verticapy.vDataFrame` remains in the Vertica database, bypassing the limitations of working memory. When a :py:mod:`~verticapy.vDataFrame` is created or altered, VerticaPy formulates the operation as an SQL query and pushes the computation to the Vertica database, harnessing Vertica's massive parallel processing and in-built functions. Vertica then aggregates and returns the result to VerticaPy. In essence, vDataFrames behave similar to `views <https://docs.vertica.com/latest/en/data-analysis/views/>`_ in the Vertica database.
 
-For more information about Vertica's performance advantages, including its columnar orientation and parallelization across 
-nodes, see the `Vertica documentation <https://docs.vertica.com/latest/en/architecture/>`_.
+For more information about Vertica's performance advantages, including its columnar orientation and parallelization across nodes, see the `Vertica documentation <https://docs.vertica.com/latest/en/architecture/>`_.
 
 In the following tutorial, we will introduce the basic functionality of the :py:mod:`~verticapy.vDataFrame` and then explore the ways in which they utilize in-database processing to enhance performance. 
 
@@ -69,19 +68,21 @@ In-memory vs. in-database
 
 The following examples demonstrate the performance advantages of loading and processing data in-database versus in-memory.
 
-First, we download the `Expedia dataset <https://www.kaggle.com/competitions/expedia-hotel-recommendations/data>`_ from Kaggle and 
-then load it into Vertica:
+First, we download the `Expedia dataset <https://www.kaggle.com/competitions/expedia-hotel-recommendations/data>`_ from Kaggle and then load it into Vertica:
 
 .. note:: 
     
-    In this example, we are only showing the steps without actually computing the results because of hte size of database.
-    If you performt the analysis, you will note the difference in orders of magnitude. In-database is much faster.
+    In this example, we are only showing the steps without actually computing the results due to the size of the database. If you perform the analysis, you'll notice a significant difference in performance. In-database processing is much faster.
 
 .. code-block:: python
 
-    vp.read_csv("expedia.csv", schema = "public", parse_nrows = 20000000)
+    vp.read_csv(
+        "expedia.csv",
+        schema = "public",
+        parse_nrows = 20000000,
+    )
 
-Once the data is loaded into the Vertica database, we can create a :py:mod:`~verticapy.vDataFrame` using the relation that contains the Expedia dataset:
+Once the data is loaded into the Vertica database, we can create a :py:mod:`~verticapy.vDataFrame` using the relation that contains the ``expedia`` dataset:
 
 .. code-block:: python
 
@@ -111,22 +112,21 @@ Now, to compare the above result with in-memory loading, we load about half the 
     )
     print("elapsed time = {}".format(time.time() - start_time))
 
-
 You will notice that it will take orders of magnitude more to load into memory compared 
 with the time required to create the :py:mod:`~verticapy.vDataFrame`. Loading data into 
 pandas is quite fast when the data volume is low (less than some MB), but as the size of 
 the dataset increases, the load time can become exponentially more expensive.
 
+Even after the data is loaded into memory, the performance is very slow.
 
-Even after the data is loaded into memory, the performance is very slow. 
 The following example removes non-numeric columns from the dataset, then computes a correlation matrix:
 
 .. code-block:: python
 
-    columns_to_drop = ["date_time", "srch_ci", "srch_co"] ;
-    expedia_df = expedia_df.drop(columns_to_drop, axis=1);
+    columns_to_drop = ["date_time", "srch_ci", "srch_co"]
+    expedia_df = expedia_df.drop(columns_to_drop, axis = 1)
     start_time = time.time()
-    expedia_df.corr();
+    expedia_df.corr()
     print(f"elapsed time = {time.time() - start_time}")
 
 Let's compare the performance in-database using a :py:mod:`~verticapy.vDataFrame` to compute 
@@ -135,9 +135,9 @@ the correlation matrix of the entire dataset:
 .. code-block:: python
 
     # Remove non-numeric columns
-    expedia.drop(columns = ["date_time", "srch_ci", "srch_co"]);
+    expedia.drop(columns = ["date_time", "srch_ci", "srch_co"])
     start_time = time.time()
-    expedia.corr(show = False);
+    expedia.corr(show = False)
     print(f"elapsed time = {time.time() - start_time}")
 
 VerticaPy also caches the computed aggregations. With this cache available, 
@@ -145,8 +145,7 @@ we can repeat the correlation matrix computation almost instantaneously:
 
 .. note:: 
     
-    If necessary, you can deactivate the cache by calling the :py:func:`~verticapy.set_option` 
-    function with the ``cache`` parameter set to False.
+    If necessary, you can deactivate the cache by calling the :py:func:`~verticapy.set_option` function with the ``cache`` parameter set to False.
 
 .. code-block:: python
 
@@ -154,7 +153,7 @@ we can repeat the correlation matrix computation almost instantaneously:
     expedia.corr(show = False);
     print(f"elapsed time = {time.time() - start_time}")
 
-You will notice that the result can re-fetched instantaneously. .
+You will notice that the result can re-fetched instantaneously.
 
 Memory usage 
 +++++++++++++
@@ -169,20 +168,17 @@ First, use the pandas ``info()`` method to explore the DataFrame's memory usage:
 
 You should observe that the size is the same is that of the original file. 
 
-Compare this with vDataFrame - The :py:mod:`~verticapy.vDataFrame` only uses about 37KB! 
-By storing the data in the Vertica database, and only recording the 
-user's data modifications in memory, the memory usage is reduced to a minimum. 
+Compare this with :py:mod:`~verticapy.vDataFrame` - The :py:mod:`~verticapy.vDataFrame` only uses about 37KB! 
+By storing the data in the Vertica database, and only recording the user's data modifications in memory, the memory usage is reduced to a minimum. 
 
 With VerticaPy, we can take advantage of Vertica's structure and scalability, 
 providing fast queries without ever loading the data into memory. 
-In the above examples, we've seen that in-memory processing is much more 
-expensive in both computation and memory usage. This often leads to the 
-decesion to downsample the data, which sacrfices the possibility of further data insights.
+In the above examples, we've seen that in-memory processing is much more expensive in both computation and memory usage. This often leads to the decesion to downsample the data, which sacrfices the possibility of further data insights.
 
 The :py:mod:`~verticapy.vDataFrame` structure
 ----------------------------------------------
 
-Now that we've seen the performance and memory benefits of the vDataFrame, let's dig into some of the underlying structures and methods that produce these great results.
+Now that we've seen the performance and memory benefits of the :py:mod:`~verticapy.vDataFrame` , let's dig into some of the underlying structures and methods that produce these great results.
 
 :py:mod:`~verticapy.vDataFrame` are composed of columns called :py:mod:`vDataColumn`. To view all :py:mod:`~verticapy.vDataColumn` in a :py:mod:`~verticapy.vDataFrame` , use the :py:func:`~verticapy.vDataFrame.get_columns` method:
 
@@ -222,8 +218,7 @@ To access a :py:mod:`~verticapy.vDataColumn`, specify the column name in square 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_intro_vdf_describe.html
 
-Each :py:mod:`~verticapy.vDataColumn` has its own catalog to save user modifications. In the previous example, we computed 
-some aggregations for the ``is_booking`` column. Let's look at the catalog for that :py:mod:`~verticapy.vDataColumn`:
+Each :py:mod:`~verticapy.vDataColumn` has its own catalog to save user modifications. In the previous example, we computed some aggregations for the ``is_booking`` column. Let's look at the catalog for that :py:mod:`~verticapy.vDataColumn`:
 
 .. ipython:: python
 
