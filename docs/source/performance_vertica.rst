@@ -4,9 +4,8 @@
 Vertica
 =========
 
-
 Query Profiler
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. currentmodule:: verticapy.performance.vertica.qprof
 
@@ -45,7 +44,6 @@ Query Profiler
    QueryProfiler.previous
    QueryProfiler.step
    QueryProfiler.to_html
-
 
 Query Profiler Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -87,10 +85,8 @@ Query Profiler Interface
    QueryProfilerInterface.step
    QueryProfilerInterface.to_html
 
-
-
 Query Profiler Comparison
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. currentmodule:: verticapy.performance.vertica.qprof_interface
 
@@ -106,6 +102,4 @@ Query Profiler Comparison
 .. autosummary::
    :toctree: api/
 
-   QueryProfilerComparison.display
    QueryProfilerComparison.get_qplan_tree
-   
