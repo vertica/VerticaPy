@@ -11,6 +11,19 @@ VerticaPy lets you compute all well-known aggregation in a single line.
 The :py:func:`~verticapy.vDataFrame.aggregate` method is the best way to compute multiple aggregations on multiple columns at the same time.
 
 .. ipython:: python
+    :suppress:
+
+    import inspect
+    import re
+
+    def help(obj):
+        signature = f"Help on function {obj.__name__} in module {obj.__module__}:\n\n{obj.__name__}{inspect.signature(obj)}"
+        doc = inspect.getdoc(obj)
+        if doc:
+            short_doc = re.split(r"\n\s*Examples\s*[-=]*\s*\n", doc)[0]
+            print(f"{signature}\n\n{short_doc}")
+
+.. ipython:: python
 
   import verticapy as vp
 
