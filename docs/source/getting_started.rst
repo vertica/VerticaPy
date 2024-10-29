@@ -54,7 +54,7 @@ arming you and your customers with predictive business insights faster than any 
 Vertica provides a unified analytics platform across major public clouds and on-premises data centers and integrates data in cloud object storage and 
 HDFS without forcing you to move any of your data.
 
-To learn more about the Vertica database, check out the `Vertica Official Website <https://www.vertica.com/about/>`_.
+To learn more about the Vertica database, check out the `Vertica Official Website <https://www.opentext.com/products/vertica-data-platform>`_.
 
 If you already have Vertica installed, you can skip this step. Otherwise, you have some options for trying out Vertica for free.
 
