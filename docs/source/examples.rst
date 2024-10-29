@@ -48,7 +48,7 @@ Examples
         :class-card: custom-card-examples
         :class-footer: user_guide_footer
 
-        10 Nmins
+        10 Notebooks
         ^^^^^^^^^^^^^^
         Solve real-world problems with VerticaPy.
           
