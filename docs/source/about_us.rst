@@ -206,8 +206,18 @@ Team Members
 
     .. grid-item::
 
-        .. card:: Fouad Teban
+        .. card:: Arash Fard
           :img-top: _static/website/about_us/team/member3.jpg
+          :link: #
+          :text-align: center
+          :class-card: member-pics-card
+
+          Senior ML Engineer
+
+    .. grid-item::
+
+        .. card:: Fouad Teban
+          :img-top: _static/website/about_us/team/member14.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -217,7 +227,7 @@ Team Members
     .. grid-item::
 
         .. card:: George Larionov
-          :img-top: _static/website/about_us/team/member4.jpg
+          :img-top: _static/website/about_us/team/member10.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -227,7 +237,7 @@ Team Members
     .. grid-item::
 
         .. card:: Matteo Monaldi
-          :img-top: _static/website/about_us/team/member5.jpg
+          :img-top: _static/website/about_us/team/member8.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -237,7 +247,7 @@ Team Members
     .. grid-item::
 
         .. card:: Abdelhak Zabour
-          :img-top: _static/website/about_us/team/member6.jpg
+          :img-top: _static/website/about_us/team/member9.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -246,18 +256,8 @@ Team Members
 
     .. grid-item::
 
-        .. card:: Arash Fard
-          :img-top: _static/website/about_us/team/member7.jpg
-          :link: #
-          :text-align: center
-          :class-card: member-pics-card
-
-          Senior ML Engineer
-
-    .. grid-item::
-
         .. card:: Roy Paulin
-          :img-top: _static/website/about_us/team/member8.jpg
+          :img-top: _static/website/about_us/team/member13.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -267,7 +267,7 @@ Team Members
     .. grid-item::
 
         .. card:: Xiaozhong Zhang
-          :img-top: _static/website/about_us/team/member9.jpg
+          :img-top: _static/website/about_us/team/member12.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -277,7 +277,7 @@ Team Members
     .. grid-item::
 
         .. card:: Zachary Nowak
-          :img-top: _static/website/about_us/team/member10.jpg
+          :img-top: _static/website/about_us/team/member11.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -287,7 +287,7 @@ Team Members
     .. grid-item::
 
         .. card:: Abhishek Sharma
-          :img-top: _static/website/about_us/team/member11.jpg
+          :img-top: _static/website/about_us/team/member4.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -297,7 +297,7 @@ Team Members
     .. grid-item::
 
         .. card:: Vikash Singh
-          :img-top: _static/website/about_us/team/member12.jpg
+          :img-top: _static/website/about_us/team/member5.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -307,7 +307,7 @@ Team Members
     .. grid-item::
 
         .. card:: Tyler Consigny
-          :img-top: _static/website/about_us/team/member13.jpg
+          :img-top: _static/website/about_us/team/member6.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -317,7 +317,7 @@ Team Members
     .. grid-item::
 
         .. card:: Kevin Xu
-          :img-top: _static/website/about_us/team/member14.jpg
+          :img-top: _static/website/about_us/team/member15.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
@@ -327,7 +327,7 @@ Team Members
     .. grid-item::
 
         .. card:: Brent Eynon
-          :img-top: _static/website/about_us/team/member15.jpg
+          :img-top: _static/website/about_us/team/member7.jpg
           :link: #
           :text-align: center
           :class-card: member-pics-card
