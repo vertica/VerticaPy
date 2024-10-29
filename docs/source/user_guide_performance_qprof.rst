@@ -453,7 +453,7 @@ To view the cpu time of the query in a bar graph:
     :suppress:
     :okwarning:
 
-    fig = qprof.get_cpu_time(kind="bar")
+    fig = qprof.get_cpu_time(kind="bar", width = 800)
     fig.write_html("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_cpu_bar.html")
 
 .. raw:: html
