@@ -628,7 +628,7 @@ The same applies to the regions. Let's look at student age.
 
 .. code-block:: python
 
-    africa["PAGE"].bar(
+    africa["PAGE"].barh(
         method = "50%", 
         of = "pred_zmalocp",
         max_cardinality = 50,
@@ -639,7 +639,7 @@ The same applies to the regions. Let's look at student age.
     :okwarning:
     :okexcept:
 
-    fig = africa["PAGE"].bar(
+    fig = africa["PAGE"].barh(
         method = "50%", 
         of = "pred_zmalocp",
         max_cardinality = 50,

@@ -18,7 +18,7 @@ This example uses the following version of VerticaPy:
 
     vp.__version__
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN". 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN`` . 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 
 You can skip the below cell if you already have an established connection.
@@ -69,9 +69,9 @@ Let's explore the data by displaying descriptive statistics of all the columns.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_titanic_table_describe.html
 
-The columns "body" (passenger ID), "home.dest" (passenger origin/destination), "embarked" (origin port) and "ticket" (ticket ID) shouldn't influence survival, so we can ignore these.
+The columns ``body`` (passenger ID), ``home.dest`` (passenger origin/destination), ``embarked`` (origin port) and ``ticket`` (ticket ID) shouldn't influence survival, so we can ignore these.
 
-Let's focus our analysis on the columns "name" and "cabin". We'll begin with the passengers' names.
+Let's focus our analysis on the columns ``name`` and ``cabin``. We'll begin with the passengers' names.
 
 .. code-block:: python
 
@@ -217,7 +217,7 @@ The "sibsp" column represents the number of siblings for each passenger, while t
 
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
 
-Let's move on to outliers. We have several tools for locating outliers (:py:mod:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, :py:mod:`~verticapy.machine_learning.vertica.DBSCAN`, :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans`...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
+Let's move on to outliers. We have several tools for locating outliers (:py:mod:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, :py:mod:`~verticapy.machine_learning.vertica.cluster.DBSCAN`, :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans`...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
 
 .. code-block:: python
 

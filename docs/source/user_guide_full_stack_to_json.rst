@@ -1,8 +1,8 @@
 .. _user_guide.full_stack.to_json:
 
-=========================
-Example: XGBoost.to_json
-=========================
+================
+XGBoost.to_json
+================
 
 Connect to Vertica
 --------------------
@@ -160,7 +160,7 @@ Evaluate the model with :py:func:`~verticapy.machine_learning.vertica.ensemble.X
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_to_json_report.html
 
-Use to_json() to export the model to a JSON file. If you omit a filename, VerticaPy prints the model:
+Use :py:func:`~verticapy.machine_learning.vertica.ensemble.XGBClassifier.to_json` to export the model to a JSON file. If you omit a filename, VerticaPy prints the model:
 
 .. ipython:: python
 
@@ -194,7 +194,7 @@ This exported model can be used with the Python XGBoost API right away, and expo
     result = result.sum() / len(result);
     assert result == pytest.approx(0.0, abs = 1.0E-14)
 
-For multiclass classifiers, the probabilities returned by the VerticaPy and the exported model may differ slightly because of normalization; while Vertica uses multinomial logistic regression, XGBoost Python uses Softmax. Again, this difference does not affect the model's final predictions. Categorical predictors must be encoded.
+For multiclass classifiers, the probabilities returned by the VerticaPy and the exported model may differ slightly because of normalization; while Vertica uses multinomial logistic regression, ``XGBoost`` Python uses Softmax. Again, this difference does not affect the model's final predictions. Categorical predictors must be encoded.
 
 
 Clean the Example Environment
@@ -211,8 +211,8 @@ Drop the ``xgb_to_json`` schema, using CASCADE to drop any database objects stor
 Conclusion
 -----------
 
-VerticaPy lets you to create, train, evaluate, and export Vertica machine learning models. There are some notable nuances when importing a Vertica XGBoost model into Python XGBoost, but these do not affect the accuracy of the model or its predictions:
+VerticaPy lets you to create, train, evaluate, and export Vertica machine learning models. There are some notable nuances when importing a Vertica ``XGBoost`` model into Python ``XGBoost``, but these do not affect the accuracy of the model or its predictions:
 
 Some information computed during the training phase may not be stored (e.g. ``sum_hessian`` and ``loss_changes``).
 
-The exact probabilities of multiclass classifiers in a Vertica model may differ from those in Python, but bot  ``h`` will make the same predictions. Python XGBoost does not support categorical predictors, so you must encode them before training the model in VerticaPy.
+The exact probabilities of multiclass classifiers in a Vertica model may differ from those in Python, but bot  ``h`` will make the same predictions. Python ``XGBoost`` does not support categorical predictors, so you must encode them before training the model in VerticaPy.

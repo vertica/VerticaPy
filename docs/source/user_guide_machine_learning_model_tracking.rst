@@ -103,16 +103,14 @@ So far we have only added three models to the experiment, but we could add many 
 
     top_model = my_experiment_1.load_best_model(metric = "auc")
 
-The experiment object facilitates not only model tracking but also makes cleanup super easy, especially in real-world 
-scenarios where there is often a large number of leftover models. The :py:func:`~verticapy.machine_learning.vertica.LogisticRegression.drop` method drops from the database the info of the experiment and all associated models other than those specified in the keeping_models list.
+The experiment object facilitates not only model tracking but also makes cleanup super easy, especially in real-world scenarios where there is often a large number of leftover models. The :py:func:`~verticapy.machine_learning.vertica.LogisticRegression.drop` method drops from the database the info of the experiment and all associated models other than those specified in the keeping_models list.
 
 .. ipython:: python
     :okwarning:
 
-    my_experiment_1.drop(keeping_models=[top_model.model_name])
+    my_experiment_1.drop(keeping_models = [top_model.model_name])
 
-Experiments are also helpful for performing grid search on hyper-parameters. The following example shows how they can 
-be used to study the impact of the max_iter parameter on the prediction performance of :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` models.
+Experiments are also helpful for performing grid search on hyper-parameters. The following example shows how they can be used to study the impact of the ``max_iter`` parameter on the prediction performance of :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` models.
 
 .. ipython:: python
     :suppress:

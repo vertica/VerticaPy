@@ -140,7 +140,7 @@ Generally, you can identify global outliers with the ``Z-Score``. We'll consider
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_dp_plot_outliers_5.html
 
-Other techniques like :py:mod:`~verticapy.machine_learning.vertica.DBSCAN` or local outlier factor (``LOF``) can be to used to check other data points for outliers.
+Other techniques like :py:mod:`~verticapy.machine_learning.vertica.cluster.DBSCAN` or local outlier factor (``LOF``) can be to used to check other data points for outliers.
 
 .. code-block:: python
 
