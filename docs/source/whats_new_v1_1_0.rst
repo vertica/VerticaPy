@@ -123,8 +123,17 @@ ___________
 Deprecations
 -------------
 
+.. raw:: html
+
+   <div style="color: red;">
+
 .. warning:: 
 
-  Because of the re-structuring of VerticaPy, some previous imports will not work.
+   Because of the re-structuring of VerticaPy, some previous imports will not work.
+
+.. raw:: html
+
+   </div>
+
 
 Please look at the latest doc for the up-to-date imports.
