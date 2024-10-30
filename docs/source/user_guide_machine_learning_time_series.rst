@@ -4,7 +4,7 @@
 Time Series
 ============
 
-Time series models are a type of regression on a dataset with a timestamp label.
+Time series models are a type of regression on a dataset with a ``timestamp`` label.
 
 The following example creates a time series model to predict the number of forest fires in Brazil with the ``amazon`` dataset.
 

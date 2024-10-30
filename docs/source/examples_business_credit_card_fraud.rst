@@ -31,7 +31,7 @@ This example uses the following version of VerticaPy:
 
     vp.__version__
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN``. 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
@@ -85,7 +85,7 @@ Let's explore the data by displaying descriptive statistics of all the columns.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_describe.html
 
-It'll be difficult to work on the principal components (V1 through V28) without knowing what they mean. The only features we can work on are ``Time`` and ``Amount``.
+It'll be difficult to work on the principal components (``V1`` through ``V28``) without knowing what they mean. The only features we can work on are ``Time`` and ``Amount``.
 
 Let's convert the number of seconds elapsed to the correct date and time. We know that the records were ingested in September 2013, so we'll use that to create the new feature.
 
@@ -269,7 +269,7 @@ Let's look at the correlation matrix and see which features influence our predic
     :suppress:
     :okwarning:
 
-    fig = creditcard.corr(width = 850, with_numbers = False)
+    fig = creditcard.corr(width = 850, height = 850, with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/examples_creditcardfraud_corr_2.html")
 
 .. raw:: html
@@ -316,7 +316,7 @@ Data Modeling
 Train/Test sets
 ++++++++++++++++
 
-Since we're dealing with time series data, we have to maintain time linearity. Our goal is to use the past to predict the future, so a k-fold cross-validation, for example, wouldn't make much sense here.
+Since we're dealing with time series data, we have to maintain time linearity. Our goal is to use the past to predict the future, so a ``k-fold`` cross-validation, for example, wouldn't make much sense here.
 
 We will split the dataset into a train (day 1) and a test (day 2).
 
@@ -328,7 +328,7 @@ We will split the dataset into a train (day 1) and a test (day 2).
 Supervision
 ++++++++++++
 
-Supervising would make this pretty easy since it would just be a binary classification problem. We can use different algorithms to optimize the prediction. Our dataset is unbalanced, so the AUC might be a good metric to evaluate the model. The PRC AUC would also be a relevant metric.
+Supervising would make this pretty easy since it would just be a binary classification problem. We can use different algorithms to optimize the prediction. Our dataset is unbalanced, so the ``AUC`` might be a good metric to evaluate the model. The ``PRC`` ``AUC`` would also be a relevant metric.
 
 :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` works well with monotonic relationships. Since we have a lot of independent features that correlate with the response, it should be a good first model to use.
 
@@ -393,13 +393,13 @@ Unsupervised Learning
 There are many unsupervised learning techniques, but not all of them will be useful for detecting anomalies. Since there's no rigid mathematical definition for what an outlier is, finding anomalies becomes somewhat subjective.
 To solve this problem, we have to evaluate our constraints and needs. Do we need to find anomalies in real-time? Do we have a time constraint?
 
-- **Real-time:** We don't have access to historical data, so we need an easy way to preprocess the data that is wholly independent from historical data, and the model must be simple to deploy at the source of the data stream. For example, we might use simple preprocessing techniques like normalization, standardization or One-Hot Encoding instead of more complex ones like windows, interpolation, or intersection. Isolation forests, k-means, robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`, or global outlier detection using z-score would be ideal, whereas local outlier factor, DBSCAN, or other hard-to-deploy methods cannot be used.
-- **Near Real-time:** We have access to historical data and our preprocessing method must be fast. The model has to be simple to score with. We can use any preprocessing technique as long as it is fast enough, which of course varies. Since this is still a real-time use case, we should still avoid any hard-to-deploy algorithms like DBSCAN or local outlier factor.
+- **Real-time:** We don't have access to historical data, so we need an easy way to preprocess the data that is wholly independent from historical data, and the model must be simple to deploy at the source of the data stream. For example, we might use simple preprocessing techniques like normalization, standardization or One-Hot Encoding instead of more complex ones like windows, interpolation, or intersection. Isolation forests, :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans`, robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA`, or global outlier detection using z-score would be ideal, whereas local outlier factor, :py:mod:`~verticapy.machine_learning.vertica.cluster.DBSCAN`, or other hard-to-deploy methods cannot be used.
+- **Near Real-time:** We have access to historical data and our preprocessing method must be fast. The model has to be simple to score with. We can use any preprocessing technique as long as it is fast enough, which of course varies. Since this is still a real-time use case, we should still avoid any hard-to-deploy algorithms like :py:mod:`~verticapy.machine_learning.vertica.cluster.DBSCAN` or local outlier factor.
 - **No time constraint:** We can use any techniques we want.
 
-Due to the complexity of the computations, anomalies are difficult to detect in the context of "Big Data." We have three efficient methods for that case:
+Due to the complexity of the computations, anomalies are difficult to detect in the context of "Big Data". We have three efficient methods for that case:
 
-- **Machine Learning:** We need to use easily-deployable algorithms to perform real-time fraud detection. Isolation forests and ``k-means`` can be easily deployed and they work well for detecting anomalies.
+- **Machine Learning:** We need to use easily-deployable algorithms to perform real-time fraud detection. Isolation forests and :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` can be easily deployed and they work well for detecting anomalies.
 - **Rules & Thresholds:** The z-score can be an efficient solution for detecting global outliers.
 - **Decomposition:** Robust :py:mod:`~verticapy.machine_learning.vertica.decomposition.PCA` is another technique for detecting outliers.
 
@@ -455,7 +455,7 @@ For the rest of this example, we'll investigate labels and how they can help us 
 k-means Clustering
 +++++++++++++++++++
 
-We begin by examining ``k-means`` clustering, which partitions the data into k clusters.
+We begin by examining :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` clustering, which partitions the data into k clusters.
 
 We can use an elbow curve to find a suitable number of clusters. We can then add more clusters then the amount suggested by the :py:func:`~verticapy.machine_learning.model_selection.elbow` curve to create clusters mainly composed of anomalies. Clusters with relatively fewer elements can then be investigated by an expert to label the anomalies.
 
@@ -535,7 +535,7 @@ Let's direct our attention to the smallest clusters.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_groupby_ml.html
 
-Notice that clusters with fewer elemenets tend to contain much more fraudulent events than the others. This methodology makes ``k-means`` a good algorithm for catching collective outliers. Combining ``k-means`` with other techniques like z-score, we can find most of the outliers of the distribution.
+Notice that clusters with fewer elemenets tend to contain much more fraudulent events than the others. This methodology makes :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` a good algorithm for catching collective outliers. Combining :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` with other techniques like ``Z-score``, we can find most of the outliers of the distribution.
 
 Outliers of the distribution
 +++++++++++++++++++++++++++++
@@ -603,7 +603,7 @@ Let's use the ``Z-score`` to detect global outliers of the distribution.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_outliers_plot_3.html
 
-We can see that we can caught more than 71% of the fraudulent activity in less than 1% of the dataset.
+We can see that we can caught more than ``71%`` of the fraudulent activity in less than ``1%`` of the dataset.
 
 Neighbors
 ++++++++++
@@ -637,7 +637,7 @@ Other algorithms could be used to solve the problem with more precision if we co
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_creditcardfraud_ml_lof_plot_1.html
 
-We can catch outliers with a neighbors score. Again, the main problem with these sorts of algorithms is that what they have in precision, they lack in speed, which makes them unsuitable for scoring new data. This is why it's important to focus on scalable techniques like ``k-means``.
+We can catch outliers with a neighbors score. Again, the main problem with these sorts of algorithms is that what they have in precision, they lack in speed, which makes them unsuitable for scoring new data. This is why it's important to focus on scalable techniques like :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans`.
 
 Other Techniques
 +++++++++++++++++

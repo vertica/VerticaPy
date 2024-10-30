@@ -20,7 +20,9 @@ import types
 from typing import Optional, Union
 
 import verticapy._config.config as conf
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._print import print_message
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.jupyter._javascript import read_package_file, replace_value
 from verticapy.jupyter._widgets import Visualizer, Item, makeItems
@@ -39,6 +41,8 @@ class QueryProfilerInterface(QueryProfilerStats):
     features.
     """
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(
         self,
         transactions: Union[None, str, list[int], list[tuple[int, int]]] = None,
@@ -996,13 +1000,19 @@ class QueryProfilerInterface(QueryProfilerStats):
 
 class QueryProfilerComparison:
     """
-    Initializes a QueryProfilerComparison object with two QueryProfilerInterface instances for side-by-side comparison.
+    Initializes a ``QueryProfilerComparison`` object with
+    two ``QueryProfilerInterface`` instances for side-by-side
+    comparison.
 
     Parameters:
-    qprof1 (QueryProfilerInterface): The first QueryProfilerInterface instance for comparison.
-    qprof2 (QueryProfilerInterface): The second QueryProfilerInterface instance for comparison.
+     - qprof1 (``QueryProfilerInterface``): The first
+        ``QueryProfilerInterface`` instance for comparison.
+     - qprof2 (``QueryProfilerInterface``): The second
+        ``QueryProfilerInterface`` instance for comparison.
     """
 
+    @check_minimum_version
+    @save_verticapy_logs
     def __init__(self, qprof1, qprof2):
         self.qprof1 = qprof1
         self.qprof2 = qprof2
@@ -1053,7 +1063,7 @@ class QueryProfilerComparison:
 
     def _create_qprof1_controls(self):
         """
-        Creates interactive controls for qprof1.
+        Creates interactive controls for ``qprof1``.
         """
         interactive_output = self.qprof1._interactive_output
         return widgets.HBox(
@@ -1063,7 +1073,7 @@ class QueryProfilerComparison:
 
     def _create_qprof2_controls(self):
         """
-        Creates interactive controls for qprof2.
+        Creates interactive controls for ``qprof2``.
         """
         interactive_output = self.qprof2._interactive_output
         return widgets.HBox(
@@ -1073,7 +1083,8 @@ class QueryProfilerComparison:
 
     def _create_controls(self):
         """
-        Creates side-by-side controls for both qprof1 and qprof2.
+        Creates side-by-side controls for
+        both ``qprof1`` and ``qprof2``.
         """
         q1_control = self.qprof1._accordions
         q1_control.layout.width = "50%"
@@ -1094,13 +1105,16 @@ class QueryProfilerComparison:
 
     def _sync_accordion_selection(self):
         """
-        Synchronizes the accordion selection of qprof1 and qprof2.
-        When an accordion is selected in qprof1, it automatically updates the selection in qprof2.
+        Synchronizes the accordion selection of ``qprof1``
+        and ``qprof2``.  When an accordion is selected in
+        ``qprof1``, it automatically updates the selection
+        in ``qprof2``.
         """
 
         def on_accordion_change(change):
             """
-            Callback function to update qprof2's accordion selection when qprof1's accordion selection changes.
+            Callback function to update ``qprof2`` accordion
+            selection when ``qprof1`` accordion selection changes.
             """
             if change["name"] == "selected_index":
                 self.qprof2._accordions.selected_index = change["new"]
@@ -1110,12 +1124,13 @@ class QueryProfilerComparison:
 
     def _sync_metric_values(self, switch):
         """
-        Sync the metric tab values for both qprof objects
+        Sync the metric tab values for both ``qprof`` objects
         """
 
         def on_metric_dropdown1_change(change):
             """
-            Callback function to update qprof2's dropdown selection when qprof1's dropdown selection changes.
+            Callback function to update ``qprof2`` dropdown
+            selection when ``qprof1`` dropdown selection changes.
             """
             val = change["new"]
             self.qprof2._accordions.children[0].children[0].value = val
@@ -1148,7 +1163,9 @@ class QueryProfilerComparison:
 
         def on_metric_dropdown2_change(change):
             """
-            Callback function to update qprof2's dropdown selection when qprof1's dropdown selection changes.
+            Callback function to update ``qprof2``
+            dropdown selection when ``qprof1``
+            dropdown selection changes.
             """
             val = change["new"]
             self.qprof2._accordions.children[0].children[1].value = val
@@ -1189,8 +1206,8 @@ class QueryProfilerComparison:
             Syncs the values of two checkboxes.
 
             Parameters:
-            checkbox1 (Checkbox): The first checkbox widget.
-            checkbox2 (Checkbox): The second checkbox widget.
+             - ``checkbox1 ``(Checkbox): The first checkbox widget.
+             - ``checkbox2`` (Checkbox): The second checkbox widget.
             """
 
             def on_checkbox_change(change):
@@ -1217,7 +1234,8 @@ class QueryProfilerComparison:
 
     def unsync_all_checkboxes(self):
         """
-        Unbind synchronization of checkboxes between qprof1 and qprof2.
+        Unbind synchronization of checkboxes
+        between ``qprof1`` and ``qprof2``.
         """
 
         def unsync_checkboxes(checkbox1):
@@ -1243,10 +1261,8 @@ class QueryProfilerComparison:
         unsync_checkboxes(checkbox_op_q1)
         unsync_checkboxes(checkbox_desc_q1)
 
-    def display(self):
+    def get_qplan_tree(self):
         """
         Displays the final side-by-side UI.
         """
         print_message(self.side_by_side_ui, "display")
-
-    get_qplan_tree = display

@@ -9,8 +9,8 @@ This starter notebook will help you get up and running with the Query Profiler (
 This tool is a work in progress and the VerticaPy team is continuously adding new features.
 
 See also :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` , 
-:py:func:`~verticapy.performance.vertica.qprof_interface.QueryProfilerInterface` , 
-:py:func:`~verticapy.performance.vertica.qprof_interface.QueryProfilerComparison` .
+:py:mod:`~verticapy.performance.vertica.qprof_interface.QueryProfilerInterface` , 
+:py:mod:`~verticapy.performance.vertica.qprof_interface.QueryProfilerComparison` .
 
 VerticaPyLab
 -------------
@@ -213,7 +213,7 @@ Once the :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object is 
 To visualize the query plan, run :py:func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
 which is customizable, allowing you to specify certain metrics or focus on a specified tree path:
 
-.. image:: /source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.PNG
+.. image:: /source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.png
     :width: 80%
     :align: center
 
@@ -290,7 +290,7 @@ To export a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object,
 Import
 +++++++
 
-To import a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.import_profile` method and provide the ``target_schema`` and ``key_id``.
+To import a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.qprof.QueryProfiler.import_profile` method and provide the ``target_schema`` and ``key_id``.
 
 Make sure the ``key_id`` is unique/unused. Let us create a new schema to load this into:
 
@@ -453,7 +453,7 @@ To view the cpu time of the query in a bar graph:
     :suppress:
     :okwarning:
 
-    fig = qprof.get_cpu_time(kind="bar")
+    fig = qprof.get_cpu_time(kind="bar", width = 800)
     fig.write_html("SPHINX_DIRECTORY/figures/user_guides_performance_qprof_cpu_bar.html")
 
 .. raw:: html

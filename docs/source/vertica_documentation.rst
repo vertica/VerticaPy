@@ -17,7 +17,7 @@ Vertica Documentation
         VerticaPy
     </div>
     <div style="text-align: center; font-size: 18px; font-weight: bold;">
-        Documentation 1.0.x
+        Documentation 1.1.x
     </div>
 
 Below are the links for relevant ``Vertica`` documentation:

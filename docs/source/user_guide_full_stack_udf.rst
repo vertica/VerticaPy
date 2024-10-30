@@ -4,7 +4,7 @@
 User-Defined Functions
 =======================
 
-Vertica is an analytical database with many advanced functions. While Vertica obviously doesn't have every function, it comes pretty close by implementing a Python SDK that allows users to create and import their own "lambda" functions into Vertica.
+Vertica is an analytical database with many advanced functions. While Vertica obviously doesn't have every function, it comes pretty close by implementing a Python SDK that allows users to create and import their own ``lambda`` functions into Vertica.
 
 While the SDK is somewhat difficult to use, VerticaPy makes it easy by generating UDFs from python code and importing them into Vertica for you.
 

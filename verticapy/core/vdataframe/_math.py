@@ -15,8 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-import random
 import re
+import secrets
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
@@ -425,7 +425,7 @@ class vDFMath(vDFFilter):
                     f"when using analytic method '{func}'"
                 )
             if func in ("skewness", "kurtosis", "aad", "mad", "jb"):
-                random_nb = random.randint(0, 10000000)
+                random_nb = secrets.randbelow(10000001)
                 column_str = columns[0].replace('"', "")
                 mean_name = f"{column_str}_mean_{random_nb}"
                 median_name = f"{column_str}_median_{random_nb}"

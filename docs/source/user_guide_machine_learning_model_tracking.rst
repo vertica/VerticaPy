@@ -115,6 +115,13 @@ Experiments are also helpful for performing grid search on hyper-parameters. The
 be used to study the impact of the max_iter parameter on the prediction performance of :py:mod:`~verticapy.machine_learning.vertica.linear_model.LogisticRegression` models.
 
 .. ipython:: python
+    :suppress:
+    :okwarning:
+
+    import verticapy as vp
+    vp.set_option("plotting_lib", "matplotlib")
+
+.. ipython:: python
     :okwarning:
 
     # creating an experiment
@@ -133,9 +140,10 @@ be used to study the impact of the max_iter parameter on the prediction performa
         my_experiment_2.add_model(model)
         
     # plotting prc_auc vs max_iter
+    @savefig my_experiment_2_plot_max_iter_prc.png
     my_experiment_2.plot("max_iter", "prc_auc")
 
-    # cleaning all the models associated to the experimen from the database
+    # cleaning all the models associated to the experiment from the database
     my_experiment_2.drop()
 
 Model Versioning
@@ -150,9 +158,9 @@ To showcase model versioning, we will begin by registering the ``top_model`` pic
 
     top_model.register("top_model_demo")
 
-When the model owner registers the model, its ownership changes to ``DBADMIN``, and the previous owner receives ``USAGE`` privileges. Registered models are referred to by their registered_name and version. Only DBADMIN or a user with the MLSUPERVISOR role can change the status of a registered model. We have provided the :py:func:`~verticapy.mlops.model_versioning.RegisteredModel` class in VerticaPy for working with registered models.
+When the model owner registers the model, its ownership changes to ``DBADMIN``, and the previous owner receives ``USAGE`` privileges. Registered models are referred to by their registered_name and version. Only ``DBADMIN`` or a user with the ``MLSUPERVISOR`` role can change the status of a registered model. We have provided the :py:func:`~verticapy.mlops.model_versioning.RegisteredModel` class in VerticaPy for working with registered models.
 
-We will now make a :py:func:`~verticapy.mlops.model_versioning.RegisteredModel` object for our recently registered model and change its status to "production". We can then use the registered model for scoring.
+We will now make a :py:func:`~verticapy.mlops.model_versioning.RegisteredModel` object for our recently registered model and change its status to ``production``. We can then use the registered model for scoring.
 
 .. ipython:: python
 
@@ -160,7 +168,7 @@ We will now make a :py:func:`~verticapy.mlops.model_versioning.RegisteredModel` 
 
     rm = mv.RegisteredModel("top_model_demo")
 
-To see the list of all models registered as ``top_model_demo``, use the ``list_models`` method.
+To see the list of all models registered as ``top_model_demo``, use the :py:func:`~verticapy.mlops.model_versioning.RegisteredModel.list_models` method.
 
 .. code-block:: python
 
@@ -178,7 +186,7 @@ To see the list of all models registered as ``top_model_demo``, use the ``list_m
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_ml_model_tracking_list_models_2.html
 
-The model we just registered has a status of "under_review". The next step is to change the status of the model to "staging", which is meant for A/B testing the model. Assuming the model performs well, we will promote it to the "production" status. Please note that we should specify the right version of the registered model from the above table.
+The model we just registered has a status of ``under_review``. The next step is to change the status of the model to ``staging``, which is meant for A/B testing the model. Assuming the model performs well, we will promote it to the "production" status. Please note that we should specify the right version of the registered model from the above table.
 
 .. ipython:: python
     :okwarning:
@@ -192,7 +200,7 @@ The model we just registered has a status of "under_review". The next step is to
     # changing the status of the model to production
     rm.change_status(version = version, new_status = "production")
 
-There can only be one version of the registered model in "production" at any time. The following predict function applies to the model with "production" status by default. 
+There can only be one version of the registered model in ``production`` at any time. The following predict function applies to the model with ``production`` status by default. 
 
 If you want to run the predict function on a model with a status other than "production", you must also specify the model version.
 
@@ -236,7 +244,6 @@ If you want to run the predict function on a model with a status other than "pro
 
 Conclusion
 -----------
-
 
 The addition of model tracking and model versioning to the VerticaPy toolkit greatly improves VerticaPy's MLOps capabilities. We are constantly working to improve VerticaPy and address the needs of data scientists who wish to harness the power of Vertica database to empower their data analyses. If you have any comments or questions, don't hesitate to reach out in the VerticaPy github community.
 

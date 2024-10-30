@@ -875,10 +875,10 @@ class vDFCorr(vDFEncode):
                 }
             )
             fig = data.corr(method = "pearson")
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_corr_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_matrix.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_corr_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_matrix.html
 
         You can also use the parameter focus to only compute a correlation vector.
 
@@ -890,10 +890,10 @@ class vDFCorr(vDFEncode):
             :suppress:
 
             fig = data.corr(method = "pearson", focus = "score1")
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_corr_vector.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_vector.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_corr_vector.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_vector.html
 
         It is less expensive and it allows you to focus your search on one specific
         column.
@@ -1258,10 +1258,10 @@ class vDFCorr(vDFEncode):
                 }
             )
             fig = data.cov()
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_cov_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_matrix.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_cov_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_matrix.html
 
         You can also use the parameter focus to only compute a covariance vector.
 
@@ -1273,10 +1273,10 @@ class vDFCorr(vDFEncode):
             :suppress:
 
             fig = data.cov(method = "pearson", focus = "score1")
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_cov_vector.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_vector.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_cov_vector.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_vector.html
 
         It is less expensive and it allows you to focus your search on one specific
         column.
@@ -1436,10 +1436,10 @@ class vDFCorr(vDFEncode):
                 }
             )
             fig = data.regr(method = "beta")
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html
 
         Draw the regression matrix using the Alpha coefficient.
 
@@ -1463,10 +1463,10 @@ class vDFCorr(vDFEncode):
                 }
             )
             fig = data.regr(method = "alpha")
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html
 
         Draw the regression matrix using the R2 correlation coefficient.
 
@@ -1490,10 +1490,10 @@ class vDFCorr(vDFEncode):
                 }
             )
             fig = data.regr(method = "r2")
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html
 
         For more examples, please look at the :ref:`chart_gallery.corr` page of the
         :ref:`chart_gallery`. Those ones are related to correlation matrix, but the
@@ -1743,7 +1743,7 @@ class vDFCorr(vDFEncode):
             data = load_amazon()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_amazon.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
 
         Draw the ACF Plot.
 
@@ -1773,10 +1773,10 @@ class vDFCorr(vDFEncode):
                 width = 600,
                 height = 400,
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_acf_plot.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_acf_plot.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_acf_plot.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_acf_plot.html
 
         For more examples, please look at the :ref:`chart_gallery.acf` page of the
         :ref:`chart_gallery`.
@@ -1977,7 +1977,7 @@ class vDFCorr(vDFEncode):
             data = load_amazon()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_amazon.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
 
         Draw the PACF Plot.
 
@@ -2007,10 +2007,10 @@ class vDFCorr(vDFEncode):
                 width = 600,
                 height = 450,
             )
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_pacf_plot.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_pacf_plot.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_pacf_plot.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_pacf_plot.html
 
         For more examples, please look at the :ref:`chart_gallery.acf` page of the
         :ref:`chart_gallery`. Those ones are related to ACF plots, but the customization
@@ -2171,7 +2171,7 @@ class vDFCorr(vDFEncode):
             data = load_titanic()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_titanic.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         Draw the IV Bar chart.
 
@@ -2187,10 +2187,10 @@ class vDFCorr(vDFEncode):
             vp.set_option("plotting_lib", "plotly")
             data = load_titanic()
             fig = data.iv_woe(y = "survived", nbins = 20)
-            fig.write_html("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_iv_woe_plot.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_plot.html")
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_iv_woe_plot.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_plot.html
 
         .. hint::
 
@@ -2281,7 +2281,7 @@ class vDCCorr(vDCEncode):
             data = load_titanic()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_titanic.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         Draw the IV Bar chart.
 
@@ -2294,12 +2294,12 @@ class vDCCorr(vDCEncode):
 
             from verticapy.datasets import load_titanic
             data = load_titanic()
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_iv_woe_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_table.html", "w")
             html_file.write(data["age"].iv_woe(y = "survived", nbins = 20)._repr_html_())
             html_file.close()
 
         .. raw:: html
-          :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFCorr_iv_woe_table.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_table.html
 
         .. hint::
 

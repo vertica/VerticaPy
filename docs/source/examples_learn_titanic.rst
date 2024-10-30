@@ -217,7 +217,7 @@ The "sibsp" column represents the number of siblings for each passenger, while t
 
     titanic["family_size"] = titanic["parch"] + titanic["sibsp"] + 1
 
-Let's move on to outliers. We have several tools for locating outliers (:py:mod:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, :py:mod:`~verticapy.machine_learning.vertica.DBSCAN`, ``k-means``...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
+Let's move on to outliers. We have several tools for locating outliers (:py:mod:`~verticapy.machine_learning.vertica.LocalOutlierFactor`, :py:mod:`~verticapy.machine_learning.vertica.DBSCAN`, :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans`...), but we'll just use winsorization in this example. Again, "fare" has many outliers, so we'll start there.
 
 .. code-block:: python
 
@@ -458,7 +458,7 @@ One of our predictors is categorical: the passenger title. Some of these predict
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_titanic_table_ml_cv.html
 
-This dataset is pretty unbalanced so we'll use an ``AUC`` to evaluate it. Looking at our table, our model has an average AUC of more than 0.9, so our model is quite good.
+This dataset is pretty unbalanced so we'll use an ``AUC`` to evaluate it. Looking at our table, our model has an average ``AUC`` of more than 0.9, so our model is quite good.
 
 We can now build a model with the entire dataset.
 

@@ -321,7 +321,7 @@ Similarly, we can plot a bubble plot:
 .. raw:: html
   :file: SPHINX_DIRECTORY/figures/user_guides_data_exploration_iris_scatter_bubble.html
 
-For more information on scatter look at :py:func:`verticapy.vDataFrame.scatter`
+For more information on scatter look at :py:func:`~verticapy.vDataFrame.scatter`
 
 Hexbin plots can be useful for generating heatmaps. These summarize data in a similar way to scatter plots, but compute aggregations to get the final results.
 

@@ -23,6 +23,7 @@ Business
         optimizing base station operations. Simplify your exploration of 
         base station efficiency predictions with our user-friendly approach.
 
+    .. grid-item::
 
       .. card:: Battery
         :img-top: _static/website/examples/images/battery.jpg
@@ -39,6 +40,8 @@ Business
         overall health. Simplify your exploration of battery health 
         predictions with our user-friendly approach.
 
+    .. grid-item::
+
       .. card:: Booking
         :img-top: _static/website/examples/images/booking.jpg
         :link: examples.business.booking
@@ -54,6 +57,8 @@ Business
         into optimizing booking strategies. Simplify your exploration 
         of flight booking predictions with our user-friendly approach.
 
+    .. grid-item::
+
       .. card:: Churn
         :img-top: _static/website/examples/images/churn.jpg
         :link: examples.business.churn
@@ -68,6 +73,8 @@ Business
         to identify factors influencing churn and gain insights into 
         retaining subscribers. Simplify your exploration of Telco 
         churn predictions with our user-friendly approach.
+
+    .. grid-item::
 
       .. card:: Credit Card Fraud
         :img-top: _static/website/examples/images/credit_card_fraud.jpg
@@ -86,6 +93,8 @@ Business
         Simplify your exploration of credit card fraud predictions 
         with our user-friendly approach.
 
+    .. grid-item::
+
       .. card:: Football
         :img-top: _static/website/examples/images/football.jpg
         :link: examples.business.football
@@ -101,6 +110,8 @@ Business
         performance and key variables to identify factors influencing 
         match results. Simplify your exploration of football outcome 
         predictions with our user-friendly approach.
+
+    .. grid-item::
 
       .. card:: Insurance
         :img-top: _static/website/examples/images/insurance.jpg
@@ -118,6 +129,8 @@ Business
         Simplify your exploration of health insurance predictions with our 
         user-friendly approach.
 
+    .. grid-item::
+
       .. card:: Movies
         :img-top: _static/website/examples/images/movies.jpg
         :link: examples.business.movies
@@ -133,6 +146,8 @@ Business
         factors influencing viewer preferences to gain insights 
         into the potential success of films. Simplify your exploration 
         of movie rating predictions with our user-friendly approach.
+
+    .. grid-item::
 
       .. card:: Smart meters
         :img-top: _static/website/examples/images/smart_meters.jpg
@@ -150,6 +165,8 @@ Business
         into optimizing resource efficiency. Simplify your exploration of 
         smart meter consumption predictions with our user-friendly approach.
 
+    .. grid-item::
+
       .. card:: Spam
         :img-top: _static/website/examples/images/spam.jpg
         :link: examples.business.spam
@@ -165,6 +182,8 @@ Business
         patterns to detect suspicious content and gain insights into 
         enhancing your inbox security. Simplify your exploration of 
         spam detection predictions with our user-friendly approach.
+
+    .. grid-item::
 
       .. card:: Spotify
         :img-top: _static/website/examples/images/spotify.jpg

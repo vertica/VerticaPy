@@ -34,7 +34,10 @@ from verticapy._utils._print import print_message
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._utils._sql._vertica_version import vertica_version
+from verticapy._utils._sql._vertica_version import (
+    check_minimum_version,
+    vertica_version,
+)
 
 from verticapy.performance.vertica.collection.profile_export import ProfileExport
 from verticapy.performance.vertica.collection.profile_import import ProfileImport
@@ -50,14 +53,6 @@ if TYPE_CHECKING and conf.get_import_success("graphviz"):
 class QueryProfiler:
     """
     Base class to profile queries.
-
-    .. important::
-
-        This class is currently under development
-        and remains in beta. Please note that the
-        parameters may undergo changes in the future.
-        We plan to introduce a stable version in
-        VerticaPy 1.0.3 or later.
 
     .. important::
 
@@ -973,6 +968,7 @@ class QueryProfiler:
 
     # Init Functions
 
+    @check_minimum_version
     @save_verticapy_logs
     def __init__(
         self,

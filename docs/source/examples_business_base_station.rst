@@ -40,7 +40,7 @@ This example uses the following version of VerticaPy:
 
     vp.__version__
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN``. 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
@@ -402,7 +402,7 @@ Data Preparation
 Finding Clusters of Base Stations
 ++++++++++++++++++++++++++++++++++
 
-We create virtual base stations by grouping existing base stations in 100 clusters. Clustering is performed using ``k-means`` clustering on Euclidean coordinates of the base stations. Each cluster represents a wider coverage of connections.
+We create virtual base stations by grouping existing base stations in 100 clusters. Clustering is performed using :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` clustering on Euclidean coordinates of the base stations. Each cluster represents a wider coverage of connections.
 
 .. ipython:: python
 
@@ -725,7 +725,7 @@ Let's find a suitable number of clusters using elbow curve.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_base_station_elbow_longi_lati.html
 
-The :py:func:`~verticapy.machine_learning.model_selection.elbow` curve seems to indicate that 4 would be a good number of clusters, so let's try k = 4 and view the weighted ``k-means`` algorithm's suggested positions for new base stations based on the centers of the clusters.
+The :py:func:`~verticapy.machine_learning.model_selection.elbow` curve seems to indicate that 4 would be a good number of clusters, so let's try k = 4 and view the weighted :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` algorithm's suggested positions for new base stations based on the centers of the clusters.
 
 .. ipython:: python
     :okwarning:

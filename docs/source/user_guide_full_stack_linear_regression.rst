@@ -564,14 +564,26 @@ We can verify the Gauss-Markov assumptions with our :py:mod:`~verticapy.machine_
 
 .. code-block:: python
 
-    africa_pca.corr()
+    africa_pca.corr(
+        columns = 
+            [
+                "student_score",
+                "col1",
+                "col2",
+                "col3",
+                "col4",
+                "col5",
+                "col6",
+                "col7",
+            ],
+    )
 
 .. ipython:: python
     :suppress:
     :okwarning:
 
     vp.set_option("plotting_lib","plotly")
-    fig = africa_pca.corr(with_numbers = False)
+    fig = africa_pca.corr(columns = ["student_score", "col1", "col2", "col3", "col4", "col5", "col6", "col7"], with_numbers = False)
     fig.write_html("SPHINX_DIRECTORY/figures/ug_fs_plot_lr_18.html")
 
 .. raw:: html

@@ -354,7 +354,7 @@ We'll use a lift chart to help us identify which of our customers are likely to 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_churn_lift_chart.html
 
-By targeting less than 30% of the entire distribution, our predictions will be more than three times more accurate than the other 70%.
+By targeting less than ``30%`` of the entire distribution, our predictions will be more than three times more accurate than the other ``70%``.
 
 Conclusion
 -----------

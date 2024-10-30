@@ -14,6 +14,18 @@ Options
   - ``max_cellwidth``: Maximum width of any VerticaPy table's cell.
   - ``max_tableheight``: Maximum height of VerticaPy tables.
   - ``theme``: Theme used to display the VerticaPy objects ('light', 'dark' or 'sphinx').
+  - ``verbosity``: This will set the amount of information to display while executing VerticaPy functions.
+
+.. note::
+  
+  There are four levels of ``verbosity``:
+
+  - 0 (silent)
+  - 1 (warning)
+  - 2 (info)
+  - 3 (debug)
+
+_________
 
 Machine Learning
 -----------------
@@ -29,6 +41,29 @@ in utilizing PLS regression.
 
 For more details, please look at 
 :py:mod:`~verticapy.machine_learning.vertica.linear_model.PLSRegression`
+
+Example use:
+
+.. code-block:: python
+
+  from verticapy.machine_learning.vertica import PLSRegression
+
+  model = PLSRegression()
+  model.fit(
+    train_data,
+    [
+        "col1",
+        "col2",
+        "col3",
+    ],
+    "Y",
+    test_data,
+  )
+
+.. note:: 
+
+  All the ML models that were introduced in version 1.0.x are also supported in version 1.1.x.
+___________
 
 Performance
 ------------
@@ -84,10 +119,18 @@ QueryProfilerComparison
   qprof_compare.get_qplan_tree()
 
 
+.. image:: ../../docs/source/_static/whats_new_1_1_0_qprof_get_qplan_tree.png
+    :width: 80%
+    :align: center
+
+___________
+
 Deprecations
 -------------
 
-Because of the re-structuring of VerticaPy, some parts of the heirarchy has changed.
+.. warning:: 
+
+  Because of the re-structuring of VerticaPy, some previous imports will not work.
 
 Please look at the latest doc for the up-to-date imports.
 

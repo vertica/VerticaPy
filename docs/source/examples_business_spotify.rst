@@ -41,7 +41,7 @@ Categorical:
 - **release_date**: date of release (yyyy-mm-dd).
 - **name**: track name.
 
-The "artists" dataset (artists.csv) has the following features:
+The ``artists`` dataset (``artists.csv``) has the following features:
 
 - **id**: ID of the artist.
 - **name**: artist name.
@@ -69,7 +69,7 @@ Start by importing VerticaPy and loading the SQL extension, which allows you to 
     %load_ext verticapy.sql
 
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN``. 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
@@ -155,7 +155,7 @@ Since we are only focusing on Polish artists in this subset of data, let us save
 Data Exploration 
 -----------------
 
-We can visualize the top 60 most-followed Polish artists with a bar chart.
+We can visualize the top ``60`` most-followed Polish artists with a bar chart.
 
 .. code-block:: python
 
@@ -381,7 +381,7 @@ To expand our analysis, let's take into account some descriptive features. Since
 
 Additionally, we manipulate our data a bit to make things easier later on:
 
-- converting the duration unit from 'ms' to 'minute'
+- converting the duration unit from ``ms`` to ``minute``
 - extracting the year from the date.
 
 .. code-block:: python
@@ -837,7 +837,7 @@ Grouping means clustering, so we use an :py:func:`~verticapy.machine_learning.mo
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_spotify_lr_elbow.html
 
-Let's define and use the Vertica ``k-means`` algorithm to create a model that can group artists together.
+Let's define and use the Vertica :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` algorithm to create a model that can group artists together.
 
 .. ipython:: python
     :okwarning:
@@ -850,7 +850,7 @@ Let's define and use the Vertica ``k-means`` algorithm to create a model that ca
         n_cluster = 7,
     )
 
-We can train our new model on the "artists_features" relation we saved earlier.
+We can train our new model on the ``artists_features`` relation we saved earlier.
 
 .. ipython:: python
 
@@ -915,4 +915,4 @@ Let's see how our model groups these artists together:
 Conclusion
 -----------
 
-We were able to predict the popularity Polish songs with a :py:mod:`~verticapy.machine_learning.vertica.ensemble.RandomForestRegressor` model suggested by :py:mod:`~verticapy.machine_learning.vertica.automl.AutoML`. We then created a ``k-means`` model to group artists into "genres" (clusters) based on the feature-commonalities in their tracks.
+We were able to predict the popularity Polish songs with a :py:mod:`~verticapy.machine_learning.vertica.ensemble.RandomForestRegressor` model suggested by :py:mod:`~verticapy.machine_learning.vertica.automl.AutoML`. We then created a :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` model to group artists into ``genres`` (clusters) based on the feature-commonalities in their tracks.

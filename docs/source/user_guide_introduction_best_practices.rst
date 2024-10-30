@@ -32,7 +32,7 @@ In the following examples, we'll demonstrate how to create a :py:mod:`~verticapy
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_laod_titanic.html
 
-Supposing we are only interested in the ``survived``, ``pclass``, ``age``, ``parch``, and ``sibsp`` columns, we can create a vDataFrame with just those columns by specifying them in the usecols parameter:
+Supposing we are only interested in the ``survived``, ``pclass``, ``age``, ``parch``, and ``sibsp`` columns, we can create a :py:mod:`~verticapy.vDataFrame` with just those columns by specifying them in the usecols parameter:
 
 .. code-block:: python
     
@@ -60,9 +60,9 @@ Supposing we are only interested in the ``survived``, ``pclass``, ``age``, ``par
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_laod_titanic_selective.html
 
-If we run the :py:func:`~verticapy.vDataFrame.avg` method without specifying columns, all numerical vDataFrame columns are included in the operation:
+If we run the :py:func:`~verticapy.vDataFrame.avg` method without specifying columns, all numerical :py:mod:`~verticapy.vDataFrame` columns are included in the operation:
 
-.. note:: To examine the generated SQL for each command, turn on the "sql_on" option using :py:func:`~verticapy.set_option`.
+.. note:: To examine the generated SQL for each command, turn on the ``sql_on`` option using :py:func:`~verticapy.set_option`.
 
 .. ipython:: python
     
@@ -126,10 +126,10 @@ You can then use this truncated list of columns in another method call; for inst
 Save the current relation
 --------------------------
 
-The :py:mod:`~verticapy.vDataFrame` works like a ``view``, a stored query that encapsulates one or more SELECT statements. 
+The :py:mod:`~verticapy.vDataFrame` works like a ``view``, a stored query that encapsulates one or more ``SELECT`` statements. 
 If the generated relation uses many different functions, the computation time for each method call is greatly increased.
 
-Small transformations don't drastically slow down computation, but heavy transformations (multiple joins, frequent use of advanced analytical funcions, moving windows, etc.) can result in noticeable slowdown. When performing computationally expensive operations, you can aid performance by saving the vDataFrame structure as a table in the Vertica database. We will demonstrate this process in the following example.
+Small transformations don't drastically slow down computation, but heavy transformations (multiple joins, frequent use of advanced analytical funcions, moving windows, etc.) can result in noticeable slowdown. When performing computationally expensive operations, you can aid performance by saving the :py:mod:`~verticapy.vDataFrame` structure as a table in the Vertica database. We will demonstrate this process in the following example.
 
 First, create a :py:mod:`~verticapy.vDataFrame`, then perform some operations on that :py:mod:`~verticapy.vDataFrame`:
 
@@ -160,7 +160,7 @@ To understand how Vertica executes the different aggregations in the above relat
 
     print(titanic.explain())
 
-Looking at the plan and its associated relation, it's clear that the transformations we applied to the vDataFrame result in a complicated relation. 
+Looking at the plan and its associated relation, it's clear that the transformations we applied to the :py:mod:`~verticapy.vDataFrame` result in a complicated relation. 
 
 Each method call to the :py:mod:`~verticapy.vDataFrame` must use this relation for computation. 
 
@@ -220,7 +220,7 @@ To demonstrate, create a database connection:
 
     vp.connect("VerticaDSN")
 
-When you are done making changes, close the connection with the :func:`~verticapy.close_connection` function:
+When you are done making changes, close the connection with the :func:`~verticapy.connection.connect.close_connection` function:
 
 .. code-block:: python
 
@@ -321,7 +321,7 @@ For example, if we are only interested in analyzing Titanic passengers who didn'
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guide_introduction_best_practices_filter.html
 
-To drop unnecessary columns from your vDataFrame, use the :py:func:`~verticapy.vDataFrame.drop` method:
+To drop unnecessary columns from your :py:mod:`~verticapy.vDataFrame`, use the :py:func:`~verticapy.vDataFrame.drop` method:
 
 .. code-block:: python
 
@@ -412,7 +412,7 @@ First, let's send a single query to compute the average for all columns in the :
 
     display(vdf.avg(ncols_block = 20))
 
-We see that there was one SELECT query for all columns in the :py:mod:`~verticapy.vDataFrame`. 
+We see that there was one ``SELECT`` query for all columns in the :py:mod:`~verticapy.vDataFrame`. 
 You can reduce the impact on the system by using the ``ncols_block`` parameter to split the computation into multiple iterative queries, where the value of the parameter is the number of columns included in each query.
 
 For example, setting ``ncols_block`` to 5 will split the computation, which consists of 20 total columns, into 4 separate queries, each of which computes the average for 5 columns:

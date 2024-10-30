@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import copy
 import math
 import random
+import secrets
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 
 import numpy as np
@@ -1617,12 +1618,24 @@ class PlottingBase(PlottingBaseSQL):
             inliers = x[abs(zs) <= threshold]
             n = len(inliers)
             inliers = np.column_stack(
-                (inliers, [2 * (random.random() - 0.5) for i in range(n)])
+                (
+                    inliers,
+                    [
+                        2 * (secrets.randbelow(10000001) / 10000000 - 0.5)
+                        for i in range(n)
+                    ],
+                )
             )
             outliers = x[abs(zs) > threshold]
             n = len(outliers)
             outliers = np.column_stack(
-                (outliers, [2 * (random.random() - 0.5) for i in range(n)])
+                (
+                    outliers,
+                    [
+                        2 * (secrets.randbelow(10000001) / 10000000 - 0.5)
+                        for i in range(n)
+                    ],
+                )
             )
         else:
             zvals = None

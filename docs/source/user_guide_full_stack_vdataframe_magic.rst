@@ -4,7 +4,7 @@
 The ``Magic`` Methods of the vDataFrame
 ======================================
 
-VerticaPy 0.3.2 introduces the ``Magic`` methods, which offer some additional flexilibility for mathematical operations in the :py:mod:`~verticapy.vDataFrame`. These methods let you handle many operations in a ``pandas-like`` or Pythonic style.
+VerticaPy 0.3.2 introduces the ``Magic`` methods, which offer some additional flexibility for mathematical operations in the :py:mod:`~verticapy.vDataFrame`. These methods let you handle many operations in a ``pandas-like`` or Pythonic style.
 
 .. code-block:: ipython
 
@@ -94,7 +94,7 @@ You can also create features from various mathematical functions.
 Conditional Operators
 ----------------------
 
-You can now filter your data with conditional operators like and (``&``), or (``|``), equals (``==``), not equals (!=), and more!
+You can now filter your data with conditional operators like and (``&``), or (``|``), equals (``==``), not equals (``!=``), and more!
 
 Equal Operator (==)
 ++++++++++++++++++++

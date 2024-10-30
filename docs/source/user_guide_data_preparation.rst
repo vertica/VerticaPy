@@ -79,8 +79,8 @@ Data Preparation
 
     .. grid-item::
 
-        .. card:: Normalization
-          :link: user_guide.data_preparation.normalization
+        .. card:: Scaling Techniques
+          :link: user_guide.data_preparation.scale
           :link-type: ref
           :text-align: center
           :class-card: custom-card-13
@@ -129,6 +129,6 @@ Data Preparation
   user_guide_data_preparation_outliers
   user_guide_data_preparation_missing_values
   user_guide_data_preparation_encoding
-  user_guide_data_preparation_normalization
+  user_guide_data_preparation_scale
   user_guide_data_preparation_decomposition
   user_guide_data_preparation_features_engineering

@@ -101,7 +101,9 @@ def get_connection_file() -> str:
         | :py:func:`~verticapy.connection.new_connection` :
             Creates a new VerticaPy connection.
     """
-    if "VERTICAPY_CONNECTION" in os.environ:
+    if "VERTICAPY_CONNECTION" in os.environ and os.path.exists(
+        os.environ["VERTICAPY_CONNECTION"]
+    ):
         return os.environ["VERTICAPY_CONNECTION"]
     path = os.path.join(os.path.expanduser("~"), ".vertica")
     os.makedirs(path, 0o700, exist_ok=True)

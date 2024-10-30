@@ -35,7 +35,7 @@ This example uses the following version of VerticaPy:
     
     vp.__version__
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN``. 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
@@ -90,7 +90,7 @@ First, let's explore the dataset.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_movies_describe_cat.html
 
-We can drop the 'description' and 'notes' columns since these fields are empty for most of our dataset.
+We can drop the ``description`` and ``notes`` columns since these fields are empty for most of our dataset.
 
 .. code-block:: python
 
@@ -855,7 +855,7 @@ Great, our results are more consistent. Psycho, Pulp Fiction, and The Godfather 
 Machine Learning : Creating Movie Clusters
 -------------------------------------------
 
-Since ``k-means`` clustering is sensitive to unnormalized data, let's normalize our new predictors.
+Since :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` clustering is sensitive to unnormalized data, let's normalize our new predictors.
 
 .. code-block:: python
 
@@ -917,7 +917,7 @@ Let's compute the :py:func:`~verticapy.machine_learning.model_selection.elbow` c
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_movies_filmtv_elbow_plot.html
 
-By looking at the elbow curve, we can choose 15 clusters. Let's create a ``k-means`` model.
+By looking at the elbow curve, we can choose 15 clusters. Let's create a :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` model.
 
 .. ipython:: python
 

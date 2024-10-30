@@ -321,7 +321,7 @@ Let's evaluate our final model (the combination of two :py:mod:`~verticapy.machi
 
     iris["score"].avg()
 
-We have a great model with an accuracy of 96% on an entirely balanced dataset.
+We have a great model with an accuracy of ``96%`` on an entirely balanced dataset.
 
 Conclusion
 -----------

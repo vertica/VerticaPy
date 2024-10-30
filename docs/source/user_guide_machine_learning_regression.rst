@@ -13,7 +13,7 @@ You must always verify that all the assumptions of a given algorithm are met bef
 - **Exogeneity:** the regressors aren’t correlated with the error term.
 - **Homoscedasticity:** no matter what the values of our regressors might be, the error of the variance is constant.
 
-Most of regression models are sensitive to unnormalized data, so it's important to normalize and decompose your data before using them (though some models like random forest can handle unnormalized and correlated data). If we don't follow the assumptions, we might get unexpected results (example: negative R2).
+Most of regression models are sensitive to unnormalized data, so it's important to normalize and decompose your data before using them (though some models like random forest can handle unnormalized and correlated data). If we don't follow the assumptions, we might get unexpected results (example: negative ``R2``).
 
 Let's predict the total charges of the Telco customers using their tenure. We will start by importing `the telco dataset <https://github.com/vertica/VerticaPy/blob/master/examples/business/churn/customers.csv>`_.
 
@@ -84,6 +84,6 @@ We have many metrics to evaluate the model.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_ml_table_regression_2.html
 
-Our example forgoes splitting the data into training and testing, which is important for real-world work. Our main goal in this lesson is to look at the metrics used to evaluate regressions. The most famous metric is ``R2``: generally speaking, the closer ``R2`` is to 1, the better the model is.
+Our example forgoes splitting the data into training and testing, which is important for real-world work. Our main goal in this lesson is to look at the metrics used to evaluate regressions. The most famous metric is ``R2``: generally speaking, the closer ``R2`` is to ``1``, the better the model is.
 
 In the next lesson, we'll go over :ref:`user_guide.machine_learning.classification`

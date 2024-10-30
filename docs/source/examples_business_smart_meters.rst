@@ -36,7 +36,7 @@ This example uses the following version of VerticaPy:
 
     vp.__version__
 
-Connect to Vertica. This example uses an existing connection called "VerticaDSN." 
+Connect to Vertica. This example uses an existing connection called ``VerticaDSN``. 
 For details on how to create a connection, see the :ref:`connection` tutorial.
 You can skip the below cell if you already have an established connection.
 
@@ -135,7 +135,7 @@ Data Exploration and Preparation
 
 Predicting energy consumption in households is very important. Surges in electricity use could cause serious power outages. In our case, we'll be using data on general household energy consumption in Ireland to predict consumption at various times.
 
-In order to join the different data sources, we need to assume that the weather will be approximately the same across the entirety of Ireland. We'll use the date and time as the key to join 'sm_weather' and 'sm_consumption'.
+In order to join the different data sources, we need to assume that the weather will be approximately the same across the entirety of Ireland. We'll use the date and time as the key to join ``sm_weather`` and ``sm_consumption``.
 
 Joining different datasets with interpolation
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -174,7 +174,7 @@ In VerticaPy, you can interpolate joins; Vertica will find the closest timestamp
 Segmenting Latitude & Longitude using Clustering
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
-The dataset 'sm_meters' is pretty important. In particular, the type of residence is probably a good predictor for electricity usage. We can create clusters of the different regions with k-means clustering based on longitude and latitude. Let's find the most suitable ``k`` using an elbow curve and scatter plot.
+The dataset ``sm_meters`` is pretty important. In particular, the type of residence is probably a good predictor for electricity usage. We can create clusters of the different regions with :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` clustering based on longitude and latitude. Let's find the most suitable ``k`` using an elbow curve and scatter plot.
 
 .. code-block:: python
 
@@ -239,7 +239,7 @@ Based on the scatter plot, five seems like the optimal number of clusters. Let's
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_sm_meters_elbow_1.html
 
-The elbow curve seems to confirm that five is the optimal number of clusters, so let's create a ``k-means`` model with that in mind.
+The elbow curve seems to confirm that five is the optimal number of clusters, so let's create a :py:mod:`~verticapy.machine_learning.vertica.cluster.KMeans` model with that in mind.
 
 .. ipython:: python
 
@@ -353,7 +353,7 @@ Let's take care of our missing values.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_weather_region_count_percent_table.html
 
-The variable 'value' has a few missing values that we can drop.
+The variable ``value`` has a few missing values that we can drop.
 
 .. code-block:: python
 
@@ -375,7 +375,7 @@ The variable 'value' has a few missing values that we can drop.
 Interpolation & Aggregations
 +++++++++++++++++++++++++++++
 
-Since power outages seem relatively common in each area, and the ``value`` represents the electricity consumed during 30 minute intervals (in kWh), it'd be a good idea to interpolate and aggregate the data to get a monthly average in electricity consumption per region.
+Since power outages seem relatively common in each area, and the ``value`` represents the electricity consumed during 30 minute intervals (in ``kWh``), it'd be a good idea to interpolate and aggregate the data to get a monthly average in electricity consumption per region.
 
 Let's save our new dataset in the Vertica database.
 
@@ -800,7 +800,7 @@ Let's create our model.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_model_report_9.html
 
-The model seems to be good with an adjusted R2 of 77.5%, and the F-Statistic indicates that at least one of the two predictors is useful. Let's look at the residual plot.
+The model seems to be good with an adjusted ``R2`` of ``77.5%``, and the F-Statistic indicates that at least one of the two predictors is useful. Let's look at the residual plot.
 
 .. code-block:: python
 
@@ -833,7 +833,7 @@ Looking at the residual plot, we can see that the error variance varies by quite
 
     het_breuschpagan(sm_consumption_final, "residual", predictors)
 
-The ``p-value`` is 4.81% and sits around the 5% threshold, so we can't really draw any conclusions.
+The ``p-value`` is ``4.81%`` and sits around the ``5%`` threshold, so we can't really draw any conclusions.
 
 Let's look at the entire regression report.
 
@@ -854,7 +854,7 @@ Let's look at the entire regression report.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/examples_sm_consumption_model_report_10.html
 
-Our model is very good; its median absolute error is around 13kWh.
+Our model is very good; its median absolute error is around ``13kWh``.
 With this model, we can make predictions about the energy consumption of households per region. If the usage exceeds what the model predicts, we can raise an alert and respond, for example, by regulating the electricity distributed to the region.
 
 Conclusion
