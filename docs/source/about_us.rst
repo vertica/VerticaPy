@@ -118,8 +118,7 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
     .. grid-item::
     
       .. card:: Badr Ouali
-          :link: api.connect
-          :link-type: ref
+          :link: https://www.linkedin.com/in/badr-ouali/
           :text-align: center
           :class-footer: user_guide_footer
         
