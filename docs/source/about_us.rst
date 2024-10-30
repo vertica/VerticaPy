@@ -181,7 +181,7 @@ Team Members
 ------------
 
 
-.. grid:: 2 2 3 4
+.. grid:: 2 2 3 3
 
     .. grid-item::
 
