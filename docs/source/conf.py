@@ -199,7 +199,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 
 project = "VerticaPy"
-copyright = "2023-2024 OpenText. All rights reserved."
+copyright = "2023-2025 OpenText. All rights reserved."
 author = "Vertica"
 release = "1.1.x"
 # -- General configuration ---------------------------------------------------

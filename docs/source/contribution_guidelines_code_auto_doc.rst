@@ -351,7 +351,7 @@ Code blocks can be added using the code-clock directive. Always remember to leav
 
 Code execution
 
-In order to execute and display certain, we can use the ipython directive. Note that you will have to install and import the two extensions inside the conf file while using with sphinx: IPython.sphinxext.ipython_directive, IPython.sphinxext.ipython_console_highlighting
+In order to execute and display certain, we can use the ipython directive. Note that you will have to install and import the two extensions inside the conf file while using with sphinx: ``IPython.sphinxext.ipython_directive`` , IPython.sphinxext.ipython_console_highlighting
 
 To execute and display line of code use the following syntax:
 
@@ -416,7 +416,7 @@ Code block with Suppressed code
         print(vpp.vDataFrame({"a":[1,2,3]}))
 
 
-Though both examples produce the same result but there are suggested use-cases for each. In cases where you have to import a lot of supporting libraries you can use the directive method, and in cases where you only need to skip one line, then pseudo-directive (@suppress) is preferred.
+Though both examples produce the same result but there are suggested use-cases for each. In cases where you have to import a lot of supporting libraries you can use the directive method, and in cases where you only need to skip one line, then pseudo-directive ( ``@suppress`` ) is preferred.
 
 
 Plotting Using matplotlib
@@ -497,7 +497,7 @@ Plotting VerticaPy plot
 Advanced Output
 ----------------
 
-If we want to produce advanced output like the VerticaPy vDataFrame output or some other advanced graphics then we can use the following methodology:
+If we want to produce advanced output like the VerticaPy :py:mod:`~verticapy.vDataFrame` output or some other advanced graphics then we can use the following methodology:
 
 (1) Create the html representation of the image
 

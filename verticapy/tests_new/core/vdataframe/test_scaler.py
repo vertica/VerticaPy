@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2024 Open Text  or  one  of its
+Copyright  (c)  2018-2025 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -63,7 +63,7 @@ class TestScaler:
     @pytest.mark.parametrize("partition_by", ["pclass", None])
     def test_scale_vcolumn(self, titanic_vd_fun, partition_by, columns, method):
         """
-        test function - scaling for vColumns
+        test function - scaling for vDataColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
         titanic_pdf[columns] = titanic_pdf[columns].astype(float)

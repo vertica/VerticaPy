@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2024 Open Text  or  one  of its
+Copyright  (c)  2018-2025 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -121,7 +121,7 @@ class TestRolling:
         order_by,
     ):
         """
-        test function - str_extract for vColumns
+        test function - str_extract for vDataColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
         name = f"{vpy_func}_val"

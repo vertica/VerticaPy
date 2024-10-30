@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2024 Open Text  or  one  of its
+Copyright  (c)  2018-2025 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -116,12 +116,12 @@ class TestVDFTyping:
 
 class TestVDCTyping:
     """
-    test class for Typing functions test for vColumn class
+    test class for Typing functions test for vDataColumn class
     """
 
     def test_astype(self, titanic_vd_fun):
         """
-        test function - astype for vColumn
+        test function - astype for vDataColumn
         """
         # Testing vDataFrame[].astype
         # expected exception

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2024 Open Text  or  one  of its
+Copyright  (c)  2018-2025 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -163,7 +163,7 @@ class TestVDFSys:
 
 class TestVDCSys:
     """
-    test class for sys functions test for vColumn class
+    test class for sys functions test for vDataColumn class
     """
 
     def test_add_copy(self, titanic_vd_fun):
