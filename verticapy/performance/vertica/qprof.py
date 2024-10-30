@@ -616,14 +616,14 @@ class QueryProfiler:
     .. ipython:: python
         :suppress:
 
+        import cairosvg
         result = qprof.get_qplan_tree()
-        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree.html", "w")
-        html_file.write(result._repr_html_())
-        html_file.close()
+        html_content = result._repr_html_()
+        cairosvg.svg2png(bytestring=html_content.encode(), write_to='figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree.png')
 
-    .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree.html
-
+    .. image:: /../figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree.png
+        :width: 90%
+        :align: center
 
     We can easily customize the tree:
 
@@ -3593,13 +3593,17 @@ class QueryProfiler:
         .. ipython:: python
             :suppress:
 
-            result = qprof.get_qplan_tree()
-            html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_3.html", "w")
-            html_file.write(result._repr_html_())
-            html_file.close()
+        .. ipython:: python
+            :suppress:
 
-        .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_3.html
+            import cairosvg
+            result = qprof.get_qplan_tree()
+            html_content = result._repr_html_()
+            cairosvg.svg2png(bytestring=html_content.encode(), write_to='figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_2.png')
+
+        .. image:: /../figures/performance_vertica_qprof_QueryProfiler_get_qplan_tree_2.png
+            :width: 90%
+            :align: center
 
         .. note::
 
