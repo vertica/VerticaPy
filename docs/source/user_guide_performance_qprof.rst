@@ -213,7 +213,7 @@ Once the :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object is 
 To visualize the query plan, run :py:func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
 which is customizable, allowing you to specify certain metrics or focus on a specified tree path:
 
-.. image:: /source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.png
+.. image:: /_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.png
     :width: 80%
     :align: center
 
