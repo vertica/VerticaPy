@@ -3593,9 +3593,6 @@ class QueryProfiler:
         .. ipython:: python
             :suppress:
 
-        .. ipython:: python
-            :suppress:
-
             import cairosvg
             result = qprof.get_qplan_tree()
             html_content = result._repr_html_()
