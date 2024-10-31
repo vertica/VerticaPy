@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2024 Open Text  or  one  of its
+Copyright  (c)  2018-2025 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -113,7 +113,7 @@ class TestText:
     @pytest.mark.parametrize("column, pat", [("name", r"([A-Za-z]+\.)")])
     def test_str_contains(self, titanic_vd_fun, column, pat):
         """
-        test function - str_contains for vColumns
+        test function - str_contains for vDataColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
 
@@ -131,7 +131,7 @@ class TestText:
     @pytest.mark.parametrize("column, pat", [("name", r"([A-Za-z]+\.)")])
     def test_str_count(self, titanic_vd_fun, column, pat):
         """
-        test function - str_count for vColumns
+        test function - str_count for vDataColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
 
@@ -149,7 +149,7 @@ class TestText:
     @pytest.mark.parametrize("column, pat", [("name", r"([A-Za-z]+\.)")])
     def test_str_extract(self, titanic_vd_fun, column, pat):
         """
-        test function - str_extract for vColumns
+        test function - str_extract for vDataColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
 
@@ -171,7 +171,7 @@ class TestText:
     )
     def test_str_replace(self, titanic_vd_fun, column, to_replace, value):
         """
-        test function - str_replace for vColumns
+        test function - str_replace for vDataColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
 
@@ -199,7 +199,7 @@ class TestText:
     # step parameter name does not do its intended work. May needs to change
     def test_str_slice(self, titanic_vd_fun, column, start, end):
         """
-        test function - str_slice for vColumns
+        test function - str_slice for vDataColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
 

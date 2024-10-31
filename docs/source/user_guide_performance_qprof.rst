@@ -210,10 +210,10 @@ Once the :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object is 
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/user_guides_performance_qprof_get_queries.html
 
-To visualize the query plan, run :py:func:`verticapy.QueryProfilerInterface.get_qplan_tree`, 
+To visualize the query plan, run :py:func:`~verticapy.performance.vertica.qprof.QueryProfilerInterface.get_qplan_tree`, 
 which is customizable, allowing you to specify certain metrics or focus on a specified tree path:
 
-.. image:: /source/_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.png
+.. image:: /_static/website/user_guides/performance/user_guide_performance_qprof_get_qplan_tree.png
     :width: 80%
     :align: center
 
@@ -277,7 +277,7 @@ You can export and import :py:mod:`~verticapy.performance.vertica.qprof.QueryPro
 Export
 +++++++
 
-To export a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.QueryProfiler.export_profile` method:
+To export a :py:mod:`~verticapy.performance.vertica.qprof.QueryProfiler` object, use the :py:func:`~verticapy.performance.vertica.qprof.QueryProfiler.export_profile` method:
 
 .. code-block:: python
 

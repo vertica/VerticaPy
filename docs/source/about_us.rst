@@ -118,8 +118,7 @@ Elevate Your Analytics Journey with VerticaPy's Expertise
     .. grid-item::
     
       .. card:: Badr Ouali
-          :link: api.connect
-          :link-type: ref
+          :link: https://www.linkedin.com/in/badr-ouali/
           :text-align: center
           :class-footer: user_guide_footer
         
@@ -182,13 +181,13 @@ Team Members
 ------------
 
 
-.. grid:: 2 2 3 4
+.. grid:: 2 2 3 3
 
     .. grid-item::
 
         .. card:: Badr Ouali
           :img-top: _static/website/about_us/team/member1.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/badr-ouali/
           :text-align: center
           :class-card: member-pics-card
 
@@ -198,7 +197,7 @@ Team Members
 
         .. card:: Umar Ghumman
           :img-top: _static/website/about_us/team/member2.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/umar-farooq-ghumman/
           :text-align: center
           :class-card: member-pics-card
 
@@ -208,7 +207,7 @@ Team Members
 
         .. card:: Arash Fard
           :img-top: _static/website/about_us/team/member3.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/arash-jalalzadeh-fard/
           :text-align: center
           :class-card: member-pics-card
 
@@ -218,7 +217,7 @@ Team Members
 
         .. card:: Fouad Teban
           :img-top: _static/website/about_us/team/member14.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/fouadteban/
           :text-align: center
           :class-card: member-pics-card
 
@@ -228,7 +227,7 @@ Team Members
 
         .. card:: George Larionov
           :img-top: _static/website/about_us/team/member10.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/george-larionov/
           :text-align: center
           :class-card: member-pics-card
 
@@ -238,7 +237,7 @@ Team Members
 
         .. card:: Matteo Monaldi
           :img-top: _static/website/about_us/team/member8.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/matteo-monaldi/
           :text-align: center
           :class-card: member-pics-card
 
@@ -248,7 +247,7 @@ Team Members
 
         .. card:: Abdelhak Zabour
           :img-top: _static/website/about_us/team/member9.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/abdelhakzabour/
           :text-align: center
           :class-card: member-pics-card
 
@@ -258,7 +257,7 @@ Team Members
 
         .. card:: Roy Paulin
           :img-top: _static/website/about_us/team/member13.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/roy-paulin/
           :text-align: center
           :class-card: member-pics-card
 
@@ -268,7 +267,7 @@ Team Members
 
         .. card:: Xiaozhong Zhang
           :img-top: _static/website/about_us/team/member12.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/xiaozhongzhang/
           :text-align: center
           :class-card: member-pics-card
 
@@ -278,7 +277,7 @@ Team Members
 
         .. card:: Zachary Nowak
           :img-top: _static/website/about_us/team/member11.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/zachary-t-nowak/
           :text-align: center
           :class-card: member-pics-card
 
@@ -288,7 +287,7 @@ Team Members
 
         .. card:: Abhishek Sharma
           :img-top: _static/website/about_us/team/member4.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/abhishek-sharma-1245bb1/
           :text-align: center
           :class-card: member-pics-card
 
@@ -298,7 +297,7 @@ Team Members
 
         .. card:: Vikash Singh
           :img-top: _static/website/about_us/team/member5.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/vikash-singh-3081312a/
           :text-align: center
           :class-card: member-pics-card
 
@@ -308,7 +307,7 @@ Team Members
 
         .. card:: Tyler Consigny
           :img-top: _static/website/about_us/team/member6.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/tyler-consigny-74a61620a/
           :text-align: center
           :class-card: member-pics-card
 
@@ -318,7 +317,7 @@ Team Members
 
         .. card:: Kevin Xu
           :img-top: _static/website/about_us/team/member15.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/kevin-xu-v/
           :text-align: center
           :class-card: member-pics-card
 
@@ -328,7 +327,7 @@ Team Members
 
         .. card:: Brent Eynon
           :img-top: _static/website/about_us/team/member7.jpg
-          :link: #
+          :link: https://www.linkedin.com/in/brenteynon/
           :text-align: center
           :class-card: member-pics-card
 

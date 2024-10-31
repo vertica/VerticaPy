@@ -44,6 +44,8 @@ Query Profiler
    QueryProfiler.previous
    QueryProfiler.step
    QueryProfiler.to_html
+   QueryProfiler.get_activity_time
+   QueryProfiler.get_qplan_explain
 
 Query Profiler Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -84,6 +86,21 @@ Query Profiler Interface
    QueryProfilerInterface.set_position
    QueryProfilerInterface.step
    QueryProfilerInterface.to_html
+   QueryProfilerInterface.client_data_test
+   QueryProfilerInterface.clock_exec_time_test
+   QueryProfilerInterface.exec_time_test
+   QueryProfilerInterface.get_activity_time
+   QueryProfilerInterface.get_qplan_explain
+   QueryProfilerInterface.get_qsteps_
+   QueryProfilerInterface.get_resource_acquisition
+   QueryProfilerInterface.import_profile
+   QueryProfilerInterface.pool_queue_wait_time_test
+   QueryProfilerInterface.qsteps_clicked
+   QueryProfilerInterface.query_events_test
+   QueryProfilerInterface.segmentation_test
+   QueryProfilerInterface.update_cpu_time
+   QueryProfilerInterface.update_qsteps
+   QueryProfilerInterface.update_step
 
 Query Profiler Comparison
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -103,3 +120,5 @@ Query Profiler Comparison
    :toctree: api/
 
    QueryProfilerComparison.get_qplan_tree
+   QueryProfilerComparison.sync_all_checkboxes
+   QueryProfilerComparison.unsync_all_checkboxes

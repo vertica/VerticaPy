@@ -565,19 +565,19 @@ body {
 }
 /* Cards on Examples/Business Page */
 .custom-card-examples-business{
-  height: 500px;
+  height: 525px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 /* Cards on Examples/Learn Page */
 .custom-card-examples-learn{
-  height: 500px;
+  height: 520px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 /* Cards on Examples/understand Page */
 .custom-card-examples-understand{
-  height: 550px;
+  height: 580px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
@@ -1004,7 +1004,7 @@ article, article .align-default {
 /* Website related */
 
 .member-pics-card {
-  height: 310px; /* Set your desired height */
+  height: 340px; /* Set your desired height */
   overflow: hidden; /* Ensure content doesn't overflow */
 }
 

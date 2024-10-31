@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2024 Open Text  or  one  of its
+Copyright  (c)  2018-2025 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -38,8 +38,8 @@ __url__: str = "https://github.com/vertica/verticapy/"
 __license__: str = "Apache License, Version 2.0"
 __version__: str = "1.1.0"
 __iteration__: int = 1
-__date__: str = "10292024"
-__last_commit__: str = "00ea3d3a8696d23b93c59771492887c6e2d6a48b"
+__date__: str = "11012024"
+__last_commit__: str = "d56eed659fc883e15621c532f991d8b9fe83c676"
 __long_version__: str = f"{__version__}-{__iteration__}—{__date__}-{__last_commit__}"
 __codecov__: float = 0.84
 

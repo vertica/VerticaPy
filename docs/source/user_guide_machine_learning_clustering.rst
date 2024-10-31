@@ -57,7 +57,7 @@ While there aren't any real metrics for evaluating unsupervised models, metrics 
 
     print(model.get_vertica_attributes("metrics")["metrics"][0])
 
-You can add the prediction to your vDataFrame.    
+You can add the prediction to your :py:mod:`~verticapy.vDataFrame`.    
 
 .. code-block::
 

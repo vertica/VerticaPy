@@ -292,7 +292,7 @@ We can use a cross-validation to test our model.
 .. raw:: html
     :file: SPHINX_DIRECTORY/figures/ug_fs_table_lr_9.html
 
-The model isn't bad. We're just using a few variables to get a median absolute error of 47; that is, our score has a distance of 47 from the true value. This seems high, but if we keep in mind that the final score is over 1000, our predictions are quite good.
+The model isn't bad. We're just using a few variables to get a median absolute error of ``47``; that is, our score has a distance of ``47`` from the true value. This seems high, but if we keep in mind that the final score is over ``1000``, our predictions are quite good.
 
 Let's compare the importance of our features.
 
@@ -388,7 +388,7 @@ We see a high heteroscedasticity, indicating that we can't trust the ``p-value``
 
     model.coef_
 
-Let's look at the model's analysis of variance (ANOVA) table.
+Let's look at the model's analysis of variance (``ANOVA``) table.
 
 .. code-block:: ipython
     

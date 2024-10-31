@@ -22,7 +22,7 @@ Every file in this project must use the following Apache 2.0 header (with the ap
 .. code-block:: python
 
     """
-    Copyright  (c)  2018-2023 Open Text  or  one  of its
+    Copyright  (c)  2018-2025 Open Text  or  one  of its
     affiliates.  Licensed  under  the   Apache  License,
     Version 2.0 (the  "License"); You  may  not use this
     file except in compliance with the License.

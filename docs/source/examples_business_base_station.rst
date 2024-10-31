@@ -4,8 +4,8 @@ Base Station Positions
 ==================================
 
 This example uses the Telecom Dataset, provided by Shanghai Telecom, to predict the optimal positions for base radio stations. 
-This dataset contains more than 7.2 million records about people's 
-Internet access through 3,233 base stations from 9,481 mobile phones 
+This dataset contains more than ``7.2`` million records about people's 
+Internet access through ``3,233`` base stations from ``9,481`` mobile phones 
 over period of six months.
 
 The dataset can be found `here <http://sguangwang.com/TelecomDataset.html>`_. It consists of:
