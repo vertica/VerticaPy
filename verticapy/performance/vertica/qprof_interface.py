@@ -184,7 +184,32 @@ class QueryProfilerInterface(QueryProfilerStats):
                 justify_content="center", align_items="center", width="100%"
             ),
         )
-
+        # Threshold Search
+        self._threshold_metric_1_dummy = widgets.Text()
+        self._threshold_metric_2_dummy = widgets.Text()
+        self._threshold_metric_1_widget_text = widgets.Text(
+            placeholder="Max Cut-off threshold for metric # 1"
+        )
+        self._threshold_metric_2_widget_text = widgets.Text(
+            placeholder="Max Cut-off threshold for metric # 2"
+        )
+        self._threshold_metrics_widget_button = widgets.Button(
+            description="Apply threshold",
+            tooltip="You can select a cut-off level for each metric. Anything above greater than that cut-off will be displayed in red. This is useful for highlighting problematic paths",
+        )
+        self._threshold_metrics_widget_button_area = widgets.HBox(
+            [self._threshold_metrics_widget_button],
+            layout={"justify_content": "center"},
+        )
+        self._threshold_metrics_widget_button.on_click(
+            self._threshold_metric_button_action
+        )
+        self._threshold_metrics_item_list = [
+            horizontal_line,
+            self._threshold_metric_1_widget_text,
+            self._threshold_metric_2_widget_text,
+            self._threshold_metrics_widget_button_area,
+        ]
         # Opeartor Search
         self._search_operator_dummy = widgets.Text()
         self._search_operator_options = self._get_all_op()
@@ -350,6 +375,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             self.colors["color high"].get_item(),
             tree_button_box,
         ]
+        tree_style_tab_items = tree_settings + self._threshold_metrics_item_list
         self.tree_style = {
             "color_low": self.colors["color low"].get_child_attr("value"),
             "color_high": self.colors["color high"].get_child_attr("value"),
@@ -370,7 +396,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                     self._reset_search_button_widget,
                 ]
             ),
-            "Tree style": widgets.VBox(tree_settings),
+            "Tree style": widgets.VBox(tree_style_tab_items),
             "Query text": self._query_display,
             "Session Parameters": self.session_param_display,
             "Detailed Tooltip": self.tooltip_display,
@@ -398,6 +424,8 @@ class QueryProfilerInterface(QueryProfilerStats):
             "projection_display": projections_dml_widget,
             "tooltip_filter": self._tooltip_search_dummy,
             "op_filter": self._search_operator_dummy,
+            "legend1_max": self._threshold_metric_1_dummy,
+            "legend2_max": self._threshold_metric_2_dummy,
         }
         self._interactive_output = widgets.interactive_output(
             self._update_qplan_tree, controls
@@ -431,6 +459,8 @@ class QueryProfilerInterface(QueryProfilerStats):
         temp_display,
         projection_display,
         tooltip_filter=None,
+        legend1_max=None,
+        legend2_max=None,
         op_filter=None,
     ):
         """
@@ -480,6 +510,8 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_agg_metrics=display_tooltip_agg_metrics,
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
+                legend1_max=legend1_max,
+                legend2_max=legend2_max,
                 tooltip_filter=tooltip_filter,
                 op_filter=eval(op_filter)
                 if op_filter != "" and op_filter != None
@@ -514,6 +546,8 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 tooltip_filter=tooltip_filter,
+                legend1_max=legend1_max,
+                legend2_max=legend2_max,
                 op_filter=eval(op_filter)
                 if op_filter != "" and op_filter != None
                 else None,
@@ -595,6 +629,16 @@ class QueryProfilerInterface(QueryProfilerStats):
     def _tooltip_search_widget_button_action(self, button):
         button.disabled = True
         self._tooltip_search_dummy.value = self._tooltip_search_widget_text.value
+        button.disabled = False
+
+    def _threshold_metric_button_action(self, button):
+        button.disabled = True
+        self._threshold_metric_1_dummy.value = (
+            self._threshold_metric_1_widget_text.value
+        )
+        self._threshold_metric_2_dummy.value = (
+            self._threshold_metric_2_widget_text.value
+        )
         button.disabled = False
 
     def _search_operator_button_button_action(self, button):
