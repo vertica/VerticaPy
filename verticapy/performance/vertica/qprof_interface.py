@@ -185,12 +185,12 @@ class QueryProfilerInterface(QueryProfilerStats):
             ),
         )
         # Threshold Search
-        self._threshold_metric_1_dummy = widgets.Text()
-        self._threshold_metric_2_dummy = widgets.Text()
-        self._threshold_metric_1_widget_text = widgets.Text(
+        self._threshold_metric_1_dummy = widgets.FloatText()
+        self._threshold_metric_2_dummy = widgets.FloatText()
+        self._threshold_metric_1_widget_text = widgets.FloatText(
             placeholder="Max Cut-off threshold for metric # 1"
         )
-        self._threshold_metric_2_widget_text = widgets.Text(
+        self._threshold_metric_2_widget_text = widgets.FloatText(
             placeholder="Max Cut-off threshold for metric # 2"
         )
         self._threshold_metrics_widget_button = widgets.Button(
@@ -494,7 +494,6 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._query_select_button_selected(index)
         if self.pathid_dropdown.get_child_attr("disabled"):
             path_id = None
-
         # Ensure the hourglass stays displayed during the processing of get_qplan_tree
         if self.use_javascript == False:
             graph = super().get_qplan_tree(
@@ -510,8 +509,8 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_agg_metrics=display_tooltip_agg_metrics,
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
-                legend1_max=legend1_max,
-                legend2_max=legend2_max,
+                legend1_max=int(legend1_max) if legend1_max > 0 else None,
+                legend2_max=int(legend2_max) if legend2_max > 0 else None,
                 tooltip_filter=tooltip_filter,
                 op_filter=eval(op_filter)
                 if op_filter != "" and op_filter != None
@@ -546,8 +545,8 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 tooltip_filter=tooltip_filter,
-                legend1_max=legend1_max,
-                legend2_max=legend2_max,
+                legend1_max=int(legend1_max) if legend1_max > 0 else None,
+                legend2_max=int(legend2_max) if legend2_max > 0 else None,
                 op_filter=eval(op_filter)
                 if op_filter != "" and op_filter != None
                 else None,
