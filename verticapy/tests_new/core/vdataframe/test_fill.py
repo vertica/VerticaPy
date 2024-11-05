@@ -61,7 +61,10 @@ class TestFill:
     )
     @pytest.mark.parametrize(
         "function_type, numeric_only, expr, by, order_by",
-        [("vDataFrame", None, None, None, None), ("vDataColumn", None, None, None, None)],
+        [
+            ("vDataFrame", None, None, None, None),
+            ("vDataColumn", None, None, None, None),
+        ],
     )
     def test_fillna(
         self,
