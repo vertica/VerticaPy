@@ -565,19 +565,19 @@ body {
 }
 /* Cards on Examples/Business Page */
 .custom-card-examples-business{
-  height: 525px;
+  height: 560px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 /* Cards on Examples/Learn Page */
 .custom-card-examples-learn{
-  height: 520px;
+  height: 530px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
 /* Cards on Examples/understand Page */
 .custom-card-examples-understand{
-  height: 580px;
+  height: 630px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 }
@@ -625,7 +625,7 @@ body {
 .custom-card-9 {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  height: 190px;
+  height: 210px;
 }
 
 /* Cards on Benchmarks pages */
@@ -657,7 +657,7 @@ body {
 .custom-card-14 {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  height: 210px;
+  height: 225px;
 }
 
 /* Cards on User Guide/Full Stack page */
@@ -1004,7 +1004,7 @@ article, article .align-default {
 /* Website related */
 
 .member-pics-card {
-  height: 340px; /* Set your desired height */
+  height: 365px; /* Set your desired height */
   overflow: hidden; /* Ensure content doesn't overflow */
 }
 
@@ -1076,11 +1076,11 @@ article, article .align-default {
 }
 /* Cards on User Guide/Data Exploration page */
 .custom-card-12 {
-  height: 230px;
+  height: 255px;
 }
 /* Cards on User Guide/Data Prep page */
 .custom-card-13 {
-  height: 190px;
+  height: 205px;
 }
 /* Cards on User Guide/Machine Learning page */
 .custom-card-14 {
@@ -1112,7 +1112,7 @@ article, article .align-default {
 }
 /* Cards on User Guide/Full Stack page */
 .custom-card-15 {
-  height: 240px;
+  height: 255px;
 }
 
 }
