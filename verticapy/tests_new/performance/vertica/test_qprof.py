@@ -1515,7 +1515,7 @@ class TestQueryProfiler:
                 followed by sorting based on key column(s).
 
         **Steps to get expected result**
-        - Step 5: Get query execution report (vDataframe) using ``get_qexecution_report`` method, and repeat step 4
+        - Step 5: Get query execution report (vDataFrame) using ``get_qexecution_report`` method, and repeat step 4
 
         **Steps to compare actual and expected results**
         - Step 6: compare actual and expected pandas dataframe using pandas compare function.

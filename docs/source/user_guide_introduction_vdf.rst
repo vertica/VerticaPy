@@ -237,7 +237,7 @@ We can also view the vDataFrame's backend SQL code generation by setting the ``s
 
     -- Computing the different aggregations
     SELECT
-        /*+LABEL('vDataframe.aggregate')*/ 
+        /*+LABEL('vDataFrame.aggregate')*/ 
         APPROXIMATE_COUNT_DISTINCT("cnt")
     FROM (
         SELECT
@@ -268,7 +268,7 @@ We can also view the vDataFrame's backend SQL code generation by setting the ``s
 
     -- Computing the descriptive statistics of all numerical columns using SUMMARIZE_NUMCOL
     SELECT
-        /*+LABEL('vDataframe.describe')*/ 
+        /*+LABEL('vDataFrame.describe')*/ 
         SUMMARIZE_NUMCOL("cnt") OVER ()
     FROM (
         SELECT

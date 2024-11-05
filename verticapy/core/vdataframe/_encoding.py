@@ -268,7 +268,7 @@ class vDFEncode(vDFFill):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe1.html
 
-        Let's apply encoding on all the vcolumns of the datasets
+        Let's apply encoding on all the vDataColumns of the datasets
 
         .. code-block:: python
 
@@ -285,7 +285,7 @@ class vDFEncode(vDFFill):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe2.html
 
-        Let's apply encoding on two specific vcolumns viz. "pclass" and "embarked"
+        Let's apply encoding on two specific vDataColumns viz. "pclass" and "embarked"
 
         .. code-block:: python
 
@@ -444,7 +444,7 @@ class vDCEncode(vDCFill):
 
             data = vpd.load_titanic()
 
-        Let's look at "age" vcolumn
+        Let's look at "age" vDataColumn
 
         .. code-block:: python
 
@@ -714,7 +714,7 @@ class vDCEncode(vDCFill):
 
             data = vpd.load_titanic()
 
-        Let's encode "sex" vcolumn and represent "female" category as 1 and
+        Let's encode "sex" vDataColumn and represent "female" category as 1 and
         "male" category as 0.
 
         .. code-block:: python
@@ -861,7 +861,7 @@ class vDCEncode(vDCFill):
 
             data = vpd.load_titanic()
 
-        Let's look at "age" vcolumn
+        Let's look at "age" vDataColumn
 
         .. code-block:: python
 
@@ -1292,7 +1292,7 @@ class vDCEncode(vDCFill):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe1.html
 
-        Let's apply encoding on "embarked" vcolumn.
+        Let's apply encoding on "embarked" vDataColumn.
 
         .. code-block:: python
 
@@ -1465,7 +1465,7 @@ class vDCEncode(vDCFill):
 
             data = vpd.load_titanic()
 
-        Let's encode "embarked" vcolumn
+        Let's encode "embarked" vDataColumn
 
         .. code-block:: python
 
@@ -1602,7 +1602,7 @@ class vDCEncode(vDCFill):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_mean_encode1.html
 
         Let's apply mean encoding which will replace each category of
-        "embarked" vcolumn by the average of the response
+        "embarked" vDataColumn by the average of the response
 
         .. code-block:: python
 

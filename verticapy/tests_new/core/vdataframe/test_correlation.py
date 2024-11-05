@@ -400,7 +400,7 @@ class TestCorrelation:
         [
             ("vDataFrame", []),
             ("vDataFrame_column", ["sex", "pclass"]),
-            ("vcolumn", ["sex"]),
+            ("vDataColumn", ["sex"]),
         ],
     )
     def test_iv_woe(self, titanic_vd, input_type, columns):
@@ -436,7 +436,7 @@ class TestCorrelation:
             _iv = np.sum((freq_data[1] - freq_data[0]) * _woe)
             py_res.append(_iv)
 
-        py_res = py_res[0] if input_type == "vcolumn" else py_res
+        py_res = py_res[0] if input_type == "vDataColumn" else py_res
 
         print(f"VerticaPy Result: {vpy_res} \nPython Result :{py_res}\n")
         assert vpy_res == pytest.approx(py_res, abs=1e-03, rel=1e-03)

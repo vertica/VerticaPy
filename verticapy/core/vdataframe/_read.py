@@ -84,7 +84,7 @@ class vDFRead(vDFUtils):
                 index += self.shape()[0]
             return _executeSQL(
                 query=f"""
-                    SELECT /*+LABEL('vDataframe.__getitem__')*/ 
+                    SELECT /*+LABEL('vDataFrame.__getitem__')*/ 
                         {', '.join(columns)} 
                     FROM {self}
                     {self._get_last_order_by()} 
@@ -579,7 +579,7 @@ class vDFRead(vDFUtils):
         self._vars["count"] = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vDataframe.shape')*/ COUNT(*) 
+                    /*+LABEL('vDataFrame.shape')*/ COUNT(*) 
                 FROM {self} LIMIT 1
             """,
             title="Computing the total number of elements (COUNT(*))",

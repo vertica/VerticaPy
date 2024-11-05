@@ -524,7 +524,7 @@ class vDFMachineLearning(vDFScaler):
                 result = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.chaid')*/ 
+                            /*+LABEL('vDataFrame.chaid')*/ 
                             {split_predictor}, 
                             {response}, 
                             (cnt / SUM(cnt) 
@@ -1987,7 +1987,7 @@ class vDFMachineLearning(vDFScaler):
         test_size: float = 0.33,
         order_by: Union[None, str, list, dict] = None,
         random_state: int = None,
-    ) -> tuple["vDataframe", "vDataFrame"]:
+    ) -> tuple["vDataFrame", "vDataFrame"]:
         """
         Creates two vDataFrames (train/test), which can be used
         to  evaluate a model. The intersection between the train
@@ -2096,7 +2096,7 @@ class vDFMachineLearning(vDFScaler):
         q = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vDataframe.train_test_split')*/ 
+                    /*+LABEL('vDataFrame.train_test_split')*/ 
                     APPROXIMATE_PERCENTILE({random_func} 
                         USING PARAMETERS percentile = {test_size}) 
                 FROM {self}""",

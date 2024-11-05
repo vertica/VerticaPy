@@ -602,7 +602,7 @@ def set_option(key: str, value: Any = None) -> None:
 
     **Computing the different aggregations**.
 
-    SELECT /*+LABEL('vDataframe.aggregate')*/ MAX("age") FROM "public"."titanic" LIMIT 1
+    SELECT /*+LABEL('vDataFrame.aggregate')*/ MAX("age") FROM "public"."titanic" LIMIT 1
 
     **Execution**: 0.072s
 

@@ -49,7 +49,7 @@ class TestText:
         name,
     ):
         """
-        test function - regexp for vDataframe
+        test function - regexp for vDataFrame
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
 

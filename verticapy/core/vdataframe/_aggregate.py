@@ -592,7 +592,7 @@ class vDFAgg(vDFEval):
                 res = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.aggregate')*/ 
+                            /*+LABEL('vDataFrame.aggregate')*/ 
                             {", ".join([str(item) for sublist in agg for item in sublist])}""",
                     print_time_sql=False,
                     method="fetchrow",
@@ -601,7 +601,7 @@ class vDFAgg(vDFEval):
                 res = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.aggregate')*/ 
+                            /*+LABEL('vDataFrame.aggregate')*/ 
                             {", ".join([str(item) for sublist in agg for item in sublist])} 
                         FROM {self} 
                         LIMIT 1""",
@@ -642,7 +642,7 @@ class vDFAgg(vDFEval):
                 query = f"""
                     WITH vdf_table AS 
                         (SELECT 
-                            /*+LABEL('vDataframe.aggregate')*/ * 
+                            /*+LABEL('vDataFrame.aggregate')*/ * 
                          FROM {self}) {query}"""
                 if nb_precomputed == len(func) * len(columns):
                     result = _executeSQL(query, print_time_sql=False, method="fetchall")
@@ -674,7 +674,7 @@ class vDFAgg(vDFEval):
                                 _executeSQL(
                                     query=f"""
                                         SELECT 
-                                            /*+LABEL('vDataframe.aggregate')*/ 
+                                            /*+LABEL('vDataFrame.aggregate')*/ 
                                             {columns_str} 
                                         FROM {self}""",
                                     title=(
@@ -702,7 +702,7 @@ class vDFAgg(vDFEval):
                                 result = _executeSQL(
                                     query=f"""
                                         SELECT 
-                                            /*+LABEL('vDataframe.aggregate')*/ 
+                                            /*+LABEL('vDataFrame.aggregate')*/ 
                                             {agg_fun} 
                                         FROM {self}""",
                                     title=(
@@ -1043,7 +1043,7 @@ class vDFAgg(vDFEval):
                     query_result = _executeSQL(
                         query=f"""
                             SELECT 
-                                /*+LABEL('vDataframe.describe')*/ 
+                                /*+LABEL('vDataFrame.describe')*/ 
                                 SUMMARIZE_NUMCOL({cols_to_compute_str}) OVER () 
                             FROM {self}""",
                         title=(
@@ -3418,7 +3418,7 @@ class vDFAgg(vDFEval):
             total = _executeSQL(
                 query=f"""
                     SELECT 
-                        /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                        /*+LABEL('vDataFrame.duplicated')*/ COUNT(*) 
                     FROM {main_table}""",
                 title="Computing the number of duplicates.",
                 method="fetchfirstelem",
@@ -3440,7 +3440,7 @@ class vDFAgg(vDFEval):
         result.count = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                    /*+LABEL('vDataFrame.duplicated')*/ COUNT(*) 
                 FROM 
                     (SELECT 
                         {columns}, 

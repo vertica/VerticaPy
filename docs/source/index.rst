@@ -43,7 +43,7 @@ Vertica database using the Python programming language. Vertica is a high-perfor
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
 
-          Quick and easy guide to help you install Verticapy.
+          Quick and easy guide to help you install VerticaPy.
 
           +++
           Install VerticaPy
