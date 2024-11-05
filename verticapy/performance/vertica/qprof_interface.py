@@ -197,12 +197,20 @@ class QueryProfilerInterface(QueryProfilerStats):
             description="Apply threshold",
             tooltip="You can select a cut-off level for each metric. Anything above greater than that cut-off will be displayed in red. This is useful for highlighting problematic paths",
         )
+        self._reset_threshold_button = widgets.Button(
+            layout=widgets.Layout(width="30px"),
+            button_style="warning",
+            icon="refresh",
+        )
         self._threshold_metrics_widget_button_area = widgets.HBox(
-            [self._threshold_metrics_widget_button],
+            [self._reset_threshold_button, self._threshold_metrics_widget_button],
             layout={"justify_content": "center"},
         )
         self._threshold_metrics_widget_button.on_click(
             self._threshold_metric_button_action
+        )
+        self._reset_threshold_button.on_click(
+            self._threshold_metric_reset_button_action
         )
         self._threshold_metrics_item_list = [
             horizontal_line,
@@ -638,6 +646,14 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._threshold_metric_2_dummy.value = (
             self._threshold_metric_2_widget_text.value
         )
+        button.disabled = False
+
+    def _threshold_metric_reset_button_action(self, button):
+        button.disabled = True
+        self._threshold_metric_1_widget_text.value = 0
+        self._threshold_metric_2_widget_text.value = 0
+        self._threshold_metric_1_dummy.value = 0
+        self._threshold_metric_2_dummy.value = 0
         button.disabled = False
 
     def _search_operator_button_button_action(self, button):
