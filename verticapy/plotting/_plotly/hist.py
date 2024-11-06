@@ -55,6 +55,7 @@ class Histogram(PlotlyBase):
         """
         fig = self._get_fig(fig)
         key = "categories" if self.layout["has_category"] else "columns"
+        ncolors = len(self.get_colors())
         for i in range(len(self.layout[key])):
             fig.add_trace(
                 go.Bar(
@@ -64,6 +65,9 @@ class Histogram(PlotlyBase):
                     width=self.data["width"],
                     offset=0,
                     opacity=0.8 if len(self.layout[key]) > 1 else 1,
+                    marker=dict(
+                        color=self.get_colors()[i % ncolors],
+                    ),
                 )
             )
         fig.update_layout(yaxis_title=self.layout["method_of"])

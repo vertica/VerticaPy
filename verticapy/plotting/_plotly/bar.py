@@ -110,11 +110,15 @@ class BarChart2D(PlotlyBase):
         Draws a 2D BarChart using the Matplotlib API.
         """
         fig_base = self._get_fig(fig)
+        ncolors = len(self.get_colors())
         for i in range(len(self.layout["y_labels"])):
             fig = go.Bar(
                 name=self.layout["y_labels"][i],
                 x=self.layout["x_labels"],
                 y=self.data["X"][:, i],
+                marker=dict(
+                    color=self.get_colors()[i % ncolors],
+                ),
             )
             fig_base.add_trace(fig)
         params = self._update_dict(self.init_layout_style, style_kwargs)
