@@ -304,12 +304,14 @@ class QueryProfilerInterface(QueryProfilerStats):
             value="Execution time in \u00b5s",
             layout={"width": "260px"},
         )
+        dropdown1.observe(self._on_metric_1_dropdown_change, names="value")
         dropdown2 = widgets.Dropdown(
             options=options_dropwdown,
             description="Metric # 2:",
             value="Produced row count",
             layout={"width": "260px"},
         )
+        dropdown2.observe(self._on_metric_2_dropdown_change, names="value")
         tooltip_aggregated_widget = widgets.Checkbox(
             value=True,
             # layout={"width": "260px"},
@@ -655,6 +657,14 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._threshold_metric_1_dummy.value = 0
         self._threshold_metric_2_dummy.value = 0
         button.disabled = False
+
+    def _on_metric_1_dropdown_change(self, change):
+        if change["name"] == "value":
+            self._threshold_metric_reset_button_action(self._reset_threshold_button)
+
+    def _on_metric_2_dropdown_change(self, change):
+        if change["name"] == "value":
+            self._threshold_metric_reset_button_action(self._reset_threshold_button)
 
     def _search_operator_button_button_action(self, button):
         button.disabled = True
