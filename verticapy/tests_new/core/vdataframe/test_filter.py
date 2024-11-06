@@ -163,7 +163,7 @@ class TestFilter:
             "age",
         ],
     )
-    @pytest.mark.parametrize("function_type", ["vDataFrame", "vcolumn"])
+    @pytest.mark.parametrize("function_type", ["vDataFrame", "vDataColumn"])
     def test_drop(self, titanic_vd_fun, function_type, columns):
         """
         test function - drop
@@ -208,7 +208,7 @@ class TestFilter:
             "ticket",
         ],
     )
-    @pytest.mark.parametrize("function_type", ["vDataFrame", "vcolumn"])
+    @pytest.mark.parametrize("function_type", ["vDataFrame", "vDataColumn"])
     def test_dropna(self, titanic_vd_fun, function_type, columns):
         """
         test function - dropna
@@ -281,7 +281,7 @@ class TestFilter:
         "function_type, column, conditions",
         [
             ("vDataFrame", None, {"sex": ["female"], "survived": [1], "parch": [1]}),
-            ("vcolumn", "sex", ["female"]),
+            ("vDataColumn", "sex", ["female"]),
         ],
     )
     def test_isin(self, titanic_vd_fun, function_type, column, conditions):

@@ -39,8 +39,8 @@ class TestMath:
             ("vDataFrame", "age"),
             ("vDataFrame_column", "age"),
             ("vDataFrame_column", ["age", "fare", "pclass", "survived"]),
-            ("vcolumn", "age"),
-            ("vcolumn", ["age", "fare", "pclass", "survived"]),
+            ("vDataColumn", "age"),
+            ("vDataColumn", ["age", "fare", "pclass", "survived"]),
         ],
     )
     def test_abs(self, titanic_vd_fun, input_type, columns):
@@ -126,8 +126,8 @@ class TestMath:
                 },
                 None,
             ),
-            (["age"], "vcolumn", "POWER({}, 2)", None),
-            (["age"], "vcolumn", "POWER({}, 2)", "age_pow2"),
+            (["age"], "vDataColumn", "POWER({}, 2)", None),
+            (["age"], "vDataColumn", "POWER({}, 2)", "age_pow2"),
         ],
     )
     def test_apply(self, titanic_vd_fun, columns, input_type, func, copy_name):

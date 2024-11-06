@@ -110,7 +110,7 @@ class vDFTyping(vDFRead):
 
             data = vpd.load_titanic()
 
-        Let's check the data types of various vcolumns.
+        Let's check the data types of various vDataColumns.
 
         .. code-block:: python
 
@@ -127,13 +127,13 @@ class vDFTyping(vDFRead):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_typing_astype1.html
 
-        Let's change the data type of few vcolumns.
+        Let's change the data type of few vDataColumns.
 
         .. code-block:: python
 
             data.astype({"fare": "int", "cabin": "varchar(1)"})
 
-        Let's check the data type of various vcolumns again.
+        Let's check the data type of various vDataColumns again.
 
         .. code-block:: python
 
@@ -307,14 +307,14 @@ class vDFTyping(vDFRead):
 
             data = vpd.load_titanic()
 
-        Let's check the categorical vcolumns considering maximum
+        Let's check the categorical vDataColumns considering maximum
         cardinality as 10.
 
         .. ipython:: python
 
             data.catcol(max_cardinality = 10)
 
-        Let's again check the categorical vcolumns considering
+        Let's again check the categorical vDataColumns considering
         maximum cardinality as 6.
 
         .. ipython:: python
@@ -336,7 +336,7 @@ class vDFTyping(vDFRead):
                 is_cat = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.catcol')*/ 
+                            /*+LABEL('vDataFrame.catcol')*/ 
                             (APPROXIMATE_COUNT_DISTINCT({column}) < {max_cardinality}) 
                         FROM {self}""",
                     title="Looking at columns with low cardinality.",
@@ -430,7 +430,7 @@ class vDFTyping(vDFRead):
             data["dob"].astype("date")
             data["doj"].astype("date")
 
-        Let's retrieve the date type vcolumns in the dataset.
+        Let's retrieve the date type vDataColumns in the dataset.
 
         .. ipython:: python
 
@@ -512,7 +512,7 @@ class vDFTyping(vDFRead):
 
             data = vpd.load_titanic()
 
-        Let's check the data type of various vcolumns.
+        Let's check the data type of various vDataColumns.
 
         .. code-block:: python
 
@@ -606,7 +606,7 @@ class vDFTyping(vDFRead):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_typing_numcol.html
 
-        Let's retrieve the numeric type vcolumns in the dataset.
+        Let's retrieve the numeric type vDataColumns in the dataset.
 
         .. ipython:: python
 
@@ -701,7 +701,7 @@ class vDCTyping(vDCRead):
 
             data = vpd.load_titanic()
 
-        Let's check the data type of fare vcolumn.
+        Let's check the data type of fare vDataColumn.
 
         .. ipython:: python
 
@@ -718,7 +718,7 @@ class vDCTyping(vDCRead):
 
             data["fare"].astype(int)
 
-        Let's check the data type of fare vcolumn again.
+        Let's check the data type of fare vDataColumn again.
 
         .. ipython:: python
 
@@ -940,7 +940,7 @@ class vDCTyping(vDCRead):
 
             data = vpd.load_titanic()
 
-        Let's check the category of "fare" and "name" vcolumns.
+        Let's check the category of "fare" and "name" vDataColumns.
 
         .. ipython:: python
 
@@ -1014,7 +1014,7 @@ class vDCTyping(vDCRead):
 
             data = vpd.load_titanic()
 
-        Let's check the DB type of "fare" and "name" vcolumns.
+        Let's check the DB type of "fare" and "name" vDataColumns.
 
         .. ipython:: python
 
@@ -1083,7 +1083,7 @@ class vDCTyping(vDCRead):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isarray.html
 
-        Let's check if data type of "artists" vcolumn is array or not.
+        Let's check if data type of "artists" vDataColumn is array or not.
 
         .. ipython:: python
 
@@ -1152,13 +1152,13 @@ class vDCTyping(vDCRead):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isbool.html
 
-        Let's check if data type of "is_temp" vcolumn is bool or not.
+        Let's check if data type of "is_temp" vDataColumn is bool or not.
 
         .. ipython:: python
 
             data["is_temp"].isbool()
 
-        Let's check if data type of "empid" vcolumn is bool or not.
+        Let's check if data type of "empid" vDataColumn is bool or not.
 
         .. ipython:: python
 
@@ -1228,13 +1228,13 @@ class vDCTyping(vDCRead):
             import verticapy.datasets as vpd
             amazon = vpd.load_amazon()
 
-        Let's check if the category of "date" vcolumn is date or not.
+        Let's check if the category of "date" vDataColumn is date or not.
 
         .. ipython:: python
 
             amazon["date"].isdate()
 
-        Let's check if the category of "state" vcolumn is date or not
+        Let's check if the category of "state" vDataColumn is date or not
 
         .. ipython:: python
 
@@ -1303,7 +1303,7 @@ class vDCTyping(vDCRead):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isbool.html
 
-        Let's check if data type of "empid" vcolumn is numerical or not.
+        Let's check if data type of "empid" vDataColumn is numerical or not.
 
         .. ipython:: python
 
@@ -1374,13 +1374,13 @@ class vDCTyping(vDCRead):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isvmap.html
 
-        Let's check if data type of "mgr" vcolumn is vmap or not.
+        Let's check if data type of "mgr" vDataColumn is vmap or not.
 
         .. ipython:: python
 
             data["mgr"].isvmap()
 
-        Let's check if data type of "empid" vcolumn is vmap or not.
+        Let's check if data type of "empid" vDataColumn is vmap or not.
 
         .. ipython:: python
 

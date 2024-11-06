@@ -189,7 +189,7 @@ Let's try an example with the :py:func:`~verticapy.vDataFrame.describe` function
 
     -- Computing the descriptive statistics of all numerical columns using SUMMARIZE_NUMCOL
     SELECT
-        /*+LABEL('vDataframe.describe')*/ SUMMARIZE_NUMCOL("LATITUDE", "LONGITUDE") OVER () 
+        /*+LABEL('vDataFrame.describe')*/ SUMMARIZE_NUMCOL("LATITUDE", "LONGITUDE") OVER () 
     FROM (
         SELECT
             "IATA_CODE",
@@ -676,7 +676,7 @@ We can now perform the same query involving the three tables:
 Conclusion
 -----------
 
-With the combination of Verticapy and ``DBLINK``, we can now work with multiple datasets stored in different databases. We can work simultaneously with external tables, Vertica tables, and Pandas DataFrame in a **single query**! There is no need to materialize the table before use because it's all taken care of in the background.
+With the combination of VerticaPy and ``DBLINK``, we can now work with multiple datasets stored in different databases. We can work simultaneously with external tables, Vertica tables, and Pandas DataFrame in a **single query**! There is no need to materialize the table before use because it's all taken care of in the background.
 
 The cherry on the cake is the ease-of-use that is enabled by VerticaPy and its Python-like syntax.
 

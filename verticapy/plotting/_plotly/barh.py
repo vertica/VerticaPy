@@ -110,6 +110,7 @@ class HorizontalBarChart2D(PlotlyBase):
         """
         n, m = self.data["X"].shape
         fig_base = self._get_fig(fig)
+        ncolors = len(self.get_colors())
         if self.layout["kind"] == "fully_stacked":
             self.data["X"] = self.data["X"] / np.sum(
                 self.data["X"], axis=1, keepdims=True
@@ -129,6 +130,9 @@ class HorizontalBarChart2D(PlotlyBase):
                 y=self.layout["x_labels"],
                 x=self.data["X"][:, i],
                 orientation="h",
+                marker=dict(
+                    color=self.get_colors()[i % ncolors],
+                ),
             )
             fig_base.add_trace(fig)
         params = self._update_dict(self.init_layout_style, style_kwargs)

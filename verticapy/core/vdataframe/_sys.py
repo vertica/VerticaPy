@@ -800,7 +800,7 @@ class vDFSystem(vDFTyping):
             query=f"""
                 EXPLAIN 
                 SELECT 
-                    /*+LABEL('vDataframe.explain')*/ * 
+                    /*+LABEL('vDataFrame.explain')*/ * 
                 FROM {self}""",
             title="Explaining the Current Relation",
             method="fetchall",

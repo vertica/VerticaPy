@@ -179,8 +179,8 @@ class TestAgg:
         [
             ("vDataFrame", []),
             ("vDataFrame_column", ["age"]),
-            ("vcolumn", ["age"]),
-            ("vcolumn", ["age", "fare", "pclass", "survived"]),
+            ("vDataColumn", ["age"]),
+            ("vDataColumn", ["age", "fare", "pclass", "survived"]),
         ],
     )
     @pytest.mark.parametrize("agg_func_type", ["agg", "aggregate"])
@@ -327,7 +327,7 @@ class TestAgg:
         [
             ("vDataFrame", []),
             ("vDataFrame_columns", ["age"]),
-            ("vcolumn", ["age", "fare", "pclass", "survived"]),
+            ("vDataColumn", ["age", "fare", "pclass", "survived"]),
         ],
     )
     def test_vdf_vcol(
@@ -469,7 +469,7 @@ class TestAgg:
         ["value_counts", "topk", "distinct"],
     )
     @pytest.mark.parametrize("columns", ["pclass"])
-    def test_vcolumn(self, titanic_vd, columns, func_name):
+    def test_vDataColumn(self, titanic_vd, columns, func_name):
         """
         test function - Vcolumn groupby
         """

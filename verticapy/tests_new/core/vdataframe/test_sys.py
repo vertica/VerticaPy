@@ -19,7 +19,7 @@ import pytest
 
 class TestVDFSys:
     """
-    test class for sys functions test for vDataframe class
+    test class for sys functions test for vDataFrame class
     """
 
     def test_current_relation(self, titanic_vd_fun):

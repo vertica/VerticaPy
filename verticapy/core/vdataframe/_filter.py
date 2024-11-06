@@ -1168,7 +1168,7 @@ class vDFFilter(vDFAgg):
                 new_count = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.filter')*/ 
+                            /*+LABEL('vDataFrame.filter')*/ 
                             COUNT(*) 
                         FROM {self}""",
                     title="Computing the new number of elements.",
@@ -1319,7 +1319,7 @@ class vDFFilter(vDFAgg):
         first_date = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vDataframe.first')*/ 
+                    /*+LABEL('vDataFrame.first')*/ 
                     (MIN({ts}) + '{offset}'::interval)::varchar 
                 FROM {self}""",
             title="Getting the vDataFrame first values.",
@@ -1561,7 +1561,7 @@ class vDFFilter(vDFAgg):
         last_date = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vDataframe.last')*/ 
+                    /*+LABEL('vDataFrame.last')*/ 
                     (MAX({ts}) - '{offset}'::interval)::varchar 
                 FROM {self}""",
             title="Getting the vDataFrame last values.",

@@ -715,7 +715,7 @@ class vDFPivot(vDFJoinUnionSort):
         vdf = create_new_vdf(
             f"""
             SELECT 
-                /*+LABEL('vDataframe.explode')*/ 
+                /*+LABEL('vDataFrame.explode')*/ 
                 {index}, 
                 {column}, 
                 EXPLODE({column} 

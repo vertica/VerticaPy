@@ -29,7 +29,7 @@ class TestScaler:
     )
     def test_scale_vdf(self, titanic_vd, columns, method):
         """
-        test function - scaling for vDataframe
+        test function - scaling for vDataFrame
         """
         titanic_pdf = titanic_vd.to_pandas()
         titanic_pdf[columns] = titanic_pdf[columns].astype(float)
@@ -61,7 +61,7 @@ class TestScaler:
         [("age", "zscore"), ("age", "robust_zscore"), ("age", "minmax")],
     )
     @pytest.mark.parametrize("partition_by", ["pclass", None])
-    def test_scale_vcolumn(self, titanic_vd_fun, partition_by, columns, method):
+    def test_scale_vDataColumn(self, titanic_vd_fun, partition_by, columns, method):
         """
         test function - scaling for vDataColumns
         """

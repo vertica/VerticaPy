@@ -221,7 +221,7 @@ class vDFInOut(vDFSystem):
             data.save()
 
         Let's perform some operations on the
-        ``vDataframe``.
+        ``vDataFrame``.
 
         .. code-block:: python
 
@@ -351,7 +351,7 @@ class vDFInOut(vDFSystem):
             data.save()
 
         Let's perform some operations on the
-        ``vDataframe``.
+        ``vDataFrame``.
 
         .. code-block:: python
 
@@ -638,7 +638,7 @@ class vDFInOut(vDFSystem):
             result = _executeSQL(
                 query=f"""
                     SELECT 
-                        /*+LABEL('vDataframe.to_csv')*/ 
+                        /*+LABEL('vDataFrame.to_csv')*/ 
                         {', '.join(columns)} 
                     FROM {self}
                     {order_by} 
@@ -1005,7 +1005,7 @@ class vDFInOut(vDFSystem):
                     {name}{commit} 
                 AS 
                 SELECT 
-                    /*+LABEL('vDataframe.to_db')*/ 
+                    /*+LABEL('vDataFrame.to_db')*/ 
                     {select}{nb_split} 
                 FROM {self}
                 {db_filter}
@@ -1160,7 +1160,7 @@ class vDFInOut(vDFSystem):
         columns = ", ".join(columns + [f"ST_AsText({geometry}) AS {geometry}"])
         query = f"""
             SELECT 
-                /*+LABEL('vDataframe.to_geopandas')*/ {columns} 
+                /*+LABEL('vDataFrame.to_geopandas')*/ {columns} 
             FROM {self}
             {self._get_last_order_by()}"""
         data = _executeSQL(
@@ -1373,7 +1373,7 @@ class vDFInOut(vDFSystem):
             result = _executeSQL(
                 query=f"""
                     SELECT 
-                        /*+LABEL('vDataframe.to_json')*/ 
+                        /*+LABEL('vDataFrame.to_json')*/ 
                         {', '.join(transformations)} 
                     FROM {self}
                     {order_by} 
@@ -1507,7 +1507,7 @@ class vDFInOut(vDFSystem):
         res = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vDataframe.to_list')*/ * 
+                    /*+LABEL('vDataFrame.to_list')*/ * 
                 FROM {self}
                 {self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
@@ -1725,7 +1725,7 @@ class vDFInOut(vDFSystem):
         data = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('vDataframe.to_pandas')*/ * 
+                    /*+LABEL('vDataFrame.to_pandas')*/ * 
                 FROM {self}{self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
@@ -1909,7 +1909,7 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            It will export vDataframe to parquet
+            It will export vDataFrame to parquet
             file at provided directory.
 
         .. seealso::
@@ -2029,7 +2029,7 @@ class vDFInOut(vDFSystem):
 
             data.to_pickle("vdf_data.p")
 
-        Let's unpickle the vDataframe from Python
+        Let's unpickle the vDataFrame from Python
         pickle file and view it.
 
         .. code-block:: python
@@ -2200,7 +2200,7 @@ class vDFInOut(vDFSystem):
         usecols = format_type(usecols, dtype=list)
         query = f"""
             SELECT 
-                /*+LABEL('vDataframe.to_shp')*/ 
+                /*+LABEL('vDataFrame.to_shp')*/ 
                 STV_SetExportShapefileDirectory(
                 USING PARAMETERS path = '{path}');"""
         _executeSQL(query=query, title="Setting SHP Export directory.")
@@ -2208,7 +2208,7 @@ class vDFInOut(vDFSystem):
         columns = ", ".join(columns)
         query = f"""
             SELECT 
-                /*+LABEL('vDataframe.to_shp')*/ 
+                /*+LABEL('vDataFrame.to_shp')*/ 
                 STV_Export2Shapefile({columns} 
                 USING PARAMETERS shapefile = '{name}.shp',
                                  overwrite = {overwrite}, 

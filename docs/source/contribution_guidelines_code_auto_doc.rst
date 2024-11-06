@@ -73,7 +73,7 @@ Install the requirements by: 
 
 
 
-Install Verticapy from the setup file using below in the VerticaPy directory
+Install VerticaPy from the setup file using below in the VerticaPy directory
 
 .. code-block::
     

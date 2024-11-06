@@ -25,7 +25,7 @@ import verticapy.sql.functions as vpf
 
 class TestMiscellaneousVDF:
     """
-    test class to test Miscellaneous functions for vDataframe
+    test class to test Miscellaneous functions for vDataFrame
     """
 
     def test_repr(self, titanic_vd_fun):
@@ -138,7 +138,7 @@ class TestMiscellaneousVDF:
 
 class TestVDFCreate:
     """
-    test class to test vDataframe create options
+    test class to test vDataFrame create options
     """
 
     def test_using_input_relation(self, titanic_vd_fun, schema_loader):

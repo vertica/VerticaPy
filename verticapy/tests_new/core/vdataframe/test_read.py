@@ -47,8 +47,8 @@ class TestRead:
         [
             ("vDataFrame", "age", None),
             ("vDataFrame", "age", 10),
-            ("vcolumn", "ticket", 2),
-            ("vcolumn", "ticket", None),
+            ("vDataColumn", "ticket", 2),
+            ("vDataColumn", "ticket", None),
         ],
     )
     @pytest.mark.parametrize("func", ["head", "tail"])
@@ -94,10 +94,10 @@ class TestRead:
             ("vDataFrame", 4, 20, ["ticket", "home.dest"], None),
             ("vDataFrame", 4, None, ["ticket", "home.dest"], None),
             ("vDataFrame", None, 7, ["ticket"], None),
-            ("vcolumn", 2, 5, "ticket", "name"),
-            ("vcolumn", 2, None, "ticket", "name"),
-            ("vcolumn", None, 5, "ticket", "name"),
-            ("vcolumn", None, None, "ticket", "name"),
+            ("vDataColumn", 2, 5, "ticket", "name"),
+            ("vDataColumn", 2, None, "ticket", "name"),
+            ("vDataColumn", None, 5, "ticket", "name"),
+            ("vDataColumn", None, None, "ticket", "name"),
         ],
     )
     def test_iloc(

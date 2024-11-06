@@ -34,7 +34,7 @@ class TestVDFTyping:
 
     def test_astype(self, titanic_vd_fun):
         """
-        test function - astype for vDataframe
+        test function - astype for vDataFrame
         """
         # Testing vDataFrame.astype
         titanic_vd_fun.astype({"fare": "int", "cabin": "varchar(1)"})

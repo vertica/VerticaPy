@@ -243,7 +243,7 @@ selected_titanic.groupby(columns=["pclass"], expr=["AVG(AVG)"])
 
 ### Charts
 
-Verticapy comes integrated with three popular plotting libraries: matplotlib, highcharts, and plotly.
+VerticaPy comes integrated with three popular plotting libraries: matplotlib, highcharts, and plotly.
 
 A gallery of VerticaPy-generated charts is available at:<br>
 
@@ -367,7 +367,7 @@ set_option("sql_on", True)
 
 ```sql
   SELECT
-    /*+LABEL('vDataframe._aggregate_matrix')*/ CORR_MATRIX("pclass", "survived", "age", "sibsp", "parch", "fare", "body") OVER ()  
+    /*+LABEL('vDataFrame._aggregate_matrix')*/ CORR_MATRIX("pclass", "survived", "age", "sibsp", "parch", "fare", "body") OVER ()  
   FROM
 (
   SELECT

@@ -16,7 +16,7 @@ To begin, you must:
  
 * Have access to a machine that has Vertica installed
 * Install Python on your machine
-* Install Verticapy
+* Install VerticaPy
 
 Create Your First YAML files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,7 +30,7 @@ Create Your First YAML files
    - the files should have **.yaml** as the extension, 
    - YAML does not allow the use of tabs while creating YAML files
 
-The information in connection.yaml will be the same you use in Verticapy.
+The information in connection.yaml will be the same you use in VerticaPy.
 
 .. code:: bash
 

@@ -73,6 +73,9 @@ class ImportanceBarChart(PlotlyBase):
                 y=self.layout["columns"],
                 orientation="h",
                 name="Postive",
+                marker=dict(
+                    color=self.get_colors()[0],
+                ),
             )
         )
         showlegend = False
@@ -83,6 +86,9 @@ class ImportanceBarChart(PlotlyBase):
                     y=self.layout["columns"],
                     orientation="h",
                     name="Negative",
+                    marker=dict(
+                        color=self.get_colors()[1],
+                    ),
                 )
             )
             showlegend = True

@@ -107,7 +107,7 @@ class vDFCorr(vDFEncode):
                     """
                 query = f"""
                     SELECT 
-                        /*+LABEL('vDataframe._aggregate_matrix')*/ 
+                        /*+LABEL('vDataFrame._aggregate_matrix')*/ 
                         CORR({columns[0]}{cast_0}, {columns[1]}{cast_1}) 
                     FROM {table}"""
                 title = (
@@ -147,7 +147,7 @@ class vDFCorr(vDFEncode):
                     return np.nan
                 query = f"""
                     SELECT 
-                        /*+LABEL('vDataframe._aggregate_matrix')*/
+                        /*+LABEL('vDataFrame._aggregate_matrix')*/
                         (AVG(DECODE({column_b}{cast_b}, 1, 
                                     {column_n}{cast_n}, NULL)) 
                        - AVG(DECODE({column_b}{cast_b}, 0, 
@@ -168,7 +168,7 @@ class vDFCorr(vDFEncode):
                     return 1
                 n, k, r = _executeSQL(
                     query=f"""
-                        SELECT /*+LABEL('vDataframe._aggregate_matrix')*/
+                        SELECT /*+LABEL('vDataFrame._aggregate_matrix')*/
                             COUNT(*) AS n, 
                             COUNT(DISTINCT {columns[0]}) AS k, 
                             COUNT(DISTINCT {columns[1]}) AS r 
@@ -257,7 +257,7 @@ class vDFCorr(vDFEncode):
                 n_0 = f"{n_} * ({n_} - 1)/2"
                 tau_b = f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
                 query = f"""
-                    SELECT /*+LABEL('vDataframe._aggregate_matrix')*/
+                    SELECT /*+LABEL('vDataFrame._aggregate_matrix')*/
                         {tau_b} 
                     FROM 
                         (SELECT 
@@ -272,7 +272,7 @@ class vDFCorr(vDFEncode):
                 title = f"Computing the kendall correlation between {columns[0]} and {columns[1]}."
             elif method == "cov":
                 query = f"""
-                    SELECT /*+LABEL('vDataframe._aggregate_matrix')*/ 
+                    SELECT /*+LABEL('vDataFrame._aggregate_matrix')*/ 
                         COVAR_POP({columns[0]}{cast_0}, {columns[1]}{cast_1}) 
                     FROM {self}"""
                 title = (
@@ -328,7 +328,7 @@ class vDFCorr(vDFEncode):
                     )
                     table = f"(SELECT {columns_str} FROM {self}) spearman_table"
                 result = _executeSQL(
-                    query=f"""SELECT /*+LABEL('vDataframe._aggregate_matrix')*/ 
+                    query=f"""SELECT /*+LABEL('vDataFrame._aggregate_matrix')*/ 
                                 CORR_MATRIX({', '.join(columns)}) 
                                 OVER () 
                              FROM {table}""",
@@ -441,7 +441,7 @@ class vDFCorr(vDFEncode):
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataframe._aggregate_matrix')*/ 
+                                    /*+LABEL('vDataFrame._aggregate_matrix')*/ 
                                     {', '.join(all_list)}""",
                             print_time_sql=False,
                             method="fetchrow",
@@ -450,7 +450,7 @@ class vDFCorr(vDFEncode):
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataframe._aggregate_matrix')*/ 
+                                    /*+LABEL('vDataFrame._aggregate_matrix')*/ 
                                     {', '.join(all_list)} 
                                 FROM {table}""",
                             title=title,
@@ -657,7 +657,7 @@ class vDFCorr(vDFEncode):
                     result = _executeSQL(
                         query=f"""
                             SELECT 
-                                /*+LABEL('vDataframe._aggregate_vector')*/ 
+                                /*+LABEL('vDataFrame._aggregate_vector')*/ 
                                 {', '.join(all_list)}""",
                         method="fetchrow",
                         print_time_sql=False,
@@ -666,7 +666,7 @@ class vDFCorr(vDFEncode):
                     result = _executeSQL(
                         query=f"""
                             SELECT 
-                                /*+LABEL('vDataframe._aggregate_vector')*/ 
+                                /*+LABEL('vDataFrame._aggregate_vector')*/ 
                                 {', '.join(all_list)} 
                             FROM {table} 
                             LIMIT 1""",
@@ -1028,7 +1028,7 @@ class vDFCorr(vDFEncode):
             val = self.corr(columns=[column1, column2], method=method)
         sql = f"""
             SELECT 
-                /*+LABEL('vDataframe.corr_pvalue')*/ COUNT(*) 
+                /*+LABEL('vDataFrame.corr_pvalue')*/ COUNT(*) 
             FROM {self} 
             WHERE {column1} IS NOT NULL AND {column2} IS NOT NULL;"""
         n = _executeSQL(
@@ -1076,7 +1076,7 @@ class vDFCorr(vDFEncode):
             nc, nd = _executeSQL(
                 query=f"""
                     SELECT 
-                        /*+LABEL('vDataframe.corr_pvalue')*/ 
+                        /*+LABEL('vDataFrame.corr_pvalue')*/ 
                         {n_c}::float, 
                         {n_d}::float 
                     FROM {table};""",
@@ -1092,7 +1092,7 @@ class vDFCorr(vDFEncode):
                 vt, v1_0, v2_0 = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.corr_pvalue')*/
+                            /*+LABEL('vDataFrame.corr_pvalue')*/
                             SUM(ni * (ni - 1) * (2 * ni + 5)), 
                             SUM(ni * (ni - 1)), 
                             SUM(ni * (ni - 1) * (ni - 2)) 
@@ -1110,7 +1110,7 @@ class vDFCorr(vDFEncode):
                 vu, v1_1, v2_1 = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.corr_pvalue')*/
+                            /*+LABEL('vDataFrame.corr_pvalue')*/
                             SUM(ni * (ni - 1) * (2 * ni + 5)), 
                             SUM(ni * (ni - 1)), 
                             SUM(ni * (ni - 1) * (ni - 2)) 
@@ -1132,7 +1132,7 @@ class vDFCorr(vDFEncode):
                 if kendall_type == "c":
                     k, r = _executeSQL(
                         query=f"""
-                            SELECT /*+LABEL('vDataframe.corr_pvalue')*/
+                            SELECT /*+LABEL('vDataFrame.corr_pvalue')*/
                                 APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
                                 APPROXIMATE_COUNT_DISTINCT({column2}) AS r 
                             FROM {self} 
@@ -1149,7 +1149,7 @@ class vDFCorr(vDFEncode):
         elif method == "cramer":
             k, r = _executeSQL(
                 query=f"""
-                    SELECT /*+LABEL('vDataframe.corr_pvalue')*/
+                    SELECT /*+LABEL('vDataFrame.corr_pvalue')*/
                         COUNT(DISTINCT {column1}) AS k, 
                         COUNT(DISTINCT {column2}) AS r 
                     FROM {self} 
@@ -1541,7 +1541,7 @@ class vDFCorr(vDFEncode):
                 result = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.regr')*/ 
+                            /*+LABEL('vDataFrame.regr')*/ 
                             {", ".join(all_list)}""",
                     print_time_sql=False,
                     method="fetchrow",
@@ -1550,7 +1550,7 @@ class vDFCorr(vDFEncode):
                 result = _executeSQL(
                     query=f"""
                         SELECT 
-                            /*+LABEL('vDataframe.regr')*/
+                            /*+LABEL('vDataFrame.regr')*/
                             {", ".join(all_list)} 
                         FROM {self}""",
                     title=f"Computing the {method.upper()} Matrix.",
@@ -1569,7 +1569,7 @@ class vDFCorr(vDFEncode):
                         _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataframe.regr')*/ 
+                                    /*+LABEL('vDataFrame.regr')*/ 
                                     {method.upper()}({columns[i]}{cast_i}, 
                                                      {columns[j]}{cast_j}) 
                                 FROM {self}""",
@@ -2050,7 +2050,7 @@ class vDFCorr(vDFEncode):
                 drop(tmp_view_name, method="view")
                 query = f"""
                     CREATE VIEW {tmp_view_name} 
-                        AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
+                        AS SELECT /*+LABEL('vDataFrame.pacf')*/ * FROM {relation}"""
                 _executeSQL(query, print_time_sql=False)
                 vdf = create_new_vdf(tmp_view_name)
                 model = vml.LinearRegression(solver="newton")
