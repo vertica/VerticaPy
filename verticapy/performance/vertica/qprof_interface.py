@@ -1085,7 +1085,10 @@ class QueryProfilerComparison:
     def __init__(self, qprof1, qprof2):
         self.qprof1 = qprof1
         self.qprof2 = qprof2
-
+        if not isinstance(qprof1, QueryProfilerInterface) or not isinstance(
+            qprof2, QueryProfilerInterface
+        ):
+            raise TypeError("Both QueryProfilerInterface objects must be provided.")
         self.dual_effect = True
         # Initial update of the trees
         nooutput = widgets.Output()
