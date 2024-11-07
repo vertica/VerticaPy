@@ -1167,11 +1167,24 @@ class QueryProfilerComparison:
         # Use separate functions to create the interactive controls
         q1_interactive = self._create_qprof1_controls()
         q2_interactive = self._create_qprof2_controls()
-
+        navigation_controls_q1 = widgets.VBox(
+            [self.qprof1.transaction_buttons, self.qprof1.query_select_dropdown]
+        )
+        navigation_controls_q1.layout.width = "50%"
+        navigation_controls_q1.layout.align_items = "center"
+        navigation_controls_q2 = widgets.VBox(
+            [self.qprof2.transaction_buttons, self.qprof2.query_select_dropdown]
+        )
+        navigation_controls_q2.layout.width = "50%"
+        navigation_controls_q2.layout.align_items = "center"
+        navigation_controls_combined = widgets.HBox(
+            [navigation_controls_q1, navigation_controls_q2]
+        )
         return widgets.VBox(
             [
                 widgets.HBox([q1_control, q2_control]),
                 widgets.HBox([q1_interactive, q2_interactive]),
+                navigation_controls_combined,
             ]
         )
 
