@@ -184,7 +184,40 @@ class QueryProfilerInterface(QueryProfilerStats):
                 justify_content="center", align_items="center", width="100%"
             ),
         )
-
+        # Threshold Search
+        self._threshold_metric_1_dummy = widgets.FloatText()
+        self._threshold_metric_2_dummy = widgets.FloatText()
+        self._threshold_metric_1_widget_text = widgets.FloatText(
+            placeholder="Max Cut-off threshold for metric # 1"
+        )
+        self._threshold_metric_2_widget_text = widgets.FloatText(
+            placeholder="Max Cut-off threshold for metric # 2"
+        )
+        self._threshold_metrics_widget_button = widgets.Button(
+            description="Apply threshold",
+            tooltip="You can select a cut-off level for each metric. Anything above greater than that cut-off will be displayed in red. This is useful for highlighting problematic paths",
+        )
+        self._reset_threshold_button = widgets.Button(
+            layout=widgets.Layout(width="30px"),
+            button_style="warning",
+            icon="refresh",
+        )
+        self._threshold_metrics_widget_button_area = widgets.HBox(
+            [self._reset_threshold_button, self._threshold_metrics_widget_button],
+            layout={"justify_content": "center"},
+        )
+        self._threshold_metrics_widget_button.on_click(
+            self._threshold_metric_button_action
+        )
+        self._reset_threshold_button.on_click(
+            self._threshold_metric_reset_button_action
+        )
+        self._threshold_metrics_item_list = [
+            horizontal_line,
+            self._threshold_metric_1_widget_text,
+            self._threshold_metric_2_widget_text,
+            self._threshold_metrics_widget_button_area,
+        ]
         # Opeartor Search
         self._search_operator_dummy = widgets.Text()
         self._search_operator_options = self._get_all_op()
@@ -271,12 +304,14 @@ class QueryProfilerInterface(QueryProfilerStats):
             value="Execution time in \u00b5s",
             layout={"width": "260px"},
         )
+        dropdown1.observe(self._on_metric_1_dropdown_change, names="value")
         dropdown2 = widgets.Dropdown(
             options=options_dropwdown,
             description="Metric # 2:",
             value="Produced row count",
             layout={"width": "260px"},
         )
+        dropdown2.observe(self._on_metric_2_dropdown_change, names="value")
         tooltip_aggregated_widget = widgets.Checkbox(
             value=True,
             # layout={"width": "260px"},
@@ -350,6 +385,7 @@ class QueryProfilerInterface(QueryProfilerStats):
             self.colors["color high"].get_item(),
             tree_button_box,
         ]
+        tree_style_tab_items = tree_settings + self._threshold_metrics_item_list
         self.tree_style = {
             "color_low": self.colors["color low"].get_child_attr("value"),
             "color_high": self.colors["color high"].get_child_attr("value"),
@@ -370,7 +406,7 @@ class QueryProfilerInterface(QueryProfilerStats):
                     self._reset_search_button_widget,
                 ]
             ),
-            "Tree style": widgets.VBox(tree_settings),
+            "Tree style": widgets.VBox(tree_style_tab_items),
             "Query text": self._query_display,
             "Session Parameters": self.session_param_display,
             "Detailed Tooltip": self.tooltip_display,
@@ -398,6 +434,8 @@ class QueryProfilerInterface(QueryProfilerStats):
             "projection_display": projections_dml_widget,
             "tooltip_filter": self._tooltip_search_dummy,
             "op_filter": self._search_operator_dummy,
+            "legend1_max": self._threshold_metric_1_dummy,
+            "legend2_max": self._threshold_metric_2_dummy,
         }
         self._interactive_output = widgets.interactive_output(
             self._update_qplan_tree, controls
@@ -431,6 +469,8 @@ class QueryProfilerInterface(QueryProfilerStats):
         temp_display,
         projection_display,
         tooltip_filter=None,
+        legend1_max=None,
+        legend2_max=None,
         op_filter=None,
     ):
         """
@@ -464,7 +504,6 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._query_select_button_selected(index)
         if self.pathid_dropdown.get_child_attr("disabled"):
             path_id = None
-
         # Ensure the hourglass stays displayed during the processing of get_qplan_tree
         if self.use_javascript == False:
             graph = super().get_qplan_tree(
@@ -480,6 +519,8 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_agg_metrics=display_tooltip_agg_metrics,
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
+                legend1_max=int(legend1_max) if legend1_max > 0 else None,
+                legend2_max=int(legend2_max) if legend2_max > 0 else None,
                 tooltip_filter=tooltip_filter,
                 op_filter=eval(op_filter)
                 if op_filter != "" and op_filter != None
@@ -514,6 +555,8 @@ class QueryProfilerInterface(QueryProfilerStats):
                 display_tooltip_op_metrics=display_tooltip_op_metrics,
                 display_tooltip_descriptors=display_tooltip_descriptors,
                 tooltip_filter=tooltip_filter,
+                legend1_max=int(legend1_max) if legend1_max > 0 else None,
+                legend2_max=int(legend2_max) if legend2_max > 0 else None,
                 op_filter=eval(op_filter)
                 if op_filter != "" and op_filter != None
                 else None,
@@ -596,6 +639,32 @@ class QueryProfilerInterface(QueryProfilerStats):
         button.disabled = True
         self._tooltip_search_dummy.value = self._tooltip_search_widget_text.value
         button.disabled = False
+
+    def _threshold_metric_button_action(self, button):
+        button.disabled = True
+        self._threshold_metric_1_dummy.value = (
+            self._threshold_metric_1_widget_text.value
+        )
+        self._threshold_metric_2_dummy.value = (
+            self._threshold_metric_2_widget_text.value
+        )
+        button.disabled = False
+
+    def _threshold_metric_reset_button_action(self, button):
+        button.disabled = True
+        self._threshold_metric_1_widget_text.value = 0
+        self._threshold_metric_2_widget_text.value = 0
+        self._threshold_metric_1_dummy.value = 0
+        self._threshold_metric_2_dummy.value = 0
+        button.disabled = False
+
+    def _on_metric_1_dropdown_change(self, change):
+        if change["name"] == "value":
+            self._threshold_metric_reset_button_action(self._reset_threshold_button)
+
+    def _on_metric_2_dropdown_change(self, change):
+        if change["name"] == "value":
+            self._threshold_metric_reset_button_action(self._reset_threshold_button)
 
     def _search_operator_button_button_action(self, button):
         button.disabled = True
@@ -1016,7 +1085,10 @@ class QueryProfilerComparison:
     def __init__(self, qprof1, qprof2):
         self.qprof1 = qprof1
         self.qprof2 = qprof2
-
+        if not isinstance(qprof1, QueryProfilerInterface) or not isinstance(
+            qprof2, QueryProfilerInterface
+        ):
+            raise TypeError("Both QueryProfilerInterface objects must be provided.")
         self.dual_effect = True
         # Initial update of the trees
         nooutput = widgets.Output()
