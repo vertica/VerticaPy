@@ -69,7 +69,16 @@ class DensityPlot(PlotlyBase):
         Draws a density plot using the Plotly API.
         """
         fig = self._get_fig(fig)
-        fig.add_trace(go.Scatter(x=self.data["x"], y=self.data["y"], fill="tozeroy"))
+        fig.add_trace(
+            go.Scatter(
+                x=self.data["x"],
+                y=self.data["y"],
+                fill="tozeroy",
+                marker=dict(
+                    color=self.get_colors()[0],
+                ),
+            )
+        )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig
 
@@ -84,6 +93,7 @@ class MultiDensityPlot(DensityPlot):
         Draws a multi-density plot using the Plotly API.
         """
         fig = self._get_fig(fig)
+        ncolors = len(self.get_colors())
         for i in range(self.data["X"].shape[1]):
             fig.add_trace(
                 go.Scatter(
@@ -91,6 +101,9 @@ class MultiDensityPlot(DensityPlot):
                     y=self.data["Y"][:, i],
                     fill="tozeroy",
                     name=str(self.layout["labels"][i]),
+                    marker=dict(
+                        color=self.get_colors()[i % ncolors],
+                    ),
                 )
             )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))

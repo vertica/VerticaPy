@@ -104,6 +104,9 @@ class BoxPlot(PlotlyBase):
                     name=self.layout["labels"][0],
                     hovertemplate="%{x}",
                     **points_dic,
+                    marker=dict(
+                        color=self.get_colors()[0],
+                    ),
                 ),
             )
             fig.update_traces(
@@ -143,13 +146,17 @@ class BoxPlot(PlotlyBase):
                 fig.add_traces(fig_add.data)
             fig.update_layout(barmode="relative", **style_kwargs)
         else:
-            for I in range(self.data["X"].shape[1]):
-                I = [I]
+            ncolors = len(self.get_colors())
+            for i in range(self.data["X"].shape[1]):
+                I = [i]
                 fig.add_trace(
                     go.Box(
                         x=([self.layout["labels"][I[0]]]),
                         name=self.layout["labels"][I[0]],
                         hovertemplate="%{x}",
+                        marker=dict(
+                            color=self.get_colors()[i % ncolors],
+                        ),
                     )
                 )
                 fig.update_traces(
