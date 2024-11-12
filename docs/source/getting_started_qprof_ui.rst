@@ -123,3 +123,38 @@ Lastly, you have the optional to change ``SESSION PARAMETERS`` for your query. A
 
 
 .. image:: image dir...
+
+
+Query Plan Tree Page
+=====================
+
+Once you have loaded the profile data, you can see the query plan in the Query Plan Tree page.
+
+
+.. image:: image dir...
+
+
+Let's go over the different elements of the Query Plan Tree page:
+
+Download tab
+------------
+
+The ``Download`` tab. If you click the ``Save qprof Information & Report`` button, it will download the profile data as a tar file. And also save the profile report as an HTML file that can be viewed offline.
+
+Query Plan Tree
+---------------
+
+The first you tab you notice here is the Query Plan Tree tab. It displays the query plan in a graphical tree format with color coding for different metrics of the query e.g. time, memory, cost, etc. There are different ettings that you can use to explore the query plan. They are listed below:
+
+1. Metrics
+
+Here you can change the metrics that you want to see by clicking on the ``Metrics`` tab. You can also select the tooltips that you want to see by checking the information that you want to be displayed.
+
+
+2. Path ID
+
+In this tab you can filter the path ids that you are interested in. You can do this directly be selecting the particular ``path id`` from the dropdown menu. You can also search by tooltip by entering the part of tooltip that you want to match. This could be name of the table that you notice in the tooltip. You can also search by filtering operators. Use the dropdowns to select either one or two opeartors. For example, criterea 1 could be ``JOIN`` and criterea 2 could be ``SCAN``. To go back to the orginal tree, you can click on the ``Reset`` button.
+
+3. Tree Style
+
+The first option here is to choose between displaying ``Temporary Relations`` combined or separate. The next option is to toggle the display of ``DML Projections``
