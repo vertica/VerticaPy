@@ -25,7 +25,9 @@ VerticaPyLab Main Page
 
 When you start up the VerticaPyLab, you will be ending up on the launcher page. Here you can use to connect button to connect to your databse, or if you are connected, then directly click on the Query Profiler button.
 
-.. image:: image dir...
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/1.png
+   :width: 90%
+   :align: center
 
 .. _qprof_main_page:
 
@@ -42,7 +44,9 @@ The header of this page has the following elements:
 
 If you are connected to the database, you should be able to see your database and username under the connection details.
 
-.. image:: image dir...
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/2.png
+   :width: 90%
+   :align: center
 
 
 .. note:: If you need to learn more about the QueryProfiler tool, then you can click on the link at the right corner.
@@ -63,13 +67,17 @@ In order to retrieve a saved profile data, you need to provide the ``key`` and `
 
 Once you have provided these, you can click on the ``Get Query Plan`` button to load the profile data into the UI.
 
-.. image:: image dir...
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/3.png
+   :width: 90%
+   :align: center
 
 Additionally, there is an option to load the data from a ``tar file``. You can click on the ``From a file`` tabe and select the tar file. Don't forget to confirm the selection. 
 
 Once you have provided these, you can click on the ``Get Query Plan`` button to load the profile data into the UI.
 
-.. image:: image dir...
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/4.png
+   :width: 90%
+   :align: center 
 
 Creating a new Query Profile
 ----------------------------
@@ -84,11 +92,15 @@ You can create a new query profile by using two methods:
 
 You could search for a query using the search tab. Then you can extract the ``transaction_id`` and ``statement_id`` of the query and use them to create a new query profile. For the search you have the option to search using the custom label that the user has provided or the query text itself. You can search for exact match or partial match.
 
-.. image:: image dir...
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/5.png  
+   :width: 90%
+   :align: center
 
 To profile a query with transaction id and statement id, just enter the values in the provided text boxes and click on the ``Get Query Plan`` button.
 
-.. image:: image dir...
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/6.png  
+   :width: 90%
+   :align: center
 
 To profile the query using SQL, you can click the ``From SQL`` tab. In this tab, you can enter the SQL of the query and click on the ``Get Query Plan`` button. You can even enter multiple queries by separating them with a semicolon. For example:
 
@@ -104,7 +116,9 @@ The last tab in this section is the ``Multiple Queries`` tab. Here you can enter
 
 Once you have provided these, you can click on the ``Get Query Plan`` button to load the profile data into the UI. Remember you can optionally provide the ``target_schema`` and ``key`` to store the profile data.
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/7.png
+   :width: 90%
+   :align: center
 
 Compare Queries
 ---------------
@@ -122,7 +136,9 @@ Lastly, you have the optional to change ``SESSION PARAMETERS`` for your query. A
   ALTER SESSION SET statement_mem = 100000000;
 
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/8.png
+   :width: 90%
+   :align: center
 
 
 Query Plan Tree Page
@@ -131,7 +147,9 @@ Query Plan Tree Page
 Once you have loaded the profile data, you can see the query plan in the Query Plan Tree page.
 
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/9.png
+   :width: 90%
+   :align: center
 
 
 Let's go over the different elements of the Query Plan Tree page:
@@ -144,7 +162,9 @@ The ``Download`` tab. If you click the ``Save qprof Information & Report`` butto
 Query Plan Tree
 ---------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/10.png
+   :width: 90%
+   :align: center
 
 The first you tab you notice here is the Query Plan Tree tab. It displays the query plan in a graphical tree format with color coding for different metrics of the query e.g. time, memory, cost, etc. There are different ettings that you can use to explore the query plan. They are listed below:
 
@@ -185,7 +205,9 @@ If you have multiple queries in your profile data, then you can use the navigati
 Query Events Tab
 -----------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/11.png
+   :width: 90%
+   :align: center
 
 The ``Query Events`` tab displays the query events for the query that you are currently looking at.
 
@@ -204,7 +226,9 @@ Lastly, you can click on the ``Take Action`` button to resolve the action automa
 Query Engines Tab
 -----------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/12.png
+   :width: 90%
+   :align: center
 
 In this tab, we display all the data from the ``QueryEngineExection`` table. We have two main types of display:
 
@@ -219,14 +243,18 @@ Here the users have the option to look at either the raw table or a pivot table.
 Transactions Tab
 ----------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/13.png
+   :width: 90%
+   :align: center
 
 In this tab, we display all the important information from the ``QueryRequest`` table.
 
 Plots Tab
 ---------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/14.png
+   :width: 90%
+   :align: center
 
 .. warning:: This tab is still under development and may result in some issues. 
 
@@ -234,28 +262,36 @@ Plots Tab
 Other Info
 ----------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/15.png
+   :width: 90%
+   :align: center
 
 In this tab, we have two tables that display the ``Slow Events`` and ``Optimizer Events``. But we filter the information only for the specific query that is profiled.
 
 Manual Query
 ------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/16.png
+   :width: 90%
+   :align: center
 
 We allow the users to run SQL directly from this tab. This is useful if the user wants to run a query that is not part of the profile data. 
 
 Explain Plan
 ------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/17.png
+   :width: 90%
+   :align: center
 
 We allow the users to run ``EXPLAIN PLAN`` directly from this tab. To get the desired results, you must be connected to your database that you ran the query on.
 
 Advanced vDataFrame Output settings
 -------------------------------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/18.png
+   :width: 90%
+   :align: center
 
 The users can modify the ``vDataFrame`` display settings as per their desire. This mean that the users can change the ``display.max_rows`` or removing/inserting commas for numerical data.
 
@@ -263,7 +299,9 @@ The users can modify the ``vDataFrame`` display settings as per their desire. Th
 Consistency Checks
 ------------------
 
-.. image:: image dir...
+.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/19.png
+   :width: 90%
+   :align: center
 
 Here we display the results of the consistency checks that we have run on the profile data. This tells us if some information in the tables were removed because of rentention issues. 
 
