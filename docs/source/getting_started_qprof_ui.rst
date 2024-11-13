@@ -116,7 +116,7 @@ The last tab in this section is the ``Multiple Queries`` tab. Here you can enter
 
 Once you have provided these, you can click on the ``Get Query Plan`` button to load the profile data into the UI. Remember you can optionally provide the ``target_schema`` and ``key`` to store the profile data.
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/7.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/7.png
    :width: 90%
    :align: center
 
@@ -136,7 +136,7 @@ Lastly, you have the optional to change ``SESSION PARAMETERS`` for your query. A
   ALTER SESSION SET statement_mem = 100000000;
 
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/8.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/8.png
    :width: 90%
    :align: center
 
@@ -147,7 +147,7 @@ Query Plan Tree Page
 Once you have loaded the profile data, you can see the query plan in the Query Plan Tree page.
 
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/9.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/9.png
    :width: 90%
    :align: center
 
@@ -162,7 +162,7 @@ The ``Download`` tab. If you click the ``Save qprof Information & Report`` butto
 Query Plan Tree
 ---------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/10.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/10.png
    :width: 90%
    :align: center
 
@@ -205,7 +205,7 @@ If you have multiple queries in your profile data, then you can use the navigati
 Query Events Tab
 -----------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/11.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/11.png
    :width: 90%
    :align: center
 
@@ -226,7 +226,7 @@ Lastly, you can click on the ``Take Action`` button to resolve the action automa
 Query Engines Tab
 -----------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/12.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/12.png
    :width: 90%
    :align: center
 
@@ -243,7 +243,7 @@ Here the users have the option to look at either the raw table or a pivot table.
 Transactions Tab
 ----------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/13.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/13.png
    :width: 90%
    :align: center
 
@@ -252,7 +252,7 @@ In this tab, we display all the important information from the ``QueryRequest`` 
 Plots Tab
 ---------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/14.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/14.png
    :width: 90%
    :align: center
 
@@ -262,7 +262,7 @@ Plots Tab
 Other Info
 ----------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/15.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/15.png
    :width: 90%
    :align: center
 
@@ -271,7 +271,7 @@ In this tab, we have two tables that display the ``Slow Events`` and ``Optimizer
 Manual Query
 ------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/16.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/16.png
    :width: 90%
    :align: center
 
@@ -280,7 +280,7 @@ We allow the users to run SQL directly from this tab. This is useful if the user
 Explain Plan
 ------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/17.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/17.png
    :width: 90%
    :align: center
 
@@ -289,7 +289,7 @@ We allow the users to run ``EXPLAIN PLAN`` directly from this tab. To get the de
 Advanced vDataFrame Output settings
 -------------------------------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/18.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/18.png
    :width: 90%
    :align: center
 
@@ -299,7 +299,7 @@ The users can modify the ``vDataFrame`` display settings as per their desire. Th
 Consistency Checks
 ------------------
 
-.. image:: ../docs/source/_static/website/getting_started/query_profiler_ui/19.png
+.. image:: ../../docs/source/_static/website/getting_started/query_profiler_ui/19.png
    :width: 90%
    :align: center
 
