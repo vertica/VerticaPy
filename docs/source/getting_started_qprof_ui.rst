@@ -144,6 +144,8 @@ The ``Download`` tab. If you click the ``Save qprof Information & Report`` butto
 Query Plan Tree
 ---------------
 
+.. image:: image dir...
+
 The first you tab you notice here is the Query Plan Tree tab. It displays the query plan in a graphical tree format with color coding for different metrics of the query e.g. time, memory, cost, etc. There are different ettings that you can use to explore the query plan. They are listed below:
 
 1. Metrics
@@ -158,3 +160,115 @@ In this tab you can filter the path ids that you are interested in. You can do t
 3. Tree Style
 
 The first option here is to choose between displaying ``Temporary Relations`` combined or separate. The next option is to toggle the display of ``DML Projections``
+
+4. Query Text
+
+Here you will see the query text of the query that you are currently looking at. 
+
+5. Session PARAMETERS
+
+All the ``SESSION PARAMETERS`` that are non-default will be listed here.
+
+6. Detailed tooltip
+
+If you want to look deeper into the tooltip of a sepcific path id, you can select it from the dropdown menu.
+
+7. Summary
+
+The key elements of the query execution plan are listed here.
+
+8. Navigation buttons
+
+If you have multiple queries in your profile data, then you can use the navigation buttons to switch between the queries.
+
+
+Query Events Tab
+-----------------
+
+.. image:: image dir...
+
+The ``Query Events`` tab displays the query events for the query that you are currently looking at.
+
+You can select the query that you want to look it from the dropdown menu, and then click ``Run Statistics`` to get the statistics for the query.
+
+.. note:: You can head  over to the ``Transactions`` tab to get the exact query index of the query you want to run statistics for.
+
+On the top it will display a summary in the form of a half-pie chart indicating the number of alerts for each category: ``OPTIMIZER``, ``NETWORK``, and ``EXECUTION``.
+
+Below, all the events will be displayed. You can filter with ``Node``, ``Category``, and ``Type`` to find particular events. 
+
+Lastly, you can click on the ``Take Action`` button to resolve the action automatically.
+
+.. warning:: This can have serious consequences on your data. So double the SQL that is about to be run.
+
+Query Engines Tab
+-----------------
+
+.. image:: image dir...
+
+In this tab, we display all the data from the ``QueryEngineExection`` table. We have two main types of display:
+
+1. Summary
+
+Here all the aggregates are displayed either node-wise or path_id-wise.
+
+2. Detailed
+
+Here the users have the option to look at either the raw table or a pivot table. For the pivot table, the users can select the specific metrics they want to see from the checklist on the right side.
+
+Transactions Tab
+----------------
+
+.. image:: image dir...
+
+In this tab, we display all the important information from the ``QueryRequest`` table.
+
+Plots Tab
+---------
+
+.. image:: image dir...
+
+.. warning:: This tab is still under development and may result in some issues. 
+
+
+Other Info
+----------
+
+.. image:: image dir...
+
+In this tab, we have two tables that display the ``Slow Events`` and ``Optimizer Events``. But we filter the information only for the specific query that is profiled.
+
+Manual Query
+------------
+
+.. image:: image dir...
+
+We allow the users to run SQL directly from this tab. This is useful if the user wants to run a query that is not part of the profile data. 
+
+Explain Plan
+------------
+
+.. image:: image dir...
+
+We allow the users to run ``EXPLAIN PLAN`` directly from this tab. To get the desired results, you must be connected to your database that you ran the query on.
+
+Advanced vDataFrame Output settings
+-------------------------------------
+
+.. image:: image dir...
+
+The users can modify the ``vDataFrame`` display settings as per their desire. This mean that the users can change the ``display.max_rows`` or removing/inserting commas for numerical data.
+
+
+Consistency Checks
+------------------
+
+.. image:: image dir...
+
+Here we display the results of the consistency checks that we have run on the profile data. This tells us if some information in the tables were removed because of rentention issues. 
+
+Execution/Error Details
+------------------------
+
+All the execution details and error details of the queries are displayed here. This is useful if you want to see the details of the execution and error of the query that you are currently looking at.
+
