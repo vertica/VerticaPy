@@ -77,10 +77,21 @@ class ROCCurve(PlotlyBase):
                 mode="lines",
                 line_shape=line_shape,
                 fill="tozeroy",
+                marker=dict(
+                    color=self.get_colors()[0],
+                ),
             )
         )
         fig.add_trace(
-            go.Scatter(x=[0, 1], y=[0, 1], mode="lines", line=dict(width=2, dash="dot"))
+            go.Scatter(
+                x=[0, 1],
+                y=[0, 1],
+                mode="lines",
+                line=dict(width=2, dash="dot"),
+                marker=dict(
+                    color=self.get_colors()[1],
+                ),
+            )
         )
         fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
         return fig
@@ -125,6 +136,9 @@ class CutoffCurve(PlotlyBase):
                 mode="lines+markers",
                 line_shape=line_shape,
                 name="Specificity",
+                marker=dict(
+                    color=self.get_colors()[0],
+                ),
             )
         )
         fig.add_trace(
@@ -134,6 +148,9 @@ class CutoffCurve(PlotlyBase):
                 mode="lines+markers",
                 line_shape=line_shape,
                 name="Sensitivity",
+                marker=dict(
+                    color=self.get_colors()[1],
+                ),
             )
         )
         fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
@@ -189,6 +206,9 @@ class PRCCurve(ROCCurve):
                 line_shape=line_shape,
                 name="Specificity",
                 fill="tozeroy",
+                marker=dict(
+                    color=self.get_colors()[0],
+                ),
             )
         )
         fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
@@ -234,6 +254,9 @@ class LiftChart(ROCCurve):
                 line_shape="linear",
                 fill="tozeroy",
                 name="Cumulative Capture Rate",
+                marker=dict(
+                    color=self.get_colors()[0],
+                ),
             )
         )
         fig.add_trace(
@@ -244,6 +267,9 @@ class LiftChart(ROCCurve):
                 line_shape="linear",
                 fill="tonexty",
                 name="Cumulative Lift",
+                marker=dict(
+                    color=self.get_colors()[1],
+                ),
             )
         )
         fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
