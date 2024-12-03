@@ -73,7 +73,7 @@ def get_connection_file() -> str:
     Returns
     -------
     string
-        the full path to the
+        the validated full path to the
         auto-connection file.
 
     Examples
@@ -104,8 +104,95 @@ def get_connection_file() -> str:
     if "VERTICAPY_CONNECTION" in os.environ and os.path.exists(
         os.environ["VERTICAPY_CONNECTION"]
     ):
-        return os.environ["VERTICAPY_CONNECTION"]
+        path = os.environ["VERTICAPY_CONNECTION"]
+        validated_path = validate_path(path)  # Validate the custom path
+        return validated_path
+    # Default to the user's home directory
     path = os.path.join(os.path.expanduser("~"), ".vertica")
     os.makedirs(path, 0o700, exist_ok=True)
     path = os.path.join(path, "connections.verticapy")
     return path
+
+
+def validate_path(path: str):
+    """
+    Validates a file path to ensure it is secure and does not
+    point to unintended or unsafe locations. This function
+    prevents users from saving files in restricted system
+    directories, using symbolic links, or engaging in path
+    traversal attacks. It also ensures the target directory
+    is writable and, on Unix-based systems, owned by the current user.
+
+    Parameters
+    ----------
+    path : str
+        The file path to validate.
+
+    Raises
+    ------
+    ValueError
+        If the file path violates any of the following rules:
+        - Points to a restricted system location.
+        - Uses a symbolic link.
+        - Includes path traversal sequences (`..`).
+        - Resides in a directory that is not writable.
+        - On Unix-based systems, resides in a directory not owned by the current user.
+
+    Examples
+    --------
+    Validate a safe file path within the user's home directory:
+
+    >>> validate_path('/home/user/.vertica/connections.verticapy')
+
+    Raise an error for a path in a restricted location:
+
+    >>> validate_path('/etc/passwd')
+    ValueError: Cannot use path '/etc/passwd': it is a restricted system location.
+
+    Prevent symbolic links:
+
+    >>> validate_path('/home/user/link_to_connections.verticapy')
+    ValueError: Cannot use path '/home/user/link_to_connections.verticapy': symbolic links are not allowed.
+
+    Notes
+    -----
+    This function is intended for use in applications where user-specified
+    file paths are allowed. It helps balance user flexibility with security
+    by rejecting paths that could lead to vulnerabilities or unauthorized access.
+    """
+    # Restricted locations
+    restricted_locations = [
+        "/etc",
+        "/usr",
+        "/bin",
+        "/sbin",
+        "/var",
+        "/dev",
+        "/root",
+        "C:\\Windows",
+        "C:\\Program Files",
+    ]
+    if any(path.startswith(loc) for loc in restricted_locations):
+        raise ValueError(
+            f"Cannot use path '{path}': it is a restricted system location."
+        )
+
+    # Ensure directory exists and is writable
+    directory = os.path.dirname(path)
+    if not os.path.isdir(directory) or not os.access(directory, os.W_OK):
+        raise ValueError(f"Cannot use path '{path}': directory is not writable.")
+
+    # Prevent symbolic links
+    if os.path.islink(path):
+        raise ValueError(f"Cannot use path '{path}': symbolic links are not allowed.")
+
+    # Prevent path traversal
+    if ".." in os.path.normpath(path):
+        raise ValueError(f"Cannot use path '{path}': path traversal detected.")
+
+    # Optional: Restrict to user-owned directories (Linux/Unix)
+    stat_info = os.stat(directory)
+    if stat_info.st_uid != os.getuid():
+        raise ValueError(
+            f"Cannot use path '{path}': directory is not owned by the current user."
+        )
