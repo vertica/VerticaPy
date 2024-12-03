@@ -352,4 +352,9 @@ class ProfileImport:
                 pd_dataframe["running_time"] = pd.to_timedelta(
                     pd_dataframe["running_time"], unit="s"
                 )
-            ctable.copy_from_pandas_dataframe(pd_dataframe)
+            try:
+                ctable.copy_from_pandas_dataframe(pd_dataframe)
+            except Exception as e:
+                warning_message = f"Error loading the table {ctable.name}:"
+                print_message(warning_message + str(e), "warning")
+                self.logger.warning(warning_message + str(e))
