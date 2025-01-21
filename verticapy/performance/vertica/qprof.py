@@ -1460,6 +1460,8 @@ class QueryProfiler:
             "projection_columns": "v_catalog",
             "resource_acquisitions": "v_monitor",
             "resource_pools": "v_catalog",
+            "dc_plan_step_properties": "v_internal",
+            "dc_plan_steps": "v_internal",
         }
 
     @staticmethod
@@ -2881,13 +2883,14 @@ class QueryProfiler:
             title="Getting the metrics for each operator.",
             method="fetchall",
         )
+        res = self._get_ool_metric(res)
         metric_value_op = {}
         for me in res:
             if me[0] not in metric_value_op:
                 metric_value_op[me[0]] = {}
             if me[2] not in metric_value_op[me[0]]:
                 metric_value_op[me[0]][me[2]] = {}
-            for idx, col in enumerate(cols):
+            for idx, col in enumerate(cols + ["ool"]):
                 current_metric = me[3 + idx]
                 if not isinstance(current_metric, NoneType):
                     if current_metric == int(current_metric):
@@ -2897,7 +2900,6 @@ class QueryProfiler:
                 else:
                     current_metric = -1
                 metric_value_op[me[0]][me[2]][col] = current_metric
-
         # Summary.
         query = self.get_qexecution_report(granularity=2, genSQL=True)
         res = _executeSQL(
@@ -2925,6 +2927,59 @@ class QueryProfiler:
 
         # Returning the metric.
         return metric_value_op, metric_value
+
+    def _get_ool_metric(self, list_of_metrics):
+        for i, data in enumerate(list_of_metrics):
+            path_id = data[0]
+            baseplan_id = data[1]
+            operator = data[2]
+
+            query = f"""
+            SELECT 
+                ps.path_id,
+                ps.baseplan_id,
+                ps.step_type AS operator_name,
+                MAX(CASE WHEN LOWER(pp.property_name) LIKE '%ool%' THEN 1 ELSE 0 END) AS has_ool
+            FROM 
+                v_internal.dc_plan_step_properties pp
+            JOIN 
+                v_internal.dc_plan_steps ps
+            ON 
+                pp.transaction_id = ps.transaction_id AND
+                pp.statement_id = ps.statement_id AND
+                pp.plan_id = ps.plan_id AND
+                pp.step_key = ps.step_key AND
+                pp.node_name = ps.node_name
+            WHERE 
+                pp.transaction_id = {self.transaction_id} AND
+                pp.statement_id = {self.statement_id} AND
+                ps.path_id = {path_id} AND
+                ps.baseplan_id = {baseplan_id} AND
+                ps.step_type = '{operator}'
+            GROUP BY 
+                ps.path_id, 
+                ps.baseplan_id, 
+                ps.step_type
+            ORDER BY 
+                ps.path_id, 
+                ps.baseplan_id, 
+                ps.step_type;
+                """
+            query = self._replace_schema_in_query(query)
+            try:
+                res = _executeSQL(
+                    query,
+                    title="Getting the corresponding query",
+                    method="fetchall",
+                )
+                if res:
+                    list_of_metrics[i].append(res[0][3])
+                else:
+                    list_of_metrics[i].append(None)
+            except:
+                res = []
+
+        return list_of_metrics
 
     def _get_all_op(self) -> list[str]:
         """
