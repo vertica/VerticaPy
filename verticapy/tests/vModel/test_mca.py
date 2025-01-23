@@ -15,6 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
+# Versioning
+from packaging.version import Version
+
 # Pytest
 import pytest
 
@@ -27,9 +30,10 @@ from verticapy.machine_learning.vertica.decomposition import MCA
 # Matplotlib skip
 import matplotlib
 
-matplotlib_version = matplotlib.__version__
+# Get the current matplotlib version
+matplotlib_version = Version(matplotlib.__version__)
 skip_plt = pytest.mark.skipif(
-    matplotlib_version > "3.5.2",
+    matplotlib_version > Version("3.5.2"),
     reason="Test skipped on matplotlib version greater than 3.5.2",
 )
 
@@ -125,14 +129,14 @@ class TestMCA:
         assert model.get_params() == {}
 
     @skip_plt
-    def test_plot(self, model):
+    def test_plot(self, model, load_matplotlib):
         result = model.plot()
         assert len(result.get_default_bbox_extra_artists()) == 8
         result = model.plot(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 8
 
     @skip_plt
-    def test_plot_var(self, model):
+    def test_plot_var(self, model, load_matplotlib):
         result = model.plot_var()
         assert len(result.get_default_bbox_extra_artists()) == 62
         result = model.plot_var(dimensions=(2, 3))
@@ -143,26 +147,26 @@ class TestMCA:
         assert len(result.get_default_bbox_extra_artists()) == 62
 
     @skip_plt
-    def test_plot_contrib(self, model):
+    def test_plot_contrib(self, model, load_matplotlib):
         result = model.plot_contrib()
         assert len(result.get_default_bbox_extra_artists()) == 114
         result = model.plot_contrib(dimension=2)
         assert len(result.get_default_bbox_extra_artists()) == 114
 
     @skip_plt
-    def test_plot_cos2(self, model):
+    def test_plot_cos2(self, model, load_matplotlib):
         result = model.plot_cos2()
         assert len(result.get_default_bbox_extra_artists()) == 111
         result = model.plot_cos2(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 111
 
     @skip_plt
-    def test_plot_scree(self, model):
+    def test_plot_scree(self, model, load_matplotlib):
         result = model.plot_scree()
         assert len(result.get_default_bbox_extra_artists()) == 113
 
     @skip_plt
-    def test_plot_circle(self, model):
+    def test_plot_circle(self, model, load_matplotlib):
         result = model.plot_circle()
         assert len(result.get_default_bbox_extra_artists()) == 114
         result = model.plot_circle(dimensions=(2, 3))

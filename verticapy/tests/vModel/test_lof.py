@@ -15,6 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
+# Versioning
+from packaging.version import Version
+
 # Pytest
 import pytest
 
@@ -34,9 +37,10 @@ from verticapy.machine_learning.vertica.neighbors import LocalOutlierFactor
 # Matplotlib skip
 import matplotlib
 
-matplotlib_version = matplotlib.__version__
+# Get the current matplotlib version
+matplotlib_version = Version(matplotlib.__version__)
 skip_plt = pytest.mark.skipif(
-    matplotlib_version > "3.5.2",
+    matplotlib_version > Version("3.5.2"),
     reason="Test skipped on matplotlib version greater than 3.5.2",
 )
 
@@ -82,7 +86,7 @@ class TestLocalOutlierFactor:
         assert result == ["n_neighbors_", "p_", "n_errors_", "cnt_"]
 
     @skip_plt
-    def test_get_plot(self, model):
+    def test_get_plot(self, model, load_matplotlib):
         result = model.plot(color=["r", "b"])
         assert len(result.get_default_bbox_extra_artists()) == 9
         plt.close("all")
