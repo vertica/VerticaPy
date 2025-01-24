@@ -23,9 +23,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="verticapy",
-    version="1.1.0",
+    version="1.1.1",
     author="Badr Ouali",
-    author_email="badr.ouali@vertica.com",
+    author_email="badr.ouali@outlook.fr",
     url="https://github.com/vertica/VerticaPy",
     keywords="vertica python ml data science machine learning statistics database",
     description=(
