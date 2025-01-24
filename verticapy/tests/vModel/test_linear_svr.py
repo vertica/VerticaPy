@@ -15,6 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
+# Versioning
+from packaging.version import Version
+
 # Pytest
 import pytest
 
@@ -30,9 +33,10 @@ from verticapy.machine_learning.vertica.svm import LinearSVR
 # Matplotlib skip
 import matplotlib
 
-matplotlib_version = matplotlib.__version__
+# Get the current matplotlib version
+matplotlib_version = Version(matplotlib.__version__)
 skip_plt = pytest.mark.skipif(
-    matplotlib_version > "3.5.2",
+    matplotlib_version > Version("3.5.2"),
     reason="Test skipped on matplotlib version greater than 3.5.2",
 )
 
@@ -68,7 +72,7 @@ class TestLinearSVR:
         assert model.__repr__() == "<LinearSVR>"
 
     @skip_plt
-    def test_contour(self, winequality_vd):
+    def test_contour(self, winequality_vd, load_matplotlib):
         model_test = LinearSVR(
             "model_contour",
         )
@@ -181,7 +185,7 @@ class TestLinearSVR:
         }
 
     @skip_plt
-    def test_get_plot(self, winequality_vd):
+    def test_get_plot(self, winequality_vd, load_matplotlib):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = LinearSVR(
             "model_test_plot",

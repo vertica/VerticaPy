@@ -397,6 +397,7 @@ class QprofUtility:
             "rows_processed_sip": "Rows processed by SIPs expression",
             "total_rows_read_join_sort": "Total rows read in join sort",
             "total_rows_read_sort": "Total rows read in sort",
+            "ool": "Produces variable length data",
         }
         if inv:
             look_up_table_inv = {v: k for k, v in look_up_table.items()}

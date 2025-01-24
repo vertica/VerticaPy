@@ -15,6 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
+# Versioning
+from packaging.version import Version
+
 # Pytest
 import pytest
 
@@ -42,9 +45,10 @@ from verticapy.sql.drop import drop
 # Matplotlib skip
 import matplotlib
 
-matplotlib_version = matplotlib.__version__
+# Get the current matplotlib version
+matplotlib_version = Version(matplotlib.__version__)
 skip_plt = pytest.mark.skipif(
-    matplotlib_version > "3.5.2",
+    matplotlib_version > Version("3.5.2"),
     reason="Test skipped on matplotlib version greater than 3.5.2",
 )
 
@@ -565,7 +569,7 @@ class TestXGBC:
         assert model.to_graphviz() == result.source.strip()
 
     @pytest.mark.skipif(
-        sys.version_info > (3, 11), reason="Requires Python 3.11 or lower"
+        sys.version_info > (3, 8), reason="Requires Python 3.8 or lower"
     )
     def test_to_json_binary(self, titanic_vd):
         import xgboost as xgb
@@ -600,7 +604,7 @@ class TestXGBC:
         os.remove(path)
 
     @pytest.mark.skipif(
-        sys.version_info > (3, 11), reason="Requires Python 3.11 or lower"
+        sys.version_info > (3, 8), reason="Requires Python 3.8 or lower"
     )
     def test_to_json_multiclass(self, titanic_vd):
         titanic = titanic_vd.copy()

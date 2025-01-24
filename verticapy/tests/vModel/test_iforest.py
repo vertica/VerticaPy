@@ -15,6 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 
+# Versioning
+from packaging.version import Version
+
 # Pytest
 import pytest
 
@@ -35,9 +38,10 @@ from verticapy.machine_learning.vertica.ensemble import IsolationForest
 # Matplotlib skip
 import matplotlib
 
-matplotlib_version = matplotlib.__version__
+# Get the current matplotlib version
+matplotlib_version = Version(matplotlib.__version__)
 skip_plt = pytest.mark.skipif(
-    matplotlib_version > "3.5.2",
+    matplotlib_version > Version("3.5.2"),
     reason="Test skipped on matplotlib version greater than 3.5.2",
 )
 

@@ -652,7 +652,7 @@ class TestXGBModel:
     """
 
     @pytest.mark.skipif(
-        sys.version_info > (3, 11), reason="Requires Python 3.11 or lower"
+        sys.version_info > (3, 8), reason="Requires Python 3.8 or lower"
     )
     def test_to_json(self, model_class, get_vpy_model, get_py_model):
         """

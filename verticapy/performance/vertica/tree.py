@@ -398,6 +398,7 @@ class PerformanceTree:
                 "proc_rows",
                 "prod_rows",
                 "thread_count",
+                "ool",
             ]
         self.style = d
 
@@ -722,7 +723,12 @@ class PerformanceTree:
                         else:
                             me_val_str = format(round(me_val_str, 3), ",")
                         metric_name = QprofUtility._get_metrics_name(me)
-                        info += f" - {metric_name}: {me_val_str}\n"
+                        if not (me == "ool" and (me_val_str != "1")):
+                            # Skipping if ool is not True
+                            if me == "ool" and me_val_str == "1":
+                                info += f" - {metric_name}: True\n"
+                            else:
+                                info += f" - {metric_name}: {me_val_str}\n"
             if len(info) > 0 and info[-1] == "\n":
                 info = info[:-1]
             return info
