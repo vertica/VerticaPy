@@ -1976,8 +1976,7 @@ class PlottingBase(PlottingBaseSQL):
             "limit_over": limit_over,
         }
 
-    # ND AGG Graphics: BAR / PIE / DRILLDOWNS ...
-
+            # ND AGG Graphics: BAR / PIE / DRILLDOWNS ...
     def _compute_rollup(
         self,
         vdf: "vDataFrame",
@@ -1997,17 +1996,31 @@ class PlottingBase(PlottingBaseSQL):
         columns = format_type(columns, dtype=list)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         n = len(columns)
-        if isinstance(h, (int, float, NoneType)):
+        
+        # Process h:
+        if not isinstance(h, (tuple, list)):
             h = (h,) * n
-        if isinstance(max_cardinality, (int, float, NoneType)):
-            if isinstance(max_cardinality, NoneType):
+        else:
+            if len(h) < n:
+                h = tuple(list(h) + [None] * (n - len(h)))
+        # Replace any None with a default value (e.g., 1)
+        h = tuple(1 if (x is None) else x for x in h)
+        
+        # Process max_cardinality similarly
+        if not isinstance(max_cardinality, (tuple, list)):
+            if max_cardinality is None:
                 max_cardinality = (6,) * n
             else:
                 max_cardinality = (max_cardinality,) * n
+        else:
+            if len(max_cardinality) < n:
+                max_cardinality = tuple(list(max_cardinality) + [6] * (n - len(max_cardinality)))
+        
         vdf_tmp = vdf.copy()
         for idx, column in enumerate(columns):
             vdf_tmp[column].discretize(h=h[idx])
             vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
+        
         groups = []
         metric, desc = self.get_category_desc(categoryorder)
         for i in range(0, n):
