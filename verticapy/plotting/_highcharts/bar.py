@@ -180,6 +180,7 @@ class DrillDownBarChart(HighchartsBase):
         chart.set_dict_options(style_kwargs)
         chart.add_JSsource("https://code.highcharts.com/6/modules/drilldown.js")
         n_groups = len(self.data["groups"])
+        
         if n_groups < 3:
             init_group = np.column_stack(self.data["groups"][1])
             data = []
@@ -193,7 +194,6 @@ class DrillDownBarChart(HighchartsBase):
             for c in uniques:
                 data = drilldown_group[drilldown_group[:, 0] == c].tolist()
                 data = [(str(x[1]), float(x[2])) for x in data]
-                print(f"data for each {c}:", data)
                 chart.add_drilldown_data_set(data, kind, str(c), name=str(c))
         else:
             init_group = np.column_stack(self.data["groups"][-1])
@@ -214,6 +214,7 @@ class DrillDownBarChart(HighchartsBase):
                     'drilldown': f"{c}-{x[1]}"
                 } for x in data]
                 chart.add_drilldown_data_set(data_points, kind, str(c), name=str(c))
+
             # Second drilldown level
             drilldown_level2 = np.column_stack(self.data["groups"][0])
             unique_keys = np.unique(drilldown_level2[:, 0:2], axis=0)
@@ -224,4 +225,6 @@ class DrillDownBarChart(HighchartsBase):
                 data_subset = drilldown_level2[mask]
                 data = [{'name': str(row[2]), 'y': float(row[3])} for row in data_subset]
                 chart.add_drilldown_data_set(data, kind, drilldown_id, name=f"{x_axis_label}")
+
+                
         return chart
