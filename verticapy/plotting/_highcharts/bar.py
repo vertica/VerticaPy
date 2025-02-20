@@ -208,25 +208,75 @@ class DrillDownBarChart(HighchartsBase):
         else:
             # Top-level data
             data = [
-                {'name': 'A', 'y': 2.0, 'drilldown': 'A'},
-                {'name': 'B', 'y': 4.0, 'drilldown': 'B'},
-                {'name': 'C', 'y': 1.0, 'drilldown': 'C'}
+                {'name': 'Asia',   'y': 4000000000, 'drilldown': 'Asia'},
+                {'name': 'Africa', 'y': 1300000000, 'drilldown': 'Africa'},
+                {'name': 'Europe', 'y': 800000000,  'drilldown': 'Europe'}
             ]
             chart.add_data_set(data, kind, colorByPoint=True)
 
-            # Define groups with additional level for X/Y
+            # First drilldown level: Countries for each continent
+            # For each country we list: [Continent, Country, Population]
             self.data['groups'][0] = [
-                ['B','C','A','B','A'],
-                ['F','M','M','M','F'],
-                ['3','1','1','1','1']
+                # Continent names (one per country)
+                ['Asia',   'Asia',   'Asia',
+                'Africa', 'Africa', 'Africa',
+                'Europe', 'Europe', 'Europe'],
+                # Country names
+                ['China',  'India',  'Indonesia',
+                'Nigeria','Ethiopia','Egypt',
+                'Germany','France', 'UK'],
+                # Population values (as strings)
+                ['1600000000', '1200000000', '1200000000',
+                '500000000',  '400000000',  '400000000',
+                '300000000',  '250000000',  '250000000']
             ]
             self.data['groups'][1] = [
-                # Category, Gender, Subcategory (X/Y), Value
-                ['A', 'A', 'A', 'A', 'B', 'B', 'B', 'B', 'C', 'C', 'C', 'C'],
-                ['F', 'F', 'M', 'M', 'F', 'F', 'M', 'M', 'F', 'F', 'M', 'M'],
-                ['X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y'],
-                ['2', '1', '3', '4', '5', '2', '1', '3', '4', '1', '2', '5']
+                # Continent repeated for each breakdown entry
+                ['Asia', 'Asia',    # China
+                'Asia', 'Asia',    # India
+                'Asia', 'Asia',    # Indonesia
+                'Africa', 'Africa',# Nigeria
+                'Africa', 'Africa',# Ethiopia
+                'Africa', 'Africa',# Egypt
+                'Europe', 'Europe',# Germany
+                'Europe', 'Europe',# France
+                'Europe', 'Europe'],# UK
+                # Country names (repeated for each breakdown)
+                ['China', 'China',
+                'India', 'India',
+                'Indonesia', 'Indonesia',
+                'Nigeria', 'Nigeria',
+                'Ethiopia', 'Ethiopia',
+                'Egypt', 'Egypt',
+                'Germany', 'Germany',
+                'France', 'France',
+                'UK', 'UK'],
+                # Breakdown labels (e.g. Urban and Rural)
+                ['Urban', 'Rural'] * 9,
+                # Population breakdown values (as strings; must sum to the country's total)
+                [
+                    # China: Total 1,600,000,000 → Urban 800M, Rural 800M
+                    '800000000', '800000000',
+                    # India: Total 1,200,000,000 → Urban 400M, Rural 800M
+                    '400000000', '800000000',
+                    # Indonesia: Total 1,200,000,000 → Urban 600M, Rural 600M
+                    '600000000', '600000000',
+                    # Nigeria: Total 500,000,000 → Urban 200M, Rural 300M
+                    '200000000', '300000000',
+                    # Ethiopia: Total 400,000,000 → Urban 150M, Rural 250M
+                    '150000000', '250000000',
+                    # Egypt: Total 400,000,000 → Urban 250M, Rural 150M
+                    '250000000', '150000000',
+                    # Germany: Total 300,000,000 → Urban 200M, Rural 100M
+                    '200000000', '100000000',
+                    # France: Total 250,000,000 → Urban 150M, Rural 100M
+                    '150000000', '100000000',
+                    # UK: Total 250,000,000 → Urban 160M, Rural 90000000
+                    '160000000', '90000000'
+                ]
             ]
+            chart.add_data_set(data, kind, colorByPoint=True)
+
 
             # First drilldown level
             drilldown_group = np.column_stack(self.data["groups"][0])
