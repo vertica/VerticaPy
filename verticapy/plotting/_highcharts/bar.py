@@ -179,17 +179,78 @@ class DrillDownBarChart(HighchartsBase):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_JSsource("https://code.highcharts.com/6/modules/drilldown.js")
-        init_group = np.column_stack(self.data["groups"][1])
-        data = []
-        for row in init_group:
-            data += [
-                {"name": str(row[0]), "y": float(row[1]), "drilldown": str(row[0])}
+        n_groups = len(self.data["groups"])
+        
+        if n_groups < 3:
+            print("less than 3 groups")
+            init_group = np.column_stack(self.data["groups"][1])
+            data = []
+            for row in init_group:
+                data += [
+                    {"name": str(row[0]), "y": float(row[1]), "drilldown": str(row[0])}
+                ]
+            print("data: \n", data)
+            chart.add_data_set(data, kind, colorByPoint=True)
+            print("SELF DATA ALL: \n", self.data)
+            print("self.data['groups'][0]:", self.data["groups"][0])
+            try:
+                print("self.data['groups'][1]:", self.data["groups"][1])
+            except:
+                pass
+            drilldown_group = np.column_stack(self.data["groups"][0])
+            print("drilldown_group:", drilldown_group)
+            uniques = np.unique(drilldown_group[:, 0])
+            for c in uniques:
+                data = drilldown_group[drilldown_group[:, 0] == c].tolist()
+                data = [(str(x[1]), float(x[2])) for x in data]
+                print(f"data for each {c}:", data)
+                chart.add_drilldown_data_set(data, kind, str(c), name=str(c))
+        else:
+            # Top-level data
+            data = [
+                {'name': 'A', 'y': 2.0, 'drilldown': 'A'},
+                {'name': 'B', 'y': 4.0, 'drilldown': 'B'},
+                {'name': 'C', 'y': 1.0, 'drilldown': 'C'}
             ]
-        chart.add_data_set(data, kind, colorByPoint=True)
-        drilldown_group = np.column_stack(self.data["groups"][0])
-        uniques = np.unique(drilldown_group[:, 0])
-        for c in uniques:
-            data = drilldown_group[drilldown_group[:, 0] == c].tolist()
-            data = [(str(x[1]), float(x[2])) for x in data]
-            chart.add_drilldown_data_set(data, kind, str(c), name=str(c))
+            chart.add_data_set(data, kind, colorByPoint=True)
+
+            # Define groups with additional level for X/Y
+            self.data['groups'][0] = [
+                ['B','C','A','B','A'],
+                ['F','M','M','M','F'],
+                ['3','1','1','1','1']
+            ]
+            self.data['groups'][1] = [
+                # Category, Gender, Subcategory (X/Y), Value
+                ['A', 'A', 'A', 'A', 'B', 'B', 'B', 'B', 'C', 'C', 'C', 'C'],
+                ['F', 'F', 'M', 'M', 'F', 'F', 'M', 'M', 'F', 'F', 'M', 'M'],
+                ['X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y'],
+                ['2', '1', '3', '4', '5', '2', '1', '3', '4', '1', '2', '5']
+            ]
+
+            # First drilldown level
+            drilldown_group = np.column_stack(self.data["groups"][0])
+            uniques = np.unique(drilldown_group[:, 0])
+            for c in uniques:
+                data = drilldown_group[drilldown_group[:, 0] == c].tolist()
+                # Add drilldown key for next level
+                data_points = [{
+                    'name': str(x[1]), 
+                    'y': float(x[2]), 
+                    'drilldown': f"{c}-{x[1]}"
+                } for x in data]
+                chart.add_drilldown_data_set(data_points, kind, str(c), name=str(c))
+
+            # Second drilldown level
+            drilldown_level2 = np.column_stack(self.data["groups"][1])
+            unique_keys = np.unique(drilldown_level2[:, 0:2], axis=0)
+            for key in unique_keys:
+                parent_id, x_axis_label = key[0], key[1]
+                drilldown_id = f"{parent_id}-{x_axis_label}"
+                mask = (drilldown_level2[:, 0] == parent_id) & (drilldown_level2[:, 1] == x_axis_label)
+                data_subset = drilldown_level2[mask]
+                data = [{'name': str(row[2]), 'y': float(row[3])} for row in data_subset]
+                chart.add_drilldown_data_set(data, kind, drilldown_id, name=f"{x_axis_label}")
+
+                
         return chart
