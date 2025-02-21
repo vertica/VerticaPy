@@ -2692,8 +2692,8 @@ class QueryProfiler:
             FROM 
                 v_internal.dc_query_executions 
             WHERE 
-                transaction_id = {transaction_id} AND 
-                statement_id = {statement_id}
+                transaction_id = {self.transaction_id} AND 
+                statement_id = {self.statement_id}
             ORDER BY 2 DESC;
         """
         query = self._replace_schema_in_query(query)
