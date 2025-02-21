@@ -414,7 +414,7 @@ class vDFPlot(vDFMachineLearning):
 
         """
         columns = format_type(columns, dtype=list)
-        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2, 3])
         if not (isinstance(max_cardinality, Iterable)):
             max_cardinality = (max_cardinality, max_cardinality)
         if not (isinstance(h, Iterable)):
