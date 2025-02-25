@@ -661,6 +661,8 @@ class TestQueryProfiler:
             len(res) <= 2
         )  # should be equal to 0, needs to be changed when the archive is updated
 
+    pytest.mark.skip("This test is replaced by other specific tests blow it")
+
     @pytest.mark.parametrize(
         "show",
         [
@@ -892,6 +894,248 @@ class TestQueryProfiler:
         logger.info(f"Compare Result: {res}")
 
         assert len(res) == 0
+
+    @pytest.mark.parametrize(
+        "category_order",
+        [
+            # "trace",  # need to implement
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            # "min ascending",  # need to implement
+            # "min descending",  # need to implement
+            # "max ascending",  # need to implement
+            # "max descending",  # need to implement
+            # "sum ascending",
+            # "sum descending",
+            # "mean ascending",  # need to implement
+            # "mean descending",  # need to implement
+            # "median ascending",  # need to implement
+            # "median descending",  # need to implement
+        ],
+    )
+    @pytest.mark.parametrize(
+        "kind",
+        [
+            "bar",
+            # "barh",
+        ],
+    )
+    @pytest.mark.parametrize(
+        "unit",
+        [
+            "s",
+            "m",
+            "h",
+        ],
+    )
+    def test_get_qsteps_check_total_times(self, unit, kind, category_order):
+        # Step 1: Get database total time
+        qprof = QueryProfiler(transactions=QPROF_SQL2)
+        qprof_steps = qprof.get_qsteps(
+            unit=unit,
+            kind=kind,
+            categoryorder=category_order,
+        )
+        transaction_id, statement_id = qprof.transactions[
+            0
+        ]  # Get IDs from QueryProfiler
+        query = (
+            f"SELECT SUM((completion_time - time) / '00:00:01'::interval) AS total_time "
+            f"FROM v_internal.dc_query_executions "
+            f"WHERE transaction_id={transaction_id} AND statement_id={statement_id} "
+            f"AND execution_step NOT LIKE '%:%'"
+        )
+        db_total_time = vp.vDataFrame(query).to_pandas().iloc[0]["total_time"]
+        logger.info(f"Database total time: {db_total_time} seconds")
+
+        # Step 2: Get graph total time
+        qprof_steps = qprof.get_qsteps(unit="s", kind="bar", show=True)
+        graph_total_time = sum(item["y"] for item in qprof_steps.data_temp[0].data)
+        logger.info(f"Graph total time: {graph_total_time} seconds")
+
+        # Step 3: Compare with pytest.approx
+        assert db_total_time == pytest.approx(graph_total_time, abs=5e-3), (
+            f"Total times differ: Database={db_total_time}, Graph={graph_total_time}, "
+            f"Difference={abs(db_total_time - graph_total_time)}"
+        )
+
+    @pytest.mark.parametrize(
+        "category_order",
+        [
+            # "trace",  # need to implement
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            # "min ascending",  # need to implement
+            # "min descending",  # need to implement
+            # "max ascending",  # need to implement
+            # "max descending",  # need to implement
+            # "sum ascending",
+            # "sum descending",
+            # "mean ascending",  # need to implement
+            # "mean descending",  # need to implement
+            # "median ascending",  # need to implement
+            # "median descending",  # need to implement
+        ],
+    )
+    @pytest.mark.parametrize(
+        "kind",
+        [
+            "bar",
+            # "barh",
+        ],
+    )
+    @pytest.mark.parametrize(
+        "unit",
+        [
+            "s",
+            "m",
+            "h",
+        ],
+    )
+    def test_get_qsteps_main_step_names(self, unit, kind, category_order):
+        """
+        Test that all main step names from dc_query_executions match those in qprof_steps.drilldown_data_temp.
+        Main steps are identified by having 'drilldown' keys in their data.
+        """
+        # Setup: Initialize QueryProfiler and get qsteps
+        qprof = QueryProfiler(transactions=QPROF_SQL2)
+        qprof_steps = qprof.get_qsteps(
+            unit="s",  # Seconds as the unit
+            kind="bar",  # Bar chart type
+            show=True,  # Access drilldown_data_temp
+        )
+
+        # Get expected main step names from dc_query_executions
+        transaction_id, statement_id = qprof.transactions[0]
+        expected_qplans_vdf = vp.vDataFrame(
+            f"select execution_step from v_internal.dc_query_executions where transaction_id={transaction_id} and statement_id={statement_id}"
+        )
+        # Extract unique top-level step names (first part before ":")
+        expected_steps = {
+            row["execution_step"].split(":")[0]
+            for _, row in expected_qplans_vdf.to_pandas().iterrows()
+        }
+
+        # Extract actual main step names from drilldown_data_temp
+        # Main steps have 'drilldown' in their data dictionaries
+        actual_steps = {
+            temp_data.name
+            for temp_data in qprof_steps.drilldown_data_temp
+            if any("drilldown" in item for item in temp_data.data)
+        }
+
+        # Log results for debugging
+        logger.info("Expected main step names: %s", sorted(expected_steps))
+        logger.info("Actual main step names: %s", sorted(actual_steps))
+
+        # Assertions
+        missing_steps = expected_steps - actual_steps
+        extra_steps = actual_steps - expected_steps
+
+        assert not missing_steps, f"Missing main step names: {missing_steps}"
+        assert not extra_steps, f"Unexpected main step names: {extra_steps}"
+
+    @pytest.mark.parametrize(
+        "category_order",
+        [
+            # "trace",  # need to implement
+            "category ascending",
+            "category descending",
+            "total ascending",
+            "total descending",
+            # "min ascending",  # need to implement
+            # "min descending",  # need to implement
+            # "max ascending",  # need to implement
+            # "max descending",  # need to implement
+            # "sum ascending",
+            # "sum descending",
+            # "mean ascending",  # need to implement
+            # "mean descending",  # need to implement
+            # "median ascending",  # need to implement
+            # "median descending",  # need to implement
+        ],
+    )
+    @pytest.mark.parametrize(
+        "kind",
+        [
+            "bar",
+            # "barh",
+        ],
+    )
+    @pytest.mark.parametrize(
+        "unit",
+        [
+            "s",
+            "m",
+            "h",
+        ],
+    )
+    def test_get_qsteps_sub_step_names(self, unit, kind, category_order):
+        """
+        Test that sub-step names from dc_query_executions match those in qprof_steps.drilldown_data_temp,
+        accounting for 'Misc' added in the graph for steps without subcategories.
+        """
+        # Initialize QueryProfiler and get qsteps
+        qprof = QueryProfiler(transactions=QPROF_SQL2)
+        qprof_steps = qprof.get_qsteps(unit="s", kind="bar", show=True)
+
+        # Get execution steps from dc_query_executions
+        transaction_id, statement_id = qprof.transactions[0]
+        expected_qplans_vdf = vp.vDataFrame(
+            f"select execution_step from v_internal.dc_query_executions "
+            f"where transaction_id={transaction_id} and statement_id={statement_id}"
+        )
+        # Convert to pandas and extract the list of execution steps
+        execution_steps = expected_qplans_vdf.to_pandas()["execution_step"].to_list()
+
+        # Organize database steps into main steps and their sub-steps
+        db_main_steps = {}
+        for step in execution_steps:
+            parts = step.split(":")
+            main_step = parts[0]
+            sub_step = parts[1] if len(parts) > 1 else None
+            if main_step not in db_main_steps:
+                db_main_steps[main_step] = set()
+            if sub_step:
+                db_main_steps[main_step].add(sub_step)
+
+        # Organize graph steps into main steps and their sub-steps
+        graph_main_steps = {}
+        for temp_data in qprof_steps.drilldown_data_temp:
+            if any("drilldown" in d for d in temp_data.data):  # Main steps only
+                graph_main_steps[temp_data.name] = {
+                    item["name"] for item in temp_data.data
+                }
+
+        # Log for debugging
+        logger.info("Database main steps and sub-steps: %s", db_main_steps)
+        logger.info("Graph main steps and sub-steps: %s", graph_main_steps)
+
+        # Verify each main step
+        for main_step, db_sub_steps in db_main_steps.items():
+            assert (
+                main_step in graph_main_steps
+            ), f"Main step '{main_step}' missing in graph"
+            graph_sub_steps = graph_main_steps[main_step]
+
+            if db_sub_steps:  # Main step has explicit sub-steps
+                # All database sub-steps must be in the graph
+                missing = db_sub_steps - graph_sub_steps
+                assert not missing, f"Sub-steps missing for '{main_step}': {missing}"
+                # Graph can have 'Misc' as an extra sub-step
+                expected_with_misc = db_sub_steps | {"Misc"}
+                assert graph_sub_steps.issubset(
+                    expected_with_misc
+                ), f"Unexpected sub-steps for '{main_step}': {graph_sub_steps - expected_with_misc}"
+            else:  # Main step has no sub-steps
+                # Graph should have only 'Misc'
+                assert graph_sub_steps == {
+                    "Misc"
+                }, f"Expected only 'Misc' for '{main_step}' with no sub-steps, got {graph_sub_steps}"
 
     @pytest.mark.parametrize(
         "return_report, print_plan",
