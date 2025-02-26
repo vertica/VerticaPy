@@ -661,8 +661,6 @@ class TestQueryProfiler:
             len(res) <= 2
         )  # should be equal to 0, needs to be changed when the archive is updated
 
-    
-
     @pytest.mark.parametrize(
         "show",
         [
