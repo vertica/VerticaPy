@@ -661,7 +661,7 @@ class TestQueryProfiler:
             len(res) <= 2
         )  # should be equal to 0, needs to be changed when the archive is updated
 
-    pytest.mark.skip("This test is replaced by other specific tests blow it")
+    
 
     @pytest.mark.parametrize(
         "show",
@@ -705,6 +705,7 @@ class TestQueryProfiler:
             "h",
         ],
     )
+    @pytest.mark.skip("This test is replaced by other specific tests blow it")
     # code always sorts on sub_step desc for show=false
     def test_get_qsteps(self, unit, kind, category_order, show):
         """
