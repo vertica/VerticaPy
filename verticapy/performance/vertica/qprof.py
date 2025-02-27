@@ -2685,25 +2685,39 @@ class QueryProfiler:
         div = self._get_interval_str(unit)
         query = f"""
             SELECT
-                REPLACE(COALESCE(REGEXP_SUBSTR(
-                    execution_step, '(.+):'), execution_step), ':', '') AS step,
-                REPLACE(COALESCE(REGEXP_SUBSTR(
-                    execution_step, ':(.+)'), execution_step), ':', '') AS substep,
+                SPLIT_PART(execution_step, ':', 1) AS step,
+                SPLIT_PART(execution_step, ':', 2) AS substep,
+                SPLIT_PART(execution_step, ':', 3) AS subsubstep,
                 (completion_time - time) / '{div}'::interval AS elapsed
             FROM 
                 v_internal.dc_query_executions 
             WHERE 
-                transaction_id={self.transaction_id} AND 
-                statement_id={self.statement_id}
-            ORDER BY 2 DESC;"""
+                transaction_id = {self.transaction_id} AND 
+                statement_id = {self.statement_id}
+            ORDER BY 2 DESC;
+        """
         query = self._replace_schema_in_query(query)
         vdf = vDataFrame(query)
+        # Modify the table to get detailed numbers
+        vdf.eval(name="substep_new", expr="DECODE(substep, '', 'Misc', substep)")
+        vdf.eval(
+            name="subsubstep_new", expr="DECODE(subsubstep, '', 'Misc', subsubstep)"
+        )
+        vdf.eval(
+            name="elapsed_adjusted",
+            expr="CASE WHEN substep_new = 'Misc' THEN elapsed - LAG(elapsed) OVER (PARTITION BY step ORDER BY elapsed) ELSE elapsed END",
+        )
+        vdf.eval(name="elapsed_new", expr="COALESCE(elapsed_adjusted, elapsed)")
+        vdf.drop(columns=["substep", "subsubstep", "elapsed", "elapsed_adjusted"])
+        vdf["substep_new"].rename("substep")
+        vdf["subsubstep_new"].rename("subsubstep")
+        vdf["elapsed_new"].rename("elapsed")
         if show:
             self._check_vdf_empty(vdf)
             fun = self._get_chart_method(vdf, kind)
             return fun(
-                columns=["step", "substep"],
-                method="max",
+                columns=["step", "substep", "subsubstep"],
+                method="sum",
                 of="elapsed",
                 categoryorder=categoryorder,
                 max_cardinality=1000,
