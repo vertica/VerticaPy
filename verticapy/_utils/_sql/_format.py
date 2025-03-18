@@ -1663,6 +1663,11 @@ def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
             )
             if rel_transf.split('"')[2] != ".":
                 raise ParsingError("The format of the input relation is incorrect.")
+        elif quote_nb == 0 and dot_nb == 2:
+            # Handle namespace.schema.table
+            parts = relation.split(".")
+            schema = f"{parts[0]}.{parts[1]}"
+            relation = parts[2]
         else:
             raise ParsingError("The format of the input relation is incorrect.")
     else:
