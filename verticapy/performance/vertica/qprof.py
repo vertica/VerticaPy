@@ -1883,6 +1883,7 @@ class QueryProfiler:
         self.start_timestamp = []
         self.end_timestamp = []
         self.query_successes = []
+        self.queue_times = []
         # Extracting transaction_ids and statement_ids from the list of tuples
         transaction_ids = [t[0] for t in self.transactions]
         statement_ids = [t[1] for t in self.transactions]
@@ -1906,7 +1907,8 @@ class QueryProfiler:
                 query_duration_us,
                 q2.start_time,
                 q2.end_time,
-                q2.success
+                q2.success,
+                ROUND(EXTRACT(EPOCH FROM (q3.acquisition_timestamp - q3.queue_entry_timestamp)), 3) AS queue_time_sec
             FROM 
                 v_internal.dc_requests_issued AS q0
             FULL JOIN
@@ -1915,10 +1917,13 @@ class QueryProfiler:
             FULL JOIN
                 v_monitor.query_consumption AS q2 
                 USING (transaction_id, statement_id)
+            LEFT JOIN
+                v_monitor.resource_acquisitions AS q3
+                USING (transaction_id, statement_id)
             WHERE 
                 {transaction_id_condition}
                 AND {statement_id_condition};
-                """
+        """
         query = self._replace_schema_in_query(query)
         res = _executeSQL(
             query,
@@ -1934,6 +1939,7 @@ class QueryProfiler:
                 "query_start_timestamp": row[5],
                 "query_end_timestamp": row[6],
                 "query_success": row[7],
+                "queue_time_sec": row[8],
             }
         for tr_id, st_id in self.transactions:
             if (tr_id, st_id) not in transactions_dict:
@@ -1950,9 +1956,11 @@ class QueryProfiler:
                 self.start_timestamp += [info["query_start_timestamp"]]
                 self.end_timestamp += [info["query_end_timestamp"]]
                 self.query_successes += [info["query_success"]]
+                self.queue_times += [info["queue_time_sec"]]
         self.request = self.requests[self.transactions_idx]
         self.qduration = self.qdurations[self.transactions_idx]
         self.query_success = self.query_successes[self.transactions_idx]
+        self.queue_time = self.queue_times[self.transactions_idx]
 
     def _get_current_nodes(self):
         """
@@ -2090,6 +2098,7 @@ class QueryProfiler:
                 self.request = self.requests[idx]
                 self.qduration = self.qdurations[idx]
                 self.query_success = self.query_successes[idx]
+                self.queue_time = self.queue_times[idx]
                 try:
                     self.session_params_non_default_current = (
                         self.session_params_non_default[idx]
