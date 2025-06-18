@@ -462,7 +462,10 @@ class TestAgg:
         print(
             f"Function name: {vpy_func} \nVerticaPy Result: {vpy_res} \nPython Result :{py_res}\n"
         )
-        assert vpy_res == pytest.approx(py_res, abs=1e-3)
+        if func_name in ["all", "any"]:
+            assert bool(vpy_res) == bool(py_res)
+        else:
+            assert vpy_res == pytest.approx(py_res, abs=1e-3)
 
     @pytest.mark.parametrize(
         "func_name",
