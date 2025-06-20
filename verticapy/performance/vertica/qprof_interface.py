@@ -112,9 +112,9 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._query_display_info = widgets.HTML(
             value=f"""
         <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html} <br>
-        <b>Completion Time:</b> {self.get_qduration()} (seconds)<br>
-        <b>Queue Time:</b> {self.queue_time} (seconds) <br>
-        <b>Run Time:</b> {float(self.get_qduration())-float(self.queue_time)} (seconds) <br>
+        <b>Completion Time:</b> {float(self.get_qduration()):.6f} (seconds)<br>
+        <b>Queue Time:</b> {float(self.queue_time):.6f} (seconds) <br>
+        <b>Run Time:</b> {(float(self.get_qduration()) - float(self.queue_time)):.6f} (seconds) <br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
         <b>Statement ID:</b> {self.statement_id} <br>
@@ -755,9 +755,9 @@ class QueryProfilerInterface(QueryProfilerStats):
         self._query_display.children[0].value = current_query
         self._query_display_info.value = f"""
         <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html} <br>
-        <b>Completion Time:</b> {self.get_qduration()} (seconds)<br>
-        <b>Queue Time:</b> {self.queue_time} (seconds) <br>
-        <b>Run Time:</b> {float(self.get_qduration())-float(self.queue_time)} (seconds) <br>
+        <b>Completion Time:</b> {float(self.get_qduration()):.6f} (seconds) <br>
+        <b>Queue Time:</b> {float(self.queue_time):.6f} (seconds) <br>
+        <b>Run Time:</b> {(float(self.get_qduration()) - float(self.queue_time)):.6f} (seconds) <br>
         <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
         <b>Transaction ID:</b> {self.transaction_id} <br>
         <b>Statement ID:</b> {self.statement_id} <br>
