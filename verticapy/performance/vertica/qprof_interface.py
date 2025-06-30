@@ -111,15 +111,42 @@ class QueryProfilerInterface(QueryProfilerStats):
         # Query Inofrmation - Query Text & Time
         self._query_display_info = widgets.HTML(
             value=f"""
-        <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html} <br>
-        <b>Completion Time:</b> {float(self.get_qduration()):.6f} (seconds)<br>
-        <b>Queue Time:</b> {float(self.queue_time):.6f} (seconds) <br>
-        <b>Run Time:</b> {(float(self.get_qduration()) - float(self.queue_time)):.6f} (seconds) <br>
-        <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
-        <b>Transaction ID:</b> {self.transaction_id} <br>
-        <b>Statement ID:</b> {self.statement_id} <br>
-        <b>Key ID:</b> {self.key_id}
-        """
+            <div>
+                <div style="margin-bottom: 4px;">
+                    <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html}
+                </div>
+                
+                <div style="display: table; border-spacing: 0;">
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Completion Time:</b></div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.get_qduration()):.6f}</div>
+                        <div style="display: table-cell; ">(seconds)</div>
+                    </div>
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Queue Time:</b></div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.queue_time):.6f}</div>
+                        <div style="display: table-cell; ">(seconds)</div>
+                    </div>
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Run Time:</b></div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">{(float(self.get_qduration()) - float(self.queue_time)):.6f}</div>
+                        <div style="display: table-cell; ">(seconds)</div>
+                    </div>
+                </div>
+                <div style="margin-top: 4px;">
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Transaction ID:</b></div>
+                        <div style="display: table-cell; text-align: left; width: 70px; padding-left: 5px;">{self.transaction_id}</div>
+                    </div>
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Statement ID:</b></div>
+                        <div style="display: table-cell; text-align: left; width: 70px; padding-left: 5px;">{self.statement_id}</div>
+                    </div>
+                    <div><b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''}</div>
+                    <div><b>Key ID:</b> {self.key_id}</div>
+                </div>
+            </div>
+            """
         )
         self._query_display = widgets.VBox(
             [
@@ -754,14 +781,41 @@ class QueryProfilerInterface(QueryProfilerStats):
         current_query = self.get_request(print_sql=False, return_html=True)
         self._query_display.children[0].value = current_query
         self._query_display_info.value = f"""
-        <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html} <br>
-        <b>Completion Time:</b> {float(self.get_qduration()):.6f} (seconds) <br>
-        <b>Queue Time:</b> {float(self.queue_time):.6f} (seconds) <br>
-        <b>Run Time:</b> {(float(self.get_qduration()) - float(self.queue_time)):.6f} (seconds) <br>
-        <b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''} <br>
-        <b>Transaction ID:</b> {self.transaction_id} <br>
-        <b>Statement ID:</b> {self.statement_id} <br>
-        <b>Key ID:</b> {self.key_id}
+            <div>
+                <div style="margin-bottom: 4px;">
+                    <b>Query Execution Success:</b> {self._success_html if self.query_success else self._failure_html}
+                </div>
+                
+                <div style="display: table; border-spacing: 0;">
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Completion Time:</b></div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.get_qduration()):.6f}</div>
+                        <div style="display: table-cell; ">(seconds)</div>
+                    </div>
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Queue Time:</b></div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.queue_time):.6f}</div>
+                        <div style="display: table-cell; ">(seconds)</div>
+                    </div>
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Run Time:</b></div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">{(float(self.get_qduration()) - float(self.queue_time)):.6f}</div>
+                        <div style="display: table-cell; ">(seconds)</div>
+                    </div>
+                </div>
+                <div style="margin-top: 4px;">
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Transaction ID:</b></div>
+                        <div style="display: table-cell; text-align: left; width: 70px; padding-left: 5px;">{self.transaction_id}</div>
+                    </div>
+                    <div style="display: table-row;">
+                        <div style="display: table-cell; "><b>Statement ID:</b></div>
+                        <div style="display: table-cell; text-align: left; width: 70px; padding-left: 5px;">{self.statement_id}</div>
+                    </div>
+                    <div><b>Target Schema:</b> {self.target_schema["v_internal"] if self.target_schema else ''}</div>
+                    <div><b>Key ID:</b> {self.key_id}</div>
+                </div>
+            </div>
         """
 
     def _update_session_param_display(self):
