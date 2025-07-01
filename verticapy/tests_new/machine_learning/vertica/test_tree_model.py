@@ -587,7 +587,7 @@ class TestClassificationTreeModel:
         py_model_obj = get_py_model(model_class)
         precision, recall, _ = skl_metrics.precision_recall_curve(
             y_true=py_model_obj.y.ravel(),
-            probas_pred=py_model_obj.pred_prob[:, 1].ravel(),
+            y_score=py_model_obj.pred_prob[:, 1].ravel(),
         )
         py_res = skl_metrics.auc(recall, precision)
 
