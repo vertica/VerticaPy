@@ -2593,7 +2593,14 @@ class QueryProfiler:
         """
         if isinstance(self.queue_time, NoneType):
             return None
-        return float(self.queue_time / self._get_interval(unit))
+        if unit.startswith("s"):
+            return float(self.queue_time)
+        elif unit.startswith("m"):
+            return float(self.queue_time / 60)
+        elif unit.startswith("h"):
+            return float(self.queue_time / 3600)
+        else:
+            raise ValueError("Incorrect parameter 'unit'.")
 
     # Step 2c: Query run time
     def get_run_time(
@@ -2656,11 +2663,22 @@ class QueryProfiler:
             For more details, please look at
             :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
         """
-        if isinstance(self.qduration, NoneType) or isinstance(self.queue_time, NoneType):
+        qd = self.get_qduration(unit="s")
+        qt = self.get_queue_time(unit="s")
+
+        if qd is None or qt is None:
             return None
-        return float(
-            (self.qduration - self.queue_time) / self._get_interval(unit)
-        )
+
+        run_time_sec = qd - qt
+
+        if unit.startswith("s"):
+            return float(run_time_sec)
+        elif unit.startswith("m"):
+            return float(run_time_sec / 60)
+        elif unit.startswith("h"):
+            return float(run_time_sec / 3600)
+        else:
+            raise ValueError(f"Incorrect unit: {unit}")
 
     # Step 3: Query execution steps
     def get_qsteps(
