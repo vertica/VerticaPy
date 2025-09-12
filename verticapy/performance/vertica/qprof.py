@@ -2533,6 +2533,135 @@ class QueryProfiler:
             return None
         return float(self.qduration / self._get_interval(unit))
 
+    # Step 2b: Query queue time
+    def get_queue_time(
+        self,
+        unit: Literal["s", "m", "h"] = "s",
+    ) -> float:
+        """
+        Returns the Query queue time if available.
+
+        Parameters
+        ----------
+        unit: str, optional
+            Time Unit.
+
+            - s:
+                second
+
+            - m:
+                minute
+
+            - h:
+                hour
+
+        Returns
+        -------
+        float
+            Query queue time.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can get the execution time by:
+
+        .. ipython:: python
+
+            qprof.get_queue_time(unit = "s")
+
+        .. note::
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        if isinstance(self.queue_time, NoneType):
+            return None
+        return float(self.queue_time / self._get_interval(unit))
+
+    # Step 2c: Query run time
+    def get_run_time(
+        self,
+        unit: Literal["s", "m", "h"] = "s",
+    ) -> float:
+        """
+        Returns the Query run time (duration minus queue time) if available.
+
+        Parameters
+        ----------
+        unit: str, optional
+            Time Unit.
+
+            - s:
+                second
+
+            - m:
+                minute
+
+            - h:
+                hour
+
+        Returns
+        -------
+        float
+            Query run time.
+
+        Examples
+        --------
+        First, let's import the
+        :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`
+        object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can get the run time by:
+
+        .. ipython:: python
+
+            qprof.get_run_time(unit = "s")
+
+        .. note::
+
+            This returns ``None`` if either query duration or queue time
+            is not available.
+
+            For more details, please look at
+            :py:class:`~verticapy.performance.vertica.qprof.QueryProfiler`.
+        """
+        if isinstance(self.qduration, NoneType) or isinstance(self.queue_time, NoneType):
+            return None
+        return float(
+            (self.qduration - self.queue_time) / self._get_interval(unit)
+        )
+
     # Step 3: Query execution steps
     def get_qsteps(
         self,
