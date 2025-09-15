@@ -3198,7 +3198,7 @@ class LocalOutlierFactor(VerticaModel):
             self._is_already_stored(raise_error=True)
         self.key_columns = quote_ident(key_columns)
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.current_relation()
+            self.input_relation = input_relation.current_relation(reindent=False)
             if not X:
                 X = input_relation.numcol()
         else:
