@@ -278,7 +278,7 @@ class TimeSeriesModelBase(VerticaModel):
         if isinstance(input_relation, vDataFrame) and self._is_native:
             tmp_view = True
             if isinstance(input_relation, vDataFrame):
-                self.input_relation = input_relation.current_relation()
+                self.input_relation = input_relation.current_relation(reindent=False)
             else:
                 self.input_relation = input_relation
             relation = gen_tmp_name(

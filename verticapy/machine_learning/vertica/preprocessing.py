@@ -1019,7 +1019,7 @@ class CountVectorizer(VerticaModel):
         if isinstance(input_relation, vDataFrame):
             if isinstance(X, NoneType):
                 X = input_relation.get_columns()
-            self.input_relation = input_relation.current_relation()
+            self.input_relation = input_relation.current_relation(reindent=False)
         else:
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).get_columns()
