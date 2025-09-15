@@ -1935,7 +1935,7 @@ class vDFFilter(vDFAgg):
             conditions = f" WHERE {conditions}"
         all_cols = ", ".join(["*"] + expr)
         query = f"SELECT {all_cols} FROM {self}{conditions}"
-        result = create_new_vdf(query)
+        result = create_new_vdf(query, _clean_query=False)
         if usecols:
             result = result.select(usecols)
         return result.sort(order_by)
