@@ -119,17 +119,23 @@ class QueryProfilerInterface(QueryProfilerStats):
                 <div style="display: table; border-spacing: 0;">
                     <div style="display: table-row;">
                         <div style="display: table-cell; "><b>Completion Time:</b></div>
-                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.get_qduration()):.6f}</div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">
+                            {f"{float(self.get_qduration()):.6f}" if self.get_qduration() is not None else "NULL"}
+                        </div>
                         <div style="display: table-cell; ">(seconds)</div>
                     </div>
                     <div style="display: table-row;">
                         <div style="display: table-cell; "><b>Queue Time:</b></div>
-                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.queue_time):.6f}</div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">
+                            {f"{float(self.get_queue_time()):.6f}" if self.get_queue_time() is not None else "NULL"}
+                        </div>
                         <div style="display: table-cell; ">(seconds)</div>
                     </div>
                     <div style="display: table-row;">
                         <div style="display: table-cell; "><b>Run Time:</b></div>
-                        <div style="display: table-cell; text-align: right; width: 70px;">{(float(self.get_qduration()) - float(self.queue_time)):.6f}</div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">
+                            {f"{float(self.get_run_time()):.6f}" if self.get_run_time() is not None else "NULL"}
+                        </div>
                         <div style="display: table-cell; ">(seconds)</div>
                     </div>
                 </div>
@@ -789,17 +795,23 @@ class QueryProfilerInterface(QueryProfilerStats):
                 <div style="display: table; border-spacing: 0;">
                     <div style="display: table-row;">
                         <div style="display: table-cell; "><b>Completion Time:</b></div>
-                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.get_qduration()):.6f}</div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">
+                            {f"{float(self.get_qduration()):.6f}" if self.get_qduration() is not None else "NULL"}
+                        </div>
                         <div style="display: table-cell; ">(seconds)</div>
                     </div>
                     <div style="display: table-row;">
                         <div style="display: table-cell; "><b>Queue Time:</b></div>
-                        <div style="display: table-cell; text-align: right; width: 70px;">{float(self.queue_time):.6f}</div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">
+                            {f"{float(self.get_queue_time()):.6f}" if self.get_queue_time() is not None else "NULL"}
+                        </div>
                         <div style="display: table-cell; ">(seconds)</div>
                     </div>
                     <div style="display: table-row;">
                         <div style="display: table-cell; "><b>Run Time:</b></div>
-                        <div style="display: table-cell; text-align: right; width: 70px;">{(float(self.get_qduration()) - float(self.queue_time)):.6f}</div>
+                        <div style="display: table-cell; text-align: right; width: 70px;">
+                            {f"{float(self.get_run_time()):.6f}" if self.get_run_time() is not None else "NULL"}
+                        </div>
                         <div style="display: table-cell; ">(seconds)</div>
                     </div>
                 </div>
