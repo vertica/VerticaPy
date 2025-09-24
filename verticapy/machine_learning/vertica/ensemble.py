@@ -2698,6 +2698,27 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         except MissingRelation:
             self.classes_ = np.array([])
 
+        # If classes are empty, infer them from the first tree's values
+        if len(self.classes_) == 0:
+            try:
+                first_tree = self._compute_trees_arrays(self.get_tree(0), self.X, True)
+                unique_values = set()
+                for j in range(len(first_tree[4])):  # first_tree[4] is the value array
+                    if not isinstance(first_tree[4][j], NoneType):
+                        unique_values.add(first_tree[4][j])
+                if unique_values:
+                    self.classes_ = np.array(sorted(unique_values))
+                else:
+                    raise ValueError(
+                        "Unable to determine classes: no valid values found in tree structure. "
+                        "This may indicate a problem with the model or data."
+                    )
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to infer classes from model structure: {str(e)}. "
+                    "This may indicate the model is corrupted or incompatible."
+                )
+
         trees = []
         for i in range(self.n_estimators_):
             tree = self._compute_trees_arrays(self.get_tree(i), self.X, True)
@@ -2720,10 +2741,11 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                         if str(c) == str(tree_d["value"][j]):
                             prob[k] = tree[6][j]
                             break
-                    other_proba = (1 - tree[6][j]) / (n_classes - 1)
-                    for k, p in enumerate(prob):
-                        if p == 0.0:
-                            prob[k] = other_proba
+                    if n_classes > 1:
+                        other_proba = (1 - tree[6][j]) / (n_classes - 1)
+                        for k, p in enumerate(prob):
+                            if p == 0.0:
+                                prob[k] = other_proba
                     tree_d["value"][j] = prob
             model = mm.BinaryTreeClassifier(**tree_d)
             trees += [model]
