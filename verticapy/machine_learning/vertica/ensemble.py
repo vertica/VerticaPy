@@ -3702,10 +3702,14 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
                 except (MissingRelation, QueryError):
                     # If training data is not available, use default prior from initial_prediction
                     try:
-                        prior_values = self.get_vertica_attributes("initial_prediction")["value"]
+                        prior_values = self.get_vertica_attributes(
+                            "initial_prediction"
+                        )["value"]
                         if null_:
                             prior_values = prior_values[1:]
-                        prior = np.array(prior_values)[1] if len(prior_values) > 1 else 0.5
+                        prior = (
+                            np.array(prior_values)[1] if len(prior_values) > 1 else 0.5
+                        )
                     except:
                         prior = 0.5  # Default fallback
             else:
@@ -3751,6 +3755,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
             model = mm.BinaryTreeClassifier(**tree_d)
             trees += [model]
         self.trees_ = trees
+
     # I/O Methods.
 
     def to_memmodel(self) -> mm.XGBClassifier:
