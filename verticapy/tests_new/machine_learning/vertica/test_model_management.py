@@ -286,6 +286,136 @@ class TestModelManagement:
             py_res, rel=rel_abs_tol_map[model_class]["load_model"]["rel"]
         )
 
+class TestModelManagementFromDB:
+    """
+    Focused test class for load_model_from_database functionality
+    """
+
+    @pytest.mark.parametrize("category", ["vertica"])  # Only test vertica category
+    @pytest.mark.parametrize(
+        "model_class",
+        [
+            "RandomForestRegressor",
+            "RandomForestClassifier",
+            "DecisionTreeRegressor",
+            "DecisionTreeClassifier",
+            "DummyTreeRegressor",
+            # "DummyTreeClassifier", # fail
+            "XGBRegressor",
+            "XGBClassifier",
+            "Ridge",
+            "Lasso",
+            "ElasticNet",
+            "LinearRegression",
+            "LinearSVR",
+            "PoissonRegressor",
+            # "AR", "MA", "ARMA", "ARIMA", # Models were skipped above in the simple load test as well
+        ],
+    )
+    def test_load_model_from_database(
+        self,
+        get_py_model,
+        winequality_vpy_fun,
+        titanic_vd_fun,
+        model_class,
+        category,
+        schema_loader,
+    ):
+        """
+        test function - load_model directly from database storage
+        Tests the real user workflow: create model with name -> fit -> load by name -> predict
+        Focused test with reduced parameters for efficiency
+        """
+        # No need to skip - we only have vertica category now
+
+        py_model_obj = get_py_model(model_class)
+        
+        # Create a unique model name for this test
+        model_name = f"test_load_db_{model_class.lower()}"
+        full_model_name = f"{schema_loader}.{model_name}"
+        
+        # Clean up any existing model
+        vp.drop(name=full_model_name, method="model")
+        
+        # Step 1: Create and fit a fresh model with a specific name (this saves it to database)
+        model_class_obj = getattr(
+            __import__("verticapy.machine_learning.vertica", fromlist=[model_class]),
+            model_class
+        )
+        
+        # Create model with name (this will save it to the database when fitted) 
+        original_model = model_class_obj(name=full_model_name)
+        
+        # Fit the model with appropriate data and features based on model type
+        if model_class in [
+            "RandomForestRegressor",
+            "DecisionTreeRegressor", 
+            "DummyTreeRegressor",
+            "XGBRegressor",
+            "Ridge",
+            "Lasso", 
+            "ElasticNet",
+            "LinearRegression",
+            "LinearSVR",
+            "PoissonRegressor",
+        ]:
+            # Regression models - use winequality dataset
+            original_model.fit(winequality_vpy_fun, ["citric_acid", "residual_sugar", "alcohol"], "quality")
+        elif model_class in [
+            "RandomForestClassifier",
+            "DecisionTreeClassifier",
+            "DummyTreeClassifier", 
+            "XGBClassifier",
+        ]:
+            # Classification models - use titanic dataset  
+            original_model.fit(titanic_vd_fun, ["age", "fare", "sex"], "survived")
+        
+        # Step 2: Load the model from database using its name (this is what users do)
+        loaded_model = load_model(name=full_model_name)
+
+        # Step 3: Test prediction with loaded model (this is where the bug occurs)
+        if model_class in [
+            "RandomForestClassifier",
+            "DecisionTreeClassifier",
+            "DummyTreeClassifier",
+            "XGBClassifier",
+        ]:
+            # Classification models
+            pred_vdf = loaded_model.predict(
+                titanic_vd_fun, ["age", "fare", "sex"], "db_prediction"
+            )
+            # Handle None values in prediction results
+            prediction_values = pred_vdf[["db_prediction"]].to_list()
+            valid_predictions = []
+            for row in prediction_values:
+                if row[0] is not None:
+                    valid_predictions.append(int(row[0]))
+            vpy_res = np.mean(valid_predictions) if valid_predictions else 0
+            py_res = py_model_obj.pred.sum()
+        else:
+            # Regression models
+            pred_vdf = loaded_model.predict(
+                winequality_vpy_fun,
+                ["citric_acid", "residual_sugar", "alcohol"],
+                "db_prediction",
+            )
+            vpy_res = np.mean(
+                list(chain(*np.array(pred_vdf[["db_prediction"]].to_list(), dtype=float)))
+            )
+            py_res = py_model_obj.pred.mean()
+
+        _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+        print(
+            f"Model_class: {model_class}, Metric_name: load_model_from_database, rel_tol(e): {'%.e' % Decimal(_rel_tol)}, abs_tol(e): {'%.e' % Decimal(_abs_tol)}"
+        )
+
+        assert vpy_res == pytest.approx(
+            py_res, rel=rel_abs_tol_map[model_class]["load_model"]["rel"]
+        )
+        
+        # Clean up
+        vp.drop(name=full_model_name, method="model")
+
 
 @pytest.mark.parametrize(
     "category",

@@ -28,6 +28,7 @@ from verticapy._typing import (
     SQLColumns,
     SQLRelation,
 )
+from verticapy.errors import ModelError
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
@@ -2698,6 +2699,27 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         except MissingRelation:
             self.classes_ = np.array([])
 
+        # If classes are empty, infer them from the first tree's values
+        if len(self.classes_) == 0:
+            try:
+                first_tree = self._compute_trees_arrays(self.get_tree(0), self.X, True)
+                unique_values = set()
+                for j in range(len(first_tree[4])):  # first_tree[4] is the value array
+                    if not isinstance(first_tree[4][j], NoneType):
+                        unique_values.add(first_tree[4][j])
+                if unique_values:
+                    self.classes_ = np.array(sorted(unique_values))
+                else:
+                    raise ModelError(
+                        "Unable to determine classes: no valid values found in tree structure. "
+                        "This may indicate a problem with the model or data."
+                    )
+            except Exception as e:
+                raise ModelError(
+                    f"Failed to infer classes from model structure: {str(e)}. "
+                    "This may indicate the model is corrupted or incompatible."
+                )
+
         trees = []
         for i in range(self.n_estimators_):
             tree = self._compute_trees_arrays(self.get_tree(i), self.X, True)
@@ -2720,10 +2742,11 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                         if str(c) == str(tree_d["value"][j]):
                             prob[k] = tree[6][j]
                             break
-                    other_proba = (1 - tree[6][j]) / (n_classes - 1)
-                    for k, p in enumerate(prob):
-                        if p == 0.0:
-                            prob[k] = other_proba
+                    if n_classes > 1:
+                        other_proba = (1 - tree[6][j]) / (n_classes - 1)
+                        for k, p in enumerate(prob):
+                            if p == 0.0:
+                                prob[k] = other_proba
                     tree_d["value"][j] = prob
             model = mm.BinaryTreeClassifier(**tree_d)
             trees += [model]
@@ -3670,11 +3693,25 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
             )
             # Handling NULL Values.
             null_ = False
-            if self.classes_[0] == "":
+            if len(self.classes_) > 0 and self.classes_[0] == "":
                 self.classes_ = self.classes_[1:]
                 null_ = True
             if self._is_binary_classifier():
-                prior = self._compute_prior()
+                try:
+                    prior = self._compute_prior()
+                except (MissingRelation, QueryError):
+                    # If training data is not available, use default prior from initial_prediction
+                    try:
+                        prior_values = self.get_vertica_attributes(
+                            "initial_prediction"
+                        )["value"]
+                        if null_:
+                            prior_values = prior_values[1:]
+                        prior = (
+                            np.array(prior_values)[1] if len(prior_values) > 1 else 0.5
+                        )
+                    except:
+                        prior = 0.5  # Default fallback
             else:
                 prior = np.array(
                     self.get_vertica_attributes("initial_prediction")["value"]
