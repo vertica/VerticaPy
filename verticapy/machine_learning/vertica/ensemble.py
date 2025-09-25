@@ -28,6 +28,7 @@ from verticapy._typing import (
     SQLColumns,
     SQLRelation,
 )
+from verticapy.errors import ModelError
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
@@ -2709,12 +2710,12 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
                 if unique_values:
                     self.classes_ = np.array(sorted(unique_values))
                 else:
-                    raise ValueError(
+                    raise ModelError(
                         "Unable to determine classes: no valid values found in tree structure. "
                         "This may indicate a problem with the model or data."
                     )
             except Exception as e:
-                raise ValueError(
+                raise ModelError(
                     f"Failed to infer classes from model structure: {str(e)}. "
                     "This may indicate the model is corrupted or incompatible."
                 )
