@@ -114,7 +114,7 @@ def get_connection_file() -> str:
     return path
 
 
-def validate_path(path: str):
+def validate_path(path: str) -> str:
     """
     Validates a file path to ensure it is secure and does not
     point to unintended or unsafe locations. This function
@@ -127,6 +127,11 @@ def validate_path(path: str):
     ----------
     path : str
         The file path to validate.
+
+    Returns
+    -------
+    string
+        The validated file path.
 
     Raises
     ------
@@ -196,3 +201,4 @@ def validate_path(path: str):
         raise ValueError(
             f"Cannot use path '{path}': directory is not owned by the current user."
         )
+    return path
