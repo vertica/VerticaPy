@@ -434,3 +434,13 @@ class TestFilter:
             ]
 
         assert len(vpy_res) == len(py_res)
+
+    def test_search_with_spaces_in_string(self, space_names_vd):
+        """
+        test function - search preserves multiple spaces in string literals
+        """
+        result_double = space_names_vd.search("name = 'Paul  John'")
+        result_single = space_names_vd.search("name = 'Paul John'")
+
+        assert result_double.shape()[0] == 2
+        assert result_single.shape()[0] == 1

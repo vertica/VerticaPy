@@ -229,6 +229,26 @@ def dummy_pred_data_vd():
     yield verticapy.vDataFrame({"X": x_val, "Y": y_val, "Z": z_val, "Category": pred})
 
 
+@pytest.fixture(scope="session")
+def space_names_vd():
+    """
+    Create a dummy vDataFrame with string values that contain varying numbers of spaces,
+    used to test that search/filter preserves whitespace in string literals.
+    """
+    yield verticapy.vDataFrame(
+        {
+            "id": [1, 2, 3, 4, 5],
+            "name": [
+                "Paul  John",    # 2 spaces
+                "Paul  John",    # 2 spaces
+                "Paul John",     # 1 space
+                "Paul    Smith", # 4 spaces
+                "Paul  Brown",   # 2 spaces
+            ],
+        }
+    )
+
+
 @pytest.fixture(scope="module")
 def titanic_vd(schema_loader):
     """

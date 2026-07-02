@@ -707,6 +707,102 @@ Utils
 """
 
 
+def _normalize_query_whitespace(query: str) -> str:
+    """
+    Normalizes whitespace and strips ``--`` line comments from a
+    SQL query in a single pass, while preserving the exact content
+    of single-quoted string literals.
+
+    This guarantees that whitespace located inside string literals
+    (for example ``'Paul  John'`` with two spaces) is never altered,
+    which is essential for filters such as ``name = 'Paul  John'``
+    or ``name LIKE 'Paul   %'`` to behave like plain SQL.
+
+    The function:
+
+    - keeps the content of single-quoted literals verbatim (it also
+      understands the ``''`` escape sequence for an embedded quote);
+    - keeps ``/* ... */`` block comments (such as ``/*+LABEL(...)*/``)
+      but collapses whitespace inside them, matching the historical
+      behavior;
+    - removes ``--`` line comments outside of literals/block comments;
+    - converts tabs and newlines to spaces and collapses consecutive
+      spaces everywhere outside string literals.
+
+    Parameters
+    ----------
+    query: str
+        SQL Query.
+
+    Returns
+    -------
+    str
+        Query with normalized whitespace.
+    """
+    result = []
+    i = 0
+    n = len(query)
+    # States: "normal", "string" (single-quoted literal), "block" (/* ... */)
+    state = "normal"
+    while i < n:
+        c = query[i]
+        if state == "string":
+            # Preserve everything verbatim until the closing quote.
+            result.append(c)
+            if c == "'":
+                if i + 1 < n and query[i + 1] == "'":
+                    # Escaped quote '' -> keep both and stay in the literal.
+                    result.append("'")
+                    i += 2
+                    continue
+                state = "normal"
+            i += 1
+            continue
+        if state == "block":
+            # Keep the block comment, but collapse its internal whitespace.
+            if c in (" ", "\t", "\n"):
+                if not result or result[-1] != " ":
+                    result.append(" ")
+                i += 1
+                continue
+            result.append(c)
+            if c == "*" and i + 1 < n and query[i + 1] == "/":
+                result.append("/")
+                i += 2
+                state = "normal"
+            else:
+                i += 1
+            continue
+        # state == "normal"
+        if c == "'":
+            state = "string"
+            result.append(c)
+            i += 1
+            continue
+        if c == "/" and i + 1 < n and query[i + 1] == "*":
+            state = "block"
+            result.append("/")
+            result.append("*")
+            i += 2
+            continue
+        if c == "-" and i + 1 < n and query[i + 1] == "-":
+            # Skip a "--" line comment up to (but not including) the newline,
+            # which is normalized to a space on the next iteration.
+            j = i + 2
+            while j < n and query[j] != "\n":
+                j += 1
+            i = j
+            continue
+        if c in (" ", "\t", "\n"):
+            if not result or result[-1] != " ":
+                result.append(" ")
+            i += 1
+            continue
+        result.append(c)
+        i += 1
+    return "".join(result)
+
+
 def clean_query(query: SQLExpression) -> SQLExpression:
     """
     Cleans the input query by
@@ -753,9 +849,7 @@ def clean_query(query: SQLExpression) -> SQLExpression:
     if isinstance(query, list):
         return [clean_query(q) for q in query]
     else:
-        query = re.sub(r"--.+(\n|\Z)", "", query)
-        query = query.replace("\t", " ").replace("\n", " ")
-        query = re.sub(" +", " ", query)
+        query = _normalize_query_whitespace(query)
 
         while len(query) > 0 and query.endswith((";", " ")):
             query = query[0:-1]
