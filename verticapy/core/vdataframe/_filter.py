@@ -1032,6 +1032,15 @@ class vDFFilter(vDFAgg):
             Default Value: False
             If set to True and the input filtering is incorrect,
             an error is raised.
+        skip_count: bool, optional
+            Default Value: False
+            When set to True, skips all COUNT(*)-based bookkeeping:
+            the "before" shape() call, the "after" COUNT(*) query,
+            and the resulting "N elements filtered" messages/history
+            entry. The filter's validity is still checked, but via a
+            cheap ``LIMIT 1`` instead of a full COUNT(*), so the
+            optimizer can stop at the first match instead of scanning
+            everything.
 
         Returns
         -------
@@ -1132,8 +1141,11 @@ class vDFFilter(vDFAgg):
         raise_error = False
         if "raise_error" in kwargs:
             raise_error = kwargs["raise_error"]
-        count = self.shape()[0]
-        conj = "s were " if count > 1 else " was "
+        skip_count = False
+        if "skip_count" in kwargs:
+            skip_count = kwargs["skip_count"]
+        count = self.shape()[0] if not skip_count else None
+        conj = "s were " if (count is not None and count > 1) else " was "
         if not isinstance(conditions, str) or (args):
             if isinstance(conditions, str) or not isinstance(conditions, Iterable):
                 conditions = [conditions]
@@ -1148,58 +1160,91 @@ class vDFFilter(vDFAgg):
                     print_info=False,
                     raise_error=raise_error,
                     force_filter=force_filter,
+                    skip_count=skip_count,
                 )
-            count -= self.shape()[0]
-            if count > 0:
-                print_message(f"{count} element{conj}filtered")
-                self._add_to_history(
-                    f"[Filter]: {count} element{conj}filtered "
-                    f"using the filter '{conditions}'"
-                )
-            print_message("Nothing was filtered.")
+            if not skip_count:
+                count -= self.shape()[0]
+                if count > 0:
+                    print_message(f"{count} element{conj}filtered")
+                    self._add_to_history(
+                        f"[Filter]: {count} element{conj}filtered "
+                        f"using the filter '{conditions}'"
+                    )
+                print_message("Nothing was filtered.")
         else:
             max_pos = 0
             columns_tmp = copy.deepcopy(self._vars["columns"])
             for column in columns_tmp:
                 max_pos = max(max_pos, len(self[column]._transf) - 1)
-            new_count = self.shape()[0]
             self._vars["where"] += [(conditions, max_pos)]
-            try:
-                new_count = _executeSQL(
-                    query=f"""
-                        SELECT 
-                            /*+LABEL('vDataFrame.filter')*/ 
-                            COUNT(*) 
-                        FROM {self}""",
-                    title="Computing the new number of elements.",
-                    method="fetchfirstelem",
-                    sql_push_ext=self._vars["sql_push_ext"],
-                    symbol=self._vars["symbol"],
-                )
-                count -= new_count
-            except QueryError as e:
-                del self._vars["where"][-1]
-                warning_message = (
-                    f"The expression '{conditions}' is incorrect.\n"
-                    "Nothing was filtered."
-                )
-                print_message(warning_message, "warning")
-                if raise_error:
-                    raise (e)
-                return self
-            if count > 0 or force_filter:
+            if skip_count:
+                # Validate the expression as cheaply as possible: LIMIT 1
+                # lets the optimizer stop at the first matching row instead
+                # of scanning/counting every match like COUNT(*) does.
+                try:
+                    _executeSQL(
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('vDataFrame.filter')*/ 
+                                1 
+                            FROM {self} 
+                            LIMIT 1""",
+                        title="Validating the new filter.",
+                        sql_push_ext=self._vars["sql_push_ext"],
+                        symbol=self._vars["symbol"],
+                    )
+                except QueryError as e:
+                    del self._vars["where"][-1]
+                    warning_message = (
+                        f"The expression '{conditions}' is incorrect.\n"
+                        "Nothing was filtered."
+                    )
+                    print_message(warning_message, "warning")
+                    if raise_error:
+                        raise (e)
+                    return self
                 self._update_catalog(erase=True)
-                self._vars["count"] = new_count
-                conj = "s were " if count > 1 else " was "
-                print_message(f"{count} element{conj}filtered.")
-                conditions_clean = clean_query(conditions)
                 self._add_to_history(
-                    f"[Filter]: {count} element{conj}filtered using "
-                    f"the filter '{conditions_clean}'"
+                    f"[Filter]: filtered using the filter "
+                    f"'{clean_query(conditions)}' (count skipped)"
                 )
             else:
-                del self._vars["where"][-1]
-                print_message("Nothing was filtered.")
+                try:
+                    new_count = _executeSQL(
+                        query=f"""
+                            SELECT 
+                                /*+LABEL('vDataFrame.filter')*/ 
+                                COUNT(*) 
+                            FROM {self}""",
+                        title="Computing the new number of elements.",
+                        method="fetchfirstelem",
+                        sql_push_ext=self._vars["sql_push_ext"],
+                        symbol=self._vars["symbol"],
+                    )
+                    count -= new_count
+                except QueryError as e:
+                    del self._vars["where"][-1]
+                    warning_message = (
+                        f"The expression '{conditions}' is incorrect.\n"
+                        "Nothing was filtered."
+                    )
+                    print_message(warning_message, "warning")
+                    if raise_error:
+                        raise (e)
+                    return self
+                if count > 0 or force_filter:
+                    self._update_catalog(erase=True)
+                    self._vars["count"] = new_count
+                    conj = "s were " if count > 1 else " was "
+                    print_message(f"{count} element{conj}filtered.")
+                    conditions_clean = clean_query(conditions)
+                    self._add_to_history(
+                        f"[Filter]: {count} element{conj}filtered using "
+                        f"the filter '{conditions_clean}'"
+                    )
+                else:
+                    del self._vars["where"][-1]
+                    print_message("Nothing was filtered.")
         return self
 
     @save_verticapy_logs
