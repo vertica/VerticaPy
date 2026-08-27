@@ -269,7 +269,7 @@ class TestAgg:
                 ]:
                     py_data = (
                         titanic_pdf[numeric_columns]
-                        if vpy_func in ["cvar", "jb", "mad"]
+                        if vpy_func in ["aad", "cvar", "jb", "mad"]
                         else titanic_pdf
                     )
                     if vpy_func in ["aad"]:
@@ -397,7 +397,7 @@ class TestAgg:
                 py_data = titanic_pdf[numeric_columns]
                 py_res = eval(py_func).tolist()
             elif vpy_func_name in ["aad"]:
-                py_data = titanic_pdf
+                py_data = titanic_pdf[numeric_columns]
                 py_res = dict(eval(py_func))
             else:
                 py_data = titanic_pdf

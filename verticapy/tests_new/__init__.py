@@ -15,6 +15,28 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections import namedtuple
+import math
+
+
+def normalize_na(values):
+    """
+    Maps ``nan`` to ``None`` so VerticaPy results and pandas results compare
+    equal regardless of dtype.
+
+    pandas >= 3.0 infers its dedicated string dtype for text columns, whose NA
+    value is ``nan``; the ``object`` columns produced by pandas 2.x held
+    ``None`` instead. VerticaPy returns ``None`` for SQL NULL in both cases.
+    """
+    normalized = []
+    for value in values:
+        if isinstance(value, list):
+            normalized.append(normalize_na(value))
+        elif isinstance(value, float) and math.isnan(value):
+            normalized.append(None)
+        else:
+            normalized.append(value)
+    return normalized
+
 
 AggregateFun = namedtuple("AggregateFun", ["vpy", "py"])
 functions = {

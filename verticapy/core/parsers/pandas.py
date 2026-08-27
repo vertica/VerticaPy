@@ -338,9 +338,12 @@ def read_pandas(
         for c in df.columns:
             if isinstance(df[c].first_valid_index(), NoneType):
                 null_columns += [c]
-            elif df[c].dtype == object and isinstance(
-                df[c].loc[df[c].first_valid_index()], str
-            ):
+            elif (
+                # pandas >= 3.0 infers a dedicated string dtype for text
+                # columns instead of 'object', so both must be accepted.
+                df[c].dtype == object
+                or isinstance(df[c].dtype, pd.StringDtype)
+            ) and isinstance(df[c].loc[df[c].first_valid_index()], str):
                 str_cols += [c]
         if len(df.columns) == len(null_columns):
             names = ", ".join([f"NULL AS {quote_ident(col)}" for col in df.columns])
@@ -370,6 +373,11 @@ def read_pandas(
             path,
             index=False,
             quoting=csv.QUOTE_NONE,
+            # quotechar=None is required: the quotes added above are meant to
+            # be read back by COPY's ENCLOSED BY. pandas >= 3.0 escapes the
+            # quotechar even under QUOTE_NONE, which would turn them into
+            # literal data instead. pandas 2.x produces identical output here.
+            quotechar=None,
             escapechar="\027",
             sep="\001",
             lineterminator="\002",

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - name: Installing graphviz package
@@ -46,12 +46,4 @@ jobs:
           export VP_TEST_USER=dbadmin
           echo "*** Calling tox based on python-version ***"
           echo ${{ matrix.python-version }}
-          if ${{ matrix.python-version == '3.9' }}; then
-            tox -e py39
-          elif ${{ matrix.python-version == '3.10' }}; then
-            tox -e py310
-          elif ${{ matrix.python-version == '3.11' }}; then
-            tox -e py311
-          elif ${{ matrix.python-version == '3.12' }}; then
-            tox -e py312
-          fi
+          tox -e py$(echo "${{ matrix.python-version }}" | tr -d .)

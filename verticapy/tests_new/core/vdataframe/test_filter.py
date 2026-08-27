@@ -19,6 +19,8 @@ import pandas as pd
 import pytest
 from vertica_python.errors import QueryError
 
+from verticapy.tests_new import normalize_na
+
 
 class TestFilter:
     """
@@ -395,7 +397,9 @@ class TestFilter:
             conditions=conditions, usecols=usecols, expr=expr, order_by=order_by
         )
 
-        assert vpy_res[5] == py_res.iloc[5].tolist() and len(vpy_res) == len(py_res)
+        assert normalize_na(vpy_res[5]) == normalize_na(
+            py_res.iloc[5].tolist()
+        ) and len(vpy_res) == len(py_res)
 
     @pytest.mark.parametrize(
         "column, threshold, use_threshold, alpha",

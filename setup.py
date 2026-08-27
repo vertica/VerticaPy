@@ -16,14 +16,25 @@ permissions and limitations under the License.
 """
 
 #!/usr/bin/env python
+import re
+
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
+
+# Single-source the version from verticapy/__init__.py so the package
+# metadata and verticapy.__version__ can never drift apart. Parsed rather
+# than imported, since importing the package at build time would require
+# its dependencies to already be installed.
+with open("verticapy/__init__.py", "r", encoding="utf-8") as fh:
+    version = re.search(
+        r"^__version__\s*:\s*str\s*=\s*[\"']([^\"']+)[\"']", fh.read(), re.MULTILINE
+    ).group(1)
 
 setuptools.setup(
     name="verticapy",
-    version="1.1.1",
+    version=version,
     author="Badr Ouali",
     author_email="badr.ouali@outlook.fr",
     url="https://github.com/vertica/VerticaPy",
@@ -35,38 +46,38 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     install_requires=[
-        "graphviz>=0.9.0",
-        "matplotlib>=3.5.2",
-        "numpy>=1.11.0",
-        "pandas>=0.23.0",
-        "plotly>=5.10.0",
-        "scipy>=1.0.0",
-        "tqdm>=4.0.0",
+        "graphviz>=0.20.1",
+        "ipython>=8.12.0",
+        "matplotlib>=3.9.0",
+        "numpy>=2.1.0",
+        "pandas>=2.2.0",
+        "plotly>=5.24.0",
+        "scipy>=1.14.0",
+        "tqdm>=4.66.0",
         "vertica-highcharts>=0.1.4",
-        "vertica-python>=1.2.0",
-        "plotly>=5.10.0",
+        "vertica-python>=1.4.0",
         "pyyaml>=6.0.1",
         "requests>=2.32.2",
         "urllib3>=2.2.1",
     ],
     extras_require={
         "all": [
-            "descartes>=1.0.0",
-            "geopandas>=0.8.0",
-            "shapely>=1.6.0",
-            "pyarrow>=14.0.0",
+            "descartes>=1.1.0",
+            "geopandas>=1.0.0",
+            "shapely>=2.0.0",
+            "pyarrow>=17.0.0",
         ],
     },
     package_data={"": ["*.csv", "*.json", "*.css", "*.html"]},
     classifiers=[
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Database",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",

@@ -122,7 +122,7 @@ class TestMath:
                 {
                     "age": "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
                     "boat": "DECODE({}, NULL, 0, 1)",
-                    "name": "REGEXP_SUBSTR({}, '([A-Za-z])+\.')",
+                    "name": r"REGEXP_SUBSTR({}, '([A-Za-z])+\.')",
                 },
                 None,
             ),
@@ -149,9 +149,10 @@ class TestMath:
             titanic_pdf[columns[0]] = titanic_pdf.groupby(by=["pclass", "sex"])[
                 columns[0]
             ].transform(lambda x: x.fillna(x.mean()))
-            titanic_pdf[columns[1]] = titanic_pdf[columns[1]].apply(
-                lambda x: 1 if x else 0
-            )
+            # Mirrors DECODE({}, NULL, 0, 1). A truthiness test is wrong here:
+            # pandas >= 3.0 represents NA in string columns as nan, which is
+            # truthy, so every row would map to 1 (pandas 2.x used None).
+            titanic_pdf[columns[1]] = titanic_pdf[columns[1]].notna().astype(int)
             titanic_pdf[columns[2]] = titanic_pdf[columns[2]].apply(
                 lambda x: re.search(r"([A-Za-z]+\.)", x)[0]
             )
@@ -354,7 +355,9 @@ class TestMath:
 
         print(f"VerticaPy Result: {vpy_res} \n")
 
-        assert vpy_res == pytest.approx(expected)
+        # datetime comparison is exact; pytest >= 9 rejects approx() on
+        # datetime/timedelta without an explicit tolerance.
+        assert vpy_res == expected
 
     @pytest.mark.parametrize(
         "func, columns, by, order_by, name, offset, x_smoothing, add_count, _rel_tol, _abs_tol",
@@ -797,7 +800,10 @@ class TestMath:
             elif func == "last_value":
                 # vpy_res = titanic_vd_fun.analytic(func=func, columns=columns, by=by, order_by=order_by, name=name)[by].isin("Belfast, NI")[name]
                 vpy_res = titanic_vd_fun[by].isin("Belfast, NI")[name]
-                py_res = titanic_pdf.groupby(by).last(columns).loc["Belfast, NI"]
+                # Select the column before aggregating: last()'s first
+                # positional parameter is numeric_only, so last(columns) was
+                # passing a column name as that flag (rejected by pandas 3).
+                py_res = titanic_pdf.groupby(by)[columns].last().loc["Belfast, NI"]
             elif func == "ema":
                 vpy_res = titanic_vd_fun[:10][name].sum()
                 py_res = (

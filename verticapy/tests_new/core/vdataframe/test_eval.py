@@ -41,9 +41,10 @@ class TestEval:
         )
 
         if column == "missing_cabins":
-            titanic_pdf["cabin"] = titanic_pdf["cabin"].apply(
-                lambda row: row if row is not None else "missing"
-            )
+            # fillna covers both NA representations: object columns (pandas
+            # 2.x) hold None, the string dtype inferred by pandas >= 3.0 uses
+            # nan, which an `is not None` check would miss.
+            titanic_pdf["cabin"] = titanic_pdf["cabin"].fillna("missing")
             py_res = titanic_pdf["cabin"].values.tolist()
         else:
             py_res = titanic_pdf.eval(expr=f"{column}={expr}")[column].values.tolist()
