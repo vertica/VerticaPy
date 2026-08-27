@@ -694,7 +694,14 @@ class vDFCorr(vDFEncode):
                     ]
         matrix = [np.nan if isinstance(x, NoneType) else x for x in matrix]
         data = [(cols[i], float(matrix[i])) for i in range(len(matrix))]
-        data.sort(key=lambda tup: abs(tup[1]), reverse=True)
+        # A NaN correlation (e.g. a column that is entirely NULL) makes
+        # abs() return NaN, and NaN compares False against everything, so
+        # sorting on it directly yields an arbitrary order. Rank NaN below
+        # every real magnitude instead so it lands last, deterministically.
+        data.sort(
+            key=lambda tup: -1.0 if math.isnan(tup[1]) else abs(tup[1]),
+            reverse=True,
+        )
         cols = [x[0] for x in data]
         matrix = np.array([[x[1] for x in data]])
         if show:
