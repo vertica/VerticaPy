@@ -30,7 +30,7 @@ class TestJoinUnionSort:
     """
 
     @pytest.mark.parametrize(
-        "input_type,",
+        "input_type",
         ["vDataFrame", "relation", "expr", "union_all"],
     )
     def test_append(self, iris_vd_fun, input_type, schema_loader):
@@ -246,7 +246,7 @@ class TestJoinUnionSort:
         drop(f"{schema_loader}.not_dried")
 
     @pytest.mark.parametrize(
-        "order_by,",
+        "order_by",
         [
             {"PetalLengthCm": "asc"},
             ["PetalLengthCm", "SepalWidthCm"],
