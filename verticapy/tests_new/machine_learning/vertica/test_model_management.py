@@ -18,6 +18,8 @@ permissions and limitations under the License.
 from collections import namedtuple
 from decimal import Decimal
 from itertools import chain
+import os
+import shutil
 import sys
 import subprocess
 
@@ -43,22 +45,24 @@ def remove_model_dir(folder_path=""):
     function to remove dir
     """
     print(f"Checking if model export path {folder_path} exists ..................")
-    path_proc = subprocess.Popen(
-        f"test -d {folder_path}",
-        stdout=sys.stdout,
-        stderr=sys.stderr,
-        shell=True,
-        universal_newlines=True,
-    )
-    _, _ = path_proc.communicate()
-    if path_proc.returncode != 0:
+    if not os.path.isdir(folder_path):
         print(
             f"Model export output directory {folder_path} does not exists........................"
         )
-    else:
-        print(
-            f"Model export output directory {folder_path} already exists. Hence, removing this folder."
-        )
+        return
+
+    print(
+        f"Model export output directory {folder_path} already exists. Hence, removing this folder."
+    )
+    try:
+        shutil.rmtree(folder_path)
+    except OSError as exc:
+        # The directory is written server-side by the Vertica OS user, so the test
+        # client does not necessarily own it. Retry with elevated privileges where
+        # that is available (POSIX only - there is no "sudo" on Windows).
+        if os.name != "posix":
+            print(f"Error in removing {folder_path} Error: {exc}")
+            return
         rm_proc = subprocess.Popen(
             f"sudo rm -rf {folder_path}",
             stdout=sys.stdout,
@@ -71,8 +75,8 @@ def remove_model_dir(folder_path=""):
             print(
                 f"Error in removing {folder_path} Error code: {rm_proc.returncode}, {rm_code}"
             )
-        else:
-            print(f"Model export output directory {folder_path} removed successfully")
+            return
+    print(f"Model export output directory {folder_path} removed successfully")
 
 
 def _export(model_obj, category):

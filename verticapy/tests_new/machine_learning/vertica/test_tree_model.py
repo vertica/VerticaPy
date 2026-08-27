@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from decimal import Decimal
 import sys
 import os
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -546,7 +547,7 @@ class TestClassificationTreeModel:
         vpy_res = skl_metrics.auc(_fpr, _tpr)
 
         py_model_obj = get_py_model(model_class)
-        y, score = py_model_obj.y.ravel(), py_model_obj.pred_prob[:, 1].ravel()
+        y, score = np.ravel(py_model_obj.y), py_model_obj.pred_prob[:, 1].ravel()
         py_fpr, py_tpr, _ = skl_metrics.roc_curve(y_true=y, y_score=score)
         py_res = skl_metrics.auc(py_fpr, py_tpr)
 
@@ -586,7 +587,7 @@ class TestClassificationTreeModel:
 
         py_model_obj = get_py_model(model_class)
         precision, recall, _ = skl_metrics.precision_recall_curve(
-            y_true=py_model_obj.y.ravel(),
+            y_true=np.ravel(py_model_obj.y),
             y_score=py_model_obj.pred_prob[:, 1].ravel(),
         )
         py_res = skl_metrics.auc(recall, precision)
@@ -628,7 +629,7 @@ class TestClassificationTreeModel:
 
         py_model_obj = get_py_model(model_class)
         py_fpr, py_tpr, _ = skl_metrics.roc_curve(
-            y_true=py_model_obj.y.ravel(), y_score=py_model_obj.pred_prob[:, 1].ravel()
+            y_true=np.ravel(py_model_obj.y), y_score=py_model_obj.pred_prob[:, 1].ravel()
         )
         py_res = skl_metrics.auc(py_fpr, py_tpr)
 
