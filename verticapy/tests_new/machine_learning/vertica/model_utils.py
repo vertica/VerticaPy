@@ -856,6 +856,23 @@ class XGBInitializer:
         """
         Model initializer function for python XGBoost model
         """
+        # self.split_proposal_method is interpolated straight into SQL, so it
+        # carries embedded quotes (default "'global'"); strip them to compare.
+        split_proposal_method = self.split_proposal_method.strip("'\"")
+        if split_proposal_method == "global":
+            # Vertica's split_proposal_method='global' (with nbins) is the
+            # XGBoost paper's approximate-greedy split finding with a global
+            # proposal -- that is xgboost's tree_method='approx', where
+            # max_bin sets the bin count. tree_method='exact' enumerates
+            # every split point and ignores max_bin entirely, silently
+            # discarding the nbins/max_bin forwarded below.
+            tree_method = "approx"
+        else:
+            # xgboost's tree_method only distinguishes exact vs. approximate
+            # split finding; it has no separate mode for a *local* sketch
+            # proposal, so a non-'global' split_proposal_method still maps to
+            # 'approx' here. Do not invent a 'local' tree_method.
+            tree_method = "approx"
         model = getattr(xgb, self.datasetup_instance.model_class)(
             n_estimators=self.max_ntree,
             max_depth=self.max_depth,
@@ -867,7 +884,7 @@ class XGBInitializer:
             colsample_bytree=self.col_sample_by_tree,
             colsample_bynode=self.col_sample_by_node,
             random_state=1,
-            tree_method="exact",
+            tree_method=tree_method,
         )
         print(f"Python Training Parameters: {model.get_params()}")
         return model
