@@ -299,7 +299,10 @@ def calculate_classification_metrics(get_py_model):
         # avg = sum(y) / no_of_records
         # num_features = 3 if model_class in ["DummyTreeClassifier"] else len(model.feature_names_in_)
 
-        classification_metrics_map["auc"] = skl_metrics.auc(recall, precision)
+        # "auc" is the ROC AUC: the vpy side reads Vertica's roc_auc, so the
+        # reference has to be the ROC curve too. This previously reused the
+        # precision-recall trapezoid below, comparing two different quantities.
+        classification_metrics_map["auc"] = skl_metrics.roc_auc_score(y, pred_prob)
         classification_metrics_map["prc_auc"] = skl_metrics.auc(recall, precision)
         classification_metrics_map["accuracy_score"] = classification_metrics_map[
             "accuracy"
