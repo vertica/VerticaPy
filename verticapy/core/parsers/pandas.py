@@ -32,6 +32,66 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.parsers.csv import read_csv
 from verticapy.core.vdataframe.base import vDataFrame
 
+# Character set used for the intermediate CSV that read_pandas writes and
+# COPY reads back. These are control characters so that ordinary text -
+# including commas, tabs and double quotes - is never special and never
+# needs escaping by us.
+#
+# The enclosure is deliberately NOT '"'. Vertica's ENCLOSED BY has no notion
+# of a doubled quote as an escaped quote, and pandas' to_csv (under
+# QUOTE_NONE) will not emit ESCAPE_AS before a quote we added ourselves, so a
+# value containing '"' could be neither escaped nor doubled safely - the
+# quotes were silently stripped. Enclosing with a control character instead
+# makes '"' ordinary data.
+# See https://docs.vertica.com/25.3.x/en/data-load/data-formats/delimited-data/
+DELIMITER = "\001"
+RECORD_TERMINATOR = "\002"
+ESCAPE_AS = "\027"
+
+# Candidate enclosure characters, tried in order. COPY accepts any ASCII value
+# in E'\001'-E'\177' as ENCLOSED BY, but the character must not occur in the
+# data: Vertica requires an enclosure character appearing inside an enclosed
+# field to be written as ESCAPE_AS + enclosure (verified against 25.3 - a raw
+# or a doubled one makes COPY reject the entire row), and to_csv cannot be
+# made to emit that sequence. Under QUOTE_NONE it only ever writes ESCAPE_AS
+# ahead of ESCAPE_AS, the delimiter or the record terminator, so no
+# pre-escaping survives the write. Choosing a character the data does not
+# contain removes the need to escape it at all.
+ENCLOSURE_CANDIDATES = (
+    "\026",
+    "\025",
+    "\024",
+    "\023",
+    "\022",
+    "\021",
+    "\020",
+    "\017",
+    "\016",
+    "\005",
+    "\004",
+    "\003",
+)
+
+
+def _pick_enclosure(df: pd.DataFrame, str_cols: list) -> Optional[str]:
+    """
+    Returns the first ``ENCLOSURE_CANDIDATES`` entry that appears neither in
+    any string value nor in any column name, so that enclosed fields need no
+    escaping of the enclosure character, or ``None`` if the data contains
+    every candidate.
+    """
+    column_names = "".join(str(col) for col in df.columns)
+    for candidate in ENCLOSURE_CANDIDATES:
+        if candidate in column_names:
+            continue
+        if any(
+            df[c].str.contains(candidate, regex=False, na=False).any()
+            for c in str_cols
+        ):
+            continue
+        return candidate
+    return None
+
 
 @save_verticapy_logs
 def read_pandas(
@@ -79,6 +139,15 @@ def read_pandas(
         the input types, VerticaPy
         uses the specified input
         types instead.
+        Because no type is guessed,
+        the fields of the intermediate
+        CSV file do not have to be
+        enclosed. Specifying ``dtype``
+        is therefore the way to ingest
+        string columns that contain the
+        control characters VerticaPy
+        would otherwise use to enclose
+        them.
     parse_nrows: int, optional
         If this parameter is greater
         than zero, VerticaPy creates
@@ -359,12 +428,40 @@ def read_pandas(
                         "There are no columns or values. Invalid DataFrame."
                     )
             return vDataFrame(q)
-        if len(str_cols) > 0 or len(null_columns) > 0:
+        enclosed_by = _pick_enclosure(df, str_cols)
+        if isinstance(enclosed_by, NoneType) and not (insert or dtype):
+            # Enclosing the fields is only needed so that the flex table used
+            # to guess the column types does not retype a string column - a
+            # column of '007' would otherwise be read as INTEGER. Ingesting
+            # into an existing relation, or supplying 'dtype', skips that
+            # guess, and the data then loads correctly with no enclosure at
+            # all: to_csv escapes the delimiter, the record terminator and
+            # the escape character, which is all COPY needs.
+            raise ValueError(
+                "The string columns of the 'pandas.DataFrame' contain every "
+                "control character that could be used to enclose the fields "
+                "of the intermediate CSV file, so the column types can not "
+                "be guessed safely. Specify the column types with the "
+                "'dtype' parameter - the enclosing is then unnecessary and "
+                "the data is ingested as is - or set 'insert' to True to "
+                "load into an existing relation."
+            )
+        enclose = not isinstance(enclosed_by, NoneType)
+        if (enclose and len(str_cols) > 0) or len(null_columns) > 0:
             tmp_df = df.copy()
-            for c in str_cols:
-                tmp_df[c] = '"' + tmp_df[c].str.replace('"', '""') + '"'
+            if enclose:
+                for c in str_cols:
+                    # The value itself needs no escaping: 'enclosed_by' was
+                    # chosen so that it does not occur in the data, and
+                    # to_csv escapes DELIMITER, RECORD_TERMINATOR and
+                    # ESCAPE_AS itself. The no-op .str.slice() keeps the
+                    # historical handling of a non-string value in an object
+                    # column - it becomes NA, where a plain concatenation
+                    # would raise TypeError.
+                    tmp_df[c] = enclosed_by + tmp_df[c].str.slice() + enclosed_by
             for c in null_columns:
-                tmp_df[c] = '""'
+                # An empty, unenclosed field is what COPY's NULL '' matches.
+                tmp_df[c] = ""
             clear = True
         else:
             tmp_df = df
@@ -373,41 +470,33 @@ def read_pandas(
             path,
             index=False,
             quoting=csv.QUOTE_NONE,
-            # quotechar=None is required: the quotes added above are meant to
-            # be read back by COPY's ENCLOSED BY. pandas >= 3.0 escapes the
+            # quotechar=None is required: the enclosures added above are meant
+            # to be read back by COPY's ENCLOSED BY. pandas >= 3.0 escapes the
             # quotechar even under QUOTE_NONE, which would turn them into
             # literal data instead. pandas 2.x produces identical output here.
             quotechar=None,
-            escapechar="\027",
-            sep="\001",
-            lineterminator="\002",
+            escapechar=ESCAPE_AS,
+            sep=DELIMITER,
+            lineterminator=RECORD_TERMINATOR,
         )
 
-        if len(str_cols) > 0 or len(null_columns) > 0:
-            # to_csv is adding an undesired special character
-            # we remove it
-            logging.debug(f"Replacing undesired characters in" f" csv file {path}")
-            with open(path, "r", encoding="utf-8") as f:
-                filedata = f.read()
-            filedata = filedata.replace(",", ",").replace('""', "")
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(filedata)
         if insert:
             input_relation = format_schema_table(schema, name)
             tmp_df_columns_str = ", ".join(
                 ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
             )
             abort_str = "ABORT ON ERROR" if abort_on_error else ""
+            enclosed_by_str = f"ENCLOSED BY '{enclosed_by}'" if enclose else ""
             sql_string = f"""
                     COPY {input_relation}
-                    ({tmp_df_columns_str}) 
-                    FROM LOCAL '{path}' 
-                    DELIMITER '\001' 
+                    ({tmp_df_columns_str})
+                    FROM LOCAL '{path}'
+                    DELIMITER '{DELIMITER}'
                     NULL ''
-                    ENCLOSED BY '\"' 
-                    ESCAPE AS '\\' 
+                    {enclosed_by_str}
+                    ESCAPE AS '{ESCAPE_AS}'
                     SKIP 1
-                    RECORD TERMINATOR '\002'
+                    RECORD TERMINATOR '{RECORD_TERMINATOR}'
                     {abort_str};"""
             logging.debug(f"Copy statement is: {sql_string}")
             _executeSQL(
@@ -422,9 +511,10 @@ def read_pandas(
                 dtype=dtype,
                 temporary_local_table=True,
                 parse_nrows=parse_nrows,
-                sep="\001",
-                record_terminator="\002",
-                escape="\027",
+                sep=DELIMITER,
+                record_terminator=RECORD_TERMINATOR,
+                quotechar=enclosed_by,
+                escape=ESCAPE_AS,
             )
         else:
             vdf = read_csv(
@@ -434,9 +524,10 @@ def read_pandas(
                 schema=schema,
                 temporary_local_table=False,
                 parse_nrows=parse_nrows,
-                sep="\001",
-                record_terminator="\002",
-                escape="\027",
+                sep=DELIMITER,
+                record_terminator=RECORD_TERMINATOR,
+                quotechar=enclosed_by,
+                escape=ESCAPE_AS,
             )
     finally:
         try:
