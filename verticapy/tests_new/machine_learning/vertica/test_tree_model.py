@@ -27,6 +27,7 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
     rel_abs_tol_map,
     REL_TOLERANCE,
     classification_metrics_args,
+    mark_known_disagreement,
     model_params,
     model_score,
     regression_metrics_args,
@@ -435,6 +436,8 @@ class TestClassificationTreeModel:
         }
         print(self.abs_error_report_cls_tree[(model_class, py_metric_name)])
 
+        mark_known_disagreement(request, model_class, vpy_metric_name[0])
+
         if len(self.abs_error_report_cls_tree.keys()) == tc_count:
             abs_error_report_cls_tree_pdf = (
                 pd.DataFrame(self.abs_error_report_cls_tree.values())
@@ -508,6 +511,7 @@ class TestClassificationTreeModel:
         metric,
         expected,
         fun_name,
+        request,
     ):
         """
         test function - test_classification_report
@@ -517,6 +521,8 @@ class TestClassificationTreeModel:
         vpy_report_map = dict(zip(report["index"], report["value"]))
 
         py_report_map = classification_metrics(model_class)
+
+        mark_known_disagreement(request, model_class, metric)
 
         assert vpy_report_map[metric] == pytest.approx(
             py_report_map[metric], rel=rel_abs_tol_map[model_class][metric]["rel"]
@@ -577,11 +583,17 @@ class TestClassificationTreeModel:
             expected, rel=rel_abs_tol_map[model_class]["lift_chart"]["rel"]
         )
 
-    def test_prc_curve(self, model_class, get_vpy_model, get_py_model):
+    def test_prc_curve(self, model_class, get_vpy_model, get_py_model, request):
         """
         test function - test_prc_curve
         """
-        vpy_prc_curve = get_vpy_model(model_class).model.prc_curve(show=False)
+        # nbins is explicit: prc_curve() defaults to nbins=30, but the sklearn
+        # side below is a full-resolution curve, so the default compared a
+        # 30-point curve against an unbinned one. 10000 matches what
+        # prc_auc_score uses and brings the two to comparable resolution.
+        vpy_prc_curve = get_vpy_model(model_class).model.prc_curve(
+            nbins=10000, show=False
+        )
         vpy_recall, vpy_precision = vpy_prc_curve["recall"], vpy_prc_curve["precision"]
         vpy_res = skl_metrics.auc(vpy_recall, vpy_precision)
 
@@ -593,6 +605,8 @@ class TestClassificationTreeModel:
         py_res = skl_metrics.auc(recall, precision)
 
         _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
+
+        mark_known_disagreement(request, model_class, "prc_curve")
 
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["prc_curve"]["rel"]

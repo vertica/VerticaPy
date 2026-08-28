@@ -108,6 +108,63 @@ classification_metrics_args = (
 )
 
 
+# Assertions that compare a Vertica-trained model against a scikit-learn-trained
+# one, where the two engines legitimately disagree by more than any defensible
+# tolerance. These are NOT flaky: both sides are deterministic and reproduce
+# bit-for-bit. They are marked xfail(strict=True) rather than having their
+# tolerance widened, because widening is what hid a real defect in the auc
+# reference from 2024-02 until 2026-08.
+#
+# Keyed by (model_class, metric). See
+# docs/superpowers/plans/2026-08-28-open-metric-failures.md for the measurements.
+_PLAN_DOC = "docs/superpowers/plans/2026-08-28-open-metric-failures.md"
+
+_RF_ALGORITHM_DIFFERENCE = (
+    "Vertica rf_classifier and sklearn RandomForestClassifier are different "
+    "algorithms: Vertica samples 63.2% WITHOUT replacement while sklearn "
+    "bootstraps WITH replacement, and Vertica discretises numeric predictors "
+    "into nbins=32 equal-width bins (PLANET) which sklearn does not do. "
+    "Against a reference that emulates both, Vertica sits at +1.7 sd -- an "
+    f"ordinary draw. See {_PLAN_DOC}"
+)
+
+KNOWN_MODEL_DISAGREEMENTS = {
+    # sklearn's own seed-to-seed spread here is 1.89%; the tolerance is 0.40%,
+    # so no tolerance value is reachable.
+    ("RandomForestClassifier", "prc_auc"): _RF_ALGORITHM_DIFFERENCE,
+    ("RandomForestClassifier", "prc_curve"): _RF_ALGORITHM_DIFFERENCE,
+    # sklearn's own seed-to-seed spread here is 16.08%; the tolerance is 7.00%.
+    ("RandomForestClassifier", "predict"): _RF_ALGORITHM_DIFFERENCE,
+    # This one passed until the XGB parameter plumbing was fixed: py() had been
+    # silently substituting xgboost's own defaults (eta 0.3, reg_lambda 1,
+    # tree_method='exact') for the parameters the harness declares. It was a
+    # pass by luck against a mis-configured reference, not agreement.
+    ("XGBClassifier", "predict"): (
+        "Passed only while the harness silently trained the xgboost reference "
+        "with the wrong hyperparameters; once py() forwards the declared "
+        "learning_rate/reg_lambda/tree_method the real model difference shows. "
+        f"See {_PLAN_DOC}"
+    ),
+}
+
+
+def mark_known_disagreement(request, model_class, metric):
+    """
+    Mark the running test xfail when (model_class, metric) is a known
+    Vertica-vs-sklearn model disagreement.
+
+    Applied at runtime rather than in the parametrize list because those lists
+    are shared across model classes -- marking there would also xfail the
+    DecisionTreeClassifier and XGBClassifier cases, which pass.
+
+    strict=True is deliberate: both sides are deterministic, so an unexpected
+    pass is a real signal and should fail the suite for attention.
+    """
+    reason = KNOWN_MODEL_DISAGREEMENTS.get((model_class, metric))
+    if reason:
+        request.applymarker(pytest.mark.xfail(reason=reason, strict=True))
+
+
 @pytest.fixture
 def model_params(model_class):
     """
@@ -1595,12 +1652,14 @@ class TestBaseModelMethods:
             assert isinstance(vpy_res, Highchart)
         # assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
 
-    def test_predict(self, get_models, model_class, get_pred_column):
+    def test_predict(self, get_models, model_class, get_pred_column, request):
         """
         test function - predict
         """
         vpy_res = get_models.vpy.pred_vdf[[get_pred_column]].to_numpy().mean()
         py_res = get_models.py.pred.mean()
+
+        mark_known_disagreement(request, model_class, "predict")
 
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["predict"]["rel"]
