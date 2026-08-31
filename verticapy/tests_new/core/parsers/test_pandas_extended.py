@@ -36,10 +36,9 @@ from verticapy.connection import current_cursor
 from verticapy.core.parsers.pandas import (
     read_pandas,
     DELIMITER,
-    ENCLOSURE_CANDIDATES,
+    ENCLOSED_BY,
     ESCAPE_AS,
     RECORD_TERMINATOR,
-    _pick_enclosure,
 )
 from verticapy.datasets import load_titanic
 
@@ -92,7 +91,6 @@ ROUND_TRIP_VALUES = {
     "delimiter": "sep" + DELIMITER + "here",
     "terminator": "term" + RECORD_TERMINATOR + "here",
     "escape": "esc" + ESCAPE_AS + "here",
-    "enclosure": "encl" + ENCLOSURE_CANDIDATES[0] + "here",
     "tab": "tab\tx",
     "empty": "",
     "null": None,
@@ -152,13 +150,9 @@ class TestReadPandasEncoding:
         fails here rather than as silent data corruption in a live ingest.
         """
         df = _probe_frame()
-        enclosed_by = _pick_enclosure(df, ["k", "txt"])
-        # The first candidate occurs in the data, so the next must be chosen.
-        assert enclosed_by == ENCLOSURE_CANDIDATES[1]
-
         tmp_df = df.copy()
         for c in ("k", "txt"):
-            tmp_df[c] = enclosed_by + tmp_df[c].str.slice() + enclosed_by
+            tmp_df[c] = ENCLOSED_BY + tmp_df[c].str.slice() + ENCLOSED_BY
         tmp_df["allnull"] = ""
         buf = io.StringIO()
         tmp_df.to_csv(
@@ -183,52 +177,66 @@ class TestReadPandasEncoding:
                 # COPY's NULL '' matches it.
                 assert fields[key] == "", key
             else:
-                assert fields[key] == enclosed_by + value + enclosed_by, key
+                assert fields[key] == ENCLOSED_BY + value + ENCLOSED_BY, key
 
         # The old scheme's fingerprint: it is the doubling of the quote, and
         # the blanket replace that removed it, that lost the quotes.
         assert '""' not in buf.getvalue()
 
-    def test_pick_enclosure_exhausted(self):
+    def test_enclosure_char_in_data_raises_and_drops_table(self):
         """
-        Data containing every candidate leaves nothing to enclose with.
+        A value holding ENCLOSED_BY itself is the one input this encoding
+        cannot carry - COPY rejects the row. That must surface as an error
+        naming the way out, and must not leave a relation behind that is
+        quietly short of rows.
         """
-        df = pandas.DataFrame({"txt": ["".join(ENCLOSURE_CANDIDATES)]})
-        assert _pick_enclosure(df, ["txt"]) is None
-
-    def test_pick_enclosure_skips_column_names(self):
-        """
-        A candidate occurring in a column name is rejected too - the header
-        row goes through the same encoding as the data.
-        """
-        df = pandas.DataFrame({"a" + ENCLOSURE_CANDIDATES[0]: ["x"]})
-        assert _pick_enclosure(df, []) == ENCLOSURE_CANDIDATES[1]
-
-    def test_no_enclosure_available_suggests_dtype(self):
-        """
-        When no enclosure is available the type guess is what breaks, so the
-        error has to point at the parameter that skips it.
-        """
-        df = pandas.DataFrame({"txt": ["".join(ENCLOSURE_CANDIDATES)]})
-        with pytest.raises(ValueError, match="dtype"):
-            read_pandas(df=df, name=f"never_{int(time.time())}", schema="public")
-
-    @pytest.mark.parametrize("mode", ["dtype", "insert"])
-    def test_ingest_without_enclosure(self, mode):
-        """
-        Supplying dtype, or inserting into an existing relation, skips the
-        type guess - so the fields need no enclosing and a value holding
-        every candidate control character still round trips.
-        """
-        every = "".join(ENCLOSURE_CANDIDATES)
         df = pandas.DataFrame(
-            {"k": ["all", "quote"], "txt": ["x" + every + "y", 'say "hi"']}
+            {"k": ["ok", "bad"], "txt": ["plain", "encl" + ENCLOSED_BY + "here"]}
         )
+        random_name = f"read_pandas_rej_{int(time.time())}"
+        try:
+            with pytest.raises(ValueError, match="dtype"):
+                read_pandas(df=df, name=random_name, schema="public")
+            left = current_cursor().execute(
+                "select count(*) from v_catalog.tables where"
+                f" table_name = '{random_name}' and table_schema = 'public'"
+            ).fetchall()[0][0]
+            assert left == 0
+        finally:
+            drop(f"public.{random_name}", method="table")
+
+    def test_enclosure_char_in_data_detected_on_insert(self):
+        """
+        Same on the COPY path, where the count comes back from COPY itself.
+        """
+        df = pandas.DataFrame(
+            {"k": ["ok", "bad"], "txt": ["plain", "encl" + ENCLOSED_BY + "here"]}
+        )
+        dtype = {"k": "varchar(20)", "txt": "varchar(60)"}
+        random_name = f"read_pandas_reji_{int(time.time())}"
+        try:
+            read_pandas(df=df, name=random_name, schema="public", dtype=dtype)
+            current_cursor().execute(f"delete from public.{random_name}").fetchall()
+            current_cursor().execute("commit").fetchall()
+            with pytest.raises(ValueError, match="dtype"):
+                read_pandas(df=df, name=random_name, schema="public", insert=True)
+        finally:
+            drop(f"public.{random_name}", method="table")
+
+    @pytest.mark.parametrize("insert", [False, True])
+    def test_dtype_ingests_enclosure_char(self, insert):
+        """
+        Supplying dtype skips the flex-table type guess, which is the only
+        reason the fields are enclosed - so the fields are written bare and
+        a value holding ENCLOSED_BY round trips on both paths.
+        """
+        value = "encl" + ENCLOSED_BY + "here"
+        df = pandas.DataFrame({"k": ["ctrl", "quote"], "txt": [value, 'say "hi"']})
         dtype = {"k": "varchar(20)", "txt": "varchar(60)"}
         random_name = f"read_pandas_noenc_{int(time.time())}"
         try:
-            if mode == "insert":
-                read_pandas(df=df, name=random_name, schema="public", dtype=dtype)
+            vdf = read_pandas(df=df, name=random_name, schema="public", dtype=dtype)
+            if insert:
                 current_cursor().execute(
                     f"delete from public.{random_name}"
                 ).fetchall()
@@ -237,16 +245,13 @@ class TestReadPandasEncoding:
                     df=df,
                     name=random_name,
                     schema="public",
+                    dtype=dtype,
                     insert=True,
                     abort_on_error=True,
                 )
-            else:
-                vdf = read_pandas(
-                    df=df, name=random_name, schema="public", dtype=dtype
-                )
             got = vdf.to_pandas()
             assert len(got) == 2
-            assert got[got["k"] == "all"]["txt"].iloc[0] == "x" + every + "y"
+            assert got[got["k"] == "ctrl"]["txt"].iloc[0] == value
             assert got[got["k"] == "quote"]["txt"].iloc[0] == 'say "hi"'
         finally:
             drop(f"public.{random_name}", method="table")

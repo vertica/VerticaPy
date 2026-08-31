@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import csv
 import logging
 import os
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -31,6 +31,7 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.parsers.csv import read_csv
 from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.sql.drop import drop
 
 # Character set used for the intermediate CSV that read_pandas writes and
 # COPY reads back. These are control characters so that ordinary text -
@@ -46,51 +47,42 @@ from verticapy.core.vdataframe.base import vDataFrame
 # See https://docs.vertica.com/25.3.x/en/data-load/data-formats/delimited-data/
 DELIMITER = "\001"
 RECORD_TERMINATOR = "\002"
+ENCLOSED_BY = "\026"
 ESCAPE_AS = "\027"
 
-# Candidate enclosure characters, tried in order. COPY accepts any ASCII value
-# in E'\001'-E'\177' as ENCLOSED BY, but the character must not occur in the
-# data: Vertica requires an enclosure character appearing inside an enclosed
-# field to be written as ESCAPE_AS + enclosure (verified against 25.3 - a raw
-# or a doubled one makes COPY reject the entire row), and to_csv cannot be
-# made to emit that sequence. Under QUOTE_NONE it only ever writes ESCAPE_AS
-# ahead of ESCAPE_AS, the delimiter or the record terminator, so no
-# pre-escaping survives the write. Choosing a character the data does not
-# contain removes the need to escape it at all.
-ENCLOSURE_CANDIDATES = (
-    "\026",
-    "\025",
-    "\024",
-    "\023",
-    "\022",
-    "\021",
-    "\020",
-    "\017",
-    "\016",
-    "\005",
-    "\004",
-    "\003",
+# The one input this encoding cannot carry is a string that contains
+# ENCLOSED_BY itself. Vertica wants such a character written as ESCAPE_AS +
+# ENCLOSED_BY (verified against 25.3 - a raw or a doubled one makes COPY
+# reject the whole row), and to_csv cannot emit that sequence: under
+# QUOTE_NONE it only ever writes ESCAPE_AS ahead of ESCAPE_AS, the delimiter
+# or the record terminator, and it doubles any ESCAPE_AS we insert ourselves.
+#
+# Rather than scan the data for it up front, the rejection is detected after
+# the fact by comparing the rows COPY accepted against the rows we wrote, and
+# reported with this message. Supplying 'dtype' is the way through: it skips
+# the flex-table type guess, which is the only reason the fields are enclosed
+# at all, so the data is then written with no enclosure and nothing can
+# collide.
+REJECTED_ROWS_ERROR = (
+    "Vertica rejected {rejected} of the {expected} rows of the "
+    "'pandas.DataFrame'. This happens when a string value contains the "
+    "character used to enclose the fields of the intermediate CSV file "
+    "(chr(22)), which can not be escaped. Specify the column types with the "
+    "'dtype' parameter and ingest again: the fields are then not enclosed "
+    "and the values are loaded as is."
 )
 
 
-def _pick_enclosure(df: pd.DataFrame, str_cols: list) -> Optional[str]:
+def _check_all_rows_loaded(expected: int, loaded: Any) -> None:
     """
-    Returns the first ``ENCLOSURE_CANDIDATES`` entry that appears neither in
-    any string value nor in any column name, so that enclosed fields need no
-    escaping of the enclosure character, or ``None`` if the data contains
-    every candidate.
+    Raises if ``COPY`` accepted fewer rows than the
+    ``pandas.DataFrame`` holds.
     """
-    column_names = "".join(str(col) for col in df.columns)
-    for candidate in ENCLOSURE_CANDIDATES:
-        if candidate in column_names:
-            continue
-        if any(
-            df[c].str.contains(candidate, regex=False, na=False).any()
-            for c in str_cols
-        ):
-            continue
-        return candidate
-    return None
+    if isinstance(loaded, NoneType) or loaded >= expected:
+        return
+    raise ValueError(
+        REJECTED_ROWS_ERROR.format(rejected=expected - loaded, expected=expected)
+    )
 
 
 @save_verticapy_logs
@@ -428,37 +420,24 @@ def read_pandas(
                         "There are no columns or values. Invalid DataFrame."
                     )
             return vDataFrame(q)
-        enclosed_by = _pick_enclosure(df, str_cols)
-        if isinstance(enclosed_by, NoneType) and not (insert or dtype):
-            # Enclosing the fields is only needed so that the flex table used
-            # to guess the column types does not retype a string column - a
-            # column of '007' would otherwise be read as INTEGER. Ingesting
-            # into an existing relation, or supplying 'dtype', skips that
-            # guess, and the data then loads correctly with no enclosure at
-            # all: to_csv escapes the delimiter, the record terminator and
-            # the escape character, which is all COPY needs.
-            raise ValueError(
-                "The string columns of the 'pandas.DataFrame' contain every "
-                "control character that could be used to enclose the fields "
-                "of the intermediate CSV file, so the column types can not "
-                "be guessed safely. Specify the column types with the "
-                "'dtype' parameter - the enclosing is then unnecessary and "
-                "the data is ingested as is - or set 'insert' to True to "
-                "load into an existing relation."
-            )
-        enclose = not isinstance(enclosed_by, NoneType)
+        # Enclosing the fields is only needed so that the flex table used to
+        # guess the column types does not retype a string column - a column
+        # of '007' would otherwise be read as INTEGER. Supplying 'dtype'
+        # skips that guess, and the data then loads correctly with no
+        # enclosure at all: to_csv escapes the delimiter, the record
+        # terminator and the escape character, which is all COPY needs.
+        enclose = not dtype
         if (enclose and len(str_cols) > 0) or len(null_columns) > 0:
             tmp_df = df.copy()
             if enclose:
                 for c in str_cols:
-                    # The value itself needs no escaping: 'enclosed_by' was
-                    # chosen so that it does not occur in the data, and
                     # to_csv escapes DELIMITER, RECORD_TERMINATOR and
-                    # ESCAPE_AS itself. The no-op .str.slice() keeps the
-                    # historical handling of a non-string value in an object
-                    # column - it becomes NA, where a plain concatenation
-                    # would raise TypeError.
-                    tmp_df[c] = enclosed_by + tmp_df[c].str.slice() + enclosed_by
+                    # ESCAPE_AS itself, so only ENCLOSED_BY is unescapable -
+                    # see REJECTED_ROWS_ERROR. The no-op .str.slice() keeps
+                    # the historical handling of a non-string value in an
+                    # object column - it becomes NA, where a plain
+                    # concatenation would raise TypeError.
+                    tmp_df[c] = ENCLOSED_BY + tmp_df[c].str.slice() + ENCLOSED_BY
             for c in null_columns:
                 # An empty, unenclosed field is what COPY's NULL '' matches.
                 tmp_df[c] = ""
@@ -486,7 +465,7 @@ def read_pandas(
                 ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
             )
             abort_str = "ABORT ON ERROR" if abort_on_error else ""
-            enclosed_by_str = f"ENCLOSED BY '{enclosed_by}'" if enclose else ""
+            enclosed_by_str = f"ENCLOSED BY '{ENCLOSED_BY}'" if enclose else ""
             sql_string = f"""
                     COPY {input_relation}
                     ({tmp_df_columns_str})
@@ -499,36 +478,47 @@ def read_pandas(
                     RECORD TERMINATOR '{RECORD_TERMINATOR}'
                     {abort_str};"""
             logging.debug(f"Copy statement is: {sql_string}")
-            _executeSQL(
+            # COPY returns the number of rows it accepted, so a row rejected
+            # for the reason in REJECTED_ROWS_ERROR is caught here rather
+            # than silently going missing. Only meaningful while the fields
+            # are enclosed - that is the only rejection this can explain.
+            loaded = _executeSQL(
                 query=sql_string,
                 title="Inserting the pandas.DataFrame.",
+                method="fetchfirstelem",
             )
+            if enclose:
+                _check_all_rows_loaded(len(df), loaded)
             vdf = vDataFrame(name, schema=schema)
-        elif tmp_name:
-            vdf = read_csv(
-                path,
-                table_name=tmp_name,
-                dtype=dtype,
-                temporary_local_table=True,
-                parse_nrows=parse_nrows,
-                sep=DELIMITER,
-                record_terminator=RECORD_TERMINATOR,
-                quotechar=enclosed_by,
-                escape=ESCAPE_AS,
-            )
         else:
             vdf = read_csv(
                 path,
-                table_name=name,
+                table_name=tmp_name if tmp_name else name,
                 dtype=dtype,
-                schema=schema,
-                temporary_local_table=False,
+                schema=None if tmp_name else schema,
+                temporary_local_table=bool(tmp_name),
                 parse_nrows=parse_nrows,
                 sep=DELIMITER,
                 record_terminator=RECORD_TERMINATOR,
-                quotechar=enclosed_by,
+                quotechar=ENCLOSED_BY if enclose else None,
                 escape=ESCAPE_AS,
             )
+            if enclose:
+                # Costs a COUNT(*), so only when the fields are enclosed and
+                # a row can actually be rejected for that reason. read_csv
+                # created the relation, so drop it again rather than hand
+                # back a table that is quietly missing rows.
+                relation = vdf._vars["main_relation"]
+                loaded = _executeSQL(
+                    query=f"SELECT COUNT(*) FROM {relation};",
+                    title="Checking that every row was loaded.",
+                    method="fetchfirstelem",
+                )
+                try:
+                    _check_all_rows_loaded(len(df), loaded)
+                except ValueError:
+                    drop(relation, method="table")
+                    raise
     finally:
         try:
             os.remove(path)
