@@ -17,6 +17,8 @@ permissions and limitations under the License.
 from itertools import chain
 import pytest
 
+from verticapy.tests_new import normalize_na
+
 
 class TestRead:
     """
@@ -168,7 +170,7 @@ class TestRead:
                 vpy_res = list(chain(*vdf[columns].iloc().to_list()))
                 py_res = pdf[columns].iloc[:5].values.tolist()
 
-        assert vpy_res == py_res
+        assert normalize_na(vpy_res) == normalize_na(py_res)
 
     def test_shape(self, titanic_vd):
         """

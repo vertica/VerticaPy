@@ -4680,14 +4680,14 @@ def classification_report(
 
             .. math::
 
-                AIC = 2k - 2\ln(\hat{L})
+                AIC = 2k - 2\\ln(\\hat{L})
 
         - auc:
             Area Under the Curve (ROC).
 
             .. math::
 
-                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
         - ba:
             Balanced Accuracy.
@@ -4705,7 +4705,7 @@ def classification_report(
 
             .. math::
 
-                BIC = -2\ln(\hat{L}) + k \ln(n)
+                BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
         - bm:
             Informedness
@@ -4768,7 +4768,7 @@ def classification_report(
 
             .. math::
 
-                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
 
         - lr+:
@@ -4817,7 +4817,7 @@ def classification_report(
 
             .. math::
 
-                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
         - precision:
             Precision

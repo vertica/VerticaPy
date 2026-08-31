@@ -391,12 +391,12 @@ class TfidfVectorizer(VerticaModel):
                         TRIM(
                             REGEXP_REPLACE(
                                 REGEXP_REPLACE(
-                                    {text},'[^\w ]',''
+                                    {text},'[^\\w ]',''
                                 ),
-                                ' {2,}',' '
+                                ' {{2,}}',' '
                             )
                         ),
-                    '\s',',')
+                    '\\s',',')
                 ) AS words 
             FROM {vdf}"""
         return query

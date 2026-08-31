@@ -616,7 +616,7 @@ class TableSample:
                 return "bool"
             if isinstance(xi, (int, np.int_)):
                 return "int"
-            if isinstance(xi, (float, np.float_)):
+            if isinstance(xi, (float, np.float64)):
                 return "float"
             if isinstance(xi, (datetime.datetime, datetime.date)):
                 return "date"

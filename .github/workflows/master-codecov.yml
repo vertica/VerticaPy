@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     
     steps:
       - name: Installing graphviz package
@@ -42,15 +42,7 @@ jobs:
           export VP_TEST_USER=dbadmin
           echo "*** Calling tox based on python-version ***"
           echo ${{ matrix.python-version }}
-          if ${{ matrix.python-version == '3.9' }}; then
-            tox -e py39 -- --cov=./ --cov-report=xml
-          elif ${{ matrix.python-version == '3.10' }}; then
-            tox -e py310 -- --cov=./ --cov-report=xml
-          elif ${{ matrix.python-version == '3.11' }}; then
-            tox -e py311 -- --cov=./ --cov-report=xml
-          elif ${{ matrix.python-version == '3.12' }}; then
-            tox -e py312 -- --cov=./ --cov-report=xml
-          fi          
+          tox -e py$(echo "${{ matrix.python-version }}" | tr -d .) -- --cov=./ --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
