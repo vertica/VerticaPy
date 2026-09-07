@@ -169,17 +169,14 @@ jobs:
       # ---------------------------
       - name: Install Vertica Operator
         run: |
-          cat <<'EOF' > operator-values.yaml
-          installCRDs: true
-          controller:
-            extraEnv:
-              - name: AWS_REGION
-                value: "us-east-1"
-              - name: AWS_DEFAULT_REGION
-                value: "us-east-1"
-          EOF
-          helm upgrade --install vdb-op vertica-charts/verticadb-operator \
-            -n my-verticadb-operator -f operator-values.yaml --wait --timeout 10m
+          # Pin the chart version so a future major release of the
+          # verticadb-operator chart cannot unexpectedly break the pipeline.
+          # The operator reads the object-store region from the VerticaDB
+          # communal spec, so no extra operator values are required here.
+          helm install vdb-op vertica-charts/verticadb-operator \
+            -n my-verticadb-operator \
+            --version 25.4.0-0 \
+            --wait --timeout 10m
           kubectl -n my-verticadb-operator get pods -o wide || true
       - name: Deploy VerticaDB
         run: |
@@ -204,6 +201,16 @@ jobs:
             local:
               dataPath: /data
               depotPath: /depot
+            # Writable scratch volume for server-side file exports (e.g.
+            # STV_Export2Shapefile used by vDataFrame.to_shp). The pod root
+            # filesystem is not writable by the fenced UDx process, so we mount
+            # an emptyDir owned by the pod fsGroup at /vertica-export.
+            volumes:
+              - name: vertica-export
+                emptyDir: {}
+            volumeMounts:
+              - name: vertica-export
+                mountPath: /vertica-export
             subclusters:
               - name: defaultsubcluster
                 size: 1
@@ -265,6 +272,8 @@ jobs:
           export VP_TEST_USER=dbadmin
           export VP_TEST_PASSWORD=""
           export VP_TEST_DATABASE=vdb
+          # Server-side writable directory for shapefile export tests (to_shp).
+          export VP_TEST_SHP_DIR=/vertica-export/
 
           tox -e py311 -- --cov=./ --cov-report=xml
       - name: Check Codecov token availability
