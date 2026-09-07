@@ -20,16 +20,16 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Pin to pylint 3.x / astroid 3.x. pylint 4.x + astroid 4.x crash with a
-        # RecursionError while introspecting the scipy.special C-extension that
-        # --extension-pkg-allow-list enables (astroid regression). Keeps the
-        # existing lint configuration unchanged.
-        pip install "pylint<4" "astroid<4"
+        pip install pylint
         pip install .
         pip install -r requirements-dev.txt
         pip install -r requirements-testing.txt
         pip install tensorflow
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=10 --disable=typecheck,E0606,W,C,R --extension-pkg-allow-list=scipy.special $(git ls-files '*.py')
-        pylint --fail-under=9 --disable=typecheck,E,C,R $(git ls-files '*.py')
+        # Use --ignored-modules (not --extension-pkg-allow-list) for scipy.special:
+        # the allow-list makes astroid import and introspect the C-extension, which
+        # crashes with a RecursionError on current scipy. Ignoring the module
+        # suppresses the spurious no-name-in-module (E0611) without introspecting it.
+        pylint --fail-under=10 --disable=typecheck,E0606,W,C,R --ignored-modules=scipy.special $(git ls-files '*.py')
+        pylint --fail-under=9 --disable=typecheck,E,C,R --ignored-modules=scipy.special $(git ls-files '*.py')
