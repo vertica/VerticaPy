@@ -354,7 +354,9 @@ class TestMath:
 
         print(f"VerticaPy Result: {vpy_res} \n")
 
-        assert vpy_res == pytest.approx(expected)
+        # pytest.approx requires an explicit tolerance for datetime/timedelta
+        # comparisons; the slice boundary is exact so a 1-second window is safe.
+        assert vpy_res == pytest.approx(expected, abs=datetime.timedelta(seconds=1))
 
     @pytest.mark.parametrize(
         "func, columns, by, order_by, name, offset, x_smoothing, add_count, _rel_tol, _abs_tol",
