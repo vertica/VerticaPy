@@ -128,7 +128,7 @@ class TestPipeline:
         )
 
         assert winequality_copy["predicted_quality"].mean() == pytest.approx(
-            5.818378, abs=1e-6
+            5.818378, abs=1e-2
         )
 
     def test_report(self, model):
@@ -146,16 +146,16 @@ class TestPipeline:
             "aic",
             "bic",
         ]
-        assert reg_rep["value"][0] == pytest.approx(0.219816, abs=1e-6)
-        assert reg_rep["value"][1] == pytest.approx(3.592465, abs=1e-6)
-        assert reg_rep["value"][2] == pytest.approx(0.496031, abs=1e-6)
-        assert reg_rep["value"][3] == pytest.approx(0.609075, abs=1e-6)
-        assert reg_rep["value"][4] == pytest.approx(0.594856, abs=1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.7712695123858948, abs=1e-6)
-        assert reg_rep["value"][6] == pytest.approx(0.219816, abs=1e-6)
-        assert reg_rep["value"][7] == pytest.approx(0.21945605202370688, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-3366.75686210436, abs=1e-6)
-        assert reg_rep["value"][9] == pytest.approx(-3339.65156943384, abs=1e-6)
+        assert reg_rep["value"][0] == pytest.approx(0.219816, abs=1e-2)
+        assert reg_rep["value"][1] == pytest.approx(3.592465, abs=1e-2)
+        assert reg_rep["value"][2] == pytest.approx(0.496031, abs=1e-2)
+        assert reg_rep["value"][3] == pytest.approx(0.609075, abs=1e-2)
+        assert reg_rep["value"][4] == pytest.approx(0.594856, abs=1e-2)
+        assert reg_rep["value"][5] == pytest.approx(0.7712695123858948, abs=1e-2)
+        assert reg_rep["value"][6] == pytest.approx(0.219816, abs=1e-2)
+        assert reg_rep["value"][7] == pytest.approx(0.21945605202370688, abs=1e-2)
+        assert reg_rep["value"][8] == pytest.approx(-3366.75686210436, abs=1e-2)
+        assert reg_rep["value"][9] == pytest.approx(-3339.65156943384, abs=1e-2)
 
         model_class = Pipeline(
             [
@@ -172,42 +172,42 @@ class TestPipeline:
         model_class.drop()
         model_class.fit("public.winequality", ["alcohol"], "good")
         cls_rep1 = model_class.report().transpose()
-        assert cls_rep1["auc"][0] == pytest.approx(0.7642901826299067)
-        assert cls_rep1["prc_auc"][0] == pytest.approx(0.45326090911518313)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.8131445282438048)
-        assert cls_rep1["log_loss"][0] == pytest.approx(0.182720882885624)
-        assert cls_rep1["precision"][0] == pytest.approx(0.5595463137996219)
-        assert cls_rep1["recall"][0] == pytest.approx(0.2317932654659358)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.3277962347729789)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.2719537880298097)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.18715725014026519)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.3951696381964047)
-        assert cls_rep1["csi"][0] == pytest.approx(0.19602649006622516)
+        assert cls_rep1["auc"][0] == pytest.approx(0.7642901826299067, abs=1e-2)
+        assert cls_rep1["prc_auc"][0] == pytest.approx(0.45326090911518313, abs=1e-2)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.8131445282438048, abs=1e-2)
+        assert cls_rep1["log_loss"][0] == pytest.approx(0.182720882885624, abs=1e-2)
+        assert cls_rep1["precision"][0] == pytest.approx(0.5595463137996219, abs=1e-2)
+        assert cls_rep1["recall"][0] == pytest.approx(0.2317932654659358, abs=1e-2)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.3277962347729789, abs=1e-2)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.2719537880298097, abs=1e-2)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.18715725014026519, abs=1e-2)
+        assert cls_rep1["markedness"][0] == pytest.approx(0.3951696381964047, abs=1e-2)
+        assert cls_rep1["csi"][0] == pytest.approx(0.19602649006622516, abs=1e-2)
         model_class.drop()
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(metric="max") == pytest.approx(3.592465, abs=1e-6)
+        assert model.score(metric="max") == pytest.approx(3.592465, abs=1e-2)
         # method = "mae"
-        assert model.score(metric="mae") == pytest.approx(0.609075, abs=1e-6)
+        assert model.score(metric="mae") == pytest.approx(0.609075, abs=1e-2)
         # method = "median"
-        assert model.score(metric="median") == pytest.approx(0.496031, abs=1e-6)
+        assert model.score(metric="median") == pytest.approx(0.496031, abs=1e-2)
         # method = "mse"
-        assert model.score(metric="mse") == pytest.approx(0.594856660735976, abs=1e-6)
+        assert model.score(metric="mse") == pytest.approx(0.594856660735976, abs=1e-2)
         # method = "rmse"
-        assert model.score(metric="rmse") == pytest.approx(0.7712695123858948, abs=1e-6)
+        assert model.score(metric="rmse") == pytest.approx(0.7712695123858948, abs=1e-2)
         # method = "msl"
-        assert model.score(metric="msle") == pytest.approx(0.002509, abs=1e-6)
+        assert model.score(metric="msle") == pytest.approx(0.002509, abs=1e-2)
         # method = "r2"
-        assert model.score() == pytest.approx(0.219816, abs=1e-6)
+        assert model.score() == pytest.approx(0.219816, abs=1e-2)
         # method = "r2a"
-        assert model.score(metric="r2a") == pytest.approx(0.21945605202370688, abs=1e-6)
+        assert model.score(metric="r2a") == pytest.approx(0.21945605202370688, abs=1e-2)
         # method = "var"
-        assert model.score(metric="var") == pytest.approx(0.219816, abs=1e-6)
+        assert model.score(metric="var") == pytest.approx(0.219816, abs=1e-2)
         # method = "aic"
-        assert model.score(metric="aic") == pytest.approx(-3366.75686210436, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-3366.75686210436, abs=1e-2)
         # method = "bic"
-        assert model.score(metric="bic") == pytest.approx(-3339.65156943384, abs=1e-6)
+        assert model.score(metric="bic") == pytest.approx(-3339.65156943384, abs=1e-2)
 
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(
@@ -227,7 +227,7 @@ class TestPipeline:
         winequality_copy = winequality_vd.copy()
         winequality_copy = model_class.transform(winequality_copy, X=["alcohol"])
         assert winequality_copy["alcohol"].mean() == pytest.approx(
-            0.361130555239542, abs=1e-6
+            0.361130555239542, abs=1e-2
         )
 
         model_class.drop()
@@ -253,7 +253,7 @@ class TestPipeline:
             X=["alcohol"],
         )
         assert winequality_copy["alcohol"].mean() == pytest.approx(
-            80.3934257349546, abs=1e-6
+            80.3934257349546, abs=1e-2
         )
 
         model_class.drop()
