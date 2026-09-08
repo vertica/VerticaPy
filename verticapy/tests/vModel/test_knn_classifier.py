@@ -100,8 +100,8 @@ class TestKNeighborsClassifier:
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3, abs=1e-2)
         assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(
-            0.353846153846154
-        , abs=1e-2)
+            0.353846153846154, abs=1e-2
+        )
         assert lift_ch["lift"][300] == pytest.approx(1.81819061441703, abs=1e-2)
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9, abs=1e-2)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0, abs=1e-2)
@@ -115,8 +115,12 @@ class TestKNeighborsClassifier:
         assert roc_curve["false_positive"][100] == pytest.approx(1.0, abs=1e-2)
         assert roc_curve["true_positive"][100] == pytest.approx(1.0, abs=1e-2)
         assert roc_curve["threshold"][700] == pytest.approx(0.7, abs=1e-2)
-        assert roc_curve["false_positive"][700] == pytest.approx(0.0491803278688525, abs=1e-2)
-        assert roc_curve["true_positive"][700] == pytest.approx(0.353846153846154, abs=1e-2)
+        assert roc_curve["false_positive"][700] == pytest.approx(
+            0.0491803278688525, abs=1e-2
+        )
+        assert roc_curve["true_positive"][700] == pytest.approx(
+            0.353846153846154, abs=1e-2
+        )
         plt.close("all")
 
     def test_prc_curve(self, model):
@@ -137,8 +141,12 @@ class TestKNeighborsClassifier:
         assert cutoff_curve["false_positive"][100] == pytest.approx(1.0, abs=1e-2)
         assert cutoff_curve["true_positive"][100] == pytest.approx(1.0, abs=1e-2)
         assert cutoff_curve["threshold"][700] == pytest.approx(0.7, abs=1e-2)
-        assert cutoff_curve["false_positive"][700] == pytest.approx(0.0491803278688525, abs=1e-2)
-        assert cutoff_curve["true_positive"][700] == pytest.approx(0.353846153846154, abs=1e-2)
+        assert cutoff_curve["false_positive"][700] == pytest.approx(
+            0.0491803278688525, abs=1e-2
+        )
+        assert cutoff_curve["true_positive"][700] == pytest.approx(
+            0.353846153846154, abs=1e-2
+        )
         plt.close("all")
 
     def test_deploySQL(self, model):
@@ -189,28 +197,38 @@ class TestKNeighborsClassifier:
         assert cls_rep1["recall"][0] == pytest.approx(0.5871794871794872, abs=1e-2)
         assert cls_rep1["f1_score"][0] == pytest.approx(0.6524216524216524, abs=1e-2)
         assert cls_rep1["mcc"][0] == pytest.approx(0.40382652359985155, abs=1e-2)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.39280009607878474, abs=1e-2)
+        assert cls_rep1["informedness"][0] == pytest.approx(
+            0.39280009607878474, abs=1e-2
+        )
         assert cls_rep1["markedness"][0] == pytest.approx(0.41516247778624016, abs=1e-2)
         assert cls_rep1["csi"][0] == pytest.approx(0.48414376321353064, abs=1e-2)
 
     def test_score(self, model):
         assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(
-            0.5691554467564259
-        , abs=1e-2)
+            0.5691554467564259, abs=1e-2
+        )
         assert model.score(cutoff=0.1, metric="accuracy") == pytest.approx(
-            0.4773561811505508
-        , abs=1e-2)
+            0.4773561811505508, abs=1e-2
+        )
         assert model.score(metric="best_cutoff") == pytest.approx(0.999, abs=1e-2)
         assert model.score(metric="bm") == pytest.approx(0.39280009607878474, abs=1e-2)
         assert model.score(metric="csi") == pytest.approx(0.48414376321353064, abs=1e-2)
         assert model.score(metric="f1") == pytest.approx(0.6524216524216524, abs=1e-2)
-        assert model.score(metric="logloss") == pytest.approx(26.8788249694002, abs=1e-2)
+        assert model.score(metric="logloss") == pytest.approx(
+            26.8788249694002, abs=1e-2
+        )
         assert model.score(metric="mcc") == pytest.approx(0.40382652359985155, abs=1e-2)
         assert model.score(metric="mk") == pytest.approx(0.41516247778624016, abs=1e-2)
         assert model.score(metric="npv") == pytest.approx(0.6811881188118812, abs=1e-2)
-        assert model.score(metric="prc_auc") == pytest.approx(0.7591081348272292, abs=1e-2)
-        assert model.score(metric="precision") == pytest.approx(0.7339743589743589, abs=1e-2)
-        assert model.score(metric="specificity") == pytest.approx(0.8056206088992974, abs=1e-2)
+        assert model.score(metric="prc_auc") == pytest.approx(
+            0.7591081348272292, abs=1e-2
+        )
+        assert model.score(metric="precision") == pytest.approx(
+            0.7339743589743589, abs=1e-2
+        )
+        assert model.score(metric="specificity") == pytest.approx(
+            0.8056206088992974, abs=1e-2
+        )
 
     def test_set_params(self, model):
         model.set_params({"p": 1})
@@ -224,6 +242,6 @@ class TestKNeighborsClassifier:
         model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
         assert model_test.score(cutoff=0.9, metric="accuracy") == pytest.approx(
-            0.5890710382513661
-        , abs=1e-2)
+            0.5890710382513661, abs=1e-2
+        )
         model_test.drop()

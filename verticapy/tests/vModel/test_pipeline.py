@@ -180,7 +180,9 @@ class TestPipeline:
         assert cls_rep1["recall"][0] == pytest.approx(0.2317932654659358, abs=1e-2)
         assert cls_rep1["f1_score"][0] == pytest.approx(0.3277962347729789, abs=1e-2)
         assert cls_rep1["mcc"][0] == pytest.approx(0.2719537880298097, abs=1e-2)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.18715725014026519, abs=1e-2)
+        assert cls_rep1["informedness"][0] == pytest.approx(
+            0.18715725014026519, abs=1e-2
+        )
         assert cls_rep1["markedness"][0] == pytest.approx(0.3951696381964047, abs=1e-2)
         assert cls_rep1["csi"][0] == pytest.approx(0.19602649006622516, abs=1e-2)
         model_class.drop()

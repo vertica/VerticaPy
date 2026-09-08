@@ -491,9 +491,7 @@ rel_abs_tol_map = {
         "mean_squared_error": {"rel": 1e01, "abs": ABS_TOLERANCE},
         "mean_squared_log_error": {"rel": 5e00, "abs": ABS_TOLERANCE},
         "rmse": {"rel": 5e00, "abs": ABS_TOLERANCE},
-        **dict.fromkeys(
-            ["r2", "R-squared"], {"rel": 2e00, "abs": ABS_TOLERANCE}
-        ),
+        **dict.fromkeys(["r2", "R-squared"], {"rel": 2e00, "abs": ABS_TOLERANCE}),
         **dict.fromkeys(
             ["r2_adj", "Adj. R-squared"], {"rel": 2e00, "abs": ABS_TOLERANCE}
         ),
