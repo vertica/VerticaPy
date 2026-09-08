@@ -189,7 +189,7 @@ jobs:
             annotations:
               vertica.com/k-safety: "0"
           spec:
-            image: opentext/vertica-k8s:latest
+            image: opentext/vertica-k8s:26.2.0-2
             dbName: vdb
             initPolicy: Create
             licenseSecret: vertica-license
