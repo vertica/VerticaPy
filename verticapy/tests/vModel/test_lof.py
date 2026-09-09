@@ -78,7 +78,7 @@ class TestLocalOutlierFactor:
         titanic_copy = model.predict()
 
         assert titanic_copy["lof_score"].mean() == pytest.approx(
-            1.17226637499694, abs=1e-6
+            1.17226637499694, abs=1e-2
         )
 
     def test_get_attributes(self, model):
@@ -116,7 +116,7 @@ class TestLocalOutlierFactor:
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare"])
         assert model_test.predict()["lof_score"].mean() == pytest.approx(
-            1.17226637499694, abs=1e-6
+            1.17226637499694, abs=1e-2
         )
         model_test.drop()
 

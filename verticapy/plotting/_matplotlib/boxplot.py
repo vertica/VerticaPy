@@ -75,7 +75,6 @@ class BoxPlot(MatplotlibBase):
         box = ax.boxplot(
             self.data["X"],
             notch=False,
-            labels=self.layout["labels"],
             patch_artist=True,
             **self.init_style,
             **{key: value for key, value in style_kwargs.items() if key != "color"},
