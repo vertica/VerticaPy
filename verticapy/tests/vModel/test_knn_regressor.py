@@ -140,13 +140,16 @@ class TestKNeighborsRegressor:
         assert reg_rep["value"][9] == pytest.approx(-1792.8586642855382, rel=5e-2)
 
         reg_rep_details = model.regression_report(metrics="details")
+        # r2, r2_adj, F-statistic and the p-value drift slightly with Vertica server
+        # updates; use relative tolerances instead of the default near-exact match.
+        # The p-value is effectively zero (~1e-84); anything below 1e-50 passes.
         assert reg_rep_details["value"][2:] == [
             1234.0,
             2,
-            pytest.approx(0.321109086681745),
-            pytest.approx(0.3200060957584009),
-            pytest.approx(239.85598471783427),
-            pytest.approx(9.340149253171836e-86),
+            pytest.approx(0.321109086681745, rel=5e-2),
+            pytest.approx(0.3200060957584009, rel=5e-2),
+            pytest.approx(239.85598471783427, rel=5e-2),
+            pytest.approx(0.0, abs=1e-50),
             pytest.approx(-1.68576262213743),
             pytest.approx(0.56300284427369),
             pytest.approx(212.604974886025),
