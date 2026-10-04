@@ -1187,10 +1187,12 @@ class DataSetUp:
         """
         Data setup function for python timeseries model(s)
         """
-        # Time-series models are order-sensitive; server row order is not guaranteed.
-        airline_pdf = vp.vDataFrame(
-            f"select * from {self.schema_name}.{self.dataset_name} order by date"
-        ).to_pandas()
+        # Sort client-side: vDataFrame wraps the SQL in a subquery, which drops ORDER BY.
+        airline_pdf = (
+            vp.vDataFrame(f"select * from {self.schema_name}.{self.dataset_name}")
+            .to_pandas()
+            .sort_values("date")
+        )
         airline_pdf_ts = airline_pdf.set_index("date")
 
         self.py_dataset = airline_pdf_ts
