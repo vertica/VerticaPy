@@ -90,8 +90,8 @@ jobs:
               spec:
                 containers:
                   - name: minio
-                    image: minio/minio:latest
-                    args: ["server", "/data"]
+                    # minio/minio is no longer pullable from Docker Hub; use a pinned archived build.
+                    image: bitnamilegacy/minio:2025.7.23
                     env:
                       - name: MINIO_ROOT_USER
                         value: "minioadmin"
@@ -101,7 +101,7 @@ jobs:
                       - containerPort: 9000
                     volumeMounts:
                       - name: data
-                        mountPath: /data
+                        mountPath: /bitnami/minio/data
                 volumes:
                   - name: data
                     emptyDir: {}
@@ -119,11 +119,17 @@ jobs:
                 targetPort: 9000
           EOF
           kubectl apply -f minio.yaml
-          kubectl -n minio rollout status deployment/minio --timeout=5m
+          if ! kubectl -n minio rollout status deployment/minio --timeout=5m; then
+            echo "::error::MinIO deployment did not become available. Dumping diagnostics."
+            kubectl -n minio get pods -o wide || true
+            kubectl -n minio describe pods -l app=minio || true
+            kubectl -n minio logs -l app=minio --tail=100 || true
+            exit 1
+          fi
       - name: Ensure MinIO bucket exists
         run: |
           kubectl run mc-client --rm -i --restart=Never \
-            --image=minio/mc:latest \
+            --image=bitnamilegacy/minio-client:2025.7.21 \
             -n minio \
             --command -- bash -c "
               mc alias set localminio http://minio.minio.svc.cluster.local:9000 minioadmin minioadmin && \
