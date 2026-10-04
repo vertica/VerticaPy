@@ -222,17 +222,31 @@ jobs:
       - name: Wait for Vertica readiness
         run: |
           NS=my-verticadb-operator
-          SS=verticadb-sample-defaultsubcluster
-          POD=${SS}-0
-          for i in $(seq 1 60); do
-            kubectl get pod ${POD} -n ${NS} >/dev/null 2>&1 && break || sleep 10
-          done
-          if ! kubectl wait --for=condition=Ready pod/${POD} -n ${NS} --timeout=15m; then
-            echo "::error::Vertica pod ${POD} did not become Ready. Dumping diagnostics."
-            kubectl -n ${NS} get verticadb -o wide || true
+          VDB=verticadb-sample
+          POD=${VDB}-defaultsubcluster-0
+
+          dump_diagnostics() {
+            kubectl -n ${NS} get vdb ${VDB} -o wide || true
+            kubectl -n ${NS} describe vdb ${VDB} || true
             kubectl -n ${NS} get pods -o wide || true
             kubectl -n ${NS} describe pod ${POD} || true
             kubectl -n ${NS} logs ${POD} -c server --tail=200 || true
+            echo "--- operator logs ---"
+            kubectl -n ${NS} logs deploy/vdb-op-verticadb-operator-manager --tail=200 || \
+              kubectl -n ${NS} logs -l app.kubernetes.io/name=verticadb-operator --tail=200 || true
+          }
+
+          # DBInitialized is the operator's signal that the database was created,
+          # not merely that a pod exists.
+          if ! kubectl wait --for=condition=DBInitialized=True \
+              --namespace=${NS} vdb/${VDB} --timeout=15m; then
+            echo "::error::VerticaDB ${VDB} did not reach DBInitialized=True. Dumping diagnostics."
+            dump_diagnostics
+            exit 1
+          fi
+          if ! kubectl wait --for=condition=Ready pod/${POD} -n ${NS} --timeout=5m; then
+            echo "::error::Vertica pod ${POD} did not become Ready. Dumping diagnostics."
+            dump_diagnostics
             exit 1
           fi
           kubectl -n ${NS} get pods -o wide || true
@@ -248,24 +262,45 @@ jobs:
           NS=my-verticadb-operator
           SVC=verticadb-sample-defaultsubcluster
 
+          ENDPOINT_READY=false
           for i in {1..30}; do
-            addrs=$(kubectl -n ${NS} get endpoints ${SVC} \
+            addrs=$(kubectl -n "${NS}" get endpoints "${SVC}" \
               -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null || true)
-            [ -n "$addrs" ] && break || sleep 5
+            if [ -n "${addrs}" ]; then
+              ENDPOINT_READY=true
+              break
+            fi
+            sleep 5
           done
+          if [ "${ENDPOINT_READY}" != "true" ]; then
+            echo "::error::Service ${SVC} has no ready endpoints after 30 attempts."
+            kubectl -n "${NS}" get endpoints "${SVC}" -o yaml || true
+            kubectl -n "${NS}" get pods -o wide || true
+            kubectl -n "${NS}" describe vdb verticadb-sample || true
+            exit 1
+          fi
 
           kubectl -n ${NS} port-forward svc/${SVC} 5433:5433 > /tmp/pf.log 2>&1 &
           PF_PID=$!
           trap 'kill ${PF_PID} 2>/dev/null || true' EXIT
 
+          READY=false
           for i in {1..30}; do
             if (exec 3<>/dev/tcp/127.0.0.1/5433) 2>/dev/null; then
               exec 3>&-
-              echo "Vertica reachable on localhost:5433"
+              READY=true
               break
             fi
             sleep 2
           done
+          if [ "${READY}" != "true" ]; then
+            echo "::error::Vertica is not reachable on localhost:5433 after 30 attempts. Dumping diagnostics."
+            cat /tmp/pf.log || true
+            kubectl -n ${NS} get pods -o wide || true
+            kubectl -n ${NS} describe vdb verticadb-sample || true
+            exit 1
+          fi
+          echo "Vertica reachable on localhost:5433"
 
           export VP_TEST_HOST=localhost
           export VP_TEST_PORT=5433

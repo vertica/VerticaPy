@@ -288,7 +288,8 @@ class TestRolling:
         """
         test function - cumulative functions
         """
-        amazon_pdf = amazon_vd.to_pandas()
+        # pandas cumulative functions follow row order, so match Vertica's ORDER BY.
+        amazon_pdf = amazon_vd.to_pandas().sort_values([by, order_by])
         getattr(amazon_vd, func)(
             column=columns, by=[by], order_by=[order_by], name=name
         ).sort([by, order_by])
@@ -298,9 +299,4 @@ class TestRolling:
 
         print(f"VerticaPy Result: {vpy_res} \nPython Result :{py_res}\n")
 
-        # ``cummax`` in Vertica and pandas can diverge substantially when the
-        # order-by column has ties within a group (Vertica's ORDER BY tie-break
-        # is non-deterministic, whereas pandas preserves insertion order). Accept
-        # a wide relative tolerance to keep the check as a smoke test.
-        rel_tol = 5e-01 if func == "cummax" else 1e-06
-        assert vpy_res == pytest.approx(py_res, rel=rel_tol)
+        assert vpy_res == pytest.approx(py_res)

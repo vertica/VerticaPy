@@ -190,7 +190,12 @@ class TestJoinUnionSort:
         test function - sort
         """
         # randomly changing few records
-        market_pdf = market_vd.to_pandas()
+        # Server row order is not guaranteed (e.g. Eon shards), so sort before sampling.
+        market_pdf = (
+            market_vd.to_pandas()
+            .sort_values(["Form", "Name", "Price"])
+            .reset_index(drop=True)
+        )
         change_pdf = market_pdf.sample(50, random_state=100).index
         market_pdf.loc[change_pdf, "Price"] += 1
         market_vd_copy = read_pandas(
@@ -241,13 +246,8 @@ class TestJoinUnionSort:
 
         print(f"Join type: {how}, Vertica: {len(vpy_res)}, Python: {len(py_res)}")
 
-        # For non-equijoin cases with a hard-coded expected row count, allow a
-        # small relative tolerance: the market fixture applies a random price
-        # perturbation seeded on ``random_state=100`` but the row count still
-        # depends on Vertica's tie-break for non-strict comparisons, which can
-        # shift slightly between server versions.
-        if expected:
-            assert len(vpy_res) == pytest.approx(expected, rel=5e-02)
+        if expected is not None:
+            assert len(vpy_res) == expected
         else:
             assert len(vpy_res) == len(py_res)
 
