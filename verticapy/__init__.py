@@ -84,13 +84,6 @@ from verticapy.sql.sys import (
     has_privileges,
 )
 
-from verticapy.sdk.vertica.udf import (
-    sproc,
-    StoredProcedure,
-    StoredProcedureRegistration,
-)
-from verticapy.udf import udf, UDFRegistration, UserDefinedFunction
-
 ##
 #
 # |_     |~) _  _| _  /~\    _ |.
