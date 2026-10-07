@@ -842,13 +842,19 @@ class TestUtilities:
 
     def test_read_shp(self, cities_vd):
         drop(name="public.cities_test")
-        cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
-        vdf = read_shp("/home/dbadmin/cities_test.shp")
+        # The SHP file is written and read back on the Vertica server. Allow the
+        # export directory to be overridden (e.g. a writable volume when Vertica
+        # runs on Kubernetes) while defaulting to /home/dbadmin/ locally.
+        shp_dir = os.environ.get("VP_TEST_SHP_DIR", "/home/dbadmin/")
+        if not shp_dir.endswith("/"):
+            shp_dir += "/"
+        cities_vd.to_shp("cities_test", shp_dir, shape="Point")
+        vdf = read_shp(f"{shp_dir}cities_test.shp")
         assert vdf.shape() == (202, 3)
         try:
-            os.remove("/home/dbadmin/cities_test.shp")
-            os.remove("/home/dbadmin/cities_test.shx")
-            os.remove("/home/dbadmin/cities_test.dbf")
+            os.remove(f"{shp_dir}cities_test.shp")
+            os.remove(f"{shp_dir}cities_test.shx")
+            os.remove(f"{shp_dir}cities_test.dbf")
         except:
             pass
         drop(name="public.cities_test")

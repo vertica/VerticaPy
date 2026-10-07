@@ -16,6 +16,11 @@ permissions and limitations under the License.
 """
 from verticapy.sdk.vertica.udf.gen import generate_lib_udf, generate_udf
 from verticapy.sdk.vertica.udf.load import import_lib_udf
+from verticapy.sdk.vertica.udf.sproc import (
+    sproc,
+    StoredProcedure,
+    StoredProcedureRegistration,
+)
 from verticapy.sdk.vertica.udf.utils import (
     get_func_info,
     get_module_func_info,

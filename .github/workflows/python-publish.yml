@@ -23,10 +23,31 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
-    - name: Build and publish
+    - name: Check PyPI token availability
+      id: pypi-check
+      env:
+        PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        is_fork="${{ github.event.pull_request.head.repo.fork }}"
+
+        if [ "$is_fork" = "true" ] && [ -z "${PYPI_API_TOKEN:-}" ]; then
+          echo "::notice::Fork PR detected — PYPI_API_TOKEN secret is unavailable. Skipping publish."
+          echo "run_publish=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        # For internal releases and dispatches, the token must be present
+        if [ -z "${PYPI_API_TOKEN:-}" ]; then
+          echo "::error::GitHub secret 'PYPI_API_TOKEN' is not set or is empty. Configure it under repo Settings > Secrets and variables > Actions."
+          exit 1
+        fi
+
+        echo "run_publish=true" >> "$GITHUB_OUTPUT"
+    - name: Build package
+      run: python setup.py sdist bdist_wheel
+    - name: Publish to PyPI
+      if: steps.pypi-check.outputs.run_publish == 'true'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
+      run: twine upload dist/*

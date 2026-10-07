@@ -127,9 +127,10 @@ class TestVDCTyping:
         # expected exception
         with pytest.raises(ConversionError) as exception_info:
             titanic_vd_fun["sex"].astype("int")
-        # checking the error message
+        # checking the error message (the server reports whichever value it
+        # fails to convert first, which depends on row order)
         assert exception_info.match(
-            'Could not convert "female" from column titanic.sex to an int8'
+            'Could not convert "(?:male|female)" from column titanic.sex to an int8'
         )
 
         titanic_vd_fun["sex"].astype("varchar(10)")

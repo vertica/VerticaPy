@@ -256,7 +256,7 @@ class TestFilter:
                     raise_error=raise_error,
                 )
             assert exception_info.match(
-                'Could not convert "female" from column titanic.sex to an int8'
+                'Could not convert "(?:male|female)" from column titanic.sex to an int8'
             )
 
     def test_first(self, smart_meters_vd):
@@ -267,6 +267,9 @@ class TestFilter:
         smart_meters_vd_copy = smart_meters_vd.copy()
         smart_meters_pdf = smart_meters_vd.copy().to_pandas()
         smart_meters_pdf.set_index("time", inplace=True)
+        # Label-based slicing below requires a monotonic DatetimeIndex; the row
+        # order returned by the server is not guaranteed, so sort explicitly.
+        smart_meters_pdf.sort_index(inplace=True)
 
         smart_meters_vd_copy.first(ts="time", offset="1 Day")
 
@@ -315,6 +318,9 @@ class TestFilter:
         smart_meters_vd_copy = smart_meters_vd.copy()
         smart_meters_pdf = smart_meters_vd.copy().to_pandas()
         smart_meters_pdf.set_index("time", inplace=True)
+        # Label-based slicing below requires a monotonic DatetimeIndex; the row
+        # order returned by the server is not guaranteed, so sort explicitly.
+        smart_meters_pdf.sort_index(inplace=True)
 
         smart_meters_vd_copy.last(ts="time", offset="1 Day")
 

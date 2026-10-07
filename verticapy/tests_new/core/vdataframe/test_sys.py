@@ -45,12 +45,12 @@ class TestVDFSys:
             vdf.to_db(table_name)
             vdf = vp.vDataFrame(table_name)
             relation = vdf.current_relation()
-            assert "SELECT" not in relation.split(table_name)[0], (
-                f"current_relation() corrupted the table name: {relation}"
-            )
-            assert table_name in relation, (
-                f"Table name missing from current_relation(): {relation}"
-            )
+            assert (
+                "SELECT" not in relation.split(table_name)[0]
+            ), f"current_relation() corrupted the table name: {relation}"
+            assert (
+                table_name in relation
+            ), f"Table name missing from current_relation(): {relation}"
         finally:
             drop(table_name)
 

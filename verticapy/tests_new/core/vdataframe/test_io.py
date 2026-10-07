@@ -321,9 +321,15 @@ class TestIO:
         test function - to_shp
         """
         name = f"shp_test_{shape}"
-        path = "/tmp/"
+        # The SHP file is written and read back on the Vertica server. Allow the
+        # export directory to be overridden (e.g. a writable volume when Vertica
+        # runs on Kubernetes) while defaulting to /tmp/ for shared-filesystem
+        # setups.
+        path = os.environ.get("VP_TEST_SHP_DIR", "/tmp/")
+        if not path.endswith("/"):
+            path += "/"
 
-        tear_down(f"/tmp/{name}.shp")
+        tear_down(f"{path}{name}.shp")
         vp.drop(name=f"public.{name}")
 
         if shape == "Point":
@@ -341,7 +347,7 @@ class TestIO:
             overwrite=overwrite if overwrite or overwrite is False else True,
             shape=shape,
         )
-        vdf = vp.read_shp(f"/tmp/{name}.shp")
+        vdf = vp.read_shp(f"{path}{name}.shp")
         assert vdf.shape() == expected
 
         vp.drop(name=f"public.{name}")
