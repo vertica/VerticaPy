@@ -40,6 +40,32 @@ if sys.version_info < (3, 12):
     )
 
 
+def _server_export_root() -> str:
+    """
+    Returns the server-side directory used for model export/import tests.
+    """
+    path = os.environ.get("VP_TEST_EXPORT_DIR", "/tmp")
+    return path.rstrip("/")
+
+
+def _export_parent_dir(model_obj, category, purpose: str) -> str:
+    """
+    Returns a unique parent directory for a model export/import test run.
+    """
+    category_name = category if category else "auto"
+    return (
+        f"{_server_export_root()}/{model_obj.schema_name}/"
+        f"{model_obj.model_name}/{category_name}/{purpose}"
+    )
+
+
+def _import_model_dir(model_obj, category, purpose: str) -> str:
+    """
+    Returns the model directory created by export_models for import tests.
+    """
+    return f"{_export_parent_dir(model_obj, category, purpose)}/{model_obj.model_name}"
+
+
 def remove_model_dir(folder_path=""):
     """
     function to remove dir
@@ -79,34 +105,34 @@ def remove_model_dir(folder_path=""):
     print(f"Model export output directory {folder_path} removed successfully")
 
 
-def _export(model_obj, category):
+def _export(model_obj, category, export_dir):
     """
     function to export
     """
     export_models(
         name=f"{model_obj.schema_name}.{model_obj.model_name}",
-        path=f"/tmp/{model_obj.schema_name}",
+        path=export_dir,
         kind=category,
     )
 
 
-def _import(vpy_model_obj, py_model_obj, category, schema_name):
+def _import(vpy_model_obj, py_model_obj, category, schema_name, import_path):
     """
     function to import
     """
     if category in ["tf", "tensorflow"]:
-        print(f"Saving frozen model to /tmp/{schema_name}/tf_frozen_model")
-        freeze_model(py_model_obj.model, f"/tmp/{schema_name}/tf_frozen_model", "0")
+        print(f"Saving frozen model to {import_path}/tf_frozen_model")
+        freeze_model(py_model_obj.model, f"{import_path}/tf_frozen_model", "0")
         print("freeze_tf2_model code execution completed......................")
 
         import_models(
-            path=f"/tmp/{schema_name}/tf_frozen_model",
+            path=f"{import_path}/tf_frozen_model",
             schema=schema_name,
             kind=category,
         )
     else:
         import_models(
-            path=f"/tmp/{vpy_model_obj.schema_name}/{vpy_model_obj.model_name}",
+            path=import_path,
             schema=vpy_model_obj.schema_name,
             kind=category,
         )
@@ -153,9 +179,10 @@ class TestModelManagement:
             pytest.skip(f"PMML is not yet supported for {model_class}")
 
         vpy_model_obj = get_vpy_model(model_class)
-        remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
-        _export(vpy_model_obj, category)
-        remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
+        export_dir = _export_parent_dir(vpy_model_obj, category, "export")
+        remove_model_dir(folder_path=export_dir)
+        _export(vpy_model_obj, category, export_dir)
+        remove_model_dir(folder_path=export_dir)
 
     def test_import_models(self, get_vpy_model, model_class, category):
         """
@@ -169,18 +196,20 @@ class TestModelManagement:
             pytest.skip(f"PMML is not yet supported for {model_class}")
 
         vpy_model_obj = get_vpy_model(model_class)
+        export_dir = _export_parent_dir(vpy_model_obj, category, "import")
+        import_path = _import_model_dir(vpy_model_obj, category, "import")
 
         # model export
-        remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
-        _export(vpy_model_obj, category)
+        remove_model_dir(folder_path=export_dir)
+        _export(vpy_model_obj, category, export_dir)
 
         # drop model
         vpy_model_obj.model.drop()
 
         # import model
-        _import(vpy_model_obj, None, category, None)
+        _import(vpy_model_obj, None, category, None, import_path)
 
-        remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
+        remove_model_dir(folder_path=export_dir)
 
     def test_load_model(
         self,
@@ -205,14 +234,16 @@ class TestModelManagement:
 
         # model export
         vpy_model_obj = get_vpy_model(model_class)
+        export_dir = _export_parent_dir(vpy_model_obj, category, "load")
+        import_path = _import_model_dir(vpy_model_obj, category, "load")
 
-        remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
-        _export(vpy_model_obj, category)
+        remove_model_dir(folder_path=export_dir)
+        _export(vpy_model_obj, category, export_dir)
         # drop model
         vpy_model_obj.model.drop()
 
         # import model
-        _import(vpy_model_obj, None, category, None)
+        _import(vpy_model_obj, None, category, None, import_path)
         model = load_model(
             name=f"{vpy_model_obj.schema_name}.{vpy_model_obj.model_name}"
         )
@@ -279,7 +310,7 @@ class TestModelManagement:
             )
             py_res = py_model_obj.pred.mean()
 
-        remove_model_dir(folder_path=f"/tmp/{vpy_model_obj.schema_name}")
+        remove_model_dir(folder_path=export_dir)
 
         _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
         print(
@@ -289,6 +320,7 @@ class TestModelManagement:
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["load_model"]["rel"]
         )
+
 
 class TestModelManagementFromDB:
     """
@@ -333,47 +365,51 @@ class TestModelManagementFromDB:
         # No need to skip - we only have vertica category now
 
         py_model_obj = get_py_model(model_class)
-        
+
         # Create a unique model name for this test
         model_name = f"test_load_db_{model_class.lower()}"
         full_model_name = f"{schema_loader}.{model_name}"
-        
+
         # Clean up any existing model
         vp.drop(name=full_model_name, method="model")
-        
+
         # Step 1: Create and fit a fresh model with a specific name (this saves it to database)
         model_class_obj = getattr(
             __import__("verticapy.machine_learning.vertica", fromlist=[model_class]),
-            model_class
+            model_class,
         )
-        
-        # Create model with name (this will save it to the database when fitted) 
+
+        # Create model with name (this will save it to the database when fitted)
         original_model = model_class_obj(name=full_model_name)
-        
+
         # Fit the model with appropriate data and features based on model type
         if model_class in [
             "RandomForestRegressor",
-            "DecisionTreeRegressor", 
+            "DecisionTreeRegressor",
             "DummyTreeRegressor",
             "XGBRegressor",
             "Ridge",
-            "Lasso", 
+            "Lasso",
             "ElasticNet",
             "LinearRegression",
             "LinearSVR",
             "PoissonRegressor",
         ]:
             # Regression models - use winequality dataset
-            original_model.fit(winequality_vpy_fun, ["citric_acid", "residual_sugar", "alcohol"], "quality")
+            original_model.fit(
+                winequality_vpy_fun,
+                ["citric_acid", "residual_sugar", "alcohol"],
+                "quality",
+            )
         elif model_class in [
             "RandomForestClassifier",
             "DecisionTreeClassifier",
-            "DummyTreeClassifier", 
+            "DummyTreeClassifier",
             "XGBClassifier",
         ]:
-            # Classification models - use titanic dataset  
+            # Classification models - use titanic dataset
             original_model.fit(titanic_vd_fun, ["age", "fare", "sex"], "survived")
-        
+
         # Step 2: Load the model from database using its name (this is what users do)
         loaded_model = load_model(name=full_model_name)
 
@@ -404,7 +440,9 @@ class TestModelManagementFromDB:
                 "db_prediction",
             )
             vpy_res = np.mean(
-                list(chain(*np.array(pred_vdf[["db_prediction"]].to_list(), dtype=float)))
+                list(
+                    chain(*np.array(pred_vdf[["db_prediction"]].to_list(), dtype=float))
+                )
             )
             py_res = py_model_obj.pred.mean()
 
@@ -416,7 +454,7 @@ class TestModelManagementFromDB:
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["load_model"]["rel"]
         )
-        
+
         # Clean up
         vp.drop(name=full_model_name, method="model")
 
@@ -450,16 +488,18 @@ class TestModelManagementTF:
         test function - test_tf_import
         """
         vp.drop(name=f"{schema_loader}.tf_frozen_model")
-        remove_model_dir(folder_path=f"/tmp/{schema_loader}")
         py_model_obj = get_py_model(model_class)
-        _import(None, py_model_obj, category, schema_loader)
-        remove_model_dir(folder_path=f"/tmp/{schema_loader}")
         tf_model_obj = namedtuple(
             "tf_model",
             ["schema_name", "model_name"],
         )(schema_loader, "tf_frozen_model")
-        _export(tf_model_obj, category)
-        remove_model_dir(folder_path=f"/tmp/{schema_loader}")
+        export_dir = _export_parent_dir(tf_model_obj, category, "tf_export")
+        import_path = _server_export_root()
+        remove_model_dir(folder_path=export_dir)
+        _import(None, py_model_obj, category, schema_loader, import_path)
+        remove_model_dir(folder_path=export_dir)
+        _export(tf_model_obj, category, export_dir)
+        remove_model_dir(folder_path=export_dir)
 
     @pytest.mark.skipif(
         sys.version_info > (3, 11, 11), reason="keras is not supported for Python 3.12"
@@ -470,8 +510,9 @@ class TestModelManagementTF:
         """
         vp.drop(name=f"{schema_loader}.tf_frozen_model")
         py_model_obj = get_py_model(model_class)
-        _import(None, py_model_obj, category, schema_loader)
-        remove_model_dir(folder_path=f"/tmp/{schema_loader}")
+        import_path = _server_export_root()
+        _import(None, py_model_obj, category, schema_loader, import_path)
+        remove_model_dir(folder_path=f"{_server_export_root()}/{schema_loader}")
 
     @pytest.mark.skip(reason="it needs more investigation")
     def test_tf_load_model(self, get_py_model, schema_loader, model_class, category):
@@ -479,11 +520,11 @@ class TestModelManagementTF:
         test function - tf_load_model
         """
         vp.drop(name=f"{schema_loader}.tf_frozen_model")
-        remove_model_dir(folder_path=f"/tmp/{schema_loader}")
+        remove_model_dir(folder_path=f"{_server_export_root()}/{schema_loader}")
 
         py_model_obj = get_py_model(model_class)
 
-        _import(None, py_model_obj, category, schema_loader)
+        _import(None, py_model_obj, category, schema_loader, _server_export_root())
         model = load_model(name=f"{schema_loader}.tf_frozen_model")
 
         reshaped_2d_test_data = []
@@ -520,7 +561,7 @@ class TestModelManagementTF:
         py_res = (py_match_cnt / py_model_obj.y.shape[0]) * 100
         print(f"py_score_pct: {py_res}")
 
-        remove_model_dir(folder_path=f"/tmp/{schema_loader}")
+        remove_model_dir(folder_path=f"{_server_export_root()}/{schema_loader}")
         vp.drop(name=f"{schema_loader}.tf_frozen_model")
 
         assert vpy_res == pytest.approx(py_res, rel=rel_abs_tol_map[model_class])

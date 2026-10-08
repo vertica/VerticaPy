@@ -292,7 +292,8 @@ class TestRolling:
         """
         test function - cumulative functions
         """
-        amazon_pdf = amazon_vd.to_pandas()
+        # pandas cumulative functions follow row order, so match Vertica's ORDER BY.
+        amazon_pdf = amazon_vd.to_pandas().sort_values([by, order_by])
         getattr(amazon_vd, func)(
             column=columns, by=[by], order_by=[order_by], name=name
         ).sort([by, order_by])

@@ -239,11 +239,11 @@ def space_names_vd():
         {
             "id": [1, 2, 3, 4, 5],
             "name": [
-                "Paul  John",    # 2 spaces
-                "Paul  John",    # 2 spaces
-                "Paul John",     # 1 space
-                "Paul    Smith", # 4 spaces
-                "Paul  Brown",   # 2 spaces
+                "Paul  John",  # 2 spaces
+                "Paul  John",  # 2 spaces
+                "Paul John",  # 1 space
+                "Paul    Smith",  # 4 spaces
+                "Paul  Brown",  # 2 spaces
             ],
         }
     )

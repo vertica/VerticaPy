@@ -1,5 +1,8 @@
 tqdm
-pandas
+# pandas 3.0 removed Series.ravel and returns pyarrow-backed ``str`` columns from
+# ``to_pandas()`` (breaking arithmetic on string columns in the test suite).
+# Pin to the 2.x line until the tests are migrated to the pandas 3.0 API.
+pandas<3
 pytest
 pytest-timeout
 pytest-cov
