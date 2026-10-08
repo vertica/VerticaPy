@@ -49,7 +49,7 @@ def pcsv(
     header: bool = True,
     header_names: Optional[list] = None,
     na_rep: Optional[str] = None,
-    quotechar: str = '"',
+    quotechar: Optional[str] = '"',
     escape: str = "\027",
     record_terminator: str = os.linesep,
     trim: bool = True,
@@ -84,6 +84,12 @@ def pcsv(
     quotechar: str, optional
         Char that encloses
         the ``str`` values.
+        Set it to ``None`` if the
+        fields are not enclosed at
+        all; the values must then
+        escape the separator and
+        the record terminator with
+        the ``escape`` character.
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
@@ -267,15 +273,20 @@ def pcsv(
     reject_on_materialized_type_error = str(reject_on_materialized_type_error).lower()
     record_term_quoted = _get_quoted_record_terminator(record_terminator)
     compression = extract_compression(path)
+    # quotechar=None means the fields are not enclosed at all.
+    if isinstance(quotechar, NoneType):
+        enclosed_by_line = ""
+    else:
+        enclosed_by_line = f"enclosed_by = '{quotechar}', "
     query = f"CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) ON COMMIT PRESERVE ROWS;"
     query2 = f"""
-       COPY {flex_name} 
-       FROM{ingest_local} '{path}' {compression} 
+       COPY {flex_name}
+       FROM{ingest_local} '{path}' {compression}
        PARSER FCSVPARSER(
-            type = 'traditional', 
-            delimiter = '{sep}', 
-            header = {header}, {header_names} 
-            enclosed_by = '{quotechar}', 
+            type = 'traditional',
+            delimiter = '{sep}',
+            header = {header}, {header_names}
+            {enclosed_by_line}
             escape = '{escape}',
             record_terminator = {record_term_quoted},
             trim = {trim},
@@ -327,7 +338,7 @@ def read_csv(
     header_names: Optional[list] = None,
     dtype: Optional[dict] = None,
     na_rep: Optional[str] = None,
-    quotechar: str = '"',
+    quotechar: Optional[str] = '"',
     escape: str = "\027",
     record_terminator: Optional[str] = "\n",
     trim: bool = True,
@@ -381,6 +392,12 @@ def read_csv(
     quotechar: str, optional
         Char that encloses
         the ``str`` values.
+        Set it to ``None`` if the
+        fields are not enclosed at
+        all; the values must then
+        escape the separator and
+        the record terminator with
+        the ``escape`` character.
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
@@ -750,7 +767,10 @@ def read_csv(
     sep = sep.replace("'", "''")
     header_names = [str(elem).replace("'", "''") for elem in header_names]
     na_rep = "" if isinstance(na_rep, NoneType) else na_rep.replace("'", "''")
-    quotechar = quotechar.replace("'", "''")
+    # quotechar=None means the fields are not enclosed at all, so no
+    # 'ENCLOSED BY' clause is emitted.
+    if not isinstance(quotechar, NoneType):
+        quotechar = quotechar.replace("'", "''")
     escape = escape.replace("'", "''")
     file_extension = path.split(".")[-1].lower()
     compression = extract_compression(path)
@@ -919,6 +939,10 @@ def read_csv(
             )
         skip = " SKIP 1" if (header) else ""
         local = "LOCAL " if ingest_local else ""
+        if isinstance(quotechar, NoneType):
+            enclosed_by_line = ""
+        else:
+            enclosed_by_line = f"ENCLOSED BY '{quotechar}'"
         header_names_str = ", ".join([f'"{column}"' for column in header_names])
         record_terminator_quoted = _get_quoted_record_terminator(record_terminator)
         if no_record:
@@ -929,8 +953,8 @@ def read_csv(
             COPY {input_relation}({header_names_str}) 
             FROM {local}'{path}' {compression} 
             DELIMITER '{sep}' 
-            NULL '{na_rep}' 
-            ENCLOSED BY '{quotechar}'
+            NULL '{na_rep}'
+            {enclosed_by_line}
             {record_terminator_line}
             ESCAPE AS '{escape}'{skip};"""
         if genSQL:

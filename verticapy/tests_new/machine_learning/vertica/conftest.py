@@ -278,15 +278,17 @@ def calculate_classification_metrics(get_py_model):
     """
 
     def _calculate_classification_metrics(model_class, model_obj=None):
+        # np.ravel() rather than .ravel(): pandas removed Series.ravel in
+        # 3.0 (deprecated in 2.2). np.ravel handles Series and ndarray alike.
         if model_obj:
-            y = model_obj.y.ravel()
-            pred = model_obj.pred.ravel()
-            pred_prob = model_obj.pred_prob[:, 1].ravel()
+            y = np.ravel(model_obj.y)
+            pred = np.ravel(model_obj.pred)
+            pred_prob = np.ravel(model_obj.pred_prob[:, 1])
         else:
             _model_obj = get_py_model(model_class)
-            y = _model_obj.y.ravel()
-            pred = _model_obj.pred.ravel()
-            pred_prob = _model_obj.pred_prob[:, 1].ravel()
+            y = np.ravel(_model_obj.y)
+            pred = np.ravel(_model_obj.pred)
+            pred_prob = np.ravel(_model_obj.pred_prob[:, 1])
 
         precision, recall, _ = skl_metrics.precision_recall_curve(
             y, pred_prob, pos_label=1
@@ -297,7 +299,10 @@ def calculate_classification_metrics(get_py_model):
         # avg = sum(y) / no_of_records
         # num_features = 3 if model_class in ["DummyTreeClassifier"] else len(model.feature_names_in_)
 
-        classification_metrics_map["auc"] = skl_metrics.auc(recall, precision)
+        # "auc" is the ROC AUC: the vpy side reads Vertica's roc_auc, so the
+        # reference has to be the ROC curve too. This previously reused the
+        # precision-recall trapezoid below, comparing two different quantities.
+        classification_metrics_map["auc"] = skl_metrics.roc_auc_score(y, pred_prob)
         classification_metrics_map["prc_auc"] = skl_metrics.auc(recall, precision)
         classification_metrics_map["accuracy_score"] = classification_metrics_map[
             "accuracy"

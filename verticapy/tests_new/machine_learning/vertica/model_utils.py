@@ -778,20 +778,54 @@ class XGBInitializer:
     """
 
     def __init__(self, datasetup_instance, **kwargs):
+        # Each of these accepts both the Vertica spelling and the xgboost
+        # spelling; the Vertica spelling wins when both are supplied.
         self.overwrite_model = kwargs.get("overwrite_model", False)
-        self.max_ntree = kwargs.get("max_ntree", 10)
+        self.max_ntree = kwargs.get("max_ntree", kwargs.get("n_estimators", 10))
         self.max_depth = kwargs.get("max_depth", 10)
-        self.nbins = kwargs.get("nbins", 150)
+        self.nbins = kwargs.get("nbins", kwargs.get("max_bin", 150))
         self.split_proposal_method = kwargs.get("split_proposal_method", "'global'")
         self.tol = kwargs.get("tol", 0.001)
         self.learning_rate = kwargs.get("learning_rate", 0.1)
-        self.min_split_loss = kwargs.get("min_split_loss", 0.0)
-        self.weight_reg = kwargs.get("weight_reg", 0.0)
-        self.sample = kwargs.get("sample", 1.0)
-        self.col_sample_by_tree = kwargs.get("col_sample_by_tree", 1.0)
-        self.col_sample_by_node = kwargs.get("col_sample_by_node", 1.0)
+        self.min_split_loss = kwargs.get("min_split_loss", kwargs.get("gamma", 0.0))
+        self.weight_reg = kwargs.get("weight_reg", kwargs.get("reg_lambda", 0.0))
+        self.sample = kwargs.get("sample", kwargs.get("subsample", 1.0))
+        self.col_sample_by_tree = kwargs.get(
+            "col_sample_by_tree", kwargs.get("colsample_bytree", 1.0)
+        )
+        self.col_sample_by_node = kwargs.get(
+            "col_sample_by_node", kwargs.get("colsample_bynode", 1.0)
+        )
         self.datasetup_instance = datasetup_instance
         self.model_name = f"vpy_model_{self.datasetup_instance.model_class}"
+
+        known_kwargs = {
+            "overwrite_model",
+            "max_ntree",
+            "n_estimators",
+            "max_depth",
+            "nbins",
+            "max_bin",
+            "split_proposal_method",
+            "tol",
+            "learning_rate",
+            "min_split_loss",
+            "gamma",
+            "weight_reg",
+            "reg_lambda",
+            "sample",
+            "subsample",
+            "col_sample_by_tree",
+            "colsample_bytree",
+            "col_sample_by_node",
+            "colsample_bynode",
+        }
+        unrecognized_kwargs = set(kwargs) - known_kwargs
+        if unrecognized_kwargs:
+            raise TypeError(
+                f"XGBInitializer got unrecognized keyword argument(s): "
+                f"{sorted(unrecognized_kwargs)}"
+            )
 
     def vpy(self):
         """
@@ -822,12 +856,35 @@ class XGBInitializer:
         """
         Model initializer function for python XGBoost model
         """
+        # self.split_proposal_method is interpolated straight into SQL, so it
+        # carries embedded quotes (default "'global'"); strip them to compare.
+        split_proposal_method = self.split_proposal_method.strip("'\"")
+        if split_proposal_method == "global":
+            # Vertica's split_proposal_method='global' (with nbins) is the
+            # XGBoost paper's approximate-greedy split finding with a global
+            # proposal -- that is xgboost's tree_method='approx', where
+            # max_bin sets the bin count. tree_method='exact' enumerates
+            # every split point and ignores max_bin entirely, silently
+            # discarding the nbins/max_bin forwarded below.
+            tree_method = "approx"
+        else:
+            # xgboost's tree_method only distinguishes exact vs. approximate
+            # split finding; it has no separate mode for a *local* sketch
+            # proposal, so a non-'global' split_proposal_method still maps to
+            # 'approx' here. Do not invent a 'local' tree_method.
+            tree_method = "approx"
         model = getattr(xgb, self.datasetup_instance.model_class)(
             n_estimators=self.max_ntree,
             max_depth=self.max_depth,
             max_bin=self.nbins,
+            learning_rate=self.learning_rate,
+            gamma=self.min_split_loss,
+            reg_lambda=self.weight_reg,
+            subsample=self.sample,
+            colsample_bytree=self.col_sample_by_tree,
+            colsample_bynode=self.col_sample_by_node,
             random_state=1,
-            tree_method="exact",
+            tree_method=tree_method,
         )
         print(f"Python Training Parameters: {model.get_params()}")
         return model

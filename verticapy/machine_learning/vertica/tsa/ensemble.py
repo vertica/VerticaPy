@@ -260,7 +260,7 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
                 model_name 
             FROM models 
             WHERE model_name LIKE '{name}%' 
-              AND REGEXP_LIKE(model_name, '(.)+\_([0-9])+\_tsbc');
+              AND REGEXP_LIKE(model_name, '(.)+\\_([0-9])+\\_tsbc');
         """
         res = _executeSQL(
             sql,
@@ -827,56 +827,56 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
 
                 .. math::
 
-                    AIC = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\\ln(\\hat{L})
 
             - bic:
                 Bayesian Information Criterion
 
                 .. math::
 
-                    BIC = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
             - max:
                 Max Error.
 
                 .. math::
 
-                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - mae:
                 Mean Absolute Error.
 
                 .. math::
 
-                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - median:
                 Median Absolute Error.
 
                 .. math::
 
-                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - mse:
                 Mean Squared Error.
 
                 .. math::
 
-                    MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                    MsE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
             - msle:
                 Mean Squared Log Error.
 
                 .. math::
 
-                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                    MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
             - r2:
                 R squared coefficient.
 
                 .. math::
 
-                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                    R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
             - r2a:
                 R2 adjusted
@@ -896,14 +896,14 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
 
                 .. math::
 
-                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                    RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
             - var:
                 Explained Variance
 
                 .. math::
 
-                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
         start: int, optional
             The behavior of the start parameter and its
             range of accepted values depends on whether
@@ -1013,56 +1013,56 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
 
                 .. math::
 
-                    AIC = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\\ln(\\hat{L})
 
             - bic:
                 Bayesian Information Criterion
 
                 .. math::
 
-                    BIC = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
             - max:
                 Max Error.
 
                 .. math::
 
-                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - mae:
                 Mean Absolute Error.
 
                 .. math::
 
-                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - median:
                 Median Absolute Error.
 
                 .. math::
 
-                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - mse:
                 Mean Squared Error.
 
                 .. math::
 
-                    MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                    MsE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
             - msle:
                 Mean Squared Log Error.
 
                 .. math::
 
-                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                    MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
             - r2:
                 R squared coefficient.
 
                 .. math::
 
-                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                    R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
             - r2a:
                 R2 adjusted
@@ -1082,14 +1082,14 @@ class TimeSeriesByCategory(TimeSeriesModelBase):
 
                 .. math::
 
-                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                    RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
             - var:
                 Explained Variance
 
                 .. math::
 
-                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
         start: int, optional
             The behavior of the start parameter and its
             range of accepted values depends on whether

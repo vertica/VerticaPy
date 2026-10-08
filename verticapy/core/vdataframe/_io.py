@@ -665,11 +665,16 @@ class vDFInOut(vDFSystem):
                 csv_file += "\n" + sep.join(tmp_row)
             current_nb_rows_written += limit
             file_id += 1
+            # newline="" keeps the '\n' separators built above from being
+            # translated to '\r\n' on Windows: COPY uses '\n' as its record
+            # terminator, so a CRLF file is mis-parsed on ingestion.
             if n_files == 1 and path:
-                with open(path, "w+", encoding="utf-8") as f:
+                with open(path, "w+", encoding="utf-8", newline="") as f:
                     f.write(csv_file)
             elif path:
-                with open(f"{path}/{file_id}.csv", "w+", encoding="utf-8") as f:
+                with open(
+                    f"{path}/{file_id}.csv", "w+", encoding="utf-8", newline=""
+                ) as f:
                     f.write(csv_file)
             else:
                 csv_files += [csv_file]

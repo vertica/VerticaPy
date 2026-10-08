@@ -91,7 +91,7 @@ def validation_curve(
 
             .. math::
 
-                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
         - ba:
             Balanced Accuracy.
@@ -160,7 +160,7 @@ def validation_curve(
 
             .. math::
 
-                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
         - lr+:
             Positive Likelihood Ratio.
@@ -205,7 +205,7 @@ def validation_curve(
 
             .. math::
 
-                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
         - precision:
             Precision
@@ -241,42 +241,42 @@ def validation_curve(
 
             .. math::
 
-                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mae:
             Mean Absolute Error.
 
             .. math::
 
-                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - median:
             Median Absolute Error.
 
             .. math::
 
-                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mse:
             Mean Squared Error.
 
             .. math::
 
-                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                MSE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
         - msle:
             Mean Squared Log Error.
 
             .. math::
 
-                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
         - r2:
             R squared coefficient.
 
             .. math::
 
-                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
         - r2a:
             R2 adjusted
@@ -290,14 +290,14 @@ def validation_curve(
 
             .. math::
 
-                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                VAR = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
 
         - rmse:
             Root-mean-squared error
 
             .. math::
 
-                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.

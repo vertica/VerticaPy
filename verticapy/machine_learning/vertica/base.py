@@ -3628,14 +3628,14 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    AIC = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\\ln(\\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
 
                 .. math::
 
-                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                    AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
             - ba:
                 Balanced Accuracy.
@@ -3653,7 +3653,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    BIC = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
             - bm:
                 Informedness
@@ -3716,7 +3716,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                    Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
             - lr+:
                 Positive Likelihood Ratio.
@@ -3764,7 +3764,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                    AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
             - precision:
                 Precision
@@ -4013,14 +4013,14 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    AIC = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\\ln(\\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
 
                 .. math::
 
-                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                    AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
             - ba:
                 Balanced Accuracy.
@@ -4038,7 +4038,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    BIC = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
             - bm:
                 Informedness
@@ -4101,7 +4101,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                    Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
             - lr+:
                 Positive Likelihood Ratio.
@@ -4149,7 +4149,7 @@ class BinaryClassifier(Supervised):
 
                 .. math::
 
-                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                    AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
             - precision:
                 Precision
@@ -5364,14 +5364,14 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    AIC = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\\ln(\\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
 
                 .. math::
 
-                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                    AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
             - ba:
                 Balanced Accuracy.
@@ -5389,7 +5389,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    BIC = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
             - bm:
                 Informedness
@@ -5452,7 +5452,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                    Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
             - lr+:
                 Positive Likelihood Ratio.
@@ -5500,7 +5500,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                    AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
             - precision:
                 Precision
@@ -5778,14 +5778,14 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    AIC = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\\ln(\\hat{L})
 
             - auc:
                 Area Under the Curve (ROC).
 
                 .. math::
 
-                    AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                    AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
             - ba:
                 Balanced Accuracy.
@@ -5803,7 +5803,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    BIC = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
             - bm:
                 Informedness
@@ -5866,7 +5866,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                    Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
             - lr+:
                 Positive Likelihood Ratio.
@@ -5914,7 +5914,7 @@ class MulticlassClassifier(Supervised):
 
                 .. math::
 
-                    AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                    AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
             - precision:
                 Precision
@@ -7059,56 +7059,56 @@ class Regressor(Supervised):
 
                  .. math::
 
-                     AIC = 2k - 2\ln(\hat{L})
+                     AIC = 2k - 2\\ln(\\hat{L})
 
              - bic:
                  Bayesian Information Criterion
 
                  .. math::
 
-                     BIC = -2\ln(\hat{L}) + k \ln(n)
+                     BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
              - max:
                  Max Error.
 
                  .. math::
 
-                     ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                     ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
              - mae:
                  Mean Absolute Error.
 
                  .. math::
 
-                     MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                     MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
              - median:
                  Median Absolute Error.
 
                  .. math::
 
-                     MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                     MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
              - mse:
                  Mean Squared Error.
 
                  .. math::
 
-                     MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                     MsE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
              - msle:
                  Mean Squared Log Error.
 
                  .. math::
 
-                     MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                     MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
              - r2:
                  R squared coefficient.
 
                  .. math::
 
-                     R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                     R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
              - r2a:
                  R2 adjusted
@@ -7128,14 +7128,14 @@ class Regressor(Supervised):
 
                  .. math::
 
-                     RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                     RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
              - var:
                  Explained Variance
 
                  .. math::
 
-                     \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                     \\text{Explained Variance}   = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
 
          Returns
          -------
@@ -7347,56 +7347,56 @@ class Regressor(Supervised):
 
                 .. math::
 
-                    AIC = 2k - 2\ln(\hat{L})
+                    AIC = 2k - 2\\ln(\\hat{L})
 
             - bic:
                 Bayesian Information Criterion
 
                 .. math::
 
-                    BIC = -2\ln(\hat{L}) + k \ln(n)
+                    BIC = -2\\ln(\\hat{L}) + k \\ln(n)
 
             - max:
                 Max Error.
 
                 .. math::
 
-                    ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - mae:
                 Mean Absolute Error.
 
                 .. math::
 
-                    MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - median:
                 Median Absolute Error.
 
                 .. math::
 
-                    MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                    MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
             - mse:
                 Mean Squared Error.
 
                 .. math::
 
-                    MsE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                    MsE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
             - msle:
                 Mean Squared Log Error.
 
                 .. math::
 
-                    MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                    MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
             - r2:
                 R squared coefficient.
 
                 .. math::
 
-                    R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                    R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
             - r2a:
                 R2 adjusted
@@ -7416,14 +7416,14 @@ class Regressor(Supervised):
 
                 .. math::
 
-                    RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                    RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
             - var:
                 Explained Variance
 
                 .. math::
 
-                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                    \\text{Explained Variance}   = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
 
         Returns
         -------

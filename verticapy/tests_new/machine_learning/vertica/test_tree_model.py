@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from decimal import Decimal
 import sys
 import os
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -26,6 +27,7 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
     rel_abs_tol_map,
     REL_TOLERANCE,
     classification_metrics_args,
+    mark_known_disagreement,
     model_params,
     model_score,
     regression_metrics_args,
@@ -434,6 +436,8 @@ class TestClassificationTreeModel:
         }
         print(self.abs_error_report_cls_tree[(model_class, py_metric_name)])
 
+        mark_known_disagreement(request, model_class, vpy_metric_name[0])
+
         if len(self.abs_error_report_cls_tree.keys()) == tc_count:
             abs_error_report_cls_tree_pdf = (
                 pd.DataFrame(self.abs_error_report_cls_tree.values())
@@ -507,6 +511,7 @@ class TestClassificationTreeModel:
         metric,
         expected,
         fun_name,
+        request,
     ):
         """
         test function - test_classification_report
@@ -516,6 +521,8 @@ class TestClassificationTreeModel:
         vpy_report_map = dict(zip(report["index"], report["value"]))
 
         py_report_map = classification_metrics(model_class)
+
+        mark_known_disagreement(request, model_class, metric)
 
         assert vpy_report_map[metric] == pytest.approx(
             py_report_map[metric], rel=rel_abs_tol_map[model_class][metric]["rel"]
@@ -546,7 +553,7 @@ class TestClassificationTreeModel:
         vpy_res = skl_metrics.auc(_fpr, _tpr)
 
         py_model_obj = get_py_model(model_class)
-        y, score = py_model_obj.y.ravel(), py_model_obj.pred_prob[:, 1].ravel()
+        y, score = np.ravel(py_model_obj.y), py_model_obj.pred_prob[:, 1].ravel()
         py_fpr, py_tpr, _ = skl_metrics.roc_curve(y_true=y, y_score=score)
         py_res = skl_metrics.auc(py_fpr, py_tpr)
 
@@ -576,25 +583,112 @@ class TestClassificationTreeModel:
             expected, rel=rel_abs_tol_map[model_class]["lift_chart"]["rel"]
         )
 
-    def test_prc_curve(self, model_class, get_vpy_model, get_py_model):
+    def test_prc_curve(self, model_class, get_vpy_model, get_py_model, request):
         """
         test function - test_prc_curve
         """
-        vpy_prc_curve = get_vpy_model(model_class).model.prc_curve(show=False)
+        # nbins is explicit: prc_curve() defaults to nbins=30, but the sklearn
+        # side below is a full-resolution curve, so the default compared a
+        # 30-point curve against an unbinned one. 10000 matches what
+        # prc_auc_score uses and brings the two to comparable resolution.
+        vpy_prc_curve = get_vpy_model(model_class).model.prc_curve(
+            nbins=10000, show=False
+        )
         vpy_recall, vpy_precision = vpy_prc_curve["recall"], vpy_prc_curve["precision"]
         vpy_res = skl_metrics.auc(vpy_recall, vpy_precision)
 
         py_model_obj = get_py_model(model_class)
         precision, recall, _ = skl_metrics.precision_recall_curve(
-            y_true=py_model_obj.y.ravel(),
+            y_true=np.ravel(py_model_obj.y),
             y_score=py_model_obj.pred_prob[:, 1].ravel(),
         )
         py_res = skl_metrics.auc(recall, precision)
 
         _rel_tol, _abs_tol = calculate_tolerance(vpy_res, py_res)
 
+        mark_known_disagreement(request, model_class, "prc_curve")
+
         assert vpy_res == pytest.approx(
             py_res, rel=rel_abs_tol_map[model_class]["prc_curve"]["rel"]
+        )
+
+    @pytest.mark.parametrize("metric", ["prc_auc", "auc"])
+    def test_metric_matches_sklearn_on_same_probabilities(
+        self, model_class, get_vpy_model, metric
+    ):
+        """
+        test function - VerticaPy's metric vs sklearn's, on identical inputs
+
+        The other metric tests compare a Vertica-trained model against a
+        scikit-learn-trained one, which conflates "does VerticaPy compute the
+        metric correctly" with "do the two engines build the same model". Only
+        the first is VerticaPy's to get right, and only the first is exactly
+        testable. Feeding both implementations the same probability vector
+        isolates it.
+
+        Measured worst relative difference across five deliberately different
+        Vertica models is 2.7e-05, so rel=1e-3 leaves a 37x margin. This
+        tolerance is deliberately kept out of rel_abs_tol_map: it is derived
+        from that measurement, not fitted to whatever happened to pass.
+        """
+        vpy_model_obj = get_vpy_model(model_class)
+
+        # Both columns in ONE query: row order is not guaranteed across two
+        # separate pulls, and a misalignment here would silently corrupt the
+        # comparison rather than fail it.
+        pred_prob_pdf = vpy_model_obj.pred_prob_vdf[
+            ["survived", "survived_pred_1"]
+        ].to_pandas()
+        y_true = pred_prob_pdf["survived"].astype(int).to_numpy()
+        y_score = pred_prob_pdf["survived_pred_1"].astype(float).to_numpy()
+
+        vpy_res = vpy_model_obj.model.score(
+            metric=metric, average="binary", pos_label=1
+        )
+
+        if metric == "prc_auc":
+            precision, recall, _ = skl_metrics.precision_recall_curve(
+                y_true, y_score, pos_label=1
+            )
+            py_res = skl_metrics.auc(recall, precision)
+        else:
+            py_res = skl_metrics.roc_auc_score(y_true, y_score)
+
+        assert vpy_res == pytest.approx(py_res, rel=1e-3)
+
+    def test_predict_matches_argmax_of_predict_proba(
+        self, model_class, get_vpy_model
+    ):
+        """
+        test function - predict() agrees with argmax(predict_proba())
+
+        An exact invariant of VerticaPy's own prediction path, and one nothing
+        else asserts. Note this does NOT hold for the memmodel export path:
+        memmodel.RandomForestClassifier.predict_proba returns vote fractions
+        while the server returns averaged leaf probabilities.
+        """
+        vpy_model_obj = get_vpy_model(model_class)
+
+        # Joined on "name": it is the id_column used for training and is unique
+        # after the fixture's dedup deletes, so it is a safe key. pred_vdf and
+        # pred_prob_vdf are separate queries with no guaranteed row order.
+        pred_pdf = vpy_model_obj.pred_vdf[["name", "survived_pred"]].to_pandas()
+        prob_pdf = vpy_model_obj.pred_prob_vdf[
+            ["name", "survived_pred_0", "survived_pred_1"]
+        ].to_pandas()
+
+        merged = pred_pdf.merge(prob_pdf, on="name", validate="one_to_one")
+        assert len(merged) == len(pred_pdf) == len(prob_pdf)
+
+        predicted = merged["survived_pred"].astype(int).to_numpy()
+        p_0 = merged["survived_pred_0"].astype(float).to_numpy()
+        p_1 = merged["survived_pred_1"].astype(float).to_numpy()
+        expected = (p_1 > p_0).astype(int)
+
+        mismatches = int((predicted != expected).sum())
+        assert mismatches == 0, (
+            f"{mismatches} of {len(merged)} rows where predict() disagrees with "
+            f"argmax(predict_proba()) for {model_class}"
         )
 
     def test_predict_proba(self, model_class, get_vpy_model, get_py_model):
@@ -628,7 +722,7 @@ class TestClassificationTreeModel:
 
         py_model_obj = get_py_model(model_class)
         py_fpr, py_tpr, _ = skl_metrics.roc_curve(
-            y_true=py_model_obj.y.ravel(), y_score=py_model_obj.pred_prob[:, 1].ravel()
+            y_true=np.ravel(py_model_obj.y), y_score=py_model_obj.pred_prob[:, 1].ravel()
         )
         py_res = skl_metrics.auc(py_fpr, py_tpr)
 

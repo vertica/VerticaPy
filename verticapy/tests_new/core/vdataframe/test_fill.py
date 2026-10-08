@@ -103,7 +103,7 @@ class TestFill:
                 f"titanic_pdf[column].fillna(titanic_pdf[column].{method[column]}()[0])"
             )
         elif method[column] == "0ifnull":
-            titanic_pdf[[column]] = titanic_pdf[[column]].applymap(
+            titanic_pdf[[column]] = titanic_pdf[[column]].map(
                 lambda x: 0 if pd.isnull(x) else 1
             )
         else:

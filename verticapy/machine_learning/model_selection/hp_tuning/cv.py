@@ -105,7 +105,7 @@ def randomized_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
         - ba:
             Balanced Accuracy.
@@ -174,7 +174,7 @@ def randomized_search_cv(
 
             .. math::
 
-                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
         - lr+:
             Positive Likelihood Ratio.
@@ -219,7 +219,7 @@ def randomized_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
         - precision:
             Precision
@@ -255,42 +255,42 @@ def randomized_search_cv(
 
             .. math::
 
-                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mae:
             Mean Absolute Error.
 
             .. math::
 
-                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - median:
             Median Absolute Error.
 
             .. math::
 
-                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mse:
             Mean Squared Error.
 
             .. math::
 
-                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                MSE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
         - msle:
             Mean Squared Log Error.
 
             .. math::
 
-                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
         - r2:
             R squared coefficient.
 
             .. math::
 
-                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
         - r2a:
             R2 adjusted
@@ -304,14 +304,14 @@ def randomized_search_cv(
 
             .. math::
 
-                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                VAR = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
 
         - rmse:
             Root-mean-squared error
 
             .. math::
 
-                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.
@@ -601,7 +601,7 @@ def grid_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
         - ba:
             Balanced Accuracy.
@@ -670,7 +670,7 @@ def grid_search_cv(
 
             .. math::
 
-                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
         - lr+:
             Positive Likelihood Ratio.
@@ -715,7 +715,7 @@ def grid_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
         - precision:
             Precision
@@ -751,42 +751,42 @@ def grid_search_cv(
 
             .. math::
 
-                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mae:
             Mean Absolute Error.
 
             .. math::
 
-                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - median:
             Median Absolute Error.
 
             .. math::
 
-                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mse:
             Mean Squared Error.
 
             .. math::
 
-                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                MSE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
         - msle:
             Mean Squared Log Error.
 
             .. math::
 
-                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
         - r2:
             R squared coefficient.
 
             .. math::
 
-                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
         - r2a:
             R2 adjusted
@@ -800,14 +800,14 @@ def grid_search_cv(
 
             .. math::
 
-                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                VAR = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
 
         - rmse:
             Root-mean-squared error
 
             .. math::
 
-                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.
@@ -1256,7 +1256,7 @@ def bayesian_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
         - ba:
             Balanced Accuracy.
@@ -1325,7 +1325,7 @@ def bayesian_search_cv(
 
             .. math::
 
-                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
         - lr+:
             Positive Likelihood Ratio.
@@ -1370,7 +1370,7 @@ def bayesian_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
         - precision:
             Precision
@@ -1406,42 +1406,42 @@ def bayesian_search_cv(
 
             .. math::
 
-                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mae:
             Mean Absolute Error.
 
             .. math::
 
-                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - median:
             Median Absolute Error.
 
             .. math::
 
-                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mse:
             Mean Squared Error.
 
             .. math::
 
-                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                MSE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
         - msle:
             Mean Squared Log Error.
 
             .. math::
 
-                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
         - r2:
             R squared coefficient.
 
             .. math::
 
-                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
         - r2a:
             R2 adjusted
@@ -1455,14 +1455,14 @@ def bayesian_search_cv(
 
             .. math::
 
-                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                VAR = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
 
         - rmse:
             Root-mean-squared error
 
             .. math::
 
-                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.
@@ -1886,7 +1886,7 @@ def enet_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+                AUC = \\int_{0}^{1} TPR(FPR) \\, dFPR
 
         - ba:
             Balanced Accuracy.
@@ -1955,7 +1955,7 @@ def enet_search_cv(
 
             .. math::
 
-                Loss = -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+                Loss = -\\frac{1}{N} \\sum_{i=1}^{N} \\left( y_i \\log(p_i) + (1 - y_i) \\log(1 - p_i) \\right)
 
         - lr+:
             Positive Likelihood Ratio.
@@ -2000,7 +2000,7 @@ def enet_search_cv(
 
             .. math::
 
-                AUC = \int_{0}^{1} Precision(Recall) \, dRecall
+                AUC = \\int_{0}^{1} Precision(Recall) \\, dRecall
 
         - precision:
             Precision
@@ -2036,42 +2036,42 @@ def enet_search_cv(
 
             .. math::
 
-                ME = \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                ME = \\max_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mae:
             Mean Absolute Error.
 
             .. math::
 
-                MAE = \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MAE = \\frac{1}{n} \\sum_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - median:
             Median Absolute Error.
 
             .. math::
 
-                MedAE = \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+                MedAE = \\text{median}_{i=1}^{n} \\left| y_i - \\hat{y}_i \\right|
 
         - mse:
             Mean Squared Error.
 
             .. math::
 
-                MSE = \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+                MSE = \\frac{1}{n} \\sum_{i=1}^{n} \\left( y_i - \\hat{y}_i \\right)^2
 
         - msle:
             Mean Squared Log Error.
 
             .. math::
 
-                MSLE = \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+                MSLE = \\frac{1}{n} \\sum_{i=1}^{n} (\\log(1 + y_i) - \\log(1 + \\hat{y}_i))^2
 
         - r2:
             R squared coefficient.
 
             .. math::
 
-                R^2 = 1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+                R^2 = 1 - \\frac{\\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}{\\sum_{i=1}^{n} (y_i - \\bar{y})^2}
 
         - r2a:
             R2 adjusted
@@ -2085,14 +2085,14 @@ def enet_search_cv(
 
             .. math::
 
-                VAR = 1 - \\frac{Var(y - \hat{y})}{Var(y)}
+                VAR = 1 - \\frac{Var(y - \\hat{y})}{Var(y)}
 
         - rmse:
             Root-mean-squared error
 
             .. math::
 
-                RMSE = \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+                RMSE = \\sqrt{\\frac{1}{n} \\sum_{i=1}^{n} (y_i - \\hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.

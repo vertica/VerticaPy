@@ -195,7 +195,11 @@ class TestRolling:
         elif py_func == "prod":
             pdf_new[name] = titanic_pdf_roll_col0.apply(np.prod)
         elif py_func == "sem":
-            pdf_new[name] = getattr(titanic_pdf_roll_col0, py_func)(ddof=0)
+            # VerticaPy evaluates STDDEV(x) / SQRT(COUNT(x)), and Vertica's
+            # STDDEV is the sample deviation, so ddof=1 (pandas' default) is
+            # the matching definition. ddof=0 previously compensated for a
+            # rolling-sem bug in pandas 2.x that pandas 3.0 fixed.
+            pdf_new[name] = getattr(titanic_pdf_roll_col0, py_func)()
         elif py_func in ["skew", "kurt", "jb"]:
             # skew
             pdf_new["skew1"] = pow(
