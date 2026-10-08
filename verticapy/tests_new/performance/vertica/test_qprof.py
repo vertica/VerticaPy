@@ -931,7 +931,9 @@ class TestQueryProfiler:
     )
     def test_get_qsteps_check_total_times(self, unit, kind, category_order):
         # Step 1: Get database total time
-        qprof = QueryProfiler(transactions=QPROF_SQL2)
+        # Snapshot DC rows at profiling time; v_internal DC data can rotate out mid-test.
+        qprof = QueryProfiler(transactions=QPROF_SQL2, target_schema="v_temp_schema")
+        dc_table = f"v_temp_schema.{qprof.target_tables['dc_query_executions']}"
         qprof_steps = qprof.get_qsteps(
             unit=unit,
             kind=kind,
@@ -942,7 +944,7 @@ class TestQueryProfiler:
         ]  # Get IDs from QueryProfiler
         query = (
             f"SELECT SUM((completion_time - time) / '00:00:01'::interval) AS total_time "
-            f"FROM v_internal.dc_query_executions "
+            f"FROM {dc_table} "
             f"WHERE transaction_id={transaction_id} AND statement_id={statement_id} "
             f"AND execution_step NOT LIKE '%:%'"
         )
@@ -1001,7 +1003,9 @@ class TestQueryProfiler:
         Main steps are identified by having 'drilldown' keys in their data.
         """
         # Setup: Initialize QueryProfiler and get qsteps
-        qprof = QueryProfiler(transactions=QPROF_SQL2)
+        # Snapshot DC rows at profiling time; v_internal DC data can rotate out mid-test.
+        qprof = QueryProfiler(transactions=QPROF_SQL2, target_schema="v_temp_schema")
+        dc_table = f"v_temp_schema.{qprof.target_tables['dc_query_executions']}"
         qprof_steps = qprof.get_qsteps(
             unit="s",  # Seconds as the unit
             kind="bar",  # Bar chart type
@@ -1011,7 +1015,7 @@ class TestQueryProfiler:
         # Get expected main step names from dc_query_executions
         transaction_id, statement_id = qprof.transactions[0]
         expected_qplans_vdf = vp.vDataFrame(
-            f"select execution_step from v_internal.dc_query_executions where transaction_id={transaction_id} and statement_id={statement_id}"
+            f"select execution_step from {dc_table} where transaction_id={transaction_id} and statement_id={statement_id}"
         )
         # Extract unique top-level step names (first part before ":")
         expected_steps = {
@@ -1079,13 +1083,15 @@ class TestQueryProfiler:
         accounting for 'Misc' added in the graph for steps without subcategories.
         """
         # Initialize QueryProfiler and get qsteps
-        qprof = QueryProfiler(transactions=QPROF_SQL2)
+        # Snapshot DC rows at profiling time; v_internal DC data can rotate out mid-test.
+        qprof = QueryProfiler(transactions=QPROF_SQL2, target_schema="v_temp_schema")
+        dc_table = f"v_temp_schema.{qprof.target_tables['dc_query_executions']}"
         qprof_steps = qprof.get_qsteps(unit="s", kind="bar", show=True)
 
         # Get execution steps from dc_query_executions
         transaction_id, statement_id = qprof.transactions[0]
         expected_qplans_vdf = vp.vDataFrame(
-            f"select execution_step from v_internal.dc_query_executions "
+            f"select execution_step from {dc_table} "
             f"where transaction_id={transaction_id} and statement_id={statement_id}"
         )
         # Convert to pandas and extract the list of execution steps

@@ -30,7 +30,7 @@ class TestJoinUnionSort:
     """
 
     @pytest.mark.parametrize(
-        "input_type,",
+        "input_type",
         ["vDataFrame", "relation", "expr", "union_all"],
     )
     def test_append(self, iris_vd_fun, input_type, schema_loader):
@@ -190,7 +190,12 @@ class TestJoinUnionSort:
         test function - sort
         """
         # randomly changing few records
-        market_pdf = market_vd.to_pandas()
+        # Server row order is not guaranteed (e.g. Eon shards), so sort before sampling.
+        market_pdf = (
+            market_vd.to_pandas()
+            .sort_values(["Form", "Name", "Price"])
+            .reset_index(drop=True)
+        )
         change_pdf = market_pdf.sample(50, random_state=100).index
         market_pdf.loc[change_pdf, "Price"] += 1
         market_vd_copy = read_pandas(
@@ -241,12 +246,15 @@ class TestJoinUnionSort:
 
         print(f"Join type: {how}, Vertica: {len(vpy_res)}, Python: {len(py_res)}")
 
-        assert len(vpy_res) == expected if expected else len(vpy_res) == len(py_res)
+        if expected is not None:
+            assert len(vpy_res) == expected
+        else:
+            assert len(vpy_res) == len(py_res)
 
         drop(f"{schema_loader}.not_dried")
 
     @pytest.mark.parametrize(
-        "order_by,",
+        "order_by",
         [
             {"PetalLengthCm": "asc"},
             ["PetalLengthCm", "SepalWidthCm"],

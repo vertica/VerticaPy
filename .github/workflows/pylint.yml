@@ -27,5 +27,9 @@ jobs:
         pip install tensorflow
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=10 --disable=typecheck,E0606,W,C,R --extension-pkg-allow-list=scipy.special $(git ls-files '*.py')
-        pylint --fail-under=9 --disable=typecheck,E,C,R $(git ls-files '*.py')
+        # Use --ignored-modules (not --extension-pkg-allow-list) for scipy.special:
+        # the allow-list makes astroid import and introspect the C-extension, which
+        # crashes with a RecursionError on current scipy. Ignoring the module
+        # suppresses the spurious no-name-in-module (E0611) without introspecting it.
+        pylint --fail-under=10 --disable=typecheck,E0606,W,C,R --ignored-modules=scipy.special $(git ls-files '*.py')
+        pylint --fail-under=9 --disable=typecheck,E,C,R --ignored-modules=scipy.special $(git ls-files '*.py')
