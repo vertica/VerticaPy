@@ -413,9 +413,13 @@ class PCA(InMemoryModel):
         q: int, optional
             Maximum number of iterations.
         tol: float, optional
-            The  algorithm stops when the
-            Frobenius norm of gradient is
-            less than ``tol``.
+            Relative convergence tolerance.
+            The algorithm stops when the
+            rotation criterion (sum of the
+            singular values computed at each
+            iteration) increases by a factor
+            smaller than ``1 + tol`` between
+            two iterations.
 
         Examples
         --------

@@ -1279,6 +1279,10 @@ class PCA(Decomposition):
     def _attributes(self) -> list[str]:
         return ["principal_components_", "mean_", "cos2_", "explained_variance_"]
 
+    @property
+    def _is_rotated(self) -> bool:
+        return bool(getattr(self, "_unrotated_attributes", None))
+
     # System & Special Methods.
 
     @check_minimum_version
@@ -1323,8 +1327,133 @@ class PCA(Decomposition):
             if v != "index":
                 values[v] = [c[idx - 1] for c in cos2]
         self.cos2_ = TableSample(values).to_numpy()
+        # The database model is never rotated: (re)loading
+        # or refitting the model drops any previous rotation.
+        self._unrotated_attributes = None
 
     # I/O Methods.
+
+    def deploySQL(
+        self,
+        X: Optional[SQLColumns] = None,
+        n_components: int = 0,
+        cutoff: PythonNumber = 1,
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
+    ) -> str:
+        """
+        Returns the SQL code needed to deploy the model.
+
+        If the model was not rotated, ``APPLY_PCA``
+        is used. Otherwise, as the rotation only
+        exists on the client side, the SQL is
+        generated from the rotated
+        ``principal_components_``.
+
+        Parameters
+        ----------
+        X: SQLColumns, optional
+            ``list`` of the columns used to
+            deploy the model. If empty, the
+            model predictors are used.
+        n_components: int, optional
+            Number of components to return.
+            If set to ``0``, all the components
+            are deployed.
+        cutoff: PythonNumber, optional
+            Specifies the minimum accumulated
+            explained variance. Components are
+            taken until the accumulated explained
+            variance reaches this value. It is
+            not supported for rotated models;
+            use ``n_components`` instead.
+        key_columns: SQLColumns, optional
+            Predictors used during the algorithm
+            computation that will be deployed with
+            the principal components.
+        exclude_columns: SQLColumns, optional
+            Columns to exclude from the prediction.
+
+        Returns
+        -------
+        str
+            the SQL code needed
+            to deploy the model.
+
+        Examples
+        --------
+        See
+        :py:meth:`~verticapy.machine_learning.vertica.decomposition.Decomposition.deploySQL`
+        and
+        :py:meth:`~verticapy.machine_learning.vertica.decomposition.PCA.rotate`.
+        """
+        if not self._is_rotated:
+            return super().deploySQL(
+                X, n_components, cutoff, key_columns, exclude_columns
+            )
+        exclude_columns, key_columns = format_type(
+            exclude_columns, key_columns, dtype=list
+        )
+        X = quote_ident(format_type(X, dtype=list, na_out=self.X))
+        excluded = {col.lower() for col in quote_ident(exclude_columns)}
+        X = [col for col in X if col.lower() not in excluded]
+        if len(X) != len(self.X):
+            raise ValueError(
+                f"The number of input columns ({len(X)}) must be equal to "
+                f"the number of model predictors ({len(self.X)})."
+            )
+        k = self.principal_components_.shape[1]
+        if n_components:
+            if (
+                isinstance(n_components, bool)
+                or not isinstance(n_components, (int, np.integer))
+                or not 0 < n_components <= k
+            ):
+                raise ValueError(
+                    f"Parameter 'n_components' must be an integer between 1 and {k}."
+                )
+        elif cutoff < 1:
+            raise ValueError(
+                "Parameter 'cutoff' is not supported for rotated PCA "
+                "models. Use 'n_components' instead."
+            )
+        else:
+            n_components = k
+        components = self.principal_components_[:, :n_components]
+        sd = self._unrotated_attributes["sd"]
+        if not isinstance(sd, NoneType):
+            # ((x - mean) / sd) * pc == (x - mean) * (pc / sd)
+            components = components / sd[:, None]
+        sql = mm.PCA(components, self.mean_).transform_sql(X)
+        sql = quote_ident(key_columns) + [
+            f"{expr} AS col{idx + 1}" for idx, expr in enumerate(sql)
+        ]
+        return clean_query(", ".join(sql))
+
+    def deployInverseSQL(
+        self,
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
+        X: Optional[SQLColumns] = None,
+    ) -> str:
+        """
+        Returns the SQL code needed
+        to deploy the inverse model.
+
+        It is not supported for rotated
+        models: ``APPLY_INVERSE_PCA`` relies
+        on the unrotated database model.
+
+        Refer to
+        :py:meth:`~verticapy.machine_learning.vertica.preprocessing.Preprocessing.deployInverseSQL`
+        for more information.
+        """
+        if self._is_rotated:
+            raise NotImplementedError(
+                "Inverse transformations are not supported for rotated "
+                "PCA models. Refit the model to remove the rotation."
+            )
+        return super().deployInverseSQL(key_columns, exclude_columns, X)
 
     def to_memmodel(self) -> mm.PCA:
         """
@@ -1361,8 +1490,173 @@ class PCA(Decomposition):
             Look at
             :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`
             for more information.
+
+        .. important::
+
+            Rotated models trained with
+            ``scale = True`` are not supported
+            (nor are ``to_python`` and ``to_sql``):
+            the in-memory model does not standardize
+            its inputs. Use ``deploySQL`` or
+            ``transform`` instead.
         """
+        if self._is_rotated and not isinstance(
+            self._unrotated_attributes["sd"], NoneType
+        ):
+            raise NotImplementedError(
+                "to_memmodel, to_python and to_sql are not supported for "
+                "rotated PCA models trained with scale=True. Use deploySQL "
+                "or transform instead."
+            )
         return mm.PCA(self.principal_components_, self.mean_)
+
+    # Special Methods - Matrix Rotation.
+
+    def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6) -> None:
+        """
+        Performs an Oblimin (Varimax,
+        Quartimax) rotation on the
+        principal components.
+
+        The rotation is computed client side
+        using
+        :py:meth:`~verticapy.machine_learning.memmodel.decomposition.PCA.rotate`
+        and does not modify the database model.
+        Once rotated, ``principal_components_``,
+        ``cos2_`` and ``explained_variance_``
+        describe the rotated components, while
+        :py:meth:`~verticapy.machine_learning.vertica.decomposition.PCA.deploySQL`
+        and
+        :py:meth:`~verticapy.machine_learning.vertica.decomposition.PCA.transform`
+        use the rotated components, as does
+        :py:meth:`~verticapy.machine_learning.vertica.decomposition.PCA.to_memmodel`
+        for models trained with ``scale = False``.
+
+        Parameters
+        ----------
+        gamma: float, optional
+            Oblimin rotation factor,
+            determines the type of
+            rotation.
+            It must be between ``0.0``
+            and ``1.0``.
+
+            - ``gamma = 0.0`` results in
+                a Quartimax rotation.
+
+            - ``gamma = 1.0`` results in
+                a Varimax rotation.
+
+        q: int, optional
+            Maximum number of iterations.
+        tol: float, optional
+            Relative convergence tolerance.
+            The algorithm stops when the
+            rotation criterion (sum of the
+            singular values computed at each
+            iteration) increases by a factor
+            smaller than ``1 + tol`` between
+            two iterations.
+
+        Examples
+        --------
+        Let's train a model:
+
+        .. code-block:: python
+
+            from verticapy.machine_learning.vertica import PCA
+
+            model = PCA(n_components = 2)
+            model.fit("public.pca_test_data", ["x1", "x2", "x3"])
+
+        Rotate the components:
+
+        .. code-block:: python
+
+            model.rotate(gamma = 1.0, q = 20, tol = 1e-6)
+            model.principal_components_
+
+        The rotated transformation can be
+        deployed and executed in Vertica:
+
+        .. code-block:: python
+
+            model.deploySQL()
+            model.transform("public.pca_test_data")
+
+        .. note::
+
+            The rotation is not stored in the
+            database. It is lost when the model
+            is refitted or loaded again. Inverse
+            transformations and the ``cutoff``
+            parameter are not supported for
+            rotated models, nor are ``to_memmodel``,
+            ``to_python`` and ``to_sql`` for rotated
+            models trained with ``scale = True``.
+            Rotated components are not sorted by
+            explained variance: ``n_components``
+            selects the first rotated components.
+            Rotating an already rotated model
+            rotates the current components, as in
+            :py:class:`~verticapy.machine_learning.memmodel.decomposition.PCA`.
+        """
+        if self._model_type != "PCA":
+            raise NotImplementedError(
+                f"Rotation is not supported for {self._model_type} models."
+            )
+        if not hasattr(self, "principal_components_"):
+            raise AttributeError("The model must be fitted before being rotated.")
+        if isinstance(gamma, bool) or not isinstance(gamma, (int, float, np.number)):
+            raise TypeError("Parameter 'gamma' must be a number.")
+        if not 0.0 <= gamma <= 1.0:
+            raise ValueError("Parameter 'gamma' must be between 0.0 and 1.0.")
+        if isinstance(q, bool) or not isinstance(q, (int, np.integer)) or q < 1:
+            raise ValueError("Parameter 'q' must be a positive integer.")
+        if (
+            isinstance(tol, bool)
+            or not isinstance(tol, (int, float, np.number))
+            or not tol >= 0
+        ):
+            raise ValueError("Parameter 'tol' must be a non-negative number.")
+        unrotated = getattr(self, "_unrotated_attributes", None)
+        if not unrotated:
+            sd = None
+            if self.parameters["scale"]:
+                columns = self.get_vertica_attributes("columns")
+                names = [quote_ident(name).lower() for name in columns["name"]]
+                if names != [quote_ident(x).lower() for x in self.X]:
+                    raise ValueError(
+                        "The model 'columns' attribute does not match "
+                        "the predictors order."
+                    )
+                sd = np.array(columns["sd"], dtype=float)
+                if not np.all(np.isfinite(sd) & (sd > 0)):
+                    raise ValueError(
+                        "Rotation requires finite and strictly positive "
+                        "standard deviations for all predictors when "
+                        "scale=True."
+                    )
+            unrotated = {
+                "principal_components": self.principal_components_,
+                "explained_variance": self.explained_variance_,
+                "sd": sd,
+            }
+        model = mm.PCA(self.principal_components_, self.mean_)
+        model.rotate(gamma, q, tol)
+        components = model.principal_components_
+        # The unrotated components are orthonormal, so the rotation
+        # matrix is V0' V. The variance explained by each rotated
+        # component is the R^2-weighted sum of the original ones.
+        R = unrotated["principal_components"].T @ components
+        k = R.shape[1]
+        explained_variance = np.array(unrotated["explained_variance"], dtype=float)
+        explained_variance[:k] = (R**2).T @ explained_variance[:k]
+        squares = components**2
+        self.principal_components_ = components
+        self.explained_variance_ = explained_variance
+        self.cos2_ = squares / squares.sum(axis=1, keepdims=True)
+        self._unrotated_attributes = unrotated
 
 
 class MCA(PCA):

@@ -45,6 +45,7 @@ PCA
    PCA.plot_circle
    PCA.plot_scree
    PCA.register
+   PCA.rotate
    PCA.score
    PCA.set_params
    PCA.summarize
